@@ -231,13 +231,13 @@ Private Function Buscar7Zip() As String
     Dim i As Long
     Dim ruta As String
     
+    Set fso = CreateObject("Scripting.FileSystemObject")
+    
     ruta = ObtenerRutaEjecutable("7z.exe")
     If fso.FileExists(ruta) Then
         Buscar7Zip = ruta
         Exit Function
     End If
-    
-    Set fso = CreateObject("Scripting.FileSystemObject")
     
     ' Ubicaciones comunes de 7-Zip
     rutas = Array( _

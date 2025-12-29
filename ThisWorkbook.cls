@@ -37,20 +37,32 @@ End Sub
 Private Sub Workbook_BeforeClose(Cancel As Boolean)
     ' Este evento NO debe desregistrar las UDFs normalmente,
     ' solo si detecta que el complemento fue deshabilitado manualmente
-    
-    On Error Resume Next
-    
-    ' Si fue deshabilitado pero no se disparó AddinUninstall, limpiar
+
+    On Error GoTo ErrHandler
+
+    ' Si fue deshabilitado pero no se disparo AddinUninstall, limpiar
     If Not ComprobarSiInstalado Then
+        Debug.Print "[ThisWorkbook.BeforeClose] Complemento no instalado, realizando limpieza"
     End If
-    
+
+    ' Limpiar atajos de teclado
     Application.OnKey "^+R"
-    
+
+    ' Terminar aplicacion de forma segura
     TerminateApp
-    
+
+    ' Desregistrar UDFs
     DesregistrarTodasLasUDFs
     Debug.Print "BeforeClose: UDFs desregistradas (complemento deshabilitado)"
 
+    Exit Sub
+
+ErrHandler:
+    Debug.Print "[ThisWorkbook.BeforeClose] Error " & Err.Number & ": " & Err.Description
+    ' Intentar limpieza minima en caso de error
+    On Error Resume Next
+    Application.OnKey "^+R"
+    TerminateApp
     On Error GoTo 0
 End Sub
 

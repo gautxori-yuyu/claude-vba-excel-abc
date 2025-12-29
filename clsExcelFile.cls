@@ -121,8 +121,10 @@ Public Function AnalizarWorkBook(Optional ByVal wb As Workbook = Nothing) As mod
     If Not wb Is Nothing And p_wb Is Nothing Then
         Set p_wb = wb
     ElseIf Not (p_wb Is wb) Then
-        Stop
-        ' deberia lanzar un error, ya tenia definido el libro, y estoy analizando un libro distinto....
+        ' El libro ya estaba definido y se intenta analizar uno distinto
+        Debug.Print "[clsExcelFile.AnalizarWorkBook] ADVERTENCIA: Intentando analizar un libro diferente al asociado"
+        Err.Raise vbObjectError + 573, TypeName(Me), _
+                  "Esta instancia ya esta asociada a un Workbook diferente. (no debería pasar, revisa tu codigo)"
     End If
     
     ' Extraer información del nombre DE LA CARPETA DE OPORTUNIDAD, ... o de otros ficheros en ella!!!

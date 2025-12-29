@@ -144,17 +144,28 @@ Private Sub GuardarSAM(SAM As Integer)
 End Sub
 
 Private Function ObtenerSAM() As Integer
+    Dim valorLeido As Variant
+
     On Error Resume Next
-    ObtenerSAM = CInt(CreateObject("WScript.Shell").RegRead(CFG_PATH_SAM))
+    valorLeido = CreateObject("WScript.Shell").RegRead(CFG_PATH_SAM)
+    Dim errNum As Long: errNum = Err.Number
     On Error GoTo 0
-    If ObtenerSAM = 0 Or Not IsNumeric(ObtenerSAM) Then
+
+    ' Verificar si hubo error o valor invalido
+    If errNum <> 0 Or IsEmpty(valorLeido) Or Not IsNumeric(valorLeido) Then
         Debug.Print vbTab & vbTab & "[clsConfiguracion ObtenerSAM] - no existente en registro o invalido, establecido valor por defecto"
         ObtenerSAM = CFG_SAM
         GuardarSAM CFG_SAM
+    ElseIf CInt(valorLeido) = 0 Then
+        Debug.Print vbTab & vbTab & "[clsConfiguration.ObtenerSAM] Valor cero en registro, usando valor por defecto"
+        ObtenerSAM = CFG_SAM
+        GuardarSAM CFG_SAM
     Else
-        Debug.Print vbTab & vbTab & "[clsConfiguracion ObtenerSAM] - leido del registro"
+        ObtenerSAM = CInt(valorLeido)
+        Debug.Print vbTab & vbTab & "[clsConfiguration.ObtenerSAM] Leido del registro: " & ObtenerSAM
     End If
 End Function
+
 
 ' Guardar una ruta en el registro
 Private Sub GuardarRuta(nombreConfig As Variant, ruta As String)

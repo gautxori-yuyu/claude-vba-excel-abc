@@ -8,7 +8,13 @@ Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = True
 Option Explicit
+
+' ==========================================
+' RIBBON UI Y ESTADO
+' ==========================================
 Public ribbonUI As IRibbonUI
+Private mIsRecovering As Boolean              ' Flag para evitar recursion durante recuperacion
+
 ' ==========================================
 ' EVENTOS DE APLICACION
 ' ==========================================
@@ -85,36 +91,106 @@ Public Function GetRibbonControlEnabled(control As IRibbonControl) As Boolean
     Debug.Print "[GetRibbonControlEnabled] - ¿" & control.id & "?: " & CBool(enabled)
 End Function
 
-' Función pública para invalidar el ribbon desde otros módulos
+'@Description: Invalida todo el Ribbon, forzando recarga de callbacks
+'@Note: Intenta recuperacion automatica si el Ribbon esta perdido
 Public Sub InvalidarRibbon()
-    On Error Resume Next
-    Select Case True
-    Case TypeName(ribbonUI) = "Empty", ribbonUI Is Nothing
-        Debug.Print "[clsRibbonEvents InvalidarRibbon] ERROR!!: ribbonUI es " & IIf(TypeName(ribbonUI) = "Empty", "Empty", "Nothing") & "!!! — posible fallo previo."
-        Err.Raise vbObjectError + 573, "clsRibbonEvents.InvalidarRibbon", _
-                  "Error en invalidacion de ribbon: " & Err.Description
-    Case Else
-        ribbonUI.Invalidate
-    End Select
-    On Error GoTo 0
+    On Error GoTo ErrHandler
+
+    ' Verificar si el Ribbon esta disponible
+    If Not IsRibbonUIAvailable() Then
+        ' Intentar recuperacion automatica (solo si no estamos ya recuperando)
+        If Not mIsRecovering Then
+            Debug.Print "[clsRibbonEvents.InvalidarRibbon] Ribbon perdido, intentando recuperacion..."
+            If TryAutoRecover() Then
+                Debug.Print "[clsRibbonEvents.InvalidarRibbon] Recuperacion exitosa"
+            Else
+                Debug.Print "[clsRibbonEvents.InvalidarRibbon] Recuperacion fallida"
+                Exit Sub
+            End If
+        Else
+            Debug.Print "[clsRibbonEvents.InvalidarRibbon] Recuperacion en curso, omitiendo"
+            Exit Sub
+        End If
+    End If
+
+    ' Invalidar el Ribbon
+    ribbonUI.Invalidate
+    Exit Sub
+
+ErrHandler:
+    Debug.Print "[clsRibbonEvents.InvalidarRibbon] Error: " & Err.Description
+    ' No propagar el error, solo loguear
 End Sub
 
-' Función pública para invalidar un control desde otros módulos
+'@Description: Invalida un control especifico del Ribbon
+'@Note: Intenta recuperacion automatica si el Ribbon esta perdido
 Public Sub InvalidarControl(idControl As String)
     On Error GoTo ErrHandler
-    Select Case True
-    Case TypeName(ribbonUI) = "Empty", ribbonUI Is Nothing
-        Debug.Print "[clsRibbonEvents InvalidarControl] ERROR!!: ribbonUI es " & IIf(TypeName(ribbonUI) = "Empty", "Empty", "Nothing") & "!!! — posible fallo previo."
-        Err.Raise vbObjectError + 573, "clsRibbonEvents.InvalidarControl", _
-                  "Error en invalidacion de control de ribbon: " & Err.Description
-    Case Else
-        ribbonUI.InvalidateControl idControl
-    End Select
-    On Error GoTo 0
-    
+
+    ' Verificar si el Ribbon esta disponible
+    If Not IsRibbonUIAvailable() Then
+        ' Intentar recuperacion automatica
+        If Not mIsRecovering Then
+            Debug.Print "[clsRibbonEvents.InvalidarControl] Ribbon perdido, intentando recuperacion..."
+            If Not TryAutoRecover() Then
+                Debug.Print "[clsRibbonEvents.InvalidarControl] Recuperacion fallida para control: " & idControl
+                Exit Sub
+            End If
+        Else
+            Exit Sub
+        End If
+    End If
+
+    ' Invalidar el control
+    ribbonUI.InvalidateControl idControl
     Exit Sub
+
 ErrHandler:
-    Debug.Print "[InvalidarControl] - Error al invalidar control " & idControl & ": " & Err.Description
+    Debug.Print "[clsRibbonEvents.InvalidarControl] Error en control " & idControl & ": " & Err.Description
 End Sub
 
+'@Description: Verifica si el objeto ribbonUI esta disponible y funcional
+Private Function IsRibbonUIAvailable() As Boolean
+    On Error Resume Next
 
+    If ribbonUI Is Nothing Then
+        IsRibbonUIAvailable = False
+    ElseIf TypeName(ribbonUI) = "Nothing" Or TypeName(ribbonUI) = "Empty" Then
+        IsRibbonUIAvailable = False
+    Else
+        ' Intentar acceder al objeto para verificar que es valido
+        Dim testType As String
+        testType = TypeName(ribbonUI)
+        If Err.Number <> 0 Then
+            IsRibbonUIAvailable = False
+            Err.Clear
+        Else
+            IsRibbonUIAvailable = True
+        End If
+    End If
+
+    On Error GoTo 0
+End Function
+
+'@Description: Intenta recuperar el Ribbon automaticamente
+Private Function TryAutoRecover() As Boolean
+    On Error GoTo ErrHandler
+
+    mIsRecovering = True
+
+    ' Usar el modulo de recuperacion
+    TryAutoRecover = modRibbonRecovery.TryRecoverRibbon()
+
+    mIsRecovering = False
+    Exit Function
+
+ErrHandler:
+    Debug.Print "[clsRibbonEvents.TryAutoRecover] Error: " & Err.Description
+    mIsRecovering = False
+    TryAutoRecover = False
+End Function
+
+'@Description: Indica si el Ribbon esta en proceso de recuperacion
+Public Property Get IsRecovering() As Boolean
+    IsRecovering = mIsRecovering
+End Property
