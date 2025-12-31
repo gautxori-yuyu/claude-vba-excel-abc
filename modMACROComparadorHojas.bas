@@ -21,6 +21,9 @@ Private dictCeldasModificadas As Object
 ' INICIALIZACIÓN Y CONFIGURACIÓN
 ' -------------------------------------------------------------------------------------------------------------
 
+' Variable a nivel de modulo para mantener referencia al formulario no modal
+Private mFrmComparador As frmComparadorHojas
+
 '@Description: Inicializa el diccionario de celdas modificadas y muestra el formulario comparador
 '              en modo no modal
 '@Scope: Public
@@ -28,12 +31,23 @@ Private dictCeldasModificadas As Object
 '@Returns: (ninguno)
 '@Dependencies: frmComparadorHojas (formulario)
 '@Note: El diccionario se usa para rastrear las celdas cuyo color fue modificado durante la comparación
+'        Usa instanciacion explicita para evitar problemas de memoria con la instancia predeterminada.
+'        La referencia se mantiene a nivel de modulo para formularios no modales.
 Sub MostrarComparador()
-Attribute MostrarComparador.VB_ProcData.VB_Invoke_Func = " \n0"
     Set dictCeldasModificadas = CreateObject("Scripting.Dictionary")
-    frmComparadorHojas.Show vbModeless
-End Sub
 
+    ' Si ya hay un formulario abierto, traerlo al frente
+    If Not mFrmComparador Is Nothing Then
+        On Error Resume Next
+        mFrmComparador.Show
+        If Err.Number = 0 Then Exit Sub
+        On Error GoTo 0
+    End If
+
+    ' Crear nueva instancia
+    Set mFrmComparador = New frmComparadorHojas
+    mFrmComparador.Show vbModeless
+End Sub
 ' -------------------------------------------------------------------------------------------------------------
 ' FUNCIONES DE COMPARACIÓN Y VISUALIZACIÓN
 ' -------------------------------------------------------------------------------------------------------------

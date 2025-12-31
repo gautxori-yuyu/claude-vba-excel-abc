@@ -92,6 +92,11 @@ Public Event SubfolderCreated(ByVal parentFolder As String, ByVal subfolderName 
 Public Event SubfolderDeleted(ByVal parentFolder As String, ByVal subfolderName As String)
 Public Event SubfolderRenamed(ByVal parentFolder As String, ByVal oldName As String, ByVal newName As String)
 
+' Eventos de reconexión automática para carpetas de red
+Public Event WatcherReconnected(ByVal folder As String, ByVal attempts As Long)
+Public Event WatcherReconnectionFailed(ByVal folder As String, ByVal reason As String)
+
+
 ' =====================================================
 ' INICIALIZACIÓN Y LIMPIEZA
 ' =====================================================
@@ -566,4 +571,13 @@ Private Sub fw_SubfolderRenamed(ByVal parentFolder As String, ByVal oldName As S
     RaiseEvent SubfolderRenamed(parentFolder, oldName, newName)
 End Sub
 
+' Manejadores para eventos de reconexión automática
+Private Sub fw_WatcherReconnected(ByVal folder As String, ByVal attempts As Long)
+    LogInfo MODULE_NAME, "WatcherReconnected: " & folder & " (tras " & attempts & " intento(s))"
+    RaiseEvent WatcherReconnected(folder, attempts)
+End Sub
 
+Private Sub fw_WatcherReconnectionFailed(ByVal folder As String, ByVal reason As String)
+    LogError MODULE_NAME, "WatcherReconnectionFailed: " & folder & " - " & reason
+    RaiseEvent WatcherReconnectionFailed(folder, reason)
+End Sub

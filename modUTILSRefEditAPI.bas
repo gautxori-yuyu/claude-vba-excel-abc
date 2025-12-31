@@ -100,7 +100,7 @@ Private sTextBoxText As String
 Private bEnableKeyBoardInput As Boolean
 
 '____________________________________________PUBLIC ROUTINES_________________________________________
-Public Sub ShowForm(ByVal Frm As Object, ByVal Show As Boolean)
+Public Sub ShowForm(ByVal frm As Object, ByVal Show As Boolean)
 Attribute ShowForm.VB_ProcData.VB_Invoke_Func = " \n0"
 
     Const GWL_EXSTYLE = (-20)
@@ -112,7 +112,7 @@ Attribute ShowForm.VB_ProcData.VB_Invoke_Func = " \n0"
     Call SetLayeredWindowAttributes(hwndFrm, 0, IIf(Show = False, 0, 255), LWA_ALPHA)
     Call SetActiveWindow(Application.hwnd)
     Call ShowWindow(hwndFrm, -CLng(Show))
-    If Frm.tag Then EnableWindow Application.hwnd, 0
+    If frm.tag Then EnableWindow Application.hwnd, 0
     
     If Show = False Then
         If hKBhook = 0 Then
@@ -161,11 +161,11 @@ Attribute StoreTextboxWidth.VB_ProcData.VB_Invoke_Func = " \n0"
     dblTextboxwidth = TextBox.Width
 End Sub
 
-Public Function IsFormModal(Frm As Object) As Boolean
+Public Function IsFormModal(frm As Object) As Boolean
 Attribute IsFormModal.VB_Description = "[modUTILSRefEditAPI] Is Form Modal (función personalizada)"
 Attribute IsFormModal.VB_ProcData.VB_Invoke_Func = " \n23"
     IsFormModal = Not CBool(SetFocus(Application.hwnd))
-    Call IUnknown_GetWindow(Frm, VarPtr(hwndFrm))
+    Call IUnknown_GetWindow(frm, VarPtr(hwndFrm))
     Call SetFocus(hwndFrm)
 End Function
 

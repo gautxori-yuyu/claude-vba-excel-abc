@@ -32,11 +32,11 @@ Attribute ExportarComponentesVBA.VB_ProcData.VB_Invoke_Func = " \n0"
     Dim nombreArchivo As String
     Dim wb As Workbook
     
-    Dim Frm As New frmImportExportMacros
-    Frm.Show vbModal
-    If Frm.WorkbookSeleccionado Is Nothing Then Exit Sub
-    Set wb = Frm.WorkbookSeleccionado
-    Unload Frm
+    Dim frm As New frmImportExportMacros
+    frm.Show vbModal
+    If frm.WorkbookSeleccionado Is Nothing Then Exit Sub
+    Set wb = frm.WorkbookSeleccionado
+    Unload frm
     If wb Is Nothing Then Exit Sub               ' Cancelado o error
     
     ' Carpeta donde se guardarán los archivos exportados
@@ -120,11 +120,11 @@ Attribute ImportarComponentesVBA.VB_ProcData.VB_Invoke_Func = " \n0"
     Dim extension As String
     Dim wb As Workbook
     
-    Dim Frm As New frmImportExportMacros
-    Frm.Show vbModal
-    If Frm.WorkbookSeleccionado Is Nothing Then Exit Sub
-    Set wb = Frm.WorkbookSeleccionado
-    Unload Frm
+    Dim frm As New frmImportExportMacros
+    frm.Show vbModal
+    If frm.WorkbookSeleccionado Is Nothing Then Exit Sub
+    Set wb = frm.WorkbookSeleccionado
+    Unload frm
     If wb Is Nothing Then Exit Sub               ' Cancelado o error
     
     ' Carpeta desde donde se importarán los archivos

@@ -448,8 +448,18 @@ ErrorHandler:
     Application.ScreenUpdating = True
 End Sub
 
+'@Description: Muestra el formulario de configuracion de la aplicacion
+'@Scope: Private (evento de ribbon)
+'@ArgumentDescriptions: (sin argumentos)
+'@Returns: (ninguno)
+'@Dependencies: frmConfiguracion
+'@Note: Usa instanciacion explicita para evitar problemas de memoria con la instancia predeterminada
 Private Sub evRibbon_Configurador()
-    frmConfiguracion.Show
+    Dim frm As frmConfiguracion
+    Set frm = New frmConfiguracion
+    frm.Show vbModal
+    Unload frm
+    Set frm = Nothing
 End Sub
 
 Private Sub evRibbon_NuevaOportunidad()
@@ -568,4 +578,26 @@ Private Sub mFolderWatcher_ErrorOccurred(ByVal folder As String, ByVal errorMess
                errorMessage, vbExclamation, "FolderWatcher"
     End If
 End Sub
+
+' Eventos de reconexion automatica del FolderWatcher
+Private Sub mFolderWatcher_WatcherReconnected(ByVal folder As String, ByVal attempts As Long)
+    Debug.Print "[clsAplicacion mFolderWatcher_WatcherReconnected] " & folder & " reconectado tras " & attempts & " intento(s)"
+    ' Opcional: notificar al usuario solo si hubo multiples intentos
+    If attempts > 1 Then
+        LogInfo "clsAplicacion", "Monitoreo restaurado en " & folder & " tras " & attempts & " intentos"
+    End If
+End Sub
+
+Private Sub mFolderWatcher_WatcherReconnectionFailed(ByVal folder As String, ByVal reason As String)
+    Debug.Print "[clsAplicacion mFolderWatcher_WatcherReconnectionFailed] " & folder & ": " & reason
+
+    ' Notificar al usuario que el monitoreo fallo permanentemente
+    MsgBox "El monitoreo de la carpeta ha fallado permanentemente:" & vbCrLf & _
+           folder & vbCrLf & vbCrLf & _
+           "Razon: " & reason & vbCrLf & vbCrLf & _
+           "Es posible que la carpeta no este accesible o haya problemas de red.", _
+           vbExclamation, "FolderWatcher - Reconexion Fallida"
+End Sub
+
+
 

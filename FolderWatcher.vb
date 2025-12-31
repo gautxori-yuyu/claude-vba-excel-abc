@@ -55,6 +55,8 @@ Public Interface IFolderWatcherEvents
     <DispId(7)> Sub SubfolderCreated(ByVal parentFolder As String, ByVal subfolderName As String)
     <DispId(8)> Sub SubfolderDeleted(ByVal parentFolder As String, ByVal subfolderName As String)
     <DispId(9)> Sub SubfolderRenamed(ByVal parentFolder As String, ByVal oldName As String, ByVal newName As String)
+    <DispId(10)> Sub WatcherReconnected(ByVal folder As String, ByVal attempts As Integer)
+    <DispId(11)> Sub WatcherReconnectionFailed(ByVal folder As String, ByVal reason As String)
 End Interface
 
 ' =====================================================
@@ -77,6 +79,10 @@ Public Class FolderWatcher
 
     ' Cola para reintentos de watchers con errores
     Private foldersToRetry As New System.Collections.Concurrent.ConcurrentQueue(Of String)
+
+    ' Tracking de intentos de reconexión por carpeta
+    Private reconnectionAttempts As New Dictionary(Of String, Integer)
+    Private Const MAX_RECONNECTION_ATTEMPTS As Integer = 5
 
     ' Filtros y acciones por carpeta
     Private filters As New Dictionary(Of String, FileFilter)
@@ -156,6 +162,8 @@ Public Class FolderWatcher
     Public Event SubfolderCreated(parentFolder As String, subfolderName As String)
     Public Event SubfolderDeleted(parentFolder As String, subfolderName As String)
     Public Event SubfolderRenamed(parentFolder As String, oldName As String, newName As String)
+    Public Event WatcherReconnected(folder As String, attempts As Integer)
+    Public Event WatcherReconnectionFailed(folder As String, reason As String)
 
     ' =====================================================
     ' MÉTODOS PÚBLICOS - CONFIGURACIÓN
@@ -379,7 +387,14 @@ Public Class FolderWatcher
     Public Sub StopWatching(folderPath As String)
         If watchers.ContainsKey(folderPath) Then
             WriteLog(String.Format("Deteniendo monitoreo: {0}", folderPath))
-            watchers(folderPath).Dispose()
+            Try
+                Dim watcher As FileSystemWatcher = watchers(folderPath)
+                ' Deshabilitar eventos antes de Dispose
+                watcher.EnableRaisingEvents = False
+                watcher.Dispose()
+            Catch ex As Exception
+                WriteLog(String.Format("Error deteniendo watcher {0}: {1}", folderPath, ex.Message))
+            End Try
             watchers.Remove(folderPath)
             watcherSettings.Remove(folderPath)
             heartbeats.Remove(folderPath)
@@ -810,15 +825,43 @@ Public Class FolderWatcher
         ' 3. Reiniciar todos los watchers marcados
         For Each folder As String In foldersToRestart
             Try
+                ' Incrementar contador de intentos
+                If Not reconnectionAttempts.ContainsKey(folder) Then
+                    reconnectionAttempts(folder) = 0
+                End If
+                reconnectionAttempts(folder) += 1
+                Dim attempts As Integer = reconnectionAttempts(folder)
+
+                ' Verificar si se alcanzó el límite de intentos
+                If attempts > MAX_RECONNECTION_ATTEMPTS Then
+                    Dim reason As String = String.Format("Máximo de intentos alcanzado ({0})", MAX_RECONNECTION_ATTEMPTS)
+                    WriteLog(String.Format("FALLO RECONEXIÓN: {0} - {1}", folder, reason))
+                    RaiseEvent WatcherReconnectionFailed(folder, reason)
+                    reconnectionAttempts.Remove(folder)
+                    Continue For
+                End If
+
                 If watcherSettings.ContainsKey(folder) Then
                     Dim config = watcherSettings(folder)
-                    WriteLog(String.Format("Reiniciando watcher: {0}", folder))
+                    WriteLog(String.Format("Reiniciando watcher (intento {0}/{1}): {2}", attempts, MAX_RECONNECTION_ATTEMPTS, folder))
                     StopWatching(folder)
                     WatchFolder(folder, config.IncludeSubdirs, config.FilterPattern, Nothing, config.InactivityMinutes, config.FoldersOnly)
+
+                    ' Reconexión exitosa
+                    WriteLog(String.Format("RECONEXIÓN EXITOSA: {0} (tras {1} intento(s))", folder, attempts))
+                    RaiseEvent WatcherReconnected(folder, attempts)
+                    reconnectionAttempts.Remove(folder)
                 End If
             Catch ex As Exception
-                WriteLog(String.Format("ERROR al reiniciar {0}: {1}", folder, ex.Message))
-                RaiseEvent ErrorOccurred(folder, String.Format("Error al reiniciar: {0}", ex.Message))
+                Dim errMsg As String = String.Format("Error al reiniciar (intento {0}): {1}", reconnectionAttempts(folder), ex.Message)
+                WriteLog(String.Format("ERROR: {0} - {1}", folder, errMsg))
+                RaiseEvent ErrorOccurred(folder, errMsg)
+
+                ' Si es el último intento, notificar fallo
+                If reconnectionAttempts(folder) >= MAX_RECONNECTION_ATTEMPTS Then
+                    RaiseEvent WatcherReconnectionFailed(folder, ex.Message)
+                    reconnectionAttempts.Remove(folder)
+                End If
             End Try
         Next
     End Sub
@@ -923,17 +966,30 @@ Public Class FolderWatcher
     Protected Overridable Sub Dispose(disposing As Boolean)
         If Not disposed Then
             If disposing Then
-                WriteLog("Finalizando FolderWatcher")
+                WriteLog("Finalizando FolderWatcher - liberando recursos")
 
+                ' 1. Detener el timer de heartbeat primero
                 If hbTimer IsNot Nothing Then
                     hbTimer.Stop()
                     hbTimer.Dispose()
+                    hbTimer = Nothing
                 End If
 
-                For Each watcher In watchers.Values
-                    watcher.Dispose()
+                ' 2. Liberar cada FileSystemWatcher correctamente
+                For Each kvp In watchers
+                    Dim watcher As FileSystemWatcher = kvp.Value
+                    Try
+                        ' IMPORTANTE: Deshabilitar eventos ANTES de Dispose
+                        ' para evitar eventos fantasma durante el cierre
+                        watcher.EnableRaisingEvents = False
+                        watcher.Dispose()
+                        WriteLog(String.Format("Watcher liberado: {0}", kvp.Key))
+                    Catch ex As Exception
+                        WriteLog(String.Format("Error liberando watcher {0}: {1}", kvp.Key, ex.Message))
+                    End Try
                 Next
 
+                ' 3. Limpiar todas las colecciones
                 watchers.Clear()
                 heartbeats.Clear()
                 debounceDict.Clear()
@@ -941,14 +997,18 @@ Public Class FolderWatcher
                 stats.Clear()
                 filters.Clear()
                 actions.Clear()
+                reconnectionAttempts.Clear()
 
                 SyncLock eventHistory
                     eventHistory.Clear()
                 End SyncLock
 
+                ' 4. Cerrar el log al final
                 If logWriter IsNot Nothing Then
+                    WriteLog("FolderWatcher finalizado correctamente")
                     logWriter.Close()
                     logWriter.Dispose()
+                    logWriter = Nothing
                 End If
             End If
             disposed = True

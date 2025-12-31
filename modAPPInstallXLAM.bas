@@ -43,6 +43,7 @@ Private Const COM_MANIFEST_NOMBRE As String = "FolderWatcherCOM.dll.manifest"
 '@Returns: (ninguno)
 '@Category: Instalación XLAM
 Sub archivoInstScriptToBase64RC4()
+Attribute archivoInstScriptToBase64RC4.VB_ProcData.VB_Invoke_Func = " \n0"
     ScriptToFunctionBase64RC4 _
         Replace(Environ$("TEMP") & "\" & "AutoXLAM_Installer.vbs", "\\", "\"), _
         Replace(Environ$("TEMP") & "\" & "AutoXLAM_Installer.Base64", "\\", "\"), _
@@ -186,68 +187,67 @@ End Function
 '@Returns: (ninguno)
 '@Category: Instalación XLAM
 Public Sub AutoInstalador()
-
+Attribute AutoInstalador.VB_ProcData.VB_Invoke_Func = " \n0"
+    
     ' Validar que se está ejecutando desde un XLAM
     If Not (ThisWorkbook.FileFormat = xlOpenXMLAddIn Or ThisWorkbook.FileFormat = xlAddIn) Then Exit Sub
-
+    
     Dim rutaActual As String
     Dim rutaDestino As String
-
+    
     rutaActual = ThisWorkbook.Path & "\"
     rutaDestino = Application.UserLibraryPath
-
+    
     ' Si ya se ejecuta desde la carpeta destino, no hacer nada
     If rutaActual = rutaDestino Then
         Debug.Print "[AutoInstalador] - el complemento se inicia desde la ruta destino de instalación, NO se ejecuta el proceso de instalación / desinstalación"
         Exit Sub
     End If
-
+    
     ' Si NO está instalado
     If Not ComprobarSiInstalado() Then
-
+        
         ' Evitar sobrescribir un XLAM con el mismo nombre final
         If LCase$(ThisWorkbook.Name) = LCase$(APP_NAME & ".xlam") Then
-
+            
             Debug.Print "[AutoInstalador] - XLAM no es posible instalarlo"
             MsgBox "El nombre del fichero a instalar tiene que ser diferente de '" & APP_NAME & ".xlam" & "'. Cámbialo si quieres hacer la instalación."
-
+            
         ElseIf MsgBox("¿Deseas instalar este complemento?", vbYesNo + vbQuestion) = vbYes Then
-
+            
             Debug.Print "[AutoInstalador] - ejecutando script de instalación"
-
-            ' El VBScript extrae el COM desde dentro del XLAM y lo copia al destino
+            
             EjecutarScript _
                 INSTALLSCRIPT_B64RC4, _
                 SCRIPT_NOMBRE, _
                 Array("/install", ThisWorkbook.FullName, Application.UserLibraryPath, APP_NAME), _
                 True
-
+            
             If Application.Workbooks.Count <= 1 Then Application.Quit
             ThisWorkbook.Close SaveChanges:=False
-
+            
         End If
-
+        
     ' Si YA está instalado
     Else
-
+        
         If MsgBox("Este complemento ya está instalado. ¿Deseas desinstalarlo?", vbYesNo + vbQuestion) = vbYes Then
-
+            
             Debug.Print "[AutoInstalador] - ejecutando script de desinstalación"
-
-            ' El VBScript elimina el COM y el XLAM del destino
+            
             EjecutarScript _
                 INSTALLSCRIPT_B64RC4, _
                 SCRIPT_NOMBRE, _
                 Array("/uninstall", ThisWorkbook.FullName, Application.UserLibraryPath, APP_NAME), _
                 True
-
+            
             If Application.Workbooks.Count <= 1 Then Application.Quit
             ThisWorkbook.Close SaveChanges:=False
-
+            
         End If
-
+        
     End If
-
+    
 End Sub
 
 ' ---------------------------------------------------------------------
@@ -260,31 +260,31 @@ End Sub
 '@Returns: Boolean | True si el XLAM está instalado; False en caso contrario.
 '@Category: Instalación XLAM
 Public Function ComprobarSiInstalado() As Boolean
-
+Attribute ComprobarSiInstalado.VB_ProcData.VB_Invoke_Func = " \n0"
+    
     Dim ai As AddIn
     Dim bFExists As Boolean
-
+    
     ' Verificar existencia física del XLAM
     bFExists = Dir(Application.UserLibraryPath & APP_NAME & ".xlam", vbNormal) <> ""
-
+    
     For Each ai In Application.AddIns
         If ai.Name = APP_NAME & ".xlam" Then
-
+            
             ' Estado inconsistente: marcado como instalado pero el fichero no existe
             If Not bFExists And ai.Installed Then
                 Debug.Print "[ComprobarSiInstalado] - XLAM marcado como instalado, pero inexistente: forzando el proceso de desinstalación"
                 ai.Installed = False
             End If
-
+            
             ComprobarSiInstalado = ai.Installed
             Debug.Print "[ComprobarSiInstalado] - XLAM " & IIf(ComprobarSiInstalado, "", "no ") & "instalado"
             Exit Function
-
+            
         End If
     Next ai
-
+    
 End Function
-
 Function INSTALLSCRIPT_B64RC4() As String
     INSTALLSCRIPT_B64RC4 = _
         "JyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09" & _
@@ -542,5 +542,4 @@ Function INSTALLSCRIPT_B64RC4() As String
         "TmV4dA0KDQogICAgU2V0IFdzaFNoZWxsID0gTm90aGluZw0KICAgIE9uIEVycm9yIEdvVG8g" & _
         "MA0KRW5kIFN1Yg0K"
 End Function
-
 
