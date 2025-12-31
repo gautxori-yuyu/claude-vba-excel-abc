@@ -171,7 +171,7 @@ Private Function ObtenerFactorCorreccion(c As Range) As Double
     ObtenerFactorCorreccion = factor
 End Function
 Sub AjustarSelWSheetsParaImpresionPDF()
-    On Error GoTo CleanUp
+    On Error GoTo Cleanup
     
     Dim selSheets As Object
     Set selSheets = ActiveWindow.SelectedSheets
@@ -244,7 +244,7 @@ Sub AjustarSelWSheetsParaImpresionPDF()
     End If
     
 
-CleanUp:
+Cleanup:
     ' RESTAURACION DE LAS AREAS NO IMPRIMIBLES, tras generar documentos
     Debug.Print "Restauración de las áreas de impresión de cada hoja del libro:"
     hojasProcesadas = 0
@@ -331,7 +331,7 @@ Function AjustarWSParaPDF_ImpresionMaestra(Optional ws As Worksheet = Nothing) A
     ' Restaurar configuración y rendimiento
     'ws.PageSetup.PrintQuality = 600 ' Restaurar calidad alta para la impresión final
     
-CleanUp:
+Cleanup:
     Application.Calculation = prevCalcMode
     Application.ScreenUpdating = prevScreenUpdating
     
@@ -446,7 +446,7 @@ End Sub
 
 Function GetPrintHeightMultiLine(ByVal c As Range) As Double
 Attribute GetPrintHeightMultiLine.VB_Description = "[modMACROWbkEditableFormatting] Get Print Height Multi Line (función personalizada). Aplica a: Cells Range"
-Attribute GetPrintHeightMultiLine.VB_ProcData.VB_Invoke_Func = " \n21"
+Attribute GetPrintHeightMultiLine.VB_ProcData.VB_Invoke_Func = " \n23"
     Dim hdc As LongPtr, hFont As LongPtr, hOldFont As LongPtr
     Dim r As RECT
     Dim sz As SIZE
@@ -522,7 +522,7 @@ End Function
 
 Function GetAbsoluteUsedRange(ws As Worksheet) As Range
 Attribute GetAbsoluteUsedRange.VB_Description = "[modMACROWbkEditableFormatting] Get Absolute Used Range (función personalizada). Aplica a: Cells Range"
-Attribute GetAbsoluteUsedRange.VB_ProcData.VB_Invoke_Func = " \n21"
+Attribute GetAbsoluteUsedRange.VB_ProcData.VB_Invoke_Func = " \n23"
     Dim ultFila As Long
     Dim ultCol As Long
     
@@ -572,7 +572,7 @@ End Function
 
 Function GetRealUsedRange(ws As Worksheet) As Range
 Attribute GetRealUsedRange.VB_Description = "[modMACROWbkEditableFormatting] Get Real Used Range (función personalizada). Aplica a: Cells Range"
-Attribute GetRealUsedRange.VB_ProcData.VB_Invoke_Func = " \n21"
+Attribute GetRealUsedRange.VB_ProcData.VB_Invoke_Func = " \n23"
     Dim ultimaFila As Long
     Dim ultimaCol As Long
     
@@ -604,7 +604,7 @@ End Function
 
 Function GetPhysicalPaperHeight(ws As Worksheet) As Double
 Attribute GetPhysicalPaperHeight.VB_Description = "[modMACROWbkEditableFormatting] Get Physical Paper Height (función personalizada)"
-Attribute GetPhysicalPaperHeight.VB_ProcData.VB_Invoke_Func = " \n21"
+Attribute GetPhysicalPaperHeight.VB_ProcData.VB_Invoke_Func = " \n23"
     ' Altura física total del papel en puntos (1 pulgada = 72 pts)
     Select Case ws.PageSetup.PaperSize
         Case xlPaperA4:      GetPhysicalPaperHeight = 841.89 ' (210mm x 297mm)
@@ -616,7 +616,7 @@ End Function
 
 Function GetUsablePrintHeight(ws As Worksheet) As Double
 Attribute GetUsablePrintHeight.VB_Description = "[modMACROWbkEditableFormatting] Get Usable Print Height (función personalizada)"
-Attribute GetUsablePrintHeight.VB_ProcData.VB_Invoke_Func = " \n21"
+Attribute GetUsablePrintHeight.VB_ProcData.VB_Invoke_Func = " \n23"
     Dim totalHeight As Double
     totalHeight = GetPhysicalPaperHeight(ws)
     
@@ -634,7 +634,7 @@ Sub ConfigurarSaltosDePagina(ws As Worksheet, ultimaFila As Long)
     ' --- Estado original ---
     prevScreenUpdating = Application.ScreenUpdating
     Application.ScreenUpdating = False
-    On Error GoTo CleanUp
+    On Error GoTo Cleanup
     
     ' --- 1. Asegurar que los saltos automáticos estén actualizados ---
     ws.ResetAllPageBreaks
@@ -643,7 +643,7 @@ Sub ConfigurarSaltosDePagina(ws As Worksheet, ultimaFila As Long)
     npb = ws.HPageBreaks.Count
     If npb = 0 Then
         Debug.Print "[WARN] ConfigurarSaltosDePagina: no hay saltos automáticos en '" & ws.Name & "'. ¿Rango imprimible vacío?"
-        GoTo CleanUp
+        GoTo Cleanup
     End If
     
     Debug.Print "=== AJUSTE DE SALTOS (basado en " & npb & " saltos automáticos) ==="
@@ -728,7 +728,7 @@ Sub ConfigurarSaltosDePagina(ws As Worksheet, ultimaFila As Long)
         End If
     Next pagina
     
-CleanUp:
+Cleanup:
     Application.ScreenUpdating = prevScreenUpdating
     If Err.Number <> 0 Then
         Debug.Print "[ERR] ConfigurarSaltosDePagina: " & Err.Description & " (Err " & Err.Number & ")"
@@ -753,7 +753,7 @@ Sub ConfigurarSaltosDePagina_v2(ws As Worksheet, ultimaFila As Long)
     prevScreenUpdating = Application.ScreenUpdating
     Application.ScreenUpdating = False
     
-    On Error GoTo CleanUp
+    On Error GoTo Cleanup
     
     ' --- 1. Reiniciar y preparar ---
     ws.ResetAllPageBreaks
@@ -858,7 +858,7 @@ Sub ConfigurarSaltosDePagina_v2(ws As Worksheet, ultimaFila As Long)
     
     Debug.Print "[OK] ConfigurarSaltosDePagina_v2: " & npb & " saltos en '" & ws.Name & "'"
     
-CleanUp:
+Cleanup:
     Application.ScreenUpdating = prevScreenUpdating
     If Err.Number <> 0 Then
         Debug.Print "[ERR] ConfigurarSaltosDePagina_v2: " & Err.Description & " (Err " & Err.Number & ")"
@@ -962,7 +962,7 @@ Sub ConfigurarSaltosDePagina_old(ws As Worksheet, ultimaFila As Long)
 End Sub
 Function SaltoVerticalCortaRango(ws As Worksheet, targetRange As Range) As Boolean
 Attribute SaltoVerticalCortaRango.VB_Description = "[modMACROWbkEditableFormatting] Salto Vertical Corta Rango (función personalizada). Aplica a: Cells Range"
-Attribute SaltoVerticalCortaRango.VB_ProcData.VB_Invoke_Func = " \n21"
+Attribute SaltoVerticalCortaRango.VB_ProcData.VB_Invoke_Func = " \n23"
     ' Devuelve True si el rango excede el primer salto de página vertical
     
     Dim primerSaltoColumna As Long

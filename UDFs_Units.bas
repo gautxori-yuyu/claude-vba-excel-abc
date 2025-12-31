@@ -6,7 +6,7 @@ Option Explicit
 '==========================================
 Public Function ConvertirUnidad(valor As Double, unidadOrigen As String, unidadBase As String) As Variant
 Attribute ConvertirUnidad.VB_Description = "[UDFs_Units] FUNCIÓN PRINCIPAL - UDF para Excel. "
-Attribute ConvertirUnidad.VB_ProcData.VB_Invoke_Func = " \n21"
+Attribute ConvertirUnidad.VB_ProcData.VB_Invoke_Func = " \n23"
     On Error GoTo ErrorHandler
     
     ' Validación de entrada
@@ -264,7 +264,7 @@ End Function
 '==========================================
 Public Function UdsPorTipo(ByVal strTipo As String) As Variant
 Attribute UdsPorTipo.VB_Description = "[UDFs_Units] FUNCIÓN PARA VALIDACIONES EN EXCEL. . Aplica a: ThisWorkbook|Cells Range"
-Attribute UdsPorTipo.VB_ProcData.VB_Invoke_Func = " \n21"
+Attribute UdsPorTipo.VB_ProcData.VB_Invoke_Func = " \n23"
     Dim ws As Worksheet
     Dim i As Long, lastRow As Long
     Dim resultados() As String
@@ -332,7 +332,7 @@ End Sub
 
 Function ConvertirCaudalNormal(valor As Double, p1 As Double, T1 As Double, unidadOrigen As String, unidadBase As String) As Variant
 Attribute ConvertirCaudalNormal.VB_Description = "[UDFs_Units] Convertir Caudal Normal (función personalizada)"
-Attribute ConvertirCaudalNormal.VB_ProcData.VB_Invoke_Func = " \n21"
+Attribute ConvertirCaudalNormal.VB_ProcData.VB_Invoke_Func = " \n23"
     ' P1: Presión en Pa
     ' T1: Temperatura en K
     ' Convierte caudales: teniendo en cuenta los normalizados (Nm3, SCF), para pasarlos a condiciones reales

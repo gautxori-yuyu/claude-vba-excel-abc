@@ -175,7 +175,7 @@ End Sub
 '@Note: xlNone tiene valor -4142. RGB blanco tiene valor 16777215
 Function EsFondoBlanco(celda As Range) As Boolean
 Attribute EsFondoBlanco.VB_Description = "[modMACROComparadorHojas] FUNCIONES AUXILIARES DE FORMATO Y COLOR.  Verifica si una celda tiene fondo blanco o sin color (xlNone) xlNone tiene valor -4142. RGB blanco tiene valor 16777215. Aplica a: Cells Range\r\nM.D.:Public"
-Attribute EsFondoBlanco.VB_ProcData.VB_Invoke_Func = " \n21"
+Attribute EsFondoBlanco.VB_ProcData.VB_Invoke_Func = " \n23"
     Dim colorInterior As Long
     colorInterior = celda.Interior.Color
     
@@ -252,6 +252,6 @@ End Sub
 '@Note: Útil para deshabilitar/habilitar botones en la interfaz según el estado de comparación
 Public Function HayComparacionActiva() As Boolean
 Attribute HayComparacionActiva.VB_Description = "[modMACROComparadorHojas] Verifica si existe una comparación activa en este momento Útil para deshabilitar/habilitar botones en la interfaz según el estado de comparación"
-Attribute HayComparacionActiva.VB_ProcData.VB_Invoke_Func = " \n21"
+Attribute HayComparacionActiva.VB_ProcData.VB_Invoke_Func = " \n23"
     HayComparacionActiva = (dictCeldasModificadas.Count > 0)
 End Function

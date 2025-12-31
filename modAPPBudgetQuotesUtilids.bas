@@ -105,7 +105,7 @@ End Sub
 '@Category: Validaciones de datos
 Public Function AplicarNombresAFormula(ByVal formula As String) As String
 Attribute AplicarNombresAFormula.VB_Description = "[modAPPBudgetQuotesUtilids] Reemplaza referencias de rango por nombres definidos dentro de una fórmula. Aplica a: ActiveWorkbook|Cells Range\r\nM.D.:Libro Activo"
-Attribute AplicarNombresAFormula.VB_ProcData.VB_Invoke_Func = " \n21"
+Attribute AplicarNombresAFormula.VB_ProcData.VB_Invoke_Func = " \n23"
     Dim nm As Name
     Dim rngNombre As Range
     Dim formulaResultado As String
@@ -208,7 +208,7 @@ End Sub
 '@Category: Validaciones de datos
 Public Function ActualizarValidacionCelda(ByVal celda As Range) As Boolean
 Attribute ActualizarValidacionCelda.VB_Description = "[modAPPBudgetQuotesUtilids] Actualiza una validación de datos de una celda reemplazando rangos por nombres. Aplica a: Cells Range\r\nM.D.:celda individual"
-Attribute ActualizarValidacionCelda.VB_ProcData.VB_Invoke_Func = " \n21"
+Attribute ActualizarValidacionCelda.VB_ProcData.VB_Invoke_Func = " \n23"
     Dim actualizado As Boolean
     Dim formula1Original As String, formula1Nueva As String
     Dim formula2Original As String, formula2Nueva As String

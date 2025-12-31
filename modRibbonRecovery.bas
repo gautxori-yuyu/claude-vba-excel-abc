@@ -33,6 +33,8 @@ Private Const RECOVERY_COOLDOWN_SECONDS As Long = 5
 '@Description: Verifica si el Ribbon esta disponible y funcional
 '@Returns: Boolean | True si el Ribbon esta operativo
 Public Function IsRibbonAvailable() As Boolean
+Attribute IsRibbonAvailable.VB_Description = "[modRibbonRecovery] FUNCIONES DE DIAGNOSTICO.  Verifica si el Ribbon esta disponible y funcional"
+Attribute IsRibbonAvailable.VB_ProcData.VB_Invoke_Func = " \n23"
     On Error Resume Next
 
     ' Verificar que App existe
@@ -70,6 +72,8 @@ End Function
 '@Description: Obtiene informacion de diagnostico del estado del Ribbon
 '@Returns: String | Descripcion del estado actual
 Public Function GetRibbonDiagnostics() As String
+Attribute GetRibbonDiagnostics.VB_Description = "[modRibbonRecovery] Obtiene informacion de diagnostico del estado del Ribbon"
+Attribute GetRibbonDiagnostics.VB_ProcData.VB_Invoke_Func = " \n23"
     Dim info As String
 
     info = "=== DIAGNOSTICO DEL RIBBON ===" & vbCrLf
@@ -127,6 +131,8 @@ End Function
 '@Description: Intenta recuperar el Ribbon automaticamente
 '@Returns: Boolean | True si la recuperacion fue exitosa
 Public Function TryRecoverRibbon() As Boolean
+Attribute TryRecoverRibbon.VB_Description = "[modRibbonRecovery] FUNCIONES DE RECUPERACION.  Intenta recuperar el Ribbon automaticamente"
+Attribute TryRecoverRibbon.VB_ProcData.VB_Invoke_Func = " \n23"
     On Error GoTo ErrHandler
 
     Debug.Print "[modRibbonRecovery.TryRecoverRibbon] Iniciando recuperacion..."

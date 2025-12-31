@@ -124,8 +124,15 @@ ErrHandler:
               "Error en la carga de configuración desde registro: " & Err.Description
 End Sub
 
+'@Description: Devuelve diccionario de carpetas a monitorear (cacheado)
+'@Note: La cache se invalida automaticamente cuando cambian las rutas
+'
 'TODO: revisar el uso de esta función: Buscar otra forma de que el folder watcher tenga conocimiento de qué carpetas son supervisadas;
 ' posiblemente presentando de otra manera el formulario de configuración de carpetas, y creando en él opciones para su selección...
+'TODO: Considerar refactorizar a una estructura mas clara:
+' - Crear clase clsFolderWatchConfig con propiedades: TipoCarpeta, Ruta, EsMonitoreable
+' - Exponer como Collection tipada en lugar de Dictionary
+' - Permitir habilitar/deshabilitar monitoreo por carpeta desde UI
 Public Property Get oDicFoldersToWatch() As Object
     Set oDicFoldersToWatch = CreateObject("scripting.dictionary")
     oDicFoldersToWatch.Add CFG_RUTA_OPORTUNIDADES, RutaOportunidades

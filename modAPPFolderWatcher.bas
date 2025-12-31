@@ -3,10 +3,23 @@ Attribute VB_Name = "modAPPFolderWatcher"
 ' MÓDULO DE UTILIDADES Y GESTIÓN DEL FOLDERWATCHER
 ' Reemplaza la funcionalidad del VBScript fw.vbs
 ' =====================================================
+'
+' NOTA SOBRE RECURSOS COM:
+' El componente FolderWatcherCOM.dll (.NET Framework 4.0) usa FileSystemWatcher
+' que puede quedarse residente si no se libera correctamente.
+' Ver clsFolderWatch.cls para documentacion detallada y recomendaciones
+' para el codigo VB.NET del COM.
+'
+' SOLUCION IMPLEMENTADA:
+' - clsFolderWatch.Dispose() libera todos los recursos
+' - clsAplicacion.Terminate() llama a Dispose antes de Set = Nothing
+' =====================================================
 
 '@Folder "5-FolderWatcher"
 Option Explicit
-' BUG: El objeto COM FolderWatcher Aparentemente se queda residente una vez se cierra Excel, Causando potencialmente problemas de memoria. Hay que corregirlo
+
+Private Const MODULE_NAME As String = "modAPPFolderWatcher"
+
 ' =====================================================
 ' FUNCIONES DE CONFIGURACIÓN RÁPIDA
 ' =====================================================
@@ -14,14 +27,13 @@ Option Explicit
 '@Description: Configura monitoreo de subcarpetas de oportunidades
 '@Scope: Friend (solo clsAplicacion)
 Public Sub ConfigurarMonitoreoOportunidades(ByVal rutaBase As String, ByVal fw As clsFolderWatch)
-Attribute ConfigurarMonitoreoOportunidades.VB_ProcData.VB_Invoke_Func = " \n0"
     On Error GoTo ErrHandler
-    
+
     If Not RutaExiste(rutaBase) Then
-        Debug.Print "[modAPPFolderWatcher] ADVERTENCIA: Ruta de oportunidades no existe: " & rutaBase
+        LogWarning MODULE_NAME, "Ruta de oportunidades no existe: " & rutaBase
         Exit Sub
     End If
-    
+
     ' Monitorear SOLO subcarpetas (no archivos individuales)
     fw.IniciarMonitoreo _
         folderPath:=rutaBase, _
@@ -30,27 +42,26 @@ Attribute ConfigurarMonitoreoOportunidades.VB_ProcData.VB_Invoke_Func = " \n0"
         eventsToWatch:=Array("Created", "Deleted", "Renamed"), _
         inactivityMinutes:=IIf(IsNetworkPath(rutaBase), 15, 5), _
         foldersOnly:=True
-    
+
     ' Configurar filtro para solo carpetas
     fw.ConfigurarFiltroSoloCarpetas rutaBase
-    
-    Debug.Print "[modAPPFolderWatcher] Monitoreo de oportunidades configurado: " & rutaBase
+
+    LogInfo MODULE_NAME, "Monitoreo de oportunidades configurado: " & rutaBase
     Exit Sub
-    
+
 ErrHandler:
-    Debug.Print "[modAPPFolderWatcher.ConfigurarMonitoreoOportunidades] ERROR: " & Err.Description
+    LogError MODULE_NAME, "Error configurando monitoreo oportunidades", Err.Number, Err.Description
 End Sub
 
 '@Description: Configura monitoreo de archivos de plantillas
 Public Sub ConfigurarMonitoreoPlantillas(ByVal rutaBase As String, ByVal fw As clsFolderWatch)
-Attribute ConfigurarMonitoreoPlantillas.VB_ProcData.VB_Invoke_Func = " \n0"
     On Error GoTo ErrHandler
-    
+
     If Not RutaExiste(rutaBase) Then
-        Debug.Print "[modAPPFolderWatcher] ADVERTENCIA: Ruta de plantillas no existe: " & rutaBase
+        LogWarning MODULE_NAME, "Ruta de plantillas no existe: " & rutaBase
         Exit Sub
     End If
-    
+
     ' Monitorear cambios en archivos Excel
     fw.IniciarMonitoreo _
         folderPath:=rutaBase, _
@@ -59,24 +70,23 @@ Attribute ConfigurarMonitoreoPlantillas.VB_ProcData.VB_Invoke_Func = " \n0"
         eventsToWatch:=Array("Changed", "Created"), _
         inactivityMinutes:=10, _
         foldersOnly:=False
-    
-    Debug.Print "[modAPPFolderWatcher] Monitoreo de plantillas configurado: " & rutaBase
+
+    LogInfo MODULE_NAME, "Monitoreo de plantillas configurado: " & rutaBase
     Exit Sub
-    
+
 ErrHandler:
-    Debug.Print "[modAPPFolderWatcher.ConfigurarMonitoreoPlantillas] ERROR: " & Err.Description
+    LogError MODULE_NAME, "Error configurando monitoreo plantillas", Err.Number, Err.Description
 End Sub
 
 '@Description: Configura monitoreo de archivos Gas (C-GAS-ING)
 Public Sub ConfigurarMonitoreoGasVBNet(ByVal rutaBase As String, ByVal fw As clsFolderWatch)
-Attribute ConfigurarMonitoreoGasVBNet.VB_ProcData.VB_Invoke_Func = " \n0"
     On Error GoTo ErrHandler
-    
+
     If Not RutaExiste(rutaBase) Then
-        Debug.Print "[modAPPFolderWatcher] ADVERTENCIA: Ruta de Gas no existe: " & rutaBase
+        LogWarning MODULE_NAME, "Ruta de Gas no existe: " & rutaBase
         Exit Sub
     End If
-    
+
     ' Monitorear cambios en archivos Excel
     fw.IniciarMonitoreo _
         folderPath:=rutaBase, _
@@ -85,12 +95,12 @@ Attribute ConfigurarMonitoreoGasVBNet.VB_ProcData.VB_Invoke_Func = " \n0"
         eventsToWatch:=Array("Changed"), _
         inactivityMinutes:=10, _
         foldersOnly:=False
-    
-    Debug.Print "[modAPPFolderWatcher] Monitoreo de Gas configurado: " & rutaBase
+
+    LogInfo MODULE_NAME, "Monitoreo de Gas configurado: " & rutaBase
     Exit Sub
-    
+
 ErrHandler:
-    Debug.Print "[modAPPFolderWatcher.ConfigurarMonitoreoGasVBNet] ERROR: " & Err.Description
+    LogError MODULE_NAME, "Error configurando monitoreo Gas", Err.Number, Err.Description
 End Sub
 
 ' =====================================================
@@ -99,7 +109,6 @@ End Sub
 
 '@Description: Muestra estadísticas de monitoreo en MessageBox
 Public Sub VerEstadisticasMonitoreo()
-Attribute VerEstadisticasMonitoreo.VB_ProcData.VB_Invoke_Func = " \n0"
     If App Is Nothing Then
         MsgBox "Aplicación no inicializada", vbExclamation
         Exit Sub
@@ -158,7 +167,6 @@ End Sub
 
 '@Description: Genera hoja de Excel con historial de eventos
 Public Sub VerHistorialMonitoreo(Optional ByVal lastMinutes As Long = 60)
-Attribute VerHistorialMonitoreo.VB_ProcData.VB_Invoke_Func = " \n0"
     If App Is Nothing Or App.FolderWatcher Is Nothing Then
         MsgBox "FolderWatcher no está activo", vbExclamation
         Exit Sub
@@ -214,7 +222,6 @@ End Sub
 
 '@Description: Limpia el historial de eventos
 Public Sub LimpiarHistorialMonitoreo()
-Attribute LimpiarHistorialMonitoreo.VB_ProcData.VB_Invoke_Func = " \n0"
     If App Is Nothing Or App.FolderWatcher Is Nothing Then
         MsgBox "FolderWatcher no está activo", vbExclamation
         Exit Sub
@@ -228,7 +235,6 @@ End Sub
 
 '@Description: Muestra información de configuración del watcher
 Public Sub VerConfiguracionWatcher()
-Attribute VerConfiguracionWatcher.VB_ProcData.VB_Invoke_Func = " \n0"
     If App Is Nothing Or App.FolderWatcher Is Nothing Then
         MsgBox "FolderWatcher no está activo", vbExclamation
         Exit Sub
@@ -263,7 +269,6 @@ End Sub
 
 '@Description: Test de monitoreo de subcarpetas
 Sub Test_MonitoreoSubcarpetas()
-Attribute Test_MonitoreoSubcarpetas.VB_ProcData.VB_Invoke_Func = " \n0"
     If App Is Nothing Then
         MsgBox "Aplicación no inicializada", vbExclamation
         Exit Sub
@@ -294,7 +299,6 @@ End Sub
 
 '@Description: Test de filtros de tamaño
 Sub Test_FiltroTamaño()
-Attribute Test_FiltroTamaño.VB_ProcData.VB_Invoke_Func = " \n0"
     If App Is Nothing Then
         MsgBox "Aplicación no inicializada", vbExclamation
         Exit Sub
@@ -323,7 +327,6 @@ End Sub
 
 '@Description: Test de detección de rutas de red
 Sub Test_DeteccionRutasRed()
-Attribute Test_DeteccionRutasRed.VB_ProcData.VB_Invoke_Func = " \n0"
     Dim rutasPrueba As Variant
     rutasPrueba = Array( _
                   "C:\Windows", _
@@ -342,7 +345,6 @@ End Sub
 
 '@Description: Test de acción automática de mover
 Sub Test_AccionMover()
-Attribute Test_AccionMover.VB_ProcData.VB_Invoke_Func = " \n0"
     If App Is Nothing Then
         MsgBox "Aplicación no inicializada", vbExclamation
         Exit Sub
@@ -374,7 +376,6 @@ End Sub
 
 '@Description: Test completo del sistema
 Sub Test_SistemaCompleto()
-Attribute Test_SistemaCompleto.VB_ProcData.VB_Invoke_Func = " \n0"
     Debug.Print "==== TEST COMPLETO FOLDERWATCHER ===="
     Debug.Print "Configuración: " & App.FolderWatcher.Configuracion
     

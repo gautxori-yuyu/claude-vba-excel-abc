@@ -10,7 +10,7 @@ Option Explicit
 ' Decodifica una cadena Base64 a texto plano
 Function Base64Decode(texto As String) As String
 Attribute Base64Decode.VB_Description = "[modUTILSBase64Encoding] Decodifica una cadena Base64 a texto plano"
-Attribute Base64Decode.VB_ProcData.VB_Invoke_Func = " \n21"
+Attribute Base64Decode.VB_ProcData.VB_Invoke_Func = " \n23"
     Dim xml As Object
     Dim node As Object
     
@@ -32,7 +32,7 @@ End Function
 ' Codifica un array de bytes en Base64
 Function Base64EncodeFromBytes(bytes() As Byte) As String
 Attribute Base64EncodeFromBytes.VB_Description = "[modUTILSBase64Encoding] Codifica un array de bytes en Base64"
-Attribute Base64EncodeFromBytes.VB_ProcData.VB_Invoke_Func = " \n21"
+Attribute Base64EncodeFromBytes.VB_ProcData.VB_Invoke_Func = " \n23"
     Dim xml As Object
     Dim nodo As Object
     
@@ -54,7 +54,7 @@ End Function
 ' Codifica un archivo en Base64 leyéndolo como binario
 Function Base64EncodeFromFile(rutaArchivo As String) As String
 Attribute Base64EncodeFromFile.VB_Description = "[modUTILSBase64Encoding] Codifica un archivo en Base64 leyéndolo como binario"
-Attribute Base64EncodeFromFile.VB_ProcData.VB_Invoke_Func = " \n21"
+Attribute Base64EncodeFromFile.VB_ProcData.VB_Invoke_Func = " \n23"
     Dim stream As Object
     Dim xml As Object
     Dim nodo As Object

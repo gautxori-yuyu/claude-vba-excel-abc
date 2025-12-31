@@ -163,7 +163,7 @@ End Sub
 
 Public Function IsFormModal(Frm As Object) As Boolean
 Attribute IsFormModal.VB_Description = "[modUTILSRefEditAPI] Is Form Modal (función personalizada)"
-Attribute IsFormModal.VB_ProcData.VB_Invoke_Func = " \n21"
+Attribute IsFormModal.VB_ProcData.VB_Invoke_Func = " \n23"
     IsFormModal = Not CBool(SetFocus(Application.hwnd))
     Call IUnknown_GetWindow(Frm, VarPtr(hwndFrm))
     Call SetFocus(hwndFrm)

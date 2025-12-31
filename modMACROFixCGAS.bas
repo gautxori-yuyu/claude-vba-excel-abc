@@ -370,7 +370,7 @@ Attribute FixCGASING.VB_ProcData.VB_Invoke_Func = " \n0"
     Debug.Print "FixCGASING: Recalculando hoja 'C-GAS-ING'."
     ws.Calculate
     
-CleanUp:
+Cleanup:
     ' Restaurar propiedades de Excel
     Application.Calculation = prevCalc
     Application.ScreenUpdating = prevScreen
@@ -382,7 +382,7 @@ CleanUp:
     
 ErrHandler:
     Debug.Print "FixCGASING: Error " & Err.Number & " - " & Err.Description
-    Resume CleanUp
+    Resume Cleanup
 End Sub
 
 

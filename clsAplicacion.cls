@@ -152,27 +152,35 @@ End Sub
 
 ' Método Terminate para ser llamado desde ThisWorkbook.Workbook_BeforeClose/Uninstall
 Public Sub Terminate()
-    Debug.Print "[clsAplicacion Terminate]"
-    
-    On Error GoTo ErrHandler
-    
-    'StopFolderWatcherSchedule
+    LogInfo "clsAplicacion", "Terminate: Iniciando limpieza de la aplicacion"
+
+    On Error Resume Next  ' Asegurar que la limpieza continúa aunque haya errores
+
+    ' 1. Liberar FolderWatcher primero (tiene recursos COM externos)
     If Not mFolderWatcher Is Nothing Then
-        mFolderWatcher.DetenerTodo
+        LogDebug "clsAplicacion", "Terminate: Liberando FolderWatcher COM"
+        mFolderWatcher.Dispose  ' Usar el nuevo metodo Dispose
         Set mFolderWatcher = Nothing
     End If
 
-    
+    ' 2. Liberar Ribbon events
+    If Not evRibbon Is Nothing Then
+        evRibbon.StopEvents
+        Set evRibbon = Nothing
+    End If
+
+    ' 3. Liberar managers
     Set mConfiguration = Nothing
     Set mOpportunities = Nothing
     Set mFileMgr = Nothing
     Set mChartManager = Nothing
+    Set mRibbonState = Nothing
+
+    ' 4. Liberar referencia a Excel Application
     Set xlApp = Nothing
 
-    Exit Sub
-ErrHandler:
-    Err.Raise Err.Number, "clsAplicacion.Terminate", _
-              "Error finalizando aplicación: " & Err.Description
+    LogInfo "clsAplicacion", "Terminate: Limpieza completada"
+    On Error GoTo 0
 End Sub
 
 ' -------------------------------------------------------------
@@ -560,5 +568,4 @@ Private Sub mFolderWatcher_ErrorOccurred(ByVal folder As String, ByVal errorMess
                errorMessage, vbExclamation, "FolderWatcher"
     End If
 End Sub
-
 

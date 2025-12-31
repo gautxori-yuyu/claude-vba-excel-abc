@@ -14,6 +14,7 @@ Option Explicit
 ' ==========================================
 Public ribbonUI As IRibbonUI
 Private mIsRecovering As Boolean              ' Flag para evitar recursion durante recuperacion
+Private mWasEverInitialized As Boolean        ' Flag para distinguir "nunca inicializado" de "perdido"
 
 ' ==========================================
 ' EVENTOS DE APLICACION
@@ -27,6 +28,7 @@ Public Event ReplaceWithNamesInValidations()
 
 Public Sub Init(ByRef ribbonObj As IRibbonUI)
     Set ribbonUI = ribbonObj
+    mWasEverInitialized = True
 End Sub
 
 Public Sub StopEvents()
@@ -98,6 +100,14 @@ Public Sub InvalidarRibbon()
 
     ' Verificar si el Ribbon esta disponible
     If Not IsRibbonUIAvailable() Then
+        ' IMPORTANTE: Solo intentar recuperacion si el ribbon FUE inicializado alguna vez
+        ' Esto evita que durante Class_Initialize se intente recuperar un ribbon que
+        ' aun no ha sido configurado (el callback RibbonOnLoad aun no ha terminado)
+        If Not mWasEverInitialized Then
+            Debug.Print "[clsRibbonEvents.InvalidarRibbon] Ribbon aun no inicializado, omitiendo"
+            Exit Sub
+        End If
+
         ' Intentar recuperacion automatica (solo si no estamos ya recuperando)
         If Not mIsRecovering Then
             Debug.Print "[clsRibbonEvents.InvalidarRibbon] Ribbon perdido, intentando recuperacion..."
@@ -129,6 +139,12 @@ Public Sub InvalidarControl(idControl As String)
 
     ' Verificar si el Ribbon esta disponible
     If Not IsRibbonUIAvailable() Then
+        ' IMPORTANTE: Solo intentar recuperacion si el ribbon FUE inicializado alguna vez
+        If Not mWasEverInitialized Then
+            Debug.Print "[clsRibbonEvents.InvalidarControl] Ribbon aun no inicializado, omitiendo: " & idControl
+            Exit Sub
+        End If
+
         ' Intentar recuperacion automatica
         If Not mIsRecovering Then
             Debug.Print "[clsRibbonEvents.InvalidarControl] Ribbon perdido, intentando recuperacion..."

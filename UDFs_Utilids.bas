@@ -8,7 +8,7 @@ Option Explicit
 '@ArgumentDescriptions: Rango donde buscar|Patrón de expresión regular|Si TRUE devuelve la coincidencia, si FALSE devuelve la dirección
 Public Function BuscarRegex(rango As Range, patron As String, Optional devolverCoincidencia As Boolean = False) As Variant
 Attribute BuscarRegex.VB_Description = "[UDFs_Utilids] Busca un patrón de expresión regular en un rango de celdas. Aplica a: Cells Range"
-Attribute BuscarRegex.VB_ProcData.VB_Invoke_Func = " \n21"
+Attribute BuscarRegex.VB_ProcData.VB_Invoke_Func = " \n23"
     Dim regEx As Object
     Dim celda As Range
     Dim coincidencias As Object
@@ -48,7 +48,7 @@ End Function
 '@ArgumentDescriptions: Texto del que extraer el número
 Public Function ExtraerNumeroInicial(texto As String) As Double
 Attribute ExtraerNumeroInicial.VB_Description = "[UDFs_Utilids] Extrae la parte numérica inicial de un texto (soporta decimales con punto o coma). Sirve por ejemplo para separar el valor numerico, de las unidades, en celdas de gas_vbnet etc."
-Attribute ExtraerNumeroInicial.VB_ProcData.VB_Invoke_Func = " \n21"
+Attribute ExtraerNumeroInicial.VB_ProcData.VB_Invoke_Func = " \n23"
     Dim i As Integer
     Dim resultado As String
     
@@ -82,7 +82,7 @@ End Function
 '@ArgumentDescriptions: Nombre de la hoja donde buscar la tabla
 Public Function GetFirstTableName(wsName As String) As String
 Attribute GetFirstTableName.VB_Description = "[UDFs_Utilids] Obtiene el nombre de la primera tabla de una hoja especificada. Aplica a: ActiveWorkbook"
-Attribute GetFirstTableName.VB_ProcData.VB_Invoke_Func = " \n21"
+Attribute GetFirstTableName.VB_ProcData.VB_Invoke_Func = " \n23"
     Dim ws As Worksheet
     Application.Volatile
     On Error GoTo ErrorHandler

@@ -9,7 +9,7 @@ Option Explicit
 ' Parsea todos los procedimientos del proyecto VBA (CON Y SIN metadatos)
 Public Function ParsearProcsDelProyecto() As Object
 Attribute ParsearProcsDelProyecto.VB_Description = "[modUTILSProcedureParsing] Parsea todos los procedimientos del proyecto VBA (CON Y SIN metadatos). Aplica a: ThisWorkbook"
-Attribute ParsearProcsDelProyecto.VB_ProcData.VB_Invoke_Func = " \n21"
+Attribute ParsearProcsDelProyecto.VB_ProcData.VB_Invoke_Func = " \n23"
     Dim vbProj As Object, vbComp As VBIDE.VBComponent
     
     Dim procName As String
