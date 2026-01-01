@@ -172,16 +172,25 @@ Private Function ObtenerFactorCorreccion(c As Range) As Double
 End Function
 Sub AjustarSelWSheetsParaImpresionPDF()
     On Error GoTo Cleanup
-    
-    Dim selSheets As Object
-    Set selSheets = ActiveWindow.SelectedSheets
-    
-    If selSheets.Count = 0 Then
-        MsgBox "[WARN] No hay hojas seleccionadas en el libro '" & ActiveWindow.Parent.Name & "'.", vbExclamation
+    Dim aw As Window
+    Set aw = ActiveWindow
+        
+    Dim wb As Workbook
+    Set wb = aw.Parent
+    If wb Is Nothing Then
+        MsgBox "[ERR] No hay libro activo.", vbCritical
         Exit Sub
     End If
     
-    Debug.Print "=== AjustarSelWSheetsParaImpresionPDF: " & selSheets.Count & " hoja(s) en '" & ActiveWindow.Parent.Name & "' ==="
+    Dim selSheets As Object
+    Set selSheets = aw.SelectedSheets
+    
+    If selSheets.Count = 0 Then
+        MsgBox "[WARN] No hay hojas seleccionadas en el libro '" & wb.Name & "'.", vbExclamation
+        Exit Sub
+    End If
+    
+    Debug.Print "=== AjustarSelWSheetsParaImpresionPDF: " & selSheets.Count & " hoja(s) en '" & wb.Name & "' ==="
     
     Dim sh As Object
     Dim hojasProcesadas As Long, hojasFallidas As Long
@@ -225,12 +234,6 @@ Sub AjustarSelWSheetsParaImpresionPDF()
            vbQuestion + vbYesNo, "Ajuste listo") Then
         ' grabar el documento como PDF
         ' Exportar la hoja "Graficos" a PDF
-        Dim wb As Workbook
-        Set wb = ActiveWindow.Parent
-        If wb Is Nothing Then
-            MsgBox "[ERR] No hay libro activo.", vbCritical
-            Exit Sub
-        End If
         On Error Resume Next
         wb.ExportAsFixedFormat Type:=xlTypePDF, _
                 fileName:=wb.Path & "\" & Left(wb.Name, InStrRev(wb.Name, ".") - 1) & ".pdf", _

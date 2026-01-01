@@ -104,7 +104,7 @@ End Sub
 '@Description: Determina si una función es visible para excel como macro o udf, o si es "interna",
 ' a partir de NormalizedSignature,PKind,ContainerType,bModuloPrivado,...
 Private Function TipoProcedimiento(ByVal firmaNormalizada As String) As ProcType
-    Dim Tipo As String, acceso As String
+    Dim tipo As String, acceso As String
     Dim re As Object: Set re = CreateObject("VBScript.RegExp")
     re.IgnoreCase = True
 
@@ -115,7 +115,7 @@ Private Function TipoProcedimiento(ByVal firmaNormalizada As String) As ProcType
     If re.Test(firmaNormalizada) Then
         Dim m As Object: Set m = re.Execute(firmaNormalizada)(0)
         acceso = Replace(LCase$(Trim$(m.SubMatches(0))), " static", "")
-        Tipo = LCase$(Trim$(m.SubMatches(1)))
+        tipo = LCase$(Trim$(m.SubMatches(1)))
     Else
         'Stop
     End If
@@ -128,13 +128,13 @@ Private Function TipoProcedimiento(ByVal firmaNormalizada As String) As ProcType
         'If acceso <> "private" Then Stop
         ' y no se si puede llegar a haber manejadores que sean funciones... por si acaso:
         'If tipo <> "sub" Then Stop
-    ElseIf Tipo = "sub" And acceso = "public" And Not bPrivateModule And ContainerType = StdModule _
+    ElseIf tipo = "sub" And acceso = "public" And Not bPrivateModule And ContainerType = StdModule _
            And m.SubMatches(3) <> "" Then
         TipoProcedimiento = ProcType.internalSubPublicWithParams
     ElseIf acceso <> "public" Or bPrivateModule Or ContainerType <> StdModule Then
         TipoProcedimiento = ProcType.internalPrivate
     Else
-        Select Case LCase$(Tipo)
+        Select Case LCase$(tipo)
         Case "sub"
             TipoProcedimiento = ProcType.Macro
         Case "function"
@@ -146,9 +146,9 @@ Private Function TipoProcedimiento(ByVal firmaNormalizada As String) As ProcType
     End If
     
     ' FIXME: establece los valores de PKind y Returns, en funcion del parsing realizado en este procedimiento
-    If Tipo = "function" Then
+    If tipo = "function" Then
         If PKind = ProcKind.proc Then PKind = ProcKind.ProcFunction Else Stop ' debug
-    ElseIf Tipo = "sub" Then
+    ElseIf tipo = "sub" Then
         Returns = DEFAULT_NORETURNS
         If PKind = ProcKind.proc Then
             PKind = ProcKind.ProcSub

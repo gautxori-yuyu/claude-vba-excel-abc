@@ -32,6 +32,7 @@ Attribute evRibbon.VB_VarHelpID = -1
 
 Private mConfiguration As clsConfiguration
 Private mFileMgr As clsFileManager
+Private mExecutionContext As clsExecutionContext
 
 Public Property Get bChartActive() As Boolean
     bChartActive = m_bChartActive
@@ -65,7 +66,9 @@ End Property
 Public Property Get Configuration() As clsConfiguration
     Set Configuration = mConfiguration
 End Property
-
+Public Property Get ExecutionContext() As clsExecutionContext
+    Set ExecutionContext = mExecutionContext
+End Property
 Public Property Get FileMgr() As clsFileManager
     Set FileMgr = mFileMgr
 End Property
@@ -109,6 +112,10 @@ Private Sub Class_Initialize()
     ' 1. Configuración (sin dependencias)
     Set mConfiguration = New clsConfiguration
     
+    ' 1.5 Contexto de ejecución (antes del FileManager y demás)
+    Set mExecutionContext = New clsExecutionContext
+    mExecutionContext.Initialize
+
     ' 2. FileManager (solo depende de configuración)
     Set mFileMgr = New clsFileManager
     InitFileManager
@@ -202,10 +209,12 @@ Public Sub InitFileManager()
     Next oWorkBook
     
     ' Establecer el archivo activo
-    If Not Application.ActiveWorkbook Is Nothing Then
-        Set mFileMgr.ActiveWb = mFileMgr.GetOrTrackWorkbook(Application.ActiveWorkbook)
+    Dim wb As Workbook
+    Set wb = mExecutionContext.Workbook
+    If Not wb Is Nothing Then
+        Set mFileMgr.ActiveWb = mFileMgr.GetOrTrackWorkbook(wb)
     End If
-    
+
     Debug.Print "[clsAplicacion InitFileManager] Workbooks tracked: " & TrackedCount
     
     Exit Sub
@@ -399,7 +408,7 @@ End Sub
 ' Eventos de cambio de seleccion de charts (desde ChartManager)
 ' -------------------------------------------------------------
 
-Private Sub mChartManager_ChartActivated(cht As chart)
+Private Sub mChartManager_ChartActivated(cht As Chart)
     Debug.Print "[clsAplicacion] Gráfico activado: " & cht.Name
     m_bChartActive = True
     ' Aquí decides:
@@ -409,7 +418,7 @@ Private Sub mChartManager_ChartActivated(cht As chart)
     evRibbon.InvalidarControl "btnInvertirSeries"
 End Sub
 
-Private Sub mChartManager_ChartDeactivated(cht As chart)
+Private Sub mChartManager_ChartDeactivated(cht As Chart)
     Debug.Print "[clsAplicacion] Gráfico DESactivado: " & cht.Name
     m_bChartActive = False
     evRibbon.InvalidarControl "btnInvertirSeries"

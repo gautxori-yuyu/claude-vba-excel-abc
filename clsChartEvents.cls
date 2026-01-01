@@ -15,7 +15,7 @@ Option Explicit
 ' Miembros
 '--------------------------------------------------------------
 '@MemberAttribute VB_VarHelpID, -1
-Public WithEvents mChart As chart
+Public WithEvents mChart As Chart
 Attribute mChart.VB_VarHelpID = -1
 Private p_ParentChartEventsMgr As clsChartEventsManager
 
@@ -39,7 +39,7 @@ End Property
 '@Category: Gráficos
 '@Scope: interna, auxiliar
 '@ArgumentDescriptions: cht As Chart
-Public Property Set chart(oChart As chart)
+Public Property Set Chart(oChart As Chart)
     
     On Error GoTo ErrHandler
     

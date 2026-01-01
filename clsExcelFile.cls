@@ -103,12 +103,12 @@ End Property
 '--------------------------------------------------------------
 ' @Description: Tipo detectado (con análisis bajo demanda).
 '--------------------------------------------------------------
-Public Property Get Tipo() As TipoArchivo
+Public Property Get tipo() As TipoArchivo
     If p_ObjectKey = 0 Then Exit Property
     If p_wbinf.TipoDetectado = TipoArchivo.UnDef Or IsEmpty(p_wbinf.TipoDetectado) Then
         Call Me.AnalizarWorkBook
     End If
-    Tipo = p_wbinf.TipoDetectado
+    tipo = p_wbinf.TipoDetectado
 End Property
 
 '--------------------------------------------------------------
@@ -349,41 +349,41 @@ End Function
 ' @Description: Comprueba si el gráfico activo es válido para invertir ejes
 '--------------------------------------------------------------
 Public Function EsValidoInvertirEjes() As Boolean
-    'On Error Resume Next
-    Dim Ch As chart
-    Select Case True
-    Case ActiveWindow Is Nothing, ActiveWindow.Visible = False, ActiveWorkbook Is Nothing, Application.Workbooks.Count = 0
-        Exit Function
-    End Select
-    Set Ch = ActiveChart
+    Dim ctx As clsExecutionContext
+    Set ctx = App().ExecutionContext
+    
+    ' 1. Validación segura de contexto mínimo
+    If Not ctx.HasWorkbook Then Exit Function
+    If Not ctx.HasSelection Then Exit Function
+    
+    ' 2. Obtener chart (seguro: nunca falla)
+    Dim Ch As Chart
+    Set Ch = ctx.Chart
     If Ch Is Nothing Then Exit Function
+    
     ' 3. Caso de hoja de gráfico activa (ChartSheet)
-    If Not Application.ActiveChart Is Nothing Then
-        ' Validar que la hoja activa es de tipo Chart
-        If TypeName(Application.ActiveSheet) = "Chart" Then
-            EsValidoInvertirEjes = True
-        End If
+    If TypeName(ctx.Worksheet) = "Chart" Then
+        EsValidoInvertirEjes = True
+        GoTo CheckSeries
     End If
+    
     ' 4. Caso de gráfico incrustado en hoja de cálculo (ChartObject)
-    Dim sel
-    Set sel = Application.Selection
-    If Not sel Is Nothing Then
-        Select Case TypeName(sel)
+    Select Case TypeName(ctx.Selection)
         Case "ChartObject", "ChartArea"
             ' No tengo nada claro que en este tipo de objetos se puedan invertir los ejes; en todo caso, NO son los que yo creo
             EsValidoInvertirEjes = True
         Case "DrawingObjects", "Picture", "Shape", "GroupObject", "OLEObject", "TextBox"
             ' Explícitamente NO es un gráfico
             EsValidoInvertirEjes = False
+            Exit Function
         Case Else
             ' Otras selecciones no válidas
             EsValidoInvertirEjes = False
-        End Select
-    End If
+            Exit Function
+    End Select
     
-    If Not EsValidoInvertirEjes Then Exit Function
-    
-    ' Debe haber al menos una serie en cada eje para que tenga sentido
+CheckSeries:
+    ' 5. Comprobar al menos una serie en cada eje (tu lógica exacta)
     Dim tienePrimario As Boolean, tieneSecundario As Boolean
     Dim s As Series
     For Each s In Ch.SeriesCollection
@@ -393,8 +393,5 @@ Public Function EsValidoInvertirEjes() As Boolean
             tieneSecundario = True
         End If
     Next s
-    
     EsValidoInvertirEjes = tienePrimario And tieneSecundario
 End Function
-
-

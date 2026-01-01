@@ -65,7 +65,7 @@ Public Function EsValidoInvertirEjes() As Boolean
 Attribute EsValidoInvertirEjes.VB_Description = "[modMACROGraficoSensibilidad] Comprueba si el gráfico activo es válido para invertir ejes. Aplica a: Selection|ActiveWorkbook|ActiveSheet"
 Attribute EsValidoInvertirEjes.VB_ProcData.VB_Invoke_Func = " \n23"
     'On Error Resume Next
-    Dim Ch As chart
+    Dim Ch As Chart
     Select Case True
     Case ActiveWindow Is Nothing, ActiveWindow.Visible = False, ActiveWorkbook Is Nothing, Application.Workbooks.Count = 0
         Exit Function
@@ -311,7 +311,7 @@ SiguienteColumna:
     If Not IsEmpty(group2) Then Call FormatColumnsAsDecimal(ws, group2)
     
     ' modificar gráfico
-    With chartObj.chart
+    With chartObj.Chart
         .ChartType = xlLineMarkers
         .HasLegend = True
         .Legend.Position = xlLegendPositionBottom
@@ -323,19 +323,19 @@ SiguienteColumna:
     
     ' Añadir series
     iSeriesNr = 0
-    If Not IsEmpty(group1) Then Call AddGroupSeriesToChart(chartObj.chart, ws, xCol, group1, False, palette)
-    If Not IsEmpty(group2) Then Call AddGroupSeriesToChart(chartObj.chart, ws, xCol, group2, True, palette)
+    If Not IsEmpty(group1) Then Call AddGroupSeriesToChart(chartObj.Chart, ws, xCol, group1, False, palette)
+    If Not IsEmpty(group2) Then Call AddGroupSeriesToChart(chartObj.Chart, ws, xCol, group2, True, palette)
     
     ' Ajustar ejes
     If Not IsEmpty(group1) Then
-        Call AjustarEjeDesdeDatos(chartObj.chart.Axes(xlValue), ws, group1)
+        Call AjustarEjeDesdeDatos(chartObj.Chart.Axes(xlValue), ws, group1)
     End If
     If Not IsEmpty(group2) Then
-        Call AjustarEjeDesdeDatos(chartObj.chart.Axes(xlValue, xlSecondary), ws, group2)
+        Call AjustarEjeDesdeDatos(chartObj.Chart.Axes(xlValue, xlSecondary), ws, group2)
     End If
     
     ' Títulos de ejes
-    With chartObj.chart
+    With chartObj.Chart
         .HasTitle = True
         .ChartTitle.text = "Correlation to " & Trim(Split(ws.Cells(1, xCol).Value, "(")(0))
         .Axes(xlCategory).HasTitle = True
@@ -365,7 +365,7 @@ Public Sub InvertirEjesDelGraficoActivo()
 Attribute InvertirEjesDelGraficoActivo.VB_ProcData.VB_Invoke_Func = " \n0"
     On Error GoTo SinGrafico
     
-    Dim chrt As chart
+    Dim chrt As Chart
     Set chrt = ActiveChart
     If chrt Is Nothing Then
         If Not (ActiveWindow.Selection Is Nothing) Then
@@ -543,7 +543,7 @@ ManejoErrores:
 End Sub
 
 ' Añade series al gráfico desde un grupo
-Private Sub AddGroupSeriesToChart(chartObj As chart, ws As Worksheet, xCol As Long, groupCols() As Long, useSecondaryAxis As Boolean, palette() As Long)
+Private Sub AddGroupSeriesToChart(chartObj As Chart, ws As Worksheet, xCol As Long, groupCols() As Long, useSecondaryAxis As Boolean, palette() As Long)
     On Error GoTo ManejoErrores
     Dim i As Long, lastRow As Long
     lastRow = ws.Cells(ws.Rows.Count, xCol).End(xlUp).Row

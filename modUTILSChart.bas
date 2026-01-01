@@ -12,7 +12,7 @@ Public Function setChartAxis(MinOrMax As String, _
                              ValueOrCategory As String, _
                              PrimaryOrSecondary As String, _
                              Value As Variant, _
-                             Optional cht As chart = Nothing) As String
+                             Optional cht As Chart = Nothing) As String
 Attribute setChartAxis.VB_Description = "[modUTILSChart] Establece el valor mínimo o máximo de un eje de gráfico (primario o secundario). Aplica a: ActiveSheet|Cells Range"
 Attribute setChartAxis.VB_ProcData.VB_Invoke_Func = " \n23"
     
@@ -27,9 +27,9 @@ Attribute setChartAxis.VB_ProcData.VB_Invoke_Func = " \n23"
         setChartAxis = "No hay gráficos en la hoja"
         Exit Function
     ElseIf Not TypeOf Application.Caller Is Range Then
-        Set cht = ActiveSheet.ChartObjects(1).chart
+        Set cht = ActiveSheet.ChartObjects(1).Chart
     Else
-        Set cht = Application.Caller.Worksheet.ChartObjects(1).chart
+        Set cht = Application.Caller.Worksheet.ChartObjects(1).Chart
     End If
     
     ' Aplicar valor según el tipo de eje

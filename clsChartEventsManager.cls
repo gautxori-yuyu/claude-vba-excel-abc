@@ -18,11 +18,11 @@ Option Explicit
 '@Description: Se dispara cuando el usuario activa un grafico
 '@Category: Gráficos
 '@ArgumentDescriptions: chart As Chart
-Public Event ChartActivated(chart As chart)
+Public Event ChartActivated(Chart As Chart)
 '@Description: Se dispara cuando el usuario desactiva un grafico
 '@Category: Gráficos
 '@ArgumentDescriptions: chart As Chart
-Public Event ChartDeactivated(chart As chart)
+Public Event ChartDeactivated(Chart As Chart)
 
 Public Event HojaConGraficosCambiada(sePuedeInvertir As Boolean)
 '--------------------------------------------------------------
@@ -75,9 +75,9 @@ Public Sub WatchSheet(sh As Object)
         Dim chtObj As ChartObject
         For Each chtObj In sh.ChartObjects
             Set oChartEvents = New clsChartEvents
-            Set oChartEvents.mChart = chtObj.chart
+            Set oChartEvents.mChart = chtObj.Chart
             Set oChartEvents.ParentManager = Me
-            mActiveCharts.Add oChartEvents, CStr(ObjPtr(chtObj.chart))
+            mActiveCharts.Add oChartEvents, CStr(ObjPtr(chtObj.Chart))
         Next chtObj
     End If
     
@@ -133,7 +133,7 @@ End Sub
 '@Category: Gráficos
 '@Scope: interna, auxiliar
 '@ArgumentDescriptions: cht As Chart
-Friend Sub NotifyChartActivated(cht As chart)
+Friend Sub NotifyChartActivated(cht As Chart)
     RaiseEvent ChartActivated(cht)
 End Sub
 
@@ -141,7 +141,7 @@ End Sub
 '@Category: Gráficos
 '@Scope: interna, auxiliar
 '@ArgumentDescriptions: cht As Chart
-Friend Sub NotifyChartDeactivated(cht As chart)
+Friend Sub NotifyChartDeactivated(cht As Chart)
     RaiseEvent ChartDeactivated(cht)
 End Sub
 
