@@ -33,6 +33,9 @@ Public Returns As String                         ' Qué devuelve
 Public HasMetadata As Boolean                    ' TRUE si tiene comentarios @UDF
 Public Description As String
 Public Category As String
+Public Example As String                         ' Ejemplo de uso
+Public Raises As String                          ' Errores que puede lanzar
+Public Dependencies As String                    ' Dependencias de otros procedimientos
 
 ' Constructor para fácil inicialización
 'TODO: revisar el codigo para evitar las restricciones en el orden de las llamadas
@@ -131,7 +134,7 @@ Private Function TipoProcedimiento(ByVal firmaNormalizada As String) As ProcType
     ElseIf tipo = "sub" And acceso = "public" And Not bPrivateModule And ContainerType = StdModule _
            And m.SubMatches(3) <> "" Then
         TipoProcedimiento = ProcType.internalSubPublicWithParams
-    ElseIf acceso <> "public" Or bPrivateModule Or ContainerType <> StdModule Then
+    ElseIf acceso <> "public" Or bPrivateModule Or ContainerType <> StdModule Or InStr(tipo, "property") > 0 Then
         TipoProcedimiento = ProcType.internalPrivate
     Else
         Select Case LCase$(tipo)
@@ -148,6 +151,16 @@ Private Function TipoProcedimiento(ByVal firmaNormalizada As String) As ProcType
     ' FIXME: establece los valores de PKind y Returns, en funcion del parsing realizado en este procedimiento
     If tipo = "function" Then
         If PKind = ProcKind.proc Then PKind = ProcKind.ProcFunction Else Stop ' debug
+    ElseIf InStr(tipo, "property") > 0 And (PKind < ProcKind.PropLet Or PKind < ProcKind.PropGet) Then
+        If InStr(tipo, "let") > 0 Then
+            PKind = ProcKind.PropLet
+        ElseIf InStr(tipo, "set") > 0 Then
+            PKind = ProcKind.PropSet
+        ElseIf InStr(tipo, "get") > 0 Then
+            PKind = ProcKind.PropGet
+        Else
+            Stop ' debug
+        End If
     ElseIf tipo = "sub" Then
         Returns = DEFAULT_NORETURNS
         If PKind = ProcKind.proc Then
@@ -252,73 +265,111 @@ Private Function ComponerArgumentDescriptions(ByVal firmaNormalizada As String) 
     End If
 End Function
 
-'TODO: añadir el metadato dependencies (vendrá bien para representar la jerarquia de funciones en el excel)
+' Parsea metadatos de comentarios estructurados (@Description, @Category, etc.)
+' Soporta formatos:
+'   '@Tag: Valor
+'   '@Tag("Valor")
+'   '@Tag "Valor"
 Private Function ParsearMetadataCompleta(CodeText As String)
     Dim lineText As Variant
     Dim regEx As Object
     Dim matches As Object
-    
-    Dim Description As String, Category As String, ArgumentDescriptions As String
-    Dim Scope As String, Returns As String
+
+    Dim sDescription As String, sCategory As String, sArgumentDescriptions As String
+    Dim sScope As String, sReturns As String, sExample As String
+    Dim sRaises As String, sDependencies As String
     ' Inicializar con valores por defecto
     HasMetadata = False
-    Description = ""
-    Category = DEFAULT_CATEGORY
-    ArgumentDescriptions = ""
-    Scope = ""
-    Returns = ""
-    
-    ' Configurar expresión regular
+    sDescription = ""
+    sCategory = DEFAULT_CATEGORY
+    sArgumentDescriptions = ""
+    sScope = ""
+    sReturns = ""
+    sExample = ""
+    sRaises = ""
+    sDependencies = ""
+
+    ' Configurar expresion regular
     Set regEx = CreateObject("VBScript.RegExp")
-    regEx.IgnoreCase = False
-    
+    regEx.IgnoreCase = True ' Ahora ignora mayusculas/minusculas
+
     Dim tag As String, Value As String
     ' Procesar hacia delante
     For Each lineText In Split(CodeText, vbCrLf)
         If lineText <> "" Then
-            'regex.Pattern = "\s*'(?:['\s=\-_]+|(?:@\s*(UDF|Description|Not[a-e]|Scope|Category|ArgumentDescriptions|Param|Returns)(?:\s*:)?))?(?:\s*\(\s*""?)?\s*(.*)\s*(?:""?\s*\)?\s*)"
-            regEx.Pattern = "\s*'\s*(?:['\s=\-_]+|(?:@\s*(UDF|Description|Not[a-e]|Scope|Category|Dependencies|ArgumentDescriptions|Param|Returns)(?:\s*:)?))?\s*(.*?)\s*$"
+            ' Patron extendido que soporta:
+            '   '@Tag: Valor
+            '   '@Tag("Valor")
+            '   '@Tag "Valor"
+            ' Tags soportados: UDF, Macro, Description, Note, Nota, Scope, Category, Dependencies,
+            '                  ArgumentDescriptions, Param, Returns, Return, Example, Raises, Throws
+            regEx.Pattern = "^\s*'\s*(?:['\s=\-_]+|(?:@\s*(UDF|Macro|Description|Note|Nota|Scope|Category|Dependencies|ArgumentDescriptions|Param|Returns|Return|Example|Raises|Throws)(?:\s*[:\s])?))?\s*(.*?)\s*$"
             Set matches = regEx.Execute(lineText)
             If matches.Count = 0 Then Exit For
-            If tag <> matches(0).SubMatches(0) And matches(0).SubMatches(0) <> "" Then
+            If matches(0).SubMatches(0) <> "" Then
                 tag = matches(0).SubMatches(0) ' La palabra clave (UDF, Description, etc.)
             End If
             Value = Trim(matches(0).SubMatches(1)) ' El valor
-            regEx.Pattern = "^\s*\(""\s*(.*?)\s*""\)\s*$"
+
+            ' Extraer valor de formatos ("valor") o "valor"
+            regEx.Pattern = "^\s*\(?\s*""(.*?)""\s*\)?\s*$"
             If regEx.Test(Value) Then Value = regEx.Execute(Value).Item(0).SubMatches(0)
-            
+
+            ' Tambien soportar formato con comillas simples ('valor')
+            If Value = "" Then
+                regEx.Pattern = "^\s*\(?\s*'(.*?)'\s*\)?\s*$"
+                If regEx.Test(Trim(matches(0).SubMatches(1))) Then
+                    Value = regEx.Execute(Trim(matches(0).SubMatches(1))).Item(0).SubMatches(0)
+                End If
+            End If
+
             Select Case UCase$(tag)
             Case "UDF", "MACRO"
                 HasMetadata = True
             Case "DESCRIPTION", "NOTE", "NOTA"
-                If Description <> "" Then Description = Description & " "
-                Description = Description & Value
+                If sDescription <> "" Then sDescription = sDescription & " "
+                sDescription = sDescription & Value
             Case "SCOPE"
-                If Scope <> "" Then Scope = Scope & " "
-                Scope = Scope & Value
+                If sScope <> "" Then sScope = sScope & " "
+                sScope = sScope & Value
             Case "RETURNS", "RETURN"
-                If Returns <> "" Then Returns = Returns & " "
-                Returns = Returns & Value
+                If sReturns <> "" Then sReturns = sReturns & " "
+                sReturns = sReturns & Value
             Case "CATEGORY"
-                If Category <> "" Then Category = Category & " "
-                Category = Category & Value
-                Select Case LCase$(Category)
+                If sCategory <> DEFAULT_CATEGORY And sCategory <> "" Then sCategory = sCategory & " "
+                If sCategory = DEFAULT_CATEGORY Then sCategory = ""
+                sCategory = sCategory & Value
+                Select Case LCase$(sCategory)
                 Case "hidden", "oculta", "ocultar", "-1"
-                    Category = -1
+                    sCategory = "-1"
                 End Select
             Case "ARGUMENTDESCRIPTIONS", "PARAM"
-                If ArgumentDescriptions <> "" Then ArgumentDescriptions = ArgumentDescriptions & " "
-                ArgumentDescriptions = ArgumentDescriptions & Value
+                If sArgumentDescriptions <> "" Then sArgumentDescriptions = sArgumentDescriptions & "|"
+                sArgumentDescriptions = sArgumentDescriptions & Value
             Case "DEPENDENCIES"
-                ' de momento no se procesa, PTE añadir
+                If sDependencies <> "" Then sDependencies = sDependencies & "|"
+                sDependencies = sDependencies & Value
+            Case "EXAMPLE"
+                If sExample <> "" Then sExample = sExample & vbCrLf
+                sExample = sExample & Value
+            Case "RAISES", "THROWS"
+                If sRaises <> "" Then sRaises = sRaises & "|"
+                sRaises = sRaises & Value
             Case Else ' comentarios SIN TAG: se atribuyen a Description
-                If Description <> "" Then Description = Description & ". "
-                Description = Description & Value
+                If Value <> "" Then
+                    If sDescription <> "" Then sDescription = sDescription & ". "
+                    sDescription = sDescription & Value
+                End If
             End Select
         End If
     Next
-    If InStr(Description, "@Description") > 0 Then Stop
-    ParsearMetadataCompleta = Array(Description, Category, ArgumentDescriptions, Scope, Returns)
+
+    ' Asignar propiedades de la clase
+    Example = sExample
+    Raises = sRaises
+    Dependencies = sDependencies
+
+    ParsearMetadataCompleta = Array(sDescription, sCategory, sArgumentDescriptions, sScope, sReturns)
 End Function
 
 '@Description: Genera descripción automática basada en el nombre de la función
@@ -364,6 +415,16 @@ Private Function dumpProcedimiento()
     dumpProcedimiento = dumpProcedimiento & vbCrLf & vbTab
     dumpProcedimiento = dumpProcedimiento & "Argumentos: " & IIf(ArgumentDescriptions = "", "----------", ArgumentDescriptions) & _
             vbCrLf & vbTab & "Returns: " & IIf(Returns = "", "----------", Returns)
+    ' Nuevos atributos
+    If Example <> "" Then
+        dumpProcedimiento = dumpProcedimiento & vbCrLf & vbTab & "Ejemplo: " & Example
+    End If
+    If Raises <> "" Then
+        dumpProcedimiento = dumpProcedimiento & vbCrLf & vbTab & "Raises: " & Raises
+    End If
+    If Dependencies <> "" Then
+        dumpProcedimiento = dumpProcedimiento & vbCrLf & vbTab & "Dependencies: " & Dependencies
+    End If
 End Function
 
 

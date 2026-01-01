@@ -14,8 +14,11 @@ Attribute VB_Name = "modAPPUDFsRegistration"
 'FIXME: revisarlo. Las clases clsVBAProcedure.cls, modAPPUDFsRegistration.bas y modUTILSProcedureParsing.bas Pretenden
 '  - la identificación de todos los procedimientos en el proyecto VBA (clsVBAProcedure.cls y modUTILSProcedureParsing.bas)
 '  - la identificación de todas las funciones Que pudieran ser udfs para registrarlas en  la carga del XLM (modAPPUDFsRegistration.bas). 
-'TODO: extender el reconocimiento de Los atributos de documentación de las funciones, a patrones como
-'  '@Category: Texto', '@Category("Texto")' o '@Category "Texto"'
+'
+' [DONE 2026-01-01] Extendido el reconocimiento de atributos de documentacion:
+'  - Soporta formatos: '@Tag: Valor', '@Tag("Valor")', '@Tag "Valor"'
+'  - Nuevos atributos: @Example, @Raises, @Throws, @Dependencies
+'  - Ver clsVBAProcedure.ParsearMetadataCompleta() para detalles
 
 Option Explicit
 
@@ -39,7 +42,6 @@ End Sub
 '@Returns: (ninguno)
 '@Category: Registro UDF
 Public Sub AutoRegistrarTodasLasUDFs(Optional bOnlyWithMetadata As Boolean = False, Optional bVerbose_ As Boolean = False)
-Attribute AutoRegistrarTodasLasUDFs.VB_ProcData.VB_Invoke_Func = " \n0"
     
     On Error GoTo ErrorHandler
     
@@ -92,7 +94,6 @@ End Sub
 '@Returns: (ninguno)
 '@Category: Registro UDF
 Public Sub DesregistrarTodasLasUDFs(Optional bVerbose_ As Boolean = False)
-Attribute DesregistrarTodasLasUDFs.VB_ProcData.VB_Invoke_Func = " \n0"
     
     On Error GoTo ErrorHandler
     

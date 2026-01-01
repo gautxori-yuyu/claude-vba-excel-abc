@@ -4,7 +4,7 @@ Const RUTA_BD As String = "C:\Program Files (x86)\Ofertas_Gas\BaseDatos\Ofertas_
 
 Function isGUID(ByVal strGUID)
 Attribute isGUID.VB_Description = "[modMACROLeerOfertas] is GUID (función personalizada)"
-Attribute isGUID.VB_ProcData.VB_Invoke_Func = " \n23"
+Attribute isGUID.VB_ProcData.VB_Invoke_Func = " \n21"
   If IsNull(strGUID) Then
     isGUID = False
     Exit Function

@@ -125,6 +125,8 @@ Private mRutaDLL As String               ' Ruta a la DLL del COM
 '@Description: Inicializa el Activation Context con la ruta al manifest
 '@Returns: True si se inicializó correctamente
 Public Function InicializarActivationContext(ByVal rutaManifest As String) As Boolean
+Attribute InicializarActivationContext.VB_Description = "[modActivationContext] FUNCIONES PÚBLICAS.  Inicializa el Activation Context con la ruta al manifest"
+Attribute InicializarActivationContext.VB_ProcData.VB_Invoke_Func = " \n21"
     On Error GoTo ErrHandler
 
     Dim actCtx As actCtx
@@ -192,6 +194,8 @@ End Function
 '@Description: Activa el contexto antes de crear el objeto COM
 '@Returns: True si se activó correctamente
 Public Function ActivarContexto() As Boolean
+Attribute ActivarContexto.VB_Description = "[modActivationContext] Activa el contexto antes de crear el objeto COM"
+Attribute ActivarContexto.VB_ProcData.VB_Invoke_Func = " \n21"
     On Error GoTo ErrHandler
 
     If Not mContextoInicializado Then
@@ -265,6 +269,8 @@ End Sub
 '@Description: Crea un objeto COM usando el Activation Context
 '@Returns: El objeto COM creado, o Nothing si falla
 Public Function CrearObjetoCOM(ByVal progId As String) As Object
+Attribute CrearObjetoCOM.VB_Description = "[modActivationContext] Crea un objeto COM usando el Activation Context"
+Attribute CrearObjetoCOM.VB_ProcData.VB_Invoke_Func = " \n21"
     On Error GoTo ErrHandler
 
     Set CrearObjetoCOM = Nothing
@@ -321,16 +327,22 @@ End Property
 
 '@Description: Obtiene la ruta donde debería estar el COM (carpeta AddIns)
 Public Function ObtenerRutaCOM() As String
+Attribute ObtenerRutaCOM.VB_Description = "[modActivationContext] FUNCIONES DE UTILIDAD.  Obtiene la ruta donde debería estar el COM (carpeta AddIns)"
+Attribute ObtenerRutaCOM.VB_ProcData.VB_Invoke_Func = " \n21"
     ObtenerRutaCOM = Application.UserLibraryPath & "FolderWatcherCOM.dll"
 End Function
 
 '@Description: Obtiene la ruta donde debería estar el manifest (carpeta AddIns)
 Public Function ObtenerRutaManifest() As String
+Attribute ObtenerRutaManifest.VB_Description = "[modActivationContext] Obtiene la ruta donde debería estar el manifest (carpeta AddIns)"
+Attribute ObtenerRutaManifest.VB_ProcData.VB_Invoke_Func = " \n21"
     ObtenerRutaManifest = Application.UserLibraryPath & "FolderWatcherCOM.dll.manifest"
 End Function
 
 '@Description: Verifica si los archivos del COM están presentes
 Public Function ComprobarArchivosCOM() As Boolean
+Attribute ComprobarArchivosCOM.VB_Description = "[modActivationContext] Verifica si los archivos del COM están presentes"
+Attribute ComprobarArchivosCOM.VB_ProcData.VB_Invoke_Func = " \n21"
     Dim fso As Object
     Set fso = CreateObject("Scripting.FileSystemObject")
 

@@ -9,7 +9,7 @@ Option Explicit
 
 Public Function App() As clsAplicacion
 Attribute App.VB_Description = "[modMACROAppLifecycle] App (función personalizada). Aplica a: ThisWorkbook"
-Attribute App.VB_ProcData.VB_Invoke_Func = " \n23"
+Attribute App.VB_ProcData.VB_Invoke_Func = " \n21"
     Set App = ThisWorkbook.App
 End Function
 
@@ -51,6 +51,6 @@ End Sub
 '@Returns: Boolean | True si el Ribbon esta operativo
 Public Function EstaRibbonDisponible() As Boolean
 Attribute EstaRibbonDisponible.VB_Description = "[modMACROAppLifecycle] Verifica si el Ribbon esta funcionando"
-Attribute EstaRibbonDisponible.VB_ProcData.VB_Invoke_Func = " \n23"
+Attribute EstaRibbonDisponible.VB_ProcData.VB_Invoke_Func = " \n21"
     EstaRibbonDisponible = modRibbonRecovery.IsRibbonAvailable()
 End Function

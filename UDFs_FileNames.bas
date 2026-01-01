@@ -13,7 +13,7 @@ End Enum
 
 Public Function fileName(Optional wb As Workbook = Nothing) As Variant
 Attribute fileName.VB_Description = "[UDFs_FileNames] file Name (función personalizada). Aplica a: ActiveWorkbook|Cells Range"
-Attribute fileName.VB_ProcData.VB_Invoke_Func = " \n23"
+Attribute fileName.VB_ProcData.VB_Invoke_Func = " \n21"
     On Error GoTo ErrorHandler
     ' Para manejar correctamente el contexto, tanto en VBA, como al ser llamada como UDF, con y sin parametros
     Select Case True
@@ -118,7 +118,7 @@ End Function
 '@ArgumentDescriptions:
 Public Function Customer(Optional wb As Workbook = Nothing) As Variant
 Attribute Customer.VB_Description = "[UDFs_FileNames] Extrae el cliente del nombre de archivo, del workbook actual o el pasado como parametro. Aplica a: ActiveWorkbook|Cells Range"
-Attribute Customer.VB_ProcData.VB_Invoke_Func = " \n23"
+Attribute Customer.VB_ProcData.VB_Invoke_Func = " \n21"
     On Error GoTo ErrorHandler
     ' Para manejar correctamente el contexto, tanto en VBA, como al ser llamada como UDF, con y sin parametros
     Select Case True
@@ -145,7 +145,7 @@ End Function
 '@ArgumentDescriptions: (sin argumentos)
 Public Function QuoteNr(Optional wb As Workbook = Nothing) As Variant
 Attribute QuoteNr.VB_Description = "[UDFs_FileNames] Extrae el número de oferta del nombre de archivo, del workbook actual o el pasado como parametro. Aplica a: ActiveWorkbook|Cells Range"
-Attribute QuoteNr.VB_ProcData.VB_Invoke_Func = " \n23"
+Attribute QuoteNr.VB_ProcData.VB_Invoke_Func = " \n21"
     On Error GoTo ErrorHandler
     ' Para manejar correctamente el contexto, tanto en VBA, como al ser llamada como UDF, con y sin parametros
     Select Case True
@@ -172,7 +172,7 @@ End Function
 '@ArgumentDescriptions: (sin argumentos)
 Public Function QuoteRev(Optional wb As Workbook = Nothing) As Variant
 Attribute QuoteRev.VB_Description = "[UDFs_FileNames] Extrae el número de revisión de la oferta del nombre de archivo, del workbook actual o el pasado como parametro. Aplica a: ActiveWorkbook|Cells Range"
-Attribute QuoteRev.VB_ProcData.VB_Invoke_Func = " \n23"
+Attribute QuoteRev.VB_ProcData.VB_Invoke_Func = " \n21"
     On Error GoTo ErrorHandler
     ' Para manejar correctamente el contexto, tanto en VBA, como al ser llamada como UDF, con y sin parametros
     Select Case True
@@ -199,7 +199,7 @@ End Function
 '@ArgumentDescriptions: (sin argumentos)
 Public Function Model(Optional wb As Workbook = Nothing) As Variant
 Attribute Model.VB_Description = "[UDFs_FileNames] Extrae el modelo del compresor del nombre del nombre de archivo, del workbook actual o el pasado como parametro. Aplica a: ActiveWorkbook|Cells Range"
-Attribute Model.VB_ProcData.VB_Invoke_Func = " \n23"
+Attribute Model.VB_ProcData.VB_Invoke_Func = " \n21"
     On Error GoTo ErrorHandler
     ' Para manejar correctamente el contexto, tanto en VBA, como al ser llamada como UDF, con y sin parametros
     Select Case True
@@ -226,7 +226,7 @@ End Function
 '@ArgumentDescriptions: (sin argumentos)
 Public Function Family(Optional wb As Workbook = Nothing) As Variant
 Attribute Family.VB_Description = "[UDFs_FileNames] Extrae la familia del compresor (HA, HG, HP, HX) del modelo. Aplica a: ActiveWorkbook|Cells Range"
-Attribute Family.VB_ProcData.VB_Invoke_Func = " \n23"
+Attribute Family.VB_ProcData.VB_Invoke_Func = " \n21"
     On Error GoTo ErrorHandler
     ' Para manejar correctamente el contexto, tanto en VBA, como al ser llamada como UDF, con y sin parametros
     Select Case True
@@ -253,7 +253,7 @@ End Function
 '@ArgumentDescriptions: (sin argumentos)
 Public Function Stages(Optional wb As Workbook = Nothing) As Variant
 Attribute Stages.VB_Description = "[UDFs_FileNames] Extrae el número de etapas del compresor del modelo. Aplica a: ActiveWorkbook|Cells Range"
-Attribute Stages.VB_ProcData.VB_Invoke_Func = " \n23"
+Attribute Stages.VB_ProcData.VB_Invoke_Func = " \n21"
     On Error GoTo ErrorHandler
     ' Para manejar correctamente el contexto, tanto en VBA, como al ser llamada como UDF, con y sin parametros
     Select Case True
@@ -280,7 +280,7 @@ End Function
 '@ArgumentDescriptions: (sin argumentos)
 Public Function Cylinders(Optional wb As Workbook = Nothing) As Variant
 Attribute Cylinders.VB_Description = "[UDFs_FileNames] Extrae el número de cilindros del compresor del modelo. Aplica a: ActiveWorkbook|Cells Range"
-Attribute Cylinders.VB_ProcData.VB_Invoke_Func = " \n23"
+Attribute Cylinders.VB_ProcData.VB_Invoke_Func = " \n21"
     On Error GoTo ErrorHandler
     ' Para manejar correctamente el contexto, tanto en VBA, como al ser llamada como UDF, con y sin parametros
     Select Case True

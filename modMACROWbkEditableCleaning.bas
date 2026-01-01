@@ -115,7 +115,7 @@ End Sub
 ' =========================================================
 Public Function ContarYListarErroresEnHoja(ws As Worksheet) As Long
 Attribute ContarYListarErroresEnHoja.VB_Description = "[modMACROWbkEditableCleaning] Función: ContarYListarErroresEnHoja. Propósito: Recalcula la hoja con máxima garantía y lista. todos los errores de fórmula en Debug.Print. Parámetro:. ws (Worksheet) - hoja a verificar. Retorna:. Long - número de celdas con "
-Attribute ContarYListarErroresEnHoja.VB_ProcData.VB_Invoke_Func = " \n23"
+Attribute ContarYListarErroresEnHoja.VB_ProcData.VB_Invoke_Func = " \n21"
     Dim rngErrores As Range
     Dim cell As Range
     Dim nErrores As Long

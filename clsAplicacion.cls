@@ -103,6 +103,10 @@ Private Sub Class_Initialize()
     Debug.Print vbTab & "[clsAplicacion Class_Initialize]"
     
     On Error GoTo ErrHandler
+
+    ' 0. Inicializar logger con salida a fichero (para diagnostico del Ribbon)
+    InitLogger LOG_DEBUG, True, ThisWorkbook.Path & "\ABC_Log_" & Format(Date, "yyyy-mm-dd") & ".txt"
+    LogInfo "clsAplicacion", "Class_Initialize - Iniciando aplicacion"
     
     If evRibbon Is Nothing Then Set evRibbon = New clsRibbonEvents
     Debug.Print vbTab & "[clsAplicacion Class_Initialize] - CREADA instancia WithEvents de ribbon para gestion de eventos"

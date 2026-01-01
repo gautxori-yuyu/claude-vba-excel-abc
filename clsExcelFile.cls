@@ -349,6 +349,8 @@ End Function
 ' @Description: Comprueba si el gráfico activo es válido para invertir ejes
 '--------------------------------------------------------------
 Public Function EsValidoInvertirEjes() As Boolean
+    On Error GoTo SafeExit
+    
     Dim ctx As clsExecutionContext
     Set ctx = App().ExecutionContext
     
@@ -394,4 +396,10 @@ CheckSeries:
         End If
     Next s
     EsValidoInvertirEjes = tienePrimario And tieneSecundario
+    Exit Function
+
+SafeExit:
+    EsValidoInvertirEjes = False
+    ' Opcional: loguear solo en modo depuración:
+    ' If bVerbose Then Debug.Print "[EsValidoInvertirEjes] Safe exit: " & Err.Description
 End Function

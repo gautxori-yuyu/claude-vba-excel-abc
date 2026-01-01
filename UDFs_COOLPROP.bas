@@ -13,7 +13,7 @@ Option Explicit
 '@Category: Análisis de Gases
 Public Function ConstruirCadenaCoolPropDesdeTabla(rango As Range) As String
 Attribute ConstruirCadenaCoolPropDesdeTabla.VB_Description = "[UDFs_COOLPROP] Construye una cadena HEOS::.. para CoolProp procesando uno o varios rangos disjuntos. Cada área del rango es tratada como una tabla independiente con encabezados (""nombre/gas"" y ""%/percentage"") en la primera fila. Aplica a: Cells Range"
-Attribute ConstruirCadenaCoolPropDesdeTabla.VB_ProcData.VB_Invoke_Func = " \n23"
+Attribute ConstruirCadenaCoolPropDesdeTabla.VB_ProcData.VB_Invoke_Func = " \n21"
     Dim aliasDict As Object
     Set aliasDict = CreateObject("Scripting.Dictionary")
     aliasDict.CompareMode = 1

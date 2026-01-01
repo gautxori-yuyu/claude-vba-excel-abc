@@ -1,9 +1,9 @@
 ' =====================================================
-' SCRIPT DE INSTALACI√ìN/DESINSTALACI√ìN AUTOM√ÅTICA
+' SCRIPT DE INSTALACI”N/DESINSTALACI”N AUTOM¡TICA
 ' =====================================================
 ' Este script gestiona:
 ' 1. Copia del XLAM a la carpeta de complementos
-' 2. Extracci√≥n del COM (FolderWatcherCOM.dll) desde dentro del XLAM
+' 2. ExtracciÛn del COM (FolderWatcherCOM.dll) desde dentro del XLAM
 ' 3. Registro/desregistro del complemento en Excel
 '
 ' El XLAM es un fichero ZIP que contiene:
@@ -18,6 +18,20 @@ Const COM_MANIFEST_NAME = "FolderWatcherCOM.dll.manifest"
 Const COM_CONFIG_NAME = "FolderWatcherCOM.dll.config"
 Const COM_EMBED_PATH = "xl\embeddings\"
 
+' ========== CONSTANTES PARA REGISTRO COMPONENTE COM ==========
+Const GUID_CLSID = "{C3E5F8B2-5678-4CDE-AB12-1234567890AD}"
+Const GUID_Interface1 = "{8DA5A16A-E0A2-3448-955F-2EEE87FEB0B4}"
+Const GUID_Interface2 = "{B1D9F7E1-AAAA-4CDE-BC12-1234567890AC}"
+Const GUID_TypeLib = "{E0BCC03C-D155-4EA3-BCB8-1D071719E854}"
+
+Const PROXYSTUB_CLSID1 = "{00020424-0000-0000-C000-000000000046}"  ' Para interfaces normales
+Const PROXYSTUB_CLSID2 = "{00020420-0000-0000-C000-000000000046}"  ' Para interfaces de eventos
+
+Const ASSEMBLY_INFO = "FolderWatcherCOM, Version=1.0.0.0, Culture=neutral, PublicKeyToken=1fb3d67dc3eb2e9f"
+Const RUNTIME_VERSION = "v4.0.30319"
+Const PROG_ID = "FolderWatcher.Monitor"
+Const CLASS_NAME = "FolderWatcherCOM.FolderWatcher"
+
 Dim fso, args, modo, archivo, destino, nombre
 Dim rutaFinal, excel, ai, vers
 
@@ -25,7 +39,7 @@ Set fso = CreateObject("Scripting.FileSystemObject")
 Set args = WScript.Arguments
 
 If args.Count < 4 Then
-    MsgBox "Faltan par√°metros en linea de comandos para poder completar la instalaci√≥n." & vbcrlf & _
+    MsgBox "Faltan par·metros en linea de comandos para poder completar la instalaciÛn." & vbcrlf & _
 			"Uso: AutoXLAM_Installer.vbs /install|/uninstall archivo destino nombre", vbCritical
     WScript.Quit 1
 End If
@@ -45,7 +59,7 @@ If modo = "/install" Then
 ElseIf modo = "/uninstall" Then
     DoUninstall
 Else
-    MsgBox "Modo de instalaci√≥n no reconocido: " & modo & ", la instalaci√≥n no se puede completar", vbCritical
+    MsgBox "Modo de instalaciÛn no reconocido: " & modo & ", la instalaciÛn no se puede completar", vbCritical
     WScript.Quit 1
 End If
 
@@ -57,11 +71,11 @@ On Error GoTo 0
 WScript.Quit 0
 
 ' =====================================================
-' INSTALACI√ìN
+' INSTALACI”N
 ' =====================================================
 Sub DoInstall()
     If Not fso.FileExists(archivo) Then
-        MsgBox "Error de instalaci√≥n: no existe '" & archivo & "'", vbCritical
+        MsgBox "Error de instalaciÛn: no existe '" & archivo & "'", vbCritical
         WScript.Quit 1
     End If
 
@@ -69,17 +83,20 @@ Sub DoInstall()
     RemoveAddinInDestino rutaFinal
 
     ' 2. Extraer COM del XLAM origen ANTES de copiar
-    '    (porque despu√©s de copiar el XLAM estar√° en uso por Excel)
+    '    (porque despuÈs de copiar el XLAM estar· en uso por Excel)
     If Not ExtractCOMFromXLAM(archivo, destino) Then
-        ' Si falla la extracci√≥n del COM, continuar de todos modos
-        ' El complemento funcionar√° pero sin FolderWatcher
-        WScript.Echo "Advertencia: No se pudo extraer el componente COM del XLAM. La vigilancia de carpetas no estar√° disponible."
+        ' Si falla la extracciÛn del COM, continuar de todos modos
+        ' El complemento funcionar· pero sin FolderWatcher
+        WScript.Echo "Advertencia: No se pudo extraer el componente COM del XLAM. La vigilancia de carpetas no estar· disponible."
     End If
+    
+    ' 3. Insertar claves para registro del componente com En HKcU  
+    RegistrarClavesCOM()
 
-    ' 3. Copiar XLAM al destino
+    ' 4. Copiar XLAM al destino
     fso.CopyFile archivo, rutaFinal, True
 
-    ' 4. Registrar en Excel
+    ' 5. Registrar en Excel
     Set excel = CreateObject("Excel.Application")
     excel.Visible = False
 
@@ -93,11 +110,11 @@ Sub DoInstall()
     WScript.Sleep 1000
 
     If ai Is Nothing Then
-        MsgBox "No ha sido posible completar la instalaci√≥n. Por favor, habilita el complemento desde el men√∫ de complementos de Excel.", vbCritical
+        MsgBox "No ha sido posible completar la instalaciÛn. Por favor, habilita el complemento desde el men˙ de complementos de Excel.", vbCritical
     ElseIf Not ai.Installed Then
-        MsgBox "No ha sido posible completar la instalaci√≥n. Por favor, habilita el complemento desde el men√∫ de complementos de Excel.", vbCritical
+        MsgBox "No ha sido posible completar la instalaciÛn. Por favor, habilita el complemento desde el men˙ de complementos de Excel.", vbCritical
     Else
-        MsgBox "Instalaci√≥n completada, reinicia Excel.", vbInformation
+        MsgBox "InstalaciÛn completada, reinicia Excel.", vbInformation
     End If
 
     excel.Quit
@@ -105,7 +122,7 @@ Sub DoInstall()
 End Sub
 
 ' =====================================================
-' DESINSTALACI√ìN
+' DESINSTALACI”N
 ' =====================================================
 Sub DoUninstall()
     ' 1. Eliminar archivos COM primero (antes de que Excel los bloquee)
@@ -113,8 +130,11 @@ Sub DoUninstall()
 
     ' 2. Eliminar XLAM
     RemoveAddinInDestino rutaFinal
+    
+    ' 3. Eliminar claves de registro del componente com En HKcU  
+    EliminarClavesCOM()
 
-    ' 3. Desregistrar de Excel
+    ' 4. Desregistrar de Excel
     Set excel = CreateObject("Excel.Application")
     vers = excel.Application.Version
     excel.Visible = False
@@ -133,27 +153,27 @@ Sub DoUninstall()
     End If
 
     If Not uninstallOK Then
-        MsgBox "No ha sido posible completar la desinstalaci√≥n. Por favor, reint√©ntalo de nuevo o deshabilita el complemento desde el men√∫ de complementos de Excel.", vbCritical
+        MsgBox "No ha sido posible completar la desinstalaciÛn. Por favor, reintÈntalo de nuevo o deshabilita el complemento desde el men˙ de complementos de Excel.", vbCritical
     Else
-        MsgBox "Desinstalaci√≥n completada, reinicia Excel.", vbInformation
+        MsgBox "DesinstalaciÛn completada, reinicia Excel.", vbInformation
     End If
 
     excel.Quit
     Set excel = Nothing
 
-    ' 4. Limpiar registro
+    ' 5. Limpiar claves de configuraciÛn del XLAM en el registro 
     CleanRegistry vers, nombre
 End Sub
 
 ' =====================================================
-' EXTRACCI√ìN DEL COM DESDE EL XLAM (ZIP)
+' EXTRACCI”N DEL COM DESDE EL XLAM (ZIP)
 ' =====================================================
 Function ExtractCOMFromXLAM(xlamPath, destFolder)
     ExtractCOMFromXLAM = False
 
     On Error Resume Next
 
-    ' Intentar primero con 7zip (m√°s r√°pido y fiable)
+    ' Intentar primero con 7zip (m·s r·pido y fiable)
     If TryExtractWith7Zip(xlamPath, destFolder) Then
         ExtractCOMFromXLAM = True
         Exit Function
@@ -168,7 +188,7 @@ Function ExtractCOMFromXLAM(xlamPath, destFolder)
     On Error GoTo 0
 End Function
 
-' Extracci√≥n usando 7-Zip
+' ExtracciÛn usando 7-Zip
 Function TryExtractWith7Zip(xlamPath, destFolder)
     TryExtractWith7Zip = False
 
@@ -219,7 +239,7 @@ Function TryExtractWith7Zip(xlamPath, destFolder)
     Set shell = Nothing
 End Function
 
-' Extracci√≥n usando Shell.Application (Windows nativo)
+' ExtracciÛn usando Shell.Application (Windows nativo)
 Function TryExtractWithShell(xlamPath, destFolder)
     TryExtractWithShell = False
 
@@ -285,7 +305,7 @@ Function TryExtractWithShell(xlamPath, destFolder)
         End If
     Next
 
-    ' Copiar archivos al destino (16 = No mostrar di√°logo, 1024 = No confirmar)
+    ' Copiar archivos al destino (16 = No mostrar di·logo, 1024 = No confirmar)
     If Not dllItem Is Nothing Then
         destFolderObj.CopyHere dllItem, 16 + 1024
         WScript.Sleep 500
@@ -315,7 +335,7 @@ Function TryExtractWithShell(xlamPath, destFolder)
 End Function
 
 ' =====================================================
-' ELIMINACI√ìN DE ARCHIVOS COM
+' ELIMINACI”N DE ARCHIVOS COM
 ' =====================================================
 Sub RemoveCOMFiles(folder)
     On Error Resume Next
@@ -341,7 +361,7 @@ Sub RemoveCOMFiles(folder)
 End Sub
 
 ' =====================================================
-' ELIMINACI√ìN DEL XLAM EXISTENTE
+' ELIMINACI”N DEL XLAM EXISTENTE
 ' =====================================================
 Sub RemoveAddinInDestino(rutaFinal)
     If Not fso.FileExists(rutaFinal) Then Exit Sub
@@ -358,7 +378,7 @@ Sub RemoveAddinInDestino(rutaFinal)
     Set colProcesses = objWMIService.ExecQuery("Select * from Win32_Process Where Name = 'EXCEL.EXE'")
 
     If colProcesses.Count > 0 Then
-        answer = MsgBox("Excel est√° en ejecuci√≥n y puede estar bloqueando el archivo del complemento en destino. ¬øDeseas cerrar Excel?", vbYesNo + vbQuestion)
+        answer = MsgBox("Excel est· en ejecuciÛn y puede estar bloqueando el archivo del complemento en destino. øDeseas cerrar Excel?", vbYesNo + vbQuestion)
         If answer = vbYes Then
             For Each objProcess In colProcesses
                 objProcess.Terminate
@@ -377,7 +397,7 @@ Sub RemoveAddinInDestino(rutaFinal)
                 WScript.Quit 1
             End If
         Else
-            MsgBox "No es posible completar el proceso. Por favor, cierra Excel manualmente e int√©ntalo de nuevo.", vbCritical
+            MsgBox "No es posible completar el proceso. Por favor, cierra Excel manualmente e intÈntalo de nuevo.", vbCritical
             WScript.Quit 1
         End If
     End If
@@ -410,3 +430,154 @@ Sub CleanRegistry(vers, nombre)
     Set WshShell = Nothing
     On Error GoTo 0
 End Sub
+
+' =====================================================
+'  SUBRUTINA PARA REGISTRAR COMPONENTE COM 
+' =====================================================
+Sub RegistrarClavesCOM()
+    On Error Resume Next
+    Dim shell, appDataPath, addinsPath
+    
+    Set shell = CreateObject("WScript.Shell")
+    
+    ' Obtener ruta del AppData del usuario actual
+    appDataPath = shell.ExpandEnvironmentStrings("%APPDATA%")
+    addinsPath = fso.BuildPath(appDataPath, "Microsoft\AddIns\")
+    
+    ' Crear las claves principales
+    ' 1. CLSID principal
+    shell.RegWrite "HKCU\SOFTWARE\Classes\CLSID\" & GUID_CLSID & "\", CLASS_NAME, "REG_SZ"
+    shell.RegWrite "HKCU\SOFTWARE\Classes\CLSID\" & GUID_CLSID & "\ProgId\", PROG_ID, "REG_SZ"
+    
+    ' 2. Implemented Categories
+    shell.RegWrite "HKCU\SOFTWARE\Classes\CLSID\" & GUID_CLSID & "\Implemented Categories\", "", "REG_SZ"
+    shell.RegWrite "HKCU\SOFTWARE\Classes\CLSID\" & GUID_CLSID & "\Implemented Categories\{62C8FE65-4EBB-45e7-B440-6E39B2CDBF29}\", "", "REG_SZ"
+    
+    ' 3. InprocServer32
+    shell.RegWrite "HKCU\SOFTWARE\Classes\CLSID\" & GUID_CLSID & "\InprocServer32\", "mscoree.dll", "REG_SZ"
+    shell.RegWrite "HKCU\SOFTWARE\Classes\CLSID\" & GUID_CLSID & "\InprocServer32\ThreadingModel", "Both", "REG_SZ"
+    shell.RegWrite "HKCU\SOFTWARE\Classes\CLSID\" & GUID_CLSID & "\InprocServer32\Class", CLASS_NAME, "REG_SZ"
+    shell.RegWrite "HKCU\SOFTWARE\Classes\CLSID\" & GUID_CLSID & "\InprocServer32\Assembly", ASSEMBLY_INFO, "REG_SZ"
+    shell.RegWrite "HKCU\SOFTWARE\Classes\CLSID\" & GUID_CLSID & "\InprocServer32\RuntimeVersion", RUNTIME_VERSION, "REG_SZ"
+    shell.RegWrite "HKCU\SOFTWARE\Classes\CLSID\" & GUID_CLSID & "\InprocServer32\CodeBase", "file:///" & Replace(addinsPath, "\", "/") & "FolderWatcherCOM.DLL", "REG_SZ"
+    
+    ' 4. VersiÛn especÌfica
+    shell.RegWrite "HKCU\SOFTWARE\Classes\CLSID\" & GUID_CLSID & "\InprocServer32\1.0.0.0\Class", CLASS_NAME, "REG_SZ"
+    shell.RegWrite "HKCU\SOFTWARE\Classes\CLSID\" & GUID_CLSID & "\InprocServer32\1.0.0.0\Assembly", ASSEMBLY_INFO, "REG_SZ"
+    shell.RegWrite "HKCU\SOFTWARE\Classes\CLSID\" & GUID_CLSID & "\InprocServer32\1.0.0.0\RuntimeVersion", RUNTIME_VERSION, "REG_SZ"
+    shell.RegWrite "HKCU\SOFTWARE\Classes\CLSID\" & GUID_CLSID & "\InprocServer32\1.0.0.0\CodeBase", "file:///" & Replace(addinsPath, "\", "/") & "FolderWatcherCOM.DLL", "REG_SZ"
+    
+    ' 5. ProgId
+    shell.RegWrite "HKCU\SOFTWARE\Classes\" & PROG_ID & "\", CLASS_NAME, "REG_SZ"
+    shell.RegWrite "HKCU\SOFTWARE\Classes\" & PROG_ID & "\CLSID\", GUID_CLSID, "REG_SZ"
+    
+    ' 6. Interfaces
+    RegistrarInterfaz GUID_Interface1, "_FolderWatcher", PROXYSTUB_CLSID1
+    RegistrarInterfaz GUID_Interface2, "IFolderWatcherEvents", PROXYSTUB_CLSID2
+    
+    ' 7. TypeLib
+    shell.RegWrite "HKCU\SOFTWARE\Classes\TypeLib\" & GUID_TypeLib & "\", "", "REG_SZ"
+    shell.RegWrite "HKCU\SOFTWARE\Classes\TypeLib\" & GUID_TypeLib & "\1.0\", "Componente COM monitorizaciÛn carpetas", "REG_SZ"
+    shell.RegWrite "HKCU\SOFTWARE\Classes\TypeLib\" & GUID_TypeLib & "\1.0\0\", "", "REG_SZ"
+    shell.RegWrite "HKCU\SOFTWARE\Classes\TypeLib\" & GUID_TypeLib & "\1.0\0\win64\", addinsPath & "FolderWatcherCOM.tlb", "REG_SZ"
+    shell.RegWrite "HKCU\SOFTWARE\Classes\TypeLib\" & GUID_TypeLib & "\1.0\FLAGS\", "0", "REG_SZ"
+    shell.RegWrite "HKCU\SOFTWARE\Classes\TypeLib\" & GUID_TypeLib & "\1.0\HELPDIR\", addinsPath, "REG_SZ"
+    
+    ' 8. Registros WOW6432Node (para compatibilidad 32-bit)
+    RegistrarInterfazWOW64 GUID_Interface1, "_FolderWatcher", PROXYSTUB_CLSID1
+    RegistrarInterfazWOW64 GUID_Interface2, "IFolderWatcherEvents", PROXYSTUB_CLSID2
+    
+    If Err.Number = 0 Then
+        WScript.Echo "Registro COM completado exitosamente."
+    Else
+        WScript.Echo "Error durante el registro: " & Err.Description
+    End If
+End Sub
+
+' ========== FUNCI”N AUXILIAR PARA INTERFACES ==========
+Sub RegistrarInterfaz(guid, nombre, proxyStubClsid)
+    Dim shell
+    Set shell = CreateObject("WScript.Shell")
+    
+    shell.RegWrite "HKCU\SOFTWARE\Classes\Interface\" & guid & "\", nombre, "REG_SZ"
+    shell.RegWrite "HKCU\SOFTWARE\Classes\Interface\" & guid & "\ProxyStubClsid32\", proxyStubClsid, "REG_SZ"
+    shell.RegWrite "HKCU\SOFTWARE\Classes\Interface\" & guid & "\TypeLib\", GUID_TypeLib, "REG_SZ"
+    shell.RegWrite "HKCU\SOFTWARE\Classes\Interface\" & guid & "\TypeLib\Version\", "1.0", "REG_SZ"
+End Sub
+
+' ========== FUNCI”N AUXILIAR PARA WOW6432Node ==========
+Sub RegistrarInterfazWOW64(guid, nombre, proxyStubClsid)
+    Dim shell
+    Set shell = CreateObject("WScript.Shell")
+    
+    ' Dos ubicaciones diferentes para WOW64
+    shell.RegWrite "HKCU\SOFTWARE\Classes\WOW6432Node\Interface\" & guid & "\", nombre, "REG_SZ"
+    shell.RegWrite "HKCU\SOFTWARE\Classes\WOW6432Node\Interface\" & guid & "\ProxyStubClsid32\", proxyStubClsid, "REG_SZ"
+    shell.RegWrite "HKCU\SOFTWARE\Classes\WOW6432Node\Interface\" & guid & "\TypeLib\", GUID_TypeLib, "REG_SZ"
+    shell.RegWrite "HKCU\SOFTWARE\Classes\WOW6432Node\Interface\" & guid & "\TypeLib\Version\", "1.0", "REG_SZ"
+    
+    shell.RegWrite "HKCU\SOFTWARE\WOW6432Node\Classes\Interface\" & guid & "\", nombre, "REG_SZ"
+    shell.RegWrite "HKCU\SOFTWARE\WOW6432Node\Classes\Interface\" & guid & "\ProxyStubClsid32\", proxyStubClsid, "REG_SZ"
+    shell.RegWrite "HKCU\SOFTWARE\WOW6432Node\Classes\Interface\" & guid & "\TypeLib\", GUID_TypeLib, "REG_SZ"
+    shell.RegWrite "HKCU\SOFTWARE\WOW6432Node\Classes\Interface\" & guid & "\TypeLib\Version\", "1.0", "REG_SZ"
+End Sub
+
+' ========== SUBRUTINA PARA ELIMINAR ==========
+Sub EliminarClavesCOM()
+    On Error Resume Next
+    Dim shell
+    
+    Set shell = CreateObject("WScript.Shell")
+    
+    ' Eliminar en orden inverso (de m·s especÌfico a m·s general)
+    
+    ' 1. Eliminar WOW6432Node entries
+    EliminarSiExiste "HKCU\SOFTWARE\WOW6432Node\Classes\Interface\" & GUID_Interface1 & "\"
+    EliminarSiExiste "HKCU\SOFTWARE\WOW6432Node\Classes\Interface\" & GUID_Interface2 & "\"
+    EliminarSiExiste "HKCU\SOFTWARE\Classes\WOW6432Node\Interface\" & GUID_Interface1 & "\"
+    EliminarSiExiste "HKCU\SOFTWARE\Classes\WOW6432Node\Interface\" & GUID_Interface2 & "\"
+    
+    ' 2. Eliminar TypeLib
+    EliminarSiExiste "HKCU\SOFTWARE\Classes\TypeLib\" & GUID_TypeLib & "\"
+    
+    ' 3. Eliminar Interfaces normales
+    EliminarSiExiste "HKCU\SOFTWARE\Classes\Interface\" & GUID_Interface1 & "\"
+    EliminarSiExiste "HKCU\SOFTWARE\Classes\Interface\" & GUID_Interface2 & "\"
+    
+    ' 4. Eliminar ProgId
+    EliminarSiExiste "HKCU\SOFTWARE\Classes\" & PROG_ID & "\"
+    
+    ' 5. Eliminar CLSID (esto eliminar· toda la jerarquÌa)
+    EliminarSiExiste "HKCU\SOFTWARE\Classes\CLSID\" & GUID_CLSID & "\"
+    
+    If Err.Number = 0 Then
+        WScript.Echo "EliminaciÛn de claves COM completada exitosamente."
+    Else
+        WScript.Echo "Error durante la eliminaciÛn: " & Err.Description
+    End If
+End Sub
+
+' ========== FUNCI”N AUXILIAR PARA ELIMINACI”N SEGURA ==========
+Sub EliminarSiExiste(ruta)
+    On Error Resume Next
+    Dim shell
+    Set shell = CreateObject("WScript.Shell")
+    
+    ' Intentar leer para ver si existe
+    shell.RegRead ruta
+    
+    If Err.Number = 0 Then
+        ' La clave existe, elimÌnala
+        Err.Clear
+        shell.RegDelete ruta
+        If Err.Number <> 0 Then
+            WScript.Echo "  Advertencia: No se pudo eliminar " & ruta
+        End If
+    End If
+    Err.Clear
+End Sub
+
+' ========== EJEMPLO DE USO ==========
+' Para probar las funciones:
+' RegistrarClavesCOM()   ' Para registrar
+' EliminarClavesCOM()    ' Para eliminar

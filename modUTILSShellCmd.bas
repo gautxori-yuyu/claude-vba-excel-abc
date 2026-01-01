@@ -7,7 +7,7 @@ Attribute VB_Name = "modUTILSShellCmd"
 '@Description: Valida si una ruta de carpeta existe
 Public Function RutaExiste(ruta As String) As Boolean
 Attribute RutaExiste.VB_Description = "[modUTILSShellCmd] FUNCIONES AUXILIARES.  Valida si una ruta de carpeta existe"
-Attribute RutaExiste.VB_ProcData.VB_Invoke_Func = " \n23"
+Attribute RutaExiste.VB_ProcData.VB_Invoke_Func = " \n21"
     On Error Resume Next
     RutaExiste = ruta <> "" And (Dir(ruta, vbDirectory) <> "")
     On Error GoTo 0
@@ -18,7 +18,7 @@ End Function
 '@Returns: Boolean | True si es ruta de red o removible
 Function EsRutaRemovibleORed(ruta As String) As Boolean
 Attribute EsRutaRemovibleORed.VB_Description = "[modUTILSShellCmd] Determina si una ruta es de red o unidad removible"
-Attribute EsRutaRemovibleORed.VB_ProcData.VB_Invoke_Func = " \n23"
+Attribute EsRutaRemovibleORed.VB_ProcData.VB_Invoke_Func = " \n21"
     Dim fso As Object
     Dim drive As Object
     Dim driveLetter As String
@@ -55,7 +55,7 @@ End Function
 
 Function ObtenerRutaEjecutable(nombreExe As String) As String
 Attribute ObtenerRutaEjecutable.VB_Description = "[modUTILSShellCmd] Obtener Ruta Ejecutable (función personalizada)"
-Attribute ObtenerRutaEjecutable.VB_ProcData.VB_Invoke_Func = " \n23"
+Attribute ObtenerRutaEjecutable.VB_ProcData.VB_Invoke_Func = " \n21"
     Dim objShell As Object
     Dim objExec As Object
     Dim comando As String
@@ -126,7 +126,7 @@ End Sub
 '@Returns: Boolean | True si se creó correctamente
 Function ComprimirCarpetaAZip(rutaCarpeta As String, rutaZipDestino As String) As Boolean
 Attribute ComprimirCarpetaAZip.VB_Description = "[modUTILSShellCmd] Comprime una carpeta completa en un archivo ZIP usando 7-Zip o Shell.Application (fallback)"
-Attribute ComprimirCarpetaAZip.VB_ProcData.VB_Invoke_Func = " \n23"
+Attribute ComprimirCarpetaAZip.VB_ProcData.VB_Invoke_Func = " \n21"
     Dim metodo As String
     Dim resultado As Boolean
     
@@ -169,7 +169,7 @@ End Function
 '@Returns: Boolean | True si 7-Zip funcionó correctamente
 Function ComprimirCon7Zip(rutaCarpeta As String, rutaZipDestino As String) As Boolean
 Attribute ComprimirCon7Zip.VB_Description = "[modUTILSShellCmd] MÉTODO 1: COMPRESIÓN CON 7-ZIP.  Intenta comprimir usando 7-Zip si está instalado"
-Attribute ComprimirCon7Zip.VB_ProcData.VB_Invoke_Func = " \n23"
+Attribute ComprimirCon7Zip.VB_ProcData.VB_Invoke_Func = " \n21"
     Dim ruta7Zip As String
     Dim comando As String
     Dim fso As Object
@@ -271,7 +271,7 @@ End Function
 '@Returns: Boolean | True si la compresión funcionó
 Function ComprimirConShellApplication(rutaCarpeta As String, rutaZipDestino As String) As Boolean
 Attribute ComprimirConShellApplication.VB_Description = "[modUTILSShellCmd] MÉTODO 2: COMPRESIÓN CON SHELL.APPLICATION (MEJORADO).  Comprime usando Shell.Application con sincronización robusta (basado en código de Gustav Brock)"
-Attribute ComprimirConShellApplication.VB_ProcData.VB_Invoke_Func = " \n23"
+Attribute ComprimirConShellApplication.VB_ProcData.VB_Invoke_Func = " \n21"
     Dim fso As Object
     Dim shellApp As Object
     Dim carpetaOrigen As Object

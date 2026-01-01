@@ -11,7 +11,7 @@ Option Explicit
 '@Category: ComplementosExcel
 Public Function MostrarLibroXLAM() As Boolean
 Attribute MostrarLibroXLAM.VB_Description = "[modUTILS] Muestra el libro que contiene este XLAM, haciéndolo visible en la interfaz de Excel. Aplica a: ThisWorkbook\r\nM.D.:Manipula el libro host del complemento XLAM cargado."
-Attribute MostrarLibroXLAM.VB_ProcData.VB_Invoke_Func = " \n23"
+Attribute MostrarLibroXLAM.VB_ProcData.VB_Invoke_Func = " \n21"
     On Error GoTo ErrHandler
     
     ' El objeto ThisWorkbook, en un XLAM, apunta al libro host del complemento.
@@ -32,7 +32,7 @@ End Function
 
 Public Function OcultarLibroXLAM() As Boolean
 Attribute OcultarLibroXLAM.VB_Description = "[modUTILS] Oculta el libro que contiene este XLAM, dejando el complemento operativo pero sin mostrar su ventana. Aplica a: ThisWorkbook\r\nM.D.:Manipula el libro host del complemento XLAM cargado."
-Attribute OcultarLibroXLAM.VB_ProcData.VB_Invoke_Func = " \n23"
+Attribute OcultarLibroXLAM.VB_ProcData.VB_Invoke_Func = " \n21"
     On Error GoTo ErrHandler
     
     ' Vuelve a marcar el libro como AddIn para que desaparezca de la vista.
@@ -47,7 +47,7 @@ End Function
 
 Function LongToRGB(colorValue As Long) As String
 Attribute LongToRGB.VB_Description = "[modUTILS] Long To RGB (función personalizada)"
-Attribute LongToRGB.VB_ProcData.VB_Invoke_Func = " \n23"
+Attribute LongToRGB.VB_ProcData.VB_Invoke_Func = " \n21"
     Dim r As Long, g As Long, b As Long
     
     r = colorValue And &HFF
@@ -60,7 +60,7 @@ End Function
 ' Función auxiliar para detectar filas vacías
 Function IsEmptyRow(r As Range) As Boolean
 Attribute IsEmptyRow.VB_Description = "[modUTILS] Función auxiliar para detectar filas vacías. Aplica a: Cells Range"
-Attribute IsEmptyRow.VB_ProcData.VB_Invoke_Func = " \n23"
+Attribute IsEmptyRow.VB_ProcData.VB_Invoke_Func = " \n21"
     IsEmptyRow = (WorksheetFunction.CountA(r) = 0)
 End Function
 
@@ -70,7 +70,7 @@ End Function
 '@Returns: Boolean | True si la hoja existe
 Function SheetExists(wb As Workbook, ByVal sheetName As String) As Boolean
 Attribute SheetExists.VB_Description = "[modUTILS] Verifica si una hoja existe en un workbook"
-Attribute SheetExists.VB_ProcData.VB_Invoke_Func = " \n23"
+Attribute SheetExists.VB_ProcData.VB_Invoke_Func = " \n21"
     Dim ws As Worksheet
     On Error Resume Next
     Set ws = wb.Worksheets(sheetName)
@@ -80,7 +80,7 @@ End Function
 
 Function HojaEstaSeleccionada(nombreHoja As String) As Boolean
 Attribute HojaEstaSeleccionada.VB_Description = "[modUTILS] Hoja Esta Seleccionada (función personalizada)"
-Attribute HojaEstaSeleccionada.VB_ProcData.VB_Invoke_Func = " \n23"
+Attribute HojaEstaSeleccionada.VB_ProcData.VB_Invoke_Func = " \n21"
     On Error Resume Next
     Dim sh As Object
     Set sh = ActiveWindow.SelectedSheets(nombreHoja)
@@ -92,7 +92,7 @@ End Function
 ' NOTA: Esta es una función auxiliar (no UDF) - modifica celdas, no retorna valor
 Function ReplaceInAllCells(rng As Range, strFrom As String, strTo As String, ByRef bSave As Boolean) As Boolean
 Attribute ReplaceInAllCells.VB_Description = "[modUTILS] Reemplaza texto en todas las celdas de un rango. NOTA: Esta es una función auxiliar (no UDF) - modifica celdas, no retorna valor. Aplica a: Cells Range"
-Attribute ReplaceInAllCells.VB_ProcData.VB_Invoke_Func = " \n23"
+Attribute ReplaceInAllCells.VB_ProcData.VB_Invoke_Func = " \n21"
     Dim oCell As Range
     Dim firstAddress As String, bNext As Boolean
     
@@ -370,7 +370,7 @@ End Function
 
 Function bContentsErrorFree(ByRef refOutput As String, ByRef refValues As String, ByRef refInput As String) As Boolean
 Attribute bContentsErrorFree.VB_Description = "[modUTILS] RANGE VALIDATION FUNCTIONS. . Aplica a: Cells Range"
-Attribute bContentsErrorFree.VB_ProcData.VB_Invoke_Func = " \n23"
+Attribute bContentsErrorFree.VB_ProcData.VB_Invoke_Func = " \n21"
     'This function checks whether the values(s) of a range throw an error in an output cell.
     'If True then no error
     'If False then error
@@ -420,7 +420,7 @@ End Function
 
 Function bAllNumbers(ByVal ref As String) As Boolean
 Attribute bAllNumbers.VB_Description = "[modUTILS] b All Numbers (función personalizada). Aplica a: Cells Range"
-Attribute bAllNumbers.VB_ProcData.VB_Invoke_Func = " \n23"
+Attribute bAllNumbers.VB_ProcData.VB_Invoke_Func = " \n21"
     ' This function checks whether the value(s) of a range are numeric.
     ' If True all are numeric
     ' IF False then at least one value is non-numeric
@@ -451,7 +451,7 @@ End Function
 
 Function bIsAddress(ByVal Str As String) As Boolean
 Attribute bIsAddress.VB_Description = "[modUTILS] b Is Address (función personalizada). Aplica a: Cells Range"
-Attribute bIsAddress.VB_ProcData.VB_Invoke_Func = " \n23"
+Attribute bIsAddress.VB_ProcData.VB_Invoke_Func = " \n21"
     'This function checks whether a string is a reference to a range.
     On Error Resume Next
     
