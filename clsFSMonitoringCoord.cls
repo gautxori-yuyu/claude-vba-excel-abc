@@ -15,9 +15,36 @@ Private Const MODULE_NAME As String = "clsFSMonitoringCoord"
 Private WithEvents mFolderWatcher As clsFSWatcher
 Attribute mFolderWatcher.VB_VarHelpID = -1
 
+' Rutas almacenadas localmente (recibidas en IniciarMonitoreo)
+Private m_rutaOportunidades As String
+Private m_rutaPlantillas As String
+Private m_rutaGasVBNet As String
+
+' -------------------------------------------------------------
+' EVENTOS PUBLICOS - clsAplicacion los escucha y delega
+' -------------------------------------------------------------
+
+' Eventos de oportunidades (subcarpetas)
 Public Event OpportunityCreated(ByVal parentFolder As String, ByVal subfolderName As String)
 Public Event OpportunityDeleted(ByVal parentFolder As String, ByVal subfolderName As String)
 Public Event OpportunityRenamed(ByVal parentFolder As String, ByVal oldName As String, ByVal newName As String)
+
+' Eventos de items dentro de oportunidades (archivos)
+Public Event OpportunityItemDeleted(ByVal folder As String, ByVal fileName As String)
+Public Event OpportunityItemRenamed(ByVal folder As String, ByVal oldName As String, ByVal newName As String)
+
+' Eventos de plantillas
+Public Event TemplateCreated(ByVal folder As String, ByVal fileName As String)
+Public Event TemplateChanged(ByVal folder As String, ByVal fileName As String)
+
+' Eventos de Gas VBNet
+Public Event GasFileCreated(ByVal folder As String, ByVal fileName As String)
+Public Event GasFileChanged(ByVal folder As String, ByVal fileName As String)
+
+' Eventos de error/reconexion
+Public Event MonitoringError(ByVal folder As String, ByVal errorMessage As String)
+Public Event MonitoringReconnected(ByVal folder As String, ByVal attempts As Long)
+Public Event MonitoringFailed(ByVal folder As String, ByVal reason As String)
 
 ' -------------------------------------------------------------
 ' Property: Acceso al FolderWatcher (para debugging)
@@ -33,26 +60,34 @@ End Sub
 Private Sub Class_Terminate()
     If Not mFolderWatcher Is Nothing Then
         LogInfo MODULE_NAME, "[Terminate] - Liberando FolderWatcher COM"
-        mFolderWatcher.Dispose  ' Usar el nuevo metodo Dispose
+        mFolderWatcher.Dispose
         Set mFolderWatcher = Nothing
     End If
 End Sub
 
 ' -------------------------------------------------------------
-' IniciarMonitoreo: CONFIGURA EL FOLDER WATCHER
+' IniciarMonitoreo: RECIBE EL DICCIONARIO DE CARPETAS COMO PARAMETRO
+' @param oDicFolders: Dictionary con claves CFG_RUTA_* y valores = rutas
 ' -------------------------------------------------------------
-Friend Sub IniciarMonitoreo()
+Friend Sub IniciarMonitoreo(ByVal oDicFolders As Object)
     LogInfo MODULE_NAME, "[IniciarMonitoreo]"
 
     On Error GoTo ErrHandler
 
-    ' Obtener carpetas a monitorear desde configuración via App()
-    Dim oDicFolders As Object
-    Set oDicFolders = App().Configuration.oDicFoldersToWatch
-
     If oDicFolders Is Nothing Or oDicFolders.Count = 0 Then
         LogWarning MODULE_NAME, "[IniciarMonitoreo] No hay carpetas configuradas para monitorear"
         Exit Sub
+    End If
+
+    ' Almacenar rutas localmente para usar en callbacks
+    If oDicFolders.Exists(CFG_RUTA_OPORTUNIDADES) Then
+        m_rutaOportunidades = oDicFolders(CFG_RUTA_OPORTUNIDADES)
+    End If
+    If oDicFolders.Exists(CFG_RUTA_PLANTILLAS) Then
+        m_rutaPlantillas = oDicFolders(CFG_RUTA_PLANTILLAS)
+    End If
+    If oDicFolders.Exists(CFG_RUTA_GAS_VBNET) Then
+        m_rutaGasVBNet = oDicFolders(CFG_RUTA_GAS_VBNET)
     End If
 
     ' Monitorear cada carpeta configurada
@@ -97,7 +132,7 @@ Friend Sub IniciarMonitoreo()
                 LogInfo MODULE_NAME, "[IniciarMonitoreo] Gas monitoreado: " & rutaCarpeta
 
             Case Else
-                ' Monitoreo genérico para otras carpetas
+                ' Monitoreo generico para otras carpetas
                 mFolderWatcher.IniciarMonitoreo _
                     folderPath:=rutaCarpeta, _
                     includeSubdirs:=False, _
@@ -105,7 +140,7 @@ Friend Sub IniciarMonitoreo()
                     eventsToWatch:=Array("Created", "Changed"), _
                     inactivityMinutes:=10, _
                     foldersOnly:=False
-                LogInfo MODULE_NAME, "[IniciarMonitoreo] Monitoreo genérico: " & rutaCarpeta
+                LogInfo MODULE_NAME, "[IniciarMonitoreo] Monitoreo generico: " & rutaCarpeta
             End Select
         Else
             LogWarning MODULE_NAME, "[IniciarMonitoreo] ADVERTENCIA: Ruta no existe: " & rutaCarpeta
@@ -121,121 +156,119 @@ End Sub
 
 ' -------------------------------------------------------------
 ' Eventos de cambios en el sistema de archivos (desde FolderWatch)
+' NOTA: Todos los callbacks disparan RaiseEvent, NO llaman a App()
 ' -------------------------------------------------------------
 
-' Eventos de subcarpetas (reemplazan los eventos de archivos para oportunidades)
+' Eventos de subcarpetas (oportunidades)
 Private Sub mFolderWatcher_SubfolderCreated(ByVal parentFolder As String, ByVal subfolderName As String)
-    LogDebug MODULE_NAME, "[callback: clsFolderWatch SubfolderCreated] " & subfolderName & " en " & parentFolder
+    LogDebug MODULE_NAME, "[SubfolderCreated] " & subfolderName & " en " & parentFolder
 
-    ' Determinar tipo de carpeta padre
-    If InStr(1, parentFolder, App().Configuration.RutaOportunidades, vbTextCompare) > 0 Then
-        ' Es una nueva oportunidad - delegar a OpportunitiesMgr
-        App().OpportunitiesMgr.ProcesarCambiosEnOportunidades subfolderName
-        LogInfo MODULE_NAME, "[callback: SubfolderCreated] Nueva oportunidad: " & subfolderName
+    If EsRutaOportunidades(parentFolder) Then
+        LogInfo MODULE_NAME, "[SubfolderCreated] Nueva oportunidad: " & subfolderName
+        RaiseEvent OpportunityCreated(parentFolder, subfolderName)
     End If
 End Sub
 
 Private Sub mFolderWatcher_SubfolderDeleted(ByVal parentFolder As String, ByVal subfolderName As String)
-    LogDebug MODULE_NAME, "[callback: clsFolderWatch SubfolderDeleted] " & subfolderName & " en " & parentFolder
+    LogDebug MODULE_NAME, "[SubfolderDeleted] " & subfolderName & " en " & parentFolder
 
-    If InStr(1, parentFolder, App().Configuration.RutaOportunidades, vbTextCompare) > 0 Then
-        ' Oportunidad eliminada - delegar a OpportunitiesMgr
-        App().OpportunitiesMgr.ProcesarCambiosEnOportunidades subfolderName
-        LogInfo MODULE_NAME, "[callback: SubfolderDeleted] Oportunidad eliminada: " & subfolderName
+    If EsRutaOportunidades(parentFolder) Then
+        LogInfo MODULE_NAME, "[SubfolderDeleted] Oportunidad eliminada: " & subfolderName
+        RaiseEvent OpportunityDeleted(parentFolder, subfolderName)
     End If
 End Sub
 
 Private Sub mFolderWatcher_SubfolderRenamed(ByVal parentFolder As String, ByVal oldName As String, ByVal newName As String)
-    LogDebug MODULE_NAME, "[callback: clsFolderWatch SubfolderRenamed] " & oldName & " -> " & newName & " en " & parentFolder
+    LogDebug MODULE_NAME, "[SubfolderRenamed] " & oldName & " -> " & newName & " en " & parentFolder
 
-    If InStr(1, parentFolder, App().Configuration.RutaOportunidades, vbTextCompare) > 0 Then
-        ' Oportunidad renombrada - delegar a OpportunitiesMgr
-        App().OpportunitiesMgr.ProcesarCambiosEnOportunidades oldName
-        App().OpportunitiesMgr.ProcesarCambiosEnOportunidades newName
-        LogInfo MODULE_NAME, "[callback: SubfolderRenamed] Oportunidad renombrada: " & oldName & " -> " & newName
+    If EsRutaOportunidades(parentFolder) Then
+        LogInfo MODULE_NAME, "[SubfolderRenamed] Oportunidad renombrada: " & oldName & " -> " & newName
+        RaiseEvent OpportunityRenamed(parentFolder, oldName, newName)
     End If
 End Sub
 
-' Los eventos de archivos individuales se mantienen para plantillas y Gas
+' Eventos de archivos
 Private Sub mFolderWatcher_FileCreated(ByVal folder As String, ByVal fileName As String)
-    LogDebug MODULE_NAME, "[callback: clsFolderWatch FileCreated] " & fileName & " en " & folder
+    LogDebug MODULE_NAME, "[FileCreated] " & fileName & " en " & folder
 
-    ' Para plantillas o archivos Gas
-    If InStr(1, folder, App().Configuration.RutaPlantillas, vbTextCompare) > 0 Then
-        LogInfo MODULE_NAME, "[callback: FileCreated] Plantilla nueva: " & fileName
-        ' TODO: Implementar lógica de actualización de plantillas
-    ElseIf InStr(1, folder, App().Configuration.RutaGasVBNet, vbTextCompare) > 0 Then
-        LogInfo MODULE_NAME, "[callback: FileCreated] Archivo Gas nuevo: " & fileName
-        ' TODO: Implementar lógica de sincronización Gas
+    If EsRutaPlantillas(folder) Then
+        LogInfo MODULE_NAME, "[FileCreated] Plantilla nueva: " & fileName
+        RaiseEvent TemplateCreated(folder, fileName)
+    ElseIf EsRutaGasVBNet(folder) Then
+        LogInfo MODULE_NAME, "[FileCreated] Archivo Gas nuevo: " & fileName
+        RaiseEvent GasFileCreated(folder, fileName)
     End If
 End Sub
 
 Private Sub mFolderWatcher_FileDeleted(ByVal folder As String, ByVal fileName As String)
-    LogDebug MODULE_NAME, "[callback: clsFolderWatch FileDeleted] " & fileName & " en " & folder
+    LogDebug MODULE_NAME, "[FileDeleted] " & fileName & " en " & folder
 
-    If InStr(1, folder, App().Configuration.RutaOportunidades, vbTextCompare) > 0 Then
-        ' Es un archivo de oportunidad eliminado - delegar a OpportunitiesMgr
-        App().OpportunitiesMgr.ProcesarCambiosEnItemsOportunidad fileName
+    If EsRutaOportunidades(folder) Then
+        LogInfo MODULE_NAME, "[FileDeleted] Item de oportunidad eliminado: " & fileName
+        RaiseEvent OpportunityItemDeleted(folder, fileName)
     End If
 End Sub
 
 Private Sub mFolderWatcher_FileChanged(ByVal folder As String, ByVal fileName As String)
-    LogDebug MODULE_NAME, "[callback: clsFolderWatch FileChanged] " & fileName & " en " & folder
+    LogDebug MODULE_NAME, "[FileChanged] " & fileName & " en " & folder
 
-    ' Detectar cambios en plantillas o archivos Gas
-    If InStr(1, folder, App().Configuration.RutaPlantillas, vbTextCompare) > 0 Then
-        LogInfo MODULE_NAME, "[callback: FileChanged] Plantilla modificada: " & fileName
-        ' TODO: Notificar cambio en plantilla
-    ElseIf InStr(1, folder, App().Configuration.RutaGasVBNet, vbTextCompare) > 0 Then
-        LogInfo MODULE_NAME, "[callback: FileChanged] Archivo Gas modificado: " & fileName
-        ' TODO: Actualizar referencias
+    If EsRutaPlantillas(folder) Then
+        LogInfo MODULE_NAME, "[FileChanged] Plantilla modificada: " & fileName
+        RaiseEvent TemplateChanged(folder, fileName)
+    ElseIf EsRutaGasVBNet(folder) Then
+        LogInfo MODULE_NAME, "[FileChanged] Archivo Gas modificado: " & fileName
+        RaiseEvent GasFileChanged(folder, fileName)
     End If
 End Sub
 
 Private Sub mFolderWatcher_FileRenamed(ByVal folder As String, ByVal oldName As String, ByVal newName As String)
-    LogDebug MODULE_NAME, "[callback: clsFolderWatch FileRenamed] " & oldName & " -> " & newName & " en " & folder
+    LogDebug MODULE_NAME, "[FileRenamed] " & oldName & " -> " & newName & " en " & folder
 
-    If InStr(1, folder, App().Configuration.RutaOportunidades, vbTextCompare) > 0 Then
-        ' Archivo de oportunidad renombrado - delegar a OpportunitiesMgr
-        App().OpportunitiesMgr.ProcesarCambiosEnItemsOportunidad newName
+    If EsRutaOportunidades(folder) Then
+        LogInfo MODULE_NAME, "[FileRenamed] Item de oportunidad renombrado: " & oldName & " -> " & newName
+        RaiseEvent OpportunityItemRenamed(folder, oldName, newName)
     End If
 End Sub
 
-' Los eventos Heartbeat y ErrorOccurred se mantienen igual
+' Eventos de estado del watcher
 Private Sub mFolderWatcher_Heartbeat(ByVal folder As String, ByVal lastUpdate As Date)
     ' Heartbeat - solo para debug detallado si es necesario
-    ' LogDebug MODULE_NAME, "[callback: clsFolderWatch Heartbeat] " & folder & " - " & lastUpdate
+    ' LogDebug MODULE_NAME, "[Heartbeat] " & folder & " - " & lastUpdate
 End Sub
 
 Private Sub mFolderWatcher_ErrorOccurred(ByVal folder As String, ByVal errorMessage As String)
-    LogError MODULE_NAME, "[callback: clsFolderWatch ErrorOccurred] ERROR en " & folder & ": " & errorMessage
-    
-    ' Mostrar al usuario solo errores cr�ticos
-    If InStr(1, errorMessage, "L�mite", vbTextCompare) > 0 Or _
-       InStr(1, errorMessage, "no encontrada", vbTextCompare) > 0 Then
-        MsgBox "Error en monitoreo de carpeta:" & vbCrLf & _
-               folder & vbCrLf & vbCrLf & _
-               errorMessage, vbExclamation, "FolderWatcher"
-    End If
+    LogError MODULE_NAME, "[ErrorOccurred] ERROR en " & folder & ": " & errorMessage
+    RaiseEvent MonitoringError(folder, errorMessage)
 End Sub
 
-' Eventos de reconexion automatica del FolderWatcher
 Private Sub mFolderWatcher_WatcherReconnected(ByVal folder As String, ByVal attempts As Long)
-    LogDebug MODULE_NAME, "[callback: clsFolderWatch WatcherReconnected] " & folder & " reconectado tras " & attempts & " intento(s)"
-    ' Opcional: notificar al usuario solo si hubo multiples intentos
+    LogDebug MODULE_NAME, "[WatcherReconnected] " & folder & " reconectado tras " & attempts & " intento(s)"
     If attempts > 1 Then
         LogWarning MODULE_NAME, "Monitoreo restaurado en " & folder & " tras " & attempts & " intentos"
     End If
+    RaiseEvent MonitoringReconnected(folder, attempts)
 End Sub
 
 Private Sub mFolderWatcher_WatcherReconnectionFailed(ByVal folder As String, ByVal reason As String)
-    LogError MODULE_NAME, "[callback: clsFolderWatch WatcherReconnectionFailed] " & folder & ": " & reason
-
-    ' Notificar al usuario que el monitoreo fallo permanentemente
-    MsgBox "El monitoreo de la carpeta ha fallado permanentemente:" & vbCrLf & _
-           folder & vbCrLf & vbCrLf & _
-           "Razon: " & reason & vbCrLf & vbCrLf & _
-           "Es posible que la carpeta no este accesible o haya problemas de red.", _
-           vbExclamation, "FolderWatcher - Reconexion Fallida"
+    LogError MODULE_NAME, "[WatcherReconnectionFailed] " & folder & ": " & reason
+    RaiseEvent MonitoringFailed(folder, reason)
 End Sub
 
+' -------------------------------------------------------------
+' Funciones helper privadas para comparar rutas
+' -------------------------------------------------------------
+
+Private Function EsRutaOportunidades(ByVal folder As String) As Boolean
+    If Len(m_rutaOportunidades) = 0 Then Exit Function
+    EsRutaOportunidades = (InStr(1, folder, m_rutaOportunidades, vbTextCompare) > 0)
+End Function
+
+Private Function EsRutaPlantillas(ByVal folder As String) As Boolean
+    If Len(m_rutaPlantillas) = 0 Then Exit Function
+    EsRutaPlantillas = (InStr(1, folder, m_rutaPlantillas, vbTextCompare) > 0)
+End Function
+
+Private Function EsRutaGasVBNet(ByVal folder As String) As Boolean
+    If Len(m_rutaGasVBNet) = 0 Then Exit Function
+    EsRutaGasVBNet = (InStr(1, folder, m_rutaGasVBNet, vbTextCompare) > 0)
+End Function
