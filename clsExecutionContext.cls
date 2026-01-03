@@ -8,17 +8,35 @@ Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
 '@Folder "3-Aplicac (Coord)"
-'@Description: Provee acceso seguro y explícito al contexto de ejecución (Workbook, Worksheet, Chart, Selection)
-'@Note: Diseñado para reemplazar ActiveWorkbook/ActiveSheet/ActiveChart/Selection con acceso seguro y consistente.
-'       Basado en la lógica real de EsValidoInvertirEjes y clsChartEvents.
+'@Description: Provee acceso seguro y explÃ­cito al contexto de ejecuciÃ³n (Workbook, Worksheet, Chart, Selection)
+'@Note: Centraliza la suscripciÃ³n a eventos de Application y propaga cambios a otras clases.
+'       DiseÃ±ado para reemplazar ActiveWorkbook/ActiveSheet/ActiveChart/Selection con acceso seguro.
 Option Explicit
 
-Public Event WorkbookChanged(ByVal wb As Workbook)
-Public Event WorksheetChanged(ByVal ws As Worksheet)
+Private Const MODULE_NAME As String = "clsExecutionContext"
+
+' ==========================================
+' EVENTOS PUBLICOS - Otras clases pueden suscribirse
+' ==========================================
+Public Event WorkbookOpened(ByVal wb As Workbook)
+Public Event WorkbookActivated(ByVal wb As Workbook)
+Public Event WorkbookBeforeClose(ByVal wb As Workbook, ByRef Cancel As Boolean)
+Public Event WorksheetActivated(ByVal ws As Worksheet)
+Public Event WorksheetDeactivated(ByVal ws As Worksheet)
+Public Event SheetActivated(ByVal sh As Object)
+Public Event SheetDeactivated(ByVal sh As Object)
 Public Event SelectionChanged(ByVal sel As Object)
 
-Private m_app As Application
-Private m_lastWorkbookObjKey As Double   ' Cache coherente (solo si sigue vigente)
+' ==========================================
+' SUSCRIPCION A EVENTOS DE APPLICATION
+' ==========================================
+Private WithEvents m_xlApp As Application
+Attribute m_xlApp.VB_VarHelpID = -1
+
+' ==========================================
+' CACHE DE ESTADO
+' ==========================================
+Private m_lastWorkbookObjKey As Double
 Private m_lastWorksheetObjKey As Double
 Private m_lastChartObjKey As Double
 Private m_lastSelectionObjKey As Double
@@ -32,26 +50,64 @@ End Type
 Private m_cachedChartInfo As T_CachedChartInfo
 
 ' ---------------------------------------------------------------------------
-' INICIALIZACIÓN
+' INICIALIZACION
 ' ---------------------------------------------------------------------------
 Public Sub Initialize()
-    Set m_app = Application
-    ' No cacheamos nada aquí ? lazy evaluation segura
+    Set m_xlApp = Application
+    LogInfo MODULE_NAME, "[Initialize] - Suscrito a eventos de Application"
 End Sub
 
 ' ---------------------------------------------------------------------------
-' PROPIEDADES PÚBLICAS — seguras y con fallback explícito
+' EVENTOS DE APPLICATION - Capturados y propagados
+' ---------------------------------------------------------------------------
+
+Private Sub m_xlApp_WorkbookOpen(ByVal wb As Workbook)
+    LogDebug MODULE_NAME, "[xlApp_WorkbookOpen] " & wb.Name
+    RaiseEvent WorkbookOpened(wb)
+End Sub
+
+Private Sub m_xlApp_WorkbookActivate(ByVal wb As Workbook)
+    LogDebug MODULE_NAME, "[xlApp_WorkbookActivate] " & wb.Name
+    m_lastWorkbookObjKey = ObjPtr(wb)
+    RaiseEvent WorkbookActivated(wb)
+End Sub
+
+Private Sub m_xlApp_WorkbookBeforeClose(ByVal wb As Workbook, Cancel As Boolean)
+    LogDebug MODULE_NAME, "[xlApp_WorkbookBeforeClose] " & wb.Name
+    RaiseEvent WorkbookBeforeClose(wb, Cancel)
+End Sub
+
+Private Sub m_xlApp_SheetActivate(ByVal sh As Object)
+    LogDebug MODULE_NAME, "[xlApp_SheetActivate] " & TypeName(sh) & " '" & sh.Name & "'"
+    If TypeOf sh Is Worksheet Then
+        m_lastWorksheetObjKey = ObjPtr(sh)
+        RaiseEvent WorksheetActivated(sh)
+    End If
+    RaiseEvent SheetActivated(sh)
+End Sub
+
+Private Sub m_xlApp_SheetDeactivate(ByVal sh As Object)
+    LogDebug MODULE_NAME, "[xlApp_SheetDeactivate] " & sh.Name
+    If TypeOf sh Is Worksheet Then
+        RaiseEvent WorksheetDeactivated(sh)
+    End If
+    RaiseEvent SheetDeactivated(sh)
+End Sub
+
+' ---------------------------------------------------------------------------
+' PROPIEDADES PUBLICAS - seguras y con fallback explicito
 ' ---------------------------------------------------------------------------
 Public Property Get Workbook() As Workbook
     On Error GoTo SafeExit
-    If m_app.ActiveWorkbook Is Nothing Then Exit Property
-    If ObjPtr(m_app.ActiveWorkbook) = m_lastWorkbookObjKey Then
-        Set Workbook = m_app.ActiveWorkbook
+    If m_xlApp Is Nothing Then Exit Property
+    If m_xlApp.ActiveWorkbook Is Nothing Then Exit Property
+    If ObjPtr(m_xlApp.ActiveWorkbook) = m_lastWorkbookObjKey Then
+        Set Workbook = m_xlApp.ActiveWorkbook
         Exit Property
     End If
     ' Refrescar cache
-    m_lastWorkbookObjKey = ObjPtr(m_app.ActiveWorkbook)
-    Set Workbook = m_app.ActiveWorkbook
+    m_lastWorkbookObjKey = ObjPtr(m_xlApp.ActiveWorkbook)
+    Set Workbook = m_xlApp.ActiveWorkbook
     Exit Property
 SafeExit:
     Set Workbook = Nothing
@@ -59,13 +115,14 @@ End Property
 
 Public Property Get Worksheet() As Worksheet
     On Error GoTo SafeExit
-    If TypeOf m_app.ActiveSheet Is Worksheet Then
-        If ObjPtr(m_app.ActiveSheet) = m_lastWorksheetObjKey Then
-            Set Worksheet = m_app.ActiveSheet
+    If m_xlApp Is Nothing Then Exit Property
+    If TypeOf m_xlApp.ActiveSheet Is Worksheet Then
+        If ObjPtr(m_xlApp.ActiveSheet) = m_lastWorksheetObjKey Then
+            Set Worksheet = m_xlApp.ActiveSheet
             Exit Property
         End If
-        m_lastWorksheetObjKey = ObjPtr(m_app.ActiveSheet)
-        Set Worksheet = m_app.ActiveSheet
+        m_lastWorksheetObjKey = ObjPtr(m_xlApp.ActiveSheet)
+        Set Worksheet = m_xlApp.ActiveSheet
     End If
     Exit Property
 SafeExit:
@@ -74,35 +131,36 @@ End Property
 
 Public Property Get Selection() As Object
     On Error GoTo SafeExit
-    Set Selection = m_app.Selection
+    If m_xlApp Is Nothing Then Exit Property
+    Set Selection = m_xlApp.Selection
     Exit Property
 SafeExit:
     Set Selection = Nothing
 End Property
 
 Public Property Get Application() As Application
-    Set Application = m_app
+    Set Application = m_xlApp
 End Property
 
 ' ---------------------------------------------------------------------------
-' CHART — LA PARTE CRÍTICA (reescrita para tu lógica exacta)
+' CHART - LA PARTE CRITICA (logica para detectar chart activo)
 ' ---------------------------------------------------------------------------
 Public Property Get Chart() As Chart
     On Error GoTo SafeExit
-    
-    ' Si ya está cacheado y válido, devolverlo
+
+    If m_xlApp Is Nothing Then Exit Property
+
+    ' Si ya esta cacheado y valido, devolverlo
     If m_cachedChartInfo.IsValid Then
         Set Chart = m_cachedChartInfo.Chart
         Exit Property
     End If
 
-    ' === LÓGICA IDÉNTICA A TU EsValidoInvertirEjes ===
     Dim Ch As Chart
     Dim sel As Object
-    Dim ws As Worksheet
 
     ' 1. Caso 1: ActiveChart (ChartSheet o Chart activado en hoja)
-    Set Ch = m_app.ActiveChart
+    Set Ch = m_xlApp.ActiveChart
     If Not Ch Is Nothing Then
         m_cachedChartInfo.Chart = Ch
         m_cachedChartInfo.SourceType = "ActiveChart"
@@ -119,7 +177,7 @@ Public Property Get Chart() As Chart
             Case "ChartObject"
                 Set Ch = sel.Chart
             Case "ChartArea", "PlotArea", "Legend", "Axis", "Series"
-                ' Subir hasta encontrar el Chart (como haces tú)
+                ' Subir hasta encontrar el Chart
                 Dim obj As Object: Set obj = sel
                 Do While Not (TypeOf obj Is Chart) And Not (obj Is Nothing)
                     On Error Resume Next
@@ -129,7 +187,7 @@ Public Property Get Chart() As Chart
                 Loop
                 If TypeOf obj Is Chart Then Set Ch = obj
             Case Else
-                ' No es un gráfico ? salir
+                ' No es un grafico - salir
         End Select
     End If
 
@@ -149,7 +207,7 @@ Public Property Get Chart() As Chart
         Exit Property
     End If
 
-    ' No hay gráfico activo
+    ' No hay grafico activo
     m_cachedChartInfo.IsValid = False
     Set Chart = Nothing
     Exit Property
@@ -159,7 +217,7 @@ SafeExit:
 End Property
 
 ' ---------------------------------------------------------------------------
-' MÉTODOS DE CONVENIENCIA — idénticos a los tuyos, pero seguros
+' METODOS DE CONVENIENCIA - seguros
 ' ---------------------------------------------------------------------------
 Public Property Get HasWorkbook() As Boolean
     HasWorkbook = Not (Me.Workbook Is Nothing)
@@ -188,30 +246,32 @@ SafeExit:
 End Function
 
 ' ---------------------------------------------------------------------------
-' DIAGNÓSTICO — clave para depuración
+' DIAGNOSTICO - clave para depuracion
 ' ---------------------------------------------------------------------------
 Public Function Diagnostics() As String
     Dim s As String
     s = "Contexto actual:" & vbCrLf
-    
+
     s = s & "  Workbook: " & IIf(Me.HasWorkbook, Me.Workbook.Name, "(ninguno)") & vbCrLf
     s = s & "  Worksheet: " & IIf(Me.HasWorksheet, Me.Worksheet.Name, "(ninguna)") & vbCrLf
     s = s & "  Selection: " & IIf(Me.HasSelection, TypeName(Me.Selection), "(nada)") & vbCrLf
-    
+
     If Me.HasChart Then
         With m_cachedChartInfo
-            s = s & "  Chart: Sí (" & .SourceType & " en " & .ParentType & ")" & vbCrLf
+            s = s & "  Chart: Si (" & .SourceType & " en " & .ParentType & ")" & vbCrLf
         End With
     Else
         s = s & "  Chart: No" & vbCrLf
     End If
-    
-    ' Diagnóstico adicional para depuración de errores de contexto
+
+    ' Diagnostico adicional
     On Error Resume Next
-    s = s & "  App.ActiveChart: " & IIf(m_app.ActiveChart Is Nothing, "Nothing", "Sí") & vbCrLf
-    s = s & "  App.Selection: " & TypeName(m_app.Selection) & vbCrLf
+    If Not m_xlApp Is Nothing Then
+        s = s & "  App.ActiveChart: " & IIf(m_xlApp.ActiveChart Is Nothing, "Nothing", "Si") & vbCrLf
+        s = s & "  App.Selection: " & TypeName(m_xlApp.Selection) & vbCrLf
+    End If
     On Error GoTo 0
-    
+
     Diagnostics = s
 End Function
 
@@ -219,7 +279,8 @@ End Function
 ' LIMPIEZA
 ' ---------------------------------------------------------------------------
 Private Sub Class_Terminate()
-    Set m_app = Nothing
+    LogDebug MODULE_NAME, "[Class_Terminate]"
+    Set m_xlApp = Nothing
     m_cachedChartInfo.IsValid = False
     Set m_cachedChartInfo.Chart = Nothing
 End Sub

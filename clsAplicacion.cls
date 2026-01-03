@@ -24,8 +24,8 @@ Private WithEvents mChartManager As clsChartEventsManager
 Attribute mChartManager.VB_VarHelpID = -1
 Private WithEvents mFSMonitoringCoord As clsFSMonitoringCoord
 Attribute mFSMonitoringCoord.VB_VarHelpID = -1
-Private WithEvents xlApp As Application
-Attribute xlApp.VB_VarHelpID = -1
+Private WithEvents ctx As clsExecutionContext
+Attribute ctx.VB_VarHelpID = -1
 
 Private WithEvents mRibbonState As clsRibbonState
 Attribute mRibbonState.VB_VarHelpID = -1
@@ -34,7 +34,6 @@ Attribute evRibbon.VB_VarHelpID = -1
 
 Private mConfiguration As clsConfiguration
 Private mFileMgr As clsFileManager
-Private mExecutionContext As clsExecutionContext
 
 Public Property Get bChartActive() As Boolean
     bChartActive = m_bChartActive
@@ -45,7 +44,7 @@ Public Property Get Configuration() As clsConfiguration
 End Property
 
 Public Property Get ExecutionContext() As clsExecutionContext
-    Set ExecutionContext = mExecutionContext
+    Set ExecutionContext = ctx
 End Property
 
 Public Property Get FileMgr() As clsFileManager
@@ -75,7 +74,7 @@ Public Property Let RibbonHandler(xlRibbon As IRibbonUI)
 End Property
 
 ' -------------------------------------------------------------
-' Class_Initialize: SOLO inicialización mínima (ligera y segura)
+' Class_Initialize: SOLO inicializaciï¿½n mï¿½nima (ligera y segura)
 ' NO debe hacer trabajo pesado ni depender de App
 ' -------------------------------------------------------------
 Private Sub Class_Initialize()
@@ -87,45 +86,42 @@ Private Sub Class_Initialize()
     Set mRibbonState = New clsRibbonState
     mRibbonState.Modo = Ribbon_OpportunityOnly
     
-    ' 1. Configuración (sin dependencias)
+    ' 1. ConfiguraciÃ³n (sin dependencias)
     Set mConfiguration = New clsConfiguration
-    
-    ' 1.5 Contexto de ejecución (antes del FileManager y demás)
-    Set mExecutionContext = New clsExecutionContext
-    mExecutionContext.Initialize
 
-    ' 2. FileManager (solo depende de configuración)
+    ' 2. Contexto de ejecuciÃ³n (suscripciÃ³n a eventos de Application)
+    Set ctx = New clsExecutionContext
+    ctx.Initialize
+    LogInfo MODULE_NAME, "[Class_Initialize] - ctx suscrito a eventos de Application"
+
+    ' 3. FileManager (recibe el contexto compartido)
     Set mFileMgr = New clsFileManager
+    mFileMgr.Initialize ctx
     InitFileManager
 
-    ' 3. OpportunitiesMgr
+    ' 4. OpportunitiesMgr
     Set mOpportunities = New clsOpportunitiesMgr
-    ' Inicialización explícita
     mOpportunities.SetBaseFolder mConfiguration.RutaOportunidades
-    
-    ' 4. ChartManager (gestion de eventos del usuario sobre charts de excel (seleccion; etc)
+
+    ' 5. ChartManager (gestion de eventos del usuario sobre charts)
     Set mChartManager = New clsChartEventsManager
-    
-    ' 5. Iniciar Application events
-    Set xlApp = Application
-    LogInfo MODULE_NAME, "[Class_Initialize] - xlApp suscrito"
     
     ' 6. Watcher
     Set mFSMonitoringCoord = New clsFSMonitoringCoord
     'StartFolderWatcher mConfiguration.oDicFoldersToWatch
     mFSMonitoringCoord.IniciarMonitoreo
     
-    LogInfo MODULE_NAME, "[Class_Initialize] - inicialización completada"
+    LogInfo MODULE_NAME, "[Class_Initialize] - inicializaciï¿½n completada"
     
-    ' como consecuencia de introducir el watcher, habrá que gestionar la actualizacion del ribbon, con los cambios que se graben en el
-    ' registro; de ello se encarga la aplicacion (la configuracion NO sabe si hay un control dinámico de las carpetas, o si su contenido
-    ' es estático)
+    ' como consecuencia de introducir el watcher, habrï¿½ que gestionar la actualizacion del ribbon, con los cambios que se graben en el
+    ' registro; de ello se encarga la aplicacion (la configuracion NO sabe si hay un control dinï¿½mico de las carpetas, o si su contenido
+    ' es estï¿½tico)
     ' LA PREGUNTA: DEL RIBBON SOLO SABE LA APLICACION, o trmaiben sabe el watcher? (encomiendo al modulo del watcher, o a la app, la actualiz del ribbon?)
 
     Exit Sub
 ErrHandler:
     Err.Raise Err.Number, "clsAplicacion.Class_Initialize", _
-              "Error inicializando aplicación: " & Err.Description
+              "Error inicializando aplicaciï¿½n: " & Err.Description
 End Sub
 
 ' -------------------------------------------------------------
@@ -135,11 +131,11 @@ Private Sub Class_Terminate()
     Terminate
 End Sub
 
-' Método Terminate para ser llamado desde ThisWorkbook.Workbook_BeforeClose/Uninstall
+' MÃ©todo Terminate para ser llamado desde ThisWorkbook.Workbook_BeforeClose/Uninstall
 Public Sub Terminate()
     LogInfo MODULE_NAME, "[Terminate] - Iniciando limpieza de la aplicacion"
 
-    On Error Resume Next  ' Asegurar que la limpieza continúa aunque haya errores
+    On Error Resume Next  ' Asegurar que la limpieza continÃºa aunque haya errores
 
     ' 1. Liberar FolderWatcher primero (tiene recursos COM externos)
     Set mFSMonitoringCoord = Nothing
@@ -157,14 +153,14 @@ Public Sub Terminate()
     Set mChartManager = Nothing
     Set mRibbonState = Nothing
 
-    ' 4. Liberar referencia a Excel Application
-    Set xlApp = Nothing
+    ' 4. Liberar contexto de ejecuciÃ³n (desuscribe de Application)
+    Set ctx = Nothing
 
     LogInfo MODULE_NAME, "[Terminate] - Limpieza completada"
 End Sub
 
 ' -------------------------------------------------------------
-' InitFileManager: GESTIONA LA COLECCIÓN DE WORKBOOKS
+' InitFileManager: GESTIONA LA COLECCIï¿½N DE WORKBOOKS
 ' (Es responsabilidad de clsAplicacion, NO de clsFileManager)
 ' -------------------------------------------------------------
 Public Sub InitFileManager()
@@ -183,7 +179,7 @@ Public Sub InitFileManager()
     
     ' Establecer el archivo activo
     Dim wb As Workbook
-    Set wb = mExecutionContext.Workbook
+    Set wb = ctx.Workbook
     If Not wb Is Nothing Then
         Set mFileMgr.ActiveWb = mFileMgr.GetOrTrackWorkbook(wb)
     End If
@@ -200,8 +196,8 @@ End Sub
 ' ==========================================
 ' gestion del ribbon
 ' ==========================================
-'@Description: Conmuta cíclicamente el modo del Ribbon (admin ? opp ? user ? admin)
-'@Scope: público
+'@Description: Conmuta cï¿½clicamente el modo del Ribbon (admin ? opp ? user ? admin)
+'@Scope: pï¿½blico
 '@Category: UI / Ribbon
 Public Sub ToggleRibbonMode()
     mRibbonState.ToggleModo
@@ -227,57 +223,39 @@ End Sub
 ' ==================================================================
 
 ' -------------------------------------------------------------
-' Eventos de Application (con delegación al FileManager, ChartManager etc)
+' Eventos de clsExecutionContext (propagados desde Application)
 ' -------------------------------------------------------------
 
-Private Sub xlApp_WorkbookOpen(ByVal wb As Workbook)
-    LogDebug MODULE_NAME, "[callback: Application WorkbookOpen] - libro abierto: " & wb.Name
-    mFileMgr.GetOrTrackWorkbook wb
-End Sub
-
-Private Sub xlApp_WorkbookActivate(ByVal wb As Workbook)
-    LogDebug MODULE_NAME, "[callback: Application WorkbookActivate] - libro activo: " & wb.Name & " (ribbon: " & TypeName(evRibbon) & ")"
-    Set mFileMgr.ActiveWb = mFileMgr.GetOrTrackWorkbook(wb) ' actualiza current
+'@Description: Se dispara cuando se activa un workbook (desde ctx)
+Private Sub ctx_WorkbookActivated(ByVal wb As Workbook)
+    LogDebug MODULE_NAME, "[ctx_WorkbookActivated] " & wb.Name
     mChartManager.RefreshCurrentSheet
 End Sub
 
-Private Sub xlApp_WorkbookBeforeClose(ByVal wb As Workbook, Cancel As Boolean)
-    LogDebug MODULE_NAME, "[callback: Application WorkbookBeforeClose] - libro a cerrar: " & wb.Name
-    mFileMgr.UntrackWorkbook wb
-End Sub
-
 '@Description: Se dispara al activar una hoja; inicia vigilancia de graficos
-'@Category: Gráficos
-'@Scope: Grafico seleccionado
-'@ArgumentDescriptions: sh As Object
-Private Sub xlApp_SheetActivate(ByVal sh As Object)
+Private Sub ctx_SheetActivated(ByVal sh As Object)
     On Error GoTo ErrHandler
-    
-    LogDebug MODULE_NAME, "[callback: Application SheetActivate] [i] Hoja activada: " & TypeName(sh) & " '" & sh.Name & "'"
+
+    LogDebug MODULE_NAME, "[ctx_SheetActivated] " & TypeName(sh) & " '" & sh.Name & "'"
     mChartManager.WatchSheet sh
     evRibbon.InvalidarControl "btnGenerarGraficos"
     evRibbon.InvalidarControl "btnCGASING"
-    'evRibbon.InvalidarRibbon
     Exit Sub
 ErrHandler:
-    LogError MODULE_NAME, "[callback: Application SheetActivate] Error", , Err.Description
+    LogError MODULE_NAME, "[ctx_SheetActivated] Error", , Err.Description
 End Sub
 
 '@Description: Se dispara al desactivar una hoja; detiene vigilancia de graficos
-'@Category: Gráficos
-'@Scope: Grafico seleccionado
-'@ArgumentDescriptions: sh As Object
-Private Sub xlApp_SheetDeactivate(ByVal sh As Object)
+Private Sub ctx_SheetDeactivated(ByVal sh As Object)
     On Error GoTo ErrHandler
-    
-    LogDebug MODULE_NAME, "[callback: Application SheetDeactivate] [i] Hoja desactivada: '" & sh.Name & "'"
+
+    LogDebug MODULE_NAME, "[ctx_SheetDeactivated] '" & sh.Name & "'"
     mChartManager.StopWatching
     evRibbon.InvalidarControl "btnGenerarGraficos"
     evRibbon.InvalidarControl "btnCGASING"
-
     Exit Sub
 ErrHandler:
-    LogError MODULE_NAME, "[callback: Application SheetDeactivate] Error", , Err.Description
+    LogError MODULE_NAME, "[ctx_SheetDeactivated] Error", , Err.Description
 End Sub
 
 ' -------------------------------------------------------------
@@ -293,7 +271,7 @@ Private Sub mOpportunities_OpportunityCollectionUpdate(ByVal cambios As String)
         LogDebug MODULE_NAME, "[mOpportunities_OpportunityCollectionUpdate] - Ribbon invalidado"
     End If
 End Sub
-'TODO: Extraer la lógica de clsExcelFile A una función (En principio se mantendrá en Celesa aplicación pero es posible que se lleve a otra clase)
+'TODO: Extraer la lï¿½gica de clsExcelFile A una funciï¿½n (En principio se mantendrï¿½ en Celesa aplicaciï¿½n pero es posible que se lleve a otra clase)
 Private Sub mOpportunities_currOpportunityChanged(ByVal Index As Long, ByVal Path As String)
     LogInfo MODULE_NAME, "[callback: clsOpportunitiesMgr currOpportunityChanged] - Oportunidad seleccionada: " & Path
     
@@ -304,7 +282,7 @@ Private Sub mOpportunities_currOpportunityChanged(ByVal Index As Long, ByVal Pat
             f.MoverAOp Path, mConfiguration.RutaOportunidades
         End If
     End If
-    ' (Aquí no tiene sentido invalidar el ribbon, esto no tiene nada que ver con ribbon, SOLO LÓGICA DE NEGOCIO)
+    ' (Aquï¿½ no tiene sentido invalidar el ribbon, esto no tiene nada que ver con ribbon, SOLO Lï¿½GICA DE NEGOCIO)
 End Sub
 
 ' -------------------------------------------------------------
@@ -312,17 +290,17 @@ End Sub
 ' -------------------------------------------------------------
 
 Private Sub mChartManager_ChartActivated(cht As Chart)
-    LogDebug MODULE_NAME, "[callback: clsChartEventsManager ChartActivated] - Gráfico activado: " & cht.Name
+    LogDebug MODULE_NAME, "[callback: clsChartEventsManager ChartActivated] - Grï¿½fico activado: " & cht.Name
     m_bChartActive = True
-    ' Aquí decides:
-    ' - ¿Invalidar ribbon?
-    ' - ¿Cargar datos del gráfico?
-    ' - ¿Actualizar estado de la oportunidad?
+    ' Aquï¿½ decides:
+    ' - ï¿½Invalidar ribbon?
+    ' - ï¿½Cargar datos del grï¿½fico?
+    ' - ï¿½Actualizar estado de la oportunidad?
     evRibbon.InvalidarControl "btnInvertirSeries"
 End Sub
 
 Private Sub mChartManager_ChartDeactivated(cht As Chart)
-    LogDebug MODULE_NAME, "[callback: clsChartEventsManager ChartActivated] - Gráfico DESactivado: " & cht.Name
+    LogDebug MODULE_NAME, "[callback: clsChartEventsManager ChartActivated] - Grï¿½fico DESactivado: " & cht.Name
     m_bChartActive = False
     evRibbon.InvalidarControl "btnInvertirSeries"
 End Sub
@@ -387,9 +365,9 @@ ErrorHandler:
     'Application.ScreenUpdating = True
 End Sub
 
-'@Description: Devuelve True si, en el estado actual de la aplicación,
-'             tiene sentido habilitar la acción "Invertir Ejes".
-'@Scope: público (consulta de estado desde el Ribbon/modRibbonCallbacks)
+'@Description: Devuelve True si, en el estado actual de la aplicaciï¿½n,
+'             tiene sentido habilitar la acciï¿½n "Invertir Ejes".
+'@Scope: pï¿½blico (consulta de estado desde el Ribbon/modRibbonCallbacks)
 '@ArgumentDescriptions: (sin argumentos)
 '@Returns: Boolean | True si es posible invertir ejes ahora mismo.
 '@Category: UI / Estado consolidado
