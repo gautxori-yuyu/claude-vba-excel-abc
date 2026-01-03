@@ -7,3 +7,6 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
+'@Folder "4-Oportunidades y compresores.d-Ofertas.Plantillas"
+Option Explicit
+

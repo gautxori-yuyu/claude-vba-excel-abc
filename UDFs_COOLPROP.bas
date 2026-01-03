@@ -1,5 +1,6 @@
 Attribute VB_Name = "UDFs_COOLPROP"
 '@IgnoreModule MissingAnnotationArgument
+'@Folder "UDFS"
 Option Explicit
 
 '@UDF
@@ -143,4 +144,3 @@ Private Function CellsToArray(inputRange As Range) As Variant()
     
     CellsToArray = tempArr
 End Function
-

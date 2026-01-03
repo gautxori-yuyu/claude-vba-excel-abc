@@ -11,18 +11,19 @@ Attribute VB_Name = "modMACROComparadorHojas"
 ' Esa nueva hoja, La que establece el orden de las hilas en comparación, Será una copia de aquella en la que no se haya seleccionado
 ' "Marcar las diferencias con un color" )
 
+'@Folder "MACROS"
 Option Explicit
 
 ' Diccionario para guardar: clave = dirección celda, valor = color original
 ' Si una celda está en este diccionario, significa que fue modificada
 Private dictCeldasModificadas As Object
 
+' Variable a nivel de modulo para mantener referencia al formulario no modal
+Private mFrmComparador As frmComparadorHojas
+
 ' -------------------------------------------------------------------------------------------------------------
 ' INICIALIZACIÓN Y CONFIGURACIÓN
 ' -------------------------------------------------------------------------------------------------------------
-
-' Variable a nivel de modulo para mantener referencia al formulario no modal
-Private mFrmComparador As frmComparadorHojas
 
 '@Description: Inicializa el diccionario de celdas modificadas y muestra el formulario comparador
 '              en modo no modal
@@ -188,7 +189,7 @@ End Sub
 '@Dependencies: Ninguna
 '@Note: xlNone tiene valor -4142. RGB blanco tiene valor 16777215
 Function EsFondoBlanco(celda As Range) As Boolean
-Attribute EsFondoBlanco.VB_Description = "[modMACROComparadorHojas] FUNCIONES AUXILIARES DE FORMATO Y COLOR.  Verifica si una celda tiene fondo blanco o sin color (xlNone) xlNone tiene valor -4142. RGB blanco tiene valor 16777215. Aplica a: Cells Range\r\nM.D.:Public"
+Attribute EsFondoBlanco.VB_Description = "[modMACROComparadorHojas] FUNCIONES AUXILIARES DE FORMATO Y COLOR Verifica si una celda tiene fondo blanco o sin color (xlNone) xlNone tiene valor -4142. RGB blanco tiene valor 16777215. Aplica a: Cells Range\r\nM.D.:Public"
 Attribute EsFondoBlanco.VB_ProcData.VB_Invoke_Func = " \n21"
     Dim colorInterior As Long
     colorInterior = celda.Interior.Color

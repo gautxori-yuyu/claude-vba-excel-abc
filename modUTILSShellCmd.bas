@@ -3,80 +3,7 @@ Attribute VB_Name = "modUTILSShellCmd"
 ' ==========================================
 ' FUNCIONES AUXILIARES
 ' ==========================================
-
-'@Description: Valida si una ruta de carpeta existe
-Public Function RutaExiste(ruta As String) As Boolean
-Attribute RutaExiste.VB_Description = "[modUTILSShellCmd] FUNCIONES AUXILIARES.  Valida si una ruta de carpeta existe"
-Attribute RutaExiste.VB_ProcData.VB_Invoke_Func = " \n21"
-    On Error Resume Next
-    RutaExiste = ruta <> "" And (Dir(ruta, vbDirectory) <> "")
-    On Error GoTo 0
-End Function
-'@Description: Determina si una ruta es de red o unidad removible
-'@Scope: Privado
-'@ArgumentDescriptions: ruta: Ruta a verificar
-'@Returns: Boolean | True si es ruta de red o removible
-Function EsRutaRemovibleORed(ruta As String) As Boolean
-Attribute EsRutaRemovibleORed.VB_Description = "[modUTILSShellCmd] Determina si una ruta es de red o unidad removible"
-Attribute EsRutaRemovibleORed.VB_ProcData.VB_Invoke_Func = " \n21"
-    Dim fso As Object
-    Dim drive As Object
-    Dim driveLetter As String
-    
-    On Error Resume Next
-    
-    Set fso = CreateObject("Scripting.FileSystemObject")
-    
-    ' Caso 1: Ruta UNC (\\servidor\compartido)
-    If Left$(ruta, 2) = "\\" Then
-        EsRutaRemovibleORed = True
-        Exit Function
-    End If
-    
-    ' Caso 2: Verificar tipo de unidad
-    driveLetter = fso.GetDriveName(ruta)
-    
-    If driveLetter <> "" And fso.DriveExists(driveLetter) Then
-        Set drive = fso.GetDrive(driveLetter)
-        
-        ' DriveType: 0=Unknown, 1=Removable, 2=Fixed, 3=Network, 4=CDRom, 5=RamDisk
-        If drive.DriveType = 1 Or drive.DriveType = 3 Then  ' Removable o Network
-            EsRutaRemovibleORed = True
-        Else
-            EsRutaRemovibleORed = False
-        End If
-    Else
-        ' No se pudo determinar, asumir que es removible por seguridad
-        EsRutaRemovibleORed = True
-    End If
-    
-    On Error GoTo 0
-End Function
-
-Function ObtenerRutaEjecutable(nombreExe As String) As String
-Attribute ObtenerRutaEjecutable.VB_Description = "[modUTILSShellCmd] Obtener Ruta Ejecutable (función personalizada)"
-Attribute ObtenerRutaEjecutable.VB_ProcData.VB_Invoke_Func = " \n21"
-    Dim objShell As Object
-    Dim objExec As Object
-    Dim comando As String
-    Dim resultado As String
-
-    Set objShell = CreateObject("WScript.Shell")
-    
-    ' Construye el comando WHERE para el ejecutable indicado
-    comando = "cmd.exe /u where " & nombreExe
-    
-    ' Ejecuta el comando de forma oculta y captura la salida
-    Set objExec = objShell.Exec(comando)
-    resultado = objExec.StdOut.ReadAll
-    
-    ' Limpiar saltos de línea y devolver solo la primera ruta encontrada
-    If resultado <> "" Then
-        ObtenerRutaEjecutable = Split(resultado, vbCrLf)(0)
-    Else
-        ObtenerRutaEjecutable = ""
-    End If
-End Function
+'@Folder "Funciones auxiliares"
 
 Sub testFindImagesInFolder()
     Call FindImagesInFolder
@@ -168,7 +95,7 @@ End Function
 '@ArgumentDescriptions: rutaCarpeta: Carpeta a comprimir | rutaZipDestino: Ruta del ZIP
 '@Returns: Boolean | True si 7-Zip funcionó correctamente
 Function ComprimirCon7Zip(rutaCarpeta As String, rutaZipDestino As String) As Boolean
-Attribute ComprimirCon7Zip.VB_Description = "[modUTILSShellCmd] MÉTODO 1: COMPRESIÓN CON 7-ZIP.  Intenta comprimir usando 7-Zip si está instalado"
+Attribute ComprimirCon7Zip.VB_Description = "[modUTILSShellCmd] MÉTODO 1: COMPRESIÓN CON 7-ZIP Intenta comprimir usando 7-Zip si está instalado"
 Attribute ComprimirCon7Zip.VB_ProcData.VB_Invoke_Func = " \n21"
     Dim ruta7Zip As String
     Dim comando As String
@@ -181,12 +108,11 @@ Attribute ComprimirCon7Zip.VB_ProcData.VB_Invoke_Func = " \n21"
     Set fso = CreateObject("Scripting.FileSystemObject")
     
     ' Buscar 7-Zip en ubicaciones comunes
-    ruta7Zip = Buscar7Zip()
+     ruta7Zip = Buscar7Zip()
     
     If ruta7Zip = "" Then
         ' 7-Zip no encontrado
-        ComprimirCon7Zip = False
-        Exit Function
+        ruta7Zip = "7Z.exe"
     End If
     
     ' Eliminar ZIP destino si ya existe
@@ -233,11 +159,11 @@ Private Function Buscar7Zip() As String
     
     Set fso = CreateObject("Scripting.FileSystemObject")
     
-    ruta = ObtenerRutaEjecutable("7z.exe")
-    If fso.FileExists(ruta) Then
-        Buscar7Zip = ruta
-        Exit Function
-    End If
+'    ruta = ObtenerRutaEjecutable("7z.exe")
+'    If fso.FileExists(ruta) Then
+'        Buscar7Zip = ruta
+'        Exit Function
+'    End If
     
     ' Ubicaciones comunes de 7-Zip
     rutas = Array( _
@@ -270,7 +196,7 @@ End Function
 '@ArgumentDescriptions: rutaCarpeta: Carpeta a comprimir | rutaZipDestino: Ruta del ZIP
 '@Returns: Boolean | True si la compresión funcionó
 Function ComprimirConShellApplication(rutaCarpeta As String, rutaZipDestino As String) As Boolean
-Attribute ComprimirConShellApplication.VB_Description = "[modUTILSShellCmd] MÉTODO 2: COMPRESIÓN CON SHELL.APPLICATION (MEJORADO).  Comprime usando Shell.Application con sincronización robusta (basado en código de Gustav Brock)"
+Attribute ComprimirConShellApplication.VB_Description = "[modUTILSShellCmd] MÉTODO 2: COMPRESIÓN CON SHELL.APPLICATION (MEJORADO) Comprime usando Shell.Application con sincronización robusta (basado en código de Gustav Brock)"
 Attribute ComprimirConShellApplication.VB_ProcData.VB_Invoke_Func = " \n21"
     Dim fso As Object
     Dim shellApp As Object
@@ -475,4 +401,3 @@ Private Function ContarItemsEnZip(shellApp As Object, rutaZip As String) As Long
     
     On Error GoTo 0
 End Function
-

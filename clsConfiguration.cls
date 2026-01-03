@@ -7,11 +7,11 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
-'@Folder "2-Control de estado"
+'TODO Migrar de Registry a archivo JSON para configuración (NO PRIORITARIO)
+'TODO Implementar importar/exportar configuración (NO PRIORITARIO)
+
+'@Folder "2-Servicios.Configuracion"
 '@IgnoreModule ProcedureNotUsed
-'TODO Is this comment still valid? => TODO Migrar de Registry a archivo JSON para configuración
-'TODO Is this comment still valid? => TODO Añadir validación de rutas al guardar
-'TODO Is this comment still valid? => TODO Implementar importar/exportar configuración
 Option Explicit
 
 Private mRutaOportunidades As String
@@ -96,19 +96,19 @@ Public Property Let SAM(newSAM As Integer)
 End Property
 
 Private Sub Class_Initialize()
-    Debug.Print vbTab & vbTab & "[clsConfiguracion Class_Initialize]"
+    LogInfo "clsConfiguration", "[Class_Initialize]"
     CargarConfiguracionDesdeRegistro
 End Sub
 
 Private Sub Class_Terminate()
-    Debug.Print vbTab & vbTab & "[clsConfiguracion Class_Terminate]"
+    LogInfo "clsConfiguration", "[Class_Terminate]"
 End Sub
 
 Private Sub CargarConfiguracionDesdeRegistro()
     On Error GoTo ErrHandler
     
     ' Cargar cada ruta desde el registro y mostrarla
-    Debug.Print vbTab & vbTab & "[clsConfiguracion CargarConfiguracionDesdeRegistro] - inicializacion de todas las rutas desde registro o valores por defecto"
+    LogInfo "clsConfiguration", "[CargarConfiguracionDesdeRegistro] - inicializacion de todas las rutas desde registro o valores por defecto"
     mRutaOportunidades = ObtenerRuta(CFG_RUTA_OPORTUNIDADES, CFG_RUTA_OPORTUNIDADES_DEFAULT)
     mRutaPlantillas = ObtenerRuta(CFG_RUTA_PLANTILLAS, CFG_RUTA_PLANTILLAS_DEFAULT)
     mRutaOfergas = ObtenerRuta(CFG_RUTA_OFERGAS, CFG_RUTA_OFERGAS_DEFAULT)
@@ -147,7 +147,7 @@ End Property
 '-------------------------------------------
 Private Sub GuardarSAM(SAM As Integer)
     CreateObject("WScript.Shell").RegWrite CFG_PATH_SAM, CStr(SAM), "REG_SZ"
-    Debug.Print vbTab & vbTab & "[clsConfiguracion GuardarSAM] - S.A.M. guardado en registro"
+    LogDebug "clsConfiguration", "[GuardarSAM] - S.A.M. guardado en registro"
 End Sub
 
 Private Function ObtenerSAM() As Integer
@@ -160,16 +160,16 @@ Private Function ObtenerSAM() As Integer
 
     ' Verificar si hubo error o valor invalido
     If errNum <> 0 Or IsEmpty(valorLeido) Or Not IsNumeric(valorLeido) Then
-        Debug.Print vbTab & vbTab & "[clsConfiguracion ObtenerSAM] - no existente en registro o invalido, establecido valor por defecto"
+        LogWarning "clsConfiguration", "[ObtenerSAM] - no existente en registro o invalido, establecido valor por defecto"
         ObtenerSAM = CFG_SAM
         GuardarSAM CFG_SAM
     ElseIf CInt(valorLeido) = 0 Then
-        Debug.Print vbTab & vbTab & "[clsConfiguration.ObtenerSAM] Valor cero en registro, usando valor por defecto"
+        LogWarning "clsConfiguration", "[ObtenerSAM] Valor cero en registro, usando valor por defecto"
         ObtenerSAM = CFG_SAM
         GuardarSAM CFG_SAM
     Else
         ObtenerSAM = CInt(valorLeido)
-        Debug.Print vbTab & vbTab & "[clsConfiguration.ObtenerSAM] Leido del registro: " & ObtenerSAM
+        LogDebug "clsConfiguration", "[ObtenerSAM] Leido del registro: " & ObtenerSAM
     End If
 End Function
 
@@ -178,7 +178,7 @@ End Function
 Private Sub GuardarRuta(nombreConfig As Variant, ruta As String)
     'SaveSetting APP_NAME & "\" & CFG_SECTION_RUTAS, nombreConfig, "", ruta
     CreateObject("WScript.Shell").RegWrite CFG_PATH_SECTION_RUTAS & nombreConfig & "\", ruta, "REG_SZ"
-    Debug.Print vbTab & "[clsConfiguracion GuardarRuta] - ruta guardada en registro"
+    LogDebug "clsConfiguration", "[GuardarRuta] - ruta guardada en registro"
 End Sub
 
 ' Recuperar una ruta del registro
@@ -189,9 +189,9 @@ Private Function ObtenerRuta(nombreConfig As Variant, strDefault As String) As S
     If ObtenerRuta = "" Or Not RutaExiste(ObtenerRuta) Then
         ObtenerRuta = strDefault
         GuardarRuta nombreConfig, ObtenerRuta
-        Debug.Print vbTab & vbTab & vbTab & "[clsConfiguracion ObtenerRuta] - ruta no existente en registro o invalida, establecido valor por defecto"
+        LogWarning "clsConfiguration", "[ObtenerRuta] - ruta no existente en registro o invalida, establecido valor por defecto"
     Else
-        Debug.Print vbTab & vbTab & vbTab & "[clsConfiguracion ObtenerRuta] - ruta leida del registro"
+        LogDebug "clsConfiguration", "[ObtenerRuta] - ruta leida del registro"
     End If
     On Error GoTo 0
 End Function
@@ -216,9 +216,9 @@ Private Sub GuardarListaCarpetas(ByVal carpetas As Variant, nombreConfig As Stri
     GuardarRuta nombreConfig, lista
     
     If Err.Number <> 0 Then
-        Debug.Print vbTab & vbTab & vbTab & "[clsConfiguracion GuardarListaCarpetas] - No se pudo guardar lista en registro: " & Err.Description
+        LogError "clsConfiguration", "[GuardarListaCarpetas] - No se pudo guardar lista en registro", , Err.Description
     Else
-        Debug.Print vbTab & vbTab & vbTab & "[clsConfiguracion GuardarListaCarpetas] - Lista de carpetas guardada en registro."
+        LogDebug "clsConfiguration", "[GuardarListaCarpetas] - Lista de carpetas guardada en registro."
     End If
     
     On Error GoTo 0
@@ -230,11 +230,11 @@ Private Function ObtenerListaCarpetas(nombreConfig As String, strDefault As Stri
     ObtenerListaCarpetas = Split(CreateObject("WScript.Shell").RegRead(CFG_PATH_SECTION_RUTAS & nombreConfig & "\"), "|")
     
     If Err.Number <> 0 Then
-        Debug.Print vbTab & vbTab & vbTab & "[clsConfiguracion ObtenerListaCarpetas] - No se encontró lista guardada en registro."
+        LogWarning "clsConfiguration", "[ObtenerListaCarpetas] - No se encontró lista guardada en registro."
         ObtenerListaCarpetas = Split(strDefault, "|")
         Call GuardarListaCarpetas(ObtenerListaCarpetas, nombreConfig)
     Else
-        Debug.Print vbTab & vbTab & vbTab & "[clsConfiguracion ObtenerListaCarpetas] - Lista de carpetas leida desde registro."
+        LogDebug "clsConfiguration", "[ObtenerListaCarpetas] - Lista de carpetas leida desde registro."
     End If
     On Error GoTo 0
 End Function
@@ -245,7 +245,7 @@ Private Sub BorrarListaCarpetas(nombreConfig As String)
     CreateObject("WScript.Shell").RegDelete CFG_PATH_SECTION_RUTAS & nombreConfig & "\"
     
     If Err.Number = 0 Then
-        Debug.Print vbTab & vbTab & vbTab & "[clsConfiguracion BorrarListaCarpetas] - Lista de carpetas eliminada del registro."
+        LogInfo "clsConfiguration", "[BorrarListaCarpetas] - Lista de carpetas eliminada del registro."
     End If
     
     On Error GoTo 0

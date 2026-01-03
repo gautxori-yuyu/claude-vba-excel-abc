@@ -7,7 +7,7 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = True
-'@Folder "1-Inicio e Instalacion"
+'@Folder "1-Inicio e Instalacion.Ciclo de vida"
 Option Explicit
 Private mApp As clsAplicacion
 
@@ -26,7 +26,11 @@ Public Sub TerminateApp()
 End Sub
 
 Private Sub Workbook_Open()
-    Debug.Print "[ThisWorkbook - Open]"
+    ' 0. Inicializar logger con salida a fichero
+    removeOldLogs
+    InitLogger LOG_DEBUG, True, ThisWorkbook.Path & "\ABC_Log_" & Format(Now, "yyyy-mm-dd_hh-nn") & ".txt"
+    
+    LogInfo "ThisWorkbook", "[Open] - Abriendo Workbook " & ThisWorkbook.Name
     ' Sistema de instalación existente
     AutoInstalador
     AutoRegistrarTodasLasUDFs
@@ -97,6 +101,62 @@ Private Sub Workbook_AddinInstall()
     '           "Las funciones personalizadas ya están disponibles.", vbInformation, "Instalación completada"
     
     On Error GoTo 0
+End Sub
+' Elimina los ficheros de log que tengan más de 3 días, si hay más de 3 ficheros de log
+Private Sub removeOldLogs()
+    Dim fso As Object
+    Dim folderPath As String
+    Dim oFolder As Object
+    Dim oFile As Object
+    Dim logFiles As Object ' Collection para filtrar solo logs de este tipo
+    Dim fileDate As Date
+    Dim fileNamePattern As String
+    
+    Set fso = CreateObject("Scripting.FileSystemObject")
+    folderPath = ThisWorkbook.Path & "\"
+    fileNamePattern = "ABC_Log_????-??-??_??-??.txt"
+    
+    ' 1. Coleccionamos los archivos que coinciden con el patrón
+    Set logFiles = New Collection
+    
+    If Not fso.FolderExists(folderPath) Then Exit Sub
+    Set oFolder = fso.GetFolder(folderPath)
+    
+    For Each oFile In oFolder.Files
+        ' Verificamos si el nombre coincide con el patrón ABC_Log_...
+        If oFile.Name Like fileNamePattern Then
+            logFiles.Add oFile
+        End If
+    Next oFile
+    
+    ' 2. Si hay más de 3 ficheros en total, evaluamos el borrado
+    If logFiles.Count > 3 Then
+        For Each oFile In logFiles
+            ' Calculamos la diferencia de días (DateDiff)
+            ' Usamos DateLastModified para mayor precisión, o DateCreated
+            fileDate = oFile.DateLastModified
+            
+            ' Requisito: Más de 3 días de antigüedad
+            If DateDiff("d", fileDate, Now) > 3 Then
+                ' Re-verificamos el conteo antes de cada borrado para asegurar que siempre queden 3
+                If logFiles.Count > 3 Then
+                    On Error Resume Next ' Por si el archivo está abierto o bloqueado
+                    oFile.Delete True
+                    If Err.Number = 0 Then
+                        ' Actualizar lógica si es necesario, aunque al ser una colección
+                        ' se recorre una foto fija. El "If logFiles.Count > 3"
+                        ' aquí dentro es preventivo.
+                    End If
+                    On Error GoTo 0
+                End If
+            End If
+        Next oFile
+    End If
+    
+    ' Limpieza de objetos
+    Set oFile = Nothing
+    Set oFolder = Nothing
+    Set fso = Nothing
 End Sub
 
 

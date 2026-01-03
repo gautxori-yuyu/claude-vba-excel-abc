@@ -8,7 +8,7 @@ Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
 '@Exposed
-'@Folder "1-Inicio e Instalacion"
+'@Folder "1-Inicio e Instalacion.Gestion de modulos y procs"
 '@IgnoreModule MissingAnnotationArgument
 Option Explicit
 

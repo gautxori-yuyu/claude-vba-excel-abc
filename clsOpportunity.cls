@@ -9,3 +9,33 @@ Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
 ' clase desde la que se gestiona cada oportunidad, y los elementos (entidad compresor, ficheros, etc) que la constituyen
 
+'@Folder "4-Oportunidades y compresores"
+Option Explicit
+
+' Atributos básicos:
+Public Name As String
+Public Path As String
+Public Customer As String
+Public QuoteNumber As String
+Public CreatedDate As Date
+'Public Status As OpportunityStatus ' Enum
+
+' Componentes:
+'Public Files As clsOpportunityFileCollection ' Implementa IFile
+'Public Compressors As clsCompressorCollection
+'Public Offers As clsOfferCollection
+'Public Documents As clsDocumentCollection
+
+' Métodos:
+Public Function IsValid() As Boolean
+
+End Function
+Public Sub GenerateFolderStructure()
+
+End Sub
+Public Function GetBudgetTemplate() As clsExcelFile
+
+End Function
+Public Sub SyncWithRepository()
+
+End Sub

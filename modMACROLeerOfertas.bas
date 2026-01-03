@@ -1,4 +1,5 @@
 Attribute VB_Name = "modMACROLeerOfertas"
+'@Folder "4-Oportunidades y compresores.d-Ofertas.Gestion"
 Option Explicit
 Const RUTA_BD As String = "C:\Program Files (x86)\Ofertas_Gas\BaseDatos\Ofertas_Gas.mdb"
 
@@ -182,4 +183,3 @@ Public Sub Test_VolcarTodasLasOfertasAExcel()
     MsgBox ofertas.Count & " ofertas volcadas correctamente.", vbInformation
 
 End Sub
-

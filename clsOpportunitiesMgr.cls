@@ -7,13 +7,6 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = True
-'@Exposed
-'@Folder "3-Oportunidades y compresores"
-'@IgnoreModule IIfSideEffect
-
-'TODO Implementar filtrado de oportunidades por ano
-'TODO Anadir búsqueda incremental en dropdown
-'TODO Cachear resultado de actualizarColeccionOportunidades (5 min)
 
 '==============================================================
 ' Clase: clsOpportunitiesMgr
@@ -23,7 +16,13 @@ Attribute VB_Exposed = True
 ' para refrescar, enumerar y cambiar oportunidad actual, así
 ' como un evento para notificar cambio de oportunidad actual.
 '==============================================================
+'TODO Implementar filtrado de oportunidades por año
+'TODO Anadir búsqueda incremental en dropdown
+'TODO Cachear resultado de actualizarColeccionOportunidades (5 min)
 
+'@Exposed
+'@Folder "4-Oportunidades y compresores"
+'@IgnoreModule IIfSideEffect
 Option Explicit
 
 '--------------------------------------------------------------
@@ -46,13 +45,18 @@ Private p_ColOpportunities As Collection         ' Lista de subcarpetas encontra
 Private p_CurrOpportunity As Long                 ' Índice en p_ColOpportunities de la carpeta actual
 Private p_bEnabled As Boolean
 
+Private WithEvents ctx As clsExecutionContext
+Attribute ctx.VB_VarHelpID = -1
+
 '--------------------------------------------------------------
 ' @Description: Inicializa la clase y carga la ruta base de
 ' oportunidades desde el registro del sistema o su valor por
 ' defecto.
 '--------------------------------------------------------------
 Private Sub Class_Initialize()
-    Debug.Print vbTab & vbTab & "[clsOpportunitiesMgr Class_Initialize]"
+    LogInfo "clsOpportunitiesMgr", "[Class_Initialize]"
+    
+    Set ctx = New clsExecutionContext
     
     Set p_ColOpportunities = New Collection
     ' NO cargar rutas aquí, se hará después
@@ -60,7 +64,7 @@ Private Sub Class_Initialize()
 End Sub
 
 Private Sub Class_Terminate()
-    Debug.Print vbTab & vbTab & "[clsOpportunitiesMgr Class_Terminate]"
+    LogInfo "clsOpportunitiesMgr", "[Class_Terminate]"
 End Sub
 
 Public Property Get bEnabled() As Boolean
@@ -74,7 +78,7 @@ Public Sub SetBaseFolder(ByVal ruta As String)
         p_bEnabled = True
     Else
         ' Opcional: lanzar error, o usar fallback
-        Debug.Print "[clsOpportunitiesMgr SetBaseFolder] ADVERTENCIA: Ruta no existe: " & ruta & " (deberían desactivarse los controles de ribbon relativos a oportunidades)"
+        LogWarning "clsOpportunitiesMgr", "[SetBaseFolder] ADVERTENCIA: Ruta no existe: " & ruta & " (deberían desactivarse los controles de ribbon relativos a oportunidades)"
         strOportunitiesBaseFolder = ""
     End If
     
@@ -99,7 +103,7 @@ Public Function actualizarColeccionOportunidades()
 
     If Not p_bEnabled Then Exit Function
 
-    Debug.Print "[clsOpportunitiesMgr actualizarColeccionOportunidades] - regenerando la variable local que contiene la lista de carpetas de oportunidades"
+    LogInfo "clsOpportunitiesMgr", "[actualizarColeccionOportunidades] - regenerando la variable local que contiene la lista de carpetas de oportunidades"
     On Error Resume Next
     Set fso = CreateObject("Scripting.FileSystemObject")
     Set carpeta = fso.GetFolder(strOportunitiesBaseFolder)
@@ -153,19 +157,19 @@ Public Sub ProcesarCambiosEnOportunidades(ByVal subfolderName As String)
 
     If Not p_bEnabled Then Exit Sub
     
-    Debug.Print "[clsOpportunitiesMgr ProcesarCambiosEnOportunidades] - identificando si los cambios introducidos por el watcher son oportunidades"
+    LogInfo "clsOpportunitiesMgr", "[ProcesarCambiosEnOportunidades] - identificando si los cambios introducidos por el watcher son oportunidades"
     ' Verificar si los cambios afectan a oportunidades válidas
     regEx.Pattern = FILEORFOLDERNAME_QUOTE_CUSTOMER_OTHER_MODEL_PATTERN
     bCambiosEnOportunidades = regEx.Test(subfolderName)
     
     ' Si el cambio corresponde a una oportunidad, actualizar
     If bCambiosEnOportunidades Then
-        Debug.Print "[clsOpportunitiesMgr ProcesarCambiosEnOportunidades] - cambios identificados"
+        LogInfo "clsOpportunitiesMgr", "[ProcesarCambiosEnOportunidades] - cambios identificados"
         Call actualizarColeccionOportunidades
         ' NO actualizar ribbon directamente - delegar al evento
         ' La clase NO debe conocer el ribbon
         ' Disparar evento para que otros componentes reaccionen
-        Debug.Print "[clsOpportunitiesMgr ProcesarCambiosEnOportunidades] - promoviendo evento OpportunityCollectionUpdate para poner al corriente a otros módulos"
+        LogInfo "clsOpportunitiesMgr", "[ProcesarCambiosEnOportunidades] - promoviendo evento OpportunityCollectionUpdate para poner al corriente a otros módulos"
         RaiseEvent OpportunityCollectionUpdate(subfolderName)
     End If
 End Sub
@@ -225,7 +229,7 @@ Public Property Let CurrOpportunity(Index As Long)
     If Index >= 0 And Index < p_ColOpportunities.Count Then
         p_CurrOpportunity = Index
         
-        Debug.Print "[clsOpportunitiesMgr CurrOpportunity] - cambio de oportunidad actual -> promoviendo evento OpportunityChanged para poner al corriente a otros módulos"
+        LogInfo "clsOpportunitiesMgr", "[CurrOpportunity] - cambio de oportunidad actual -> promoviendo evento OpportunityChanged para poner al corriente a otros módulos"
         RaiseEvent currOpportunityChanged(Index, p_ColOpportunities(Index + 1))
     End If
 End Property
@@ -332,4 +336,12 @@ ErrHandler:
     MsgBox "No se pudo abrir la ruta de oportunidades, " & strOportunitiesBaseFolder & vbCrLf & Err.Description, vbExclamation
 End Sub
 
+' ==================================================================
+' IMPLEMENTACION DE EVENTOS: CALLBACKS
+' ==================================================================
+
+Private Sub ctx_WorkbookChanged(ByVal wb As Workbook)
+    ' Verificar si el workbook está en una oportunidad
+    ' Actualizar p_CurrOpportunity si corresponde
+End Sub
 

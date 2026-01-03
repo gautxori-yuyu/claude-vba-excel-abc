@@ -1,11 +1,12 @@
 Attribute VB_Name = "UDFs_Units"
+'@Folder "UDFS.Unidades"
 Option Explicit
 
 '==========================================
 ' FUNCIÓN PRINCIPAL - UDF para Excel
 '==========================================
 Public Function ConvertirUnidad(valor As Double, unidadOrigen As String, unidadBase As String) As Variant
-Attribute ConvertirUnidad.VB_Description = "[UDFs_Units] FUNCIÓN PRINCIPAL - UDF para Excel. "
+Attribute ConvertirUnidad.VB_Description = "[UDFs_Units] FUNCIÓN PRINCIPAL - UDF para Excel"
 Attribute ConvertirUnidad.VB_ProcData.VB_Invoke_Func = " \n21"
     On Error GoTo ErrorHandler
     
@@ -263,7 +264,7 @@ End Function
 ' FUNCIÓN PARA VALIDACIONES EN EXCEL
 '==========================================
 Public Function UdsPorTipo(ByVal strTipo As String) As Variant
-Attribute UdsPorTipo.VB_Description = "[UDFs_Units] FUNCIÓN PARA VALIDACIONES EN EXCEL. . Aplica a: ThisWorkbook|Cells Range"
+Attribute UdsPorTipo.VB_Description = "[UDFs_Units] FUNCIÓN PARA VALIDACIONES EN EXCEL. Aplica a: ThisWorkbook|Cells Range"
 Attribute UdsPorTipo.VB_ProcData.VB_Invoke_Func = " \n21"
     Dim ws As Worksheet
     Dim i As Long, lastRow As Long
@@ -382,5 +383,3 @@ Attribute ConvertirCaudalNormal.VB_ProcData.VB_Invoke_Func = " \n21"
     ' Llamar a ConvertirUnidad (esta debe existir)
     ConvertirCaudalNormal = ConvertirUnidad(valorReal, Replace(Replace(LCase(unidadOrigen), "nm3", "m3"), "scf", "cf"), unidadBase)
 End Function
-
-

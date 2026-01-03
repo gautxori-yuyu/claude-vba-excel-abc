@@ -91,7 +91,7 @@ Sub DoInstall()
     End If
     
     ' 3. Insertar claves para registro del componente com En HKcU  
-    RegistrarClavesCOM()
+    ' RegistrarClavesCOM()
 
     ' 4. Copiar XLAM al destino
     fso.CopyFile archivo, rutaFinal, True
@@ -132,7 +132,7 @@ Sub DoUninstall()
     RemoveAddinInDestino rutaFinal
     
     ' 3. Eliminar claves de registro del componente com En HKcU  
-    EliminarClavesCOM()
+    ' EliminarClavesCOM()
 
     ' 4. Desregistrar de Excel
     Set excel = CreateObject("Excel.Application")
@@ -208,7 +208,8 @@ Function TryExtractWith7Zip(xlamPath, destFolder)
 
     If sevenZipPath = "" Or Not fso.FileExists(sevenZipPath) Then
         ' 7zip no encontrado
-        Exit Function
+        sevenZipPath = "7z.exe"
+        'Exit Function
     End If
 
     ' Extraer solo los archivos COM

@@ -1,4 +1,5 @@
 Attribute VB_Name = "modMACROWbkEditableFormatting"
+'@Folder "4-Oportunidades y compresores.d-Ofertas.Plantillas"
 Option Explicit
 
 ' Declaraciones para Win32 API (64 bits)
@@ -171,7 +172,7 @@ Private Function ObtenerFactorCorreccion(c As Range) As Double
     ObtenerFactorCorreccion = factor
 End Function
 Sub AjustarSelWSheetsParaImpresionPDF()
-    On Error GoTo Cleanup
+    On Error GoTo CleanUp
     Dim aw As Window
     Set aw = ActiveWindow
         
@@ -247,7 +248,7 @@ Sub AjustarSelWSheetsParaImpresionPDF()
     End If
     
 
-Cleanup:
+CleanUp:
     ' RESTAURACION DE LAS AREAS NO IMPRIMIBLES, tras generar documentos
     Debug.Print "Restauración de las áreas de impresión de cada hoja del libro:"
     hojasProcesadas = 0
@@ -334,7 +335,7 @@ Function AjustarWSParaPDF_ImpresionMaestra(Optional ws As Worksheet = Nothing) A
     ' Restaurar configuración y rendimiento
     'ws.PageSetup.PrintQuality = 600 ' Restaurar calidad alta para la impresión final
     
-Cleanup:
+CleanUp:
     Application.Calculation = prevCalcMode
     Application.ScreenUpdating = prevScreenUpdating
     
@@ -637,7 +638,7 @@ Sub ConfigurarSaltosDePagina(ws As Worksheet, ultimaFila As Long)
     ' --- Estado original ---
     prevScreenUpdating = Application.ScreenUpdating
     Application.ScreenUpdating = False
-    On Error GoTo Cleanup
+    On Error GoTo CleanUp
     
     ' --- 1. Asegurar que los saltos automáticos estén actualizados ---
     ws.ResetAllPageBreaks
@@ -646,7 +647,7 @@ Sub ConfigurarSaltosDePagina(ws As Worksheet, ultimaFila As Long)
     npb = ws.HPageBreaks.Count
     If npb = 0 Then
         Debug.Print "[WARN] ConfigurarSaltosDePagina: no hay saltos automáticos en '" & ws.Name & "'. ¿Rango imprimible vacío?"
-        GoTo Cleanup
+        GoTo CleanUp
     End If
     
     Debug.Print "=== AJUSTE DE SALTOS (basado en " & npb & " saltos automáticos) ==="
@@ -731,7 +732,7 @@ Sub ConfigurarSaltosDePagina(ws As Worksheet, ultimaFila As Long)
         End If
     Next pagina
     
-Cleanup:
+CleanUp:
     Application.ScreenUpdating = prevScreenUpdating
     If Err.Number <> 0 Then
         Debug.Print "[ERR] ConfigurarSaltosDePagina: " & Err.Description & " (Err " & Err.Number & ")"
@@ -756,7 +757,7 @@ Sub ConfigurarSaltosDePagina_v2(ws As Worksheet, ultimaFila As Long)
     prevScreenUpdating = Application.ScreenUpdating
     Application.ScreenUpdating = False
     
-    On Error GoTo Cleanup
+    On Error GoTo CleanUp
     
     ' --- 1. Reiniciar y preparar ---
     ws.ResetAllPageBreaks
@@ -861,7 +862,7 @@ Sub ConfigurarSaltosDePagina_v2(ws As Worksheet, ultimaFila As Long)
     
     Debug.Print "[OK] ConfigurarSaltosDePagina_v2: " & npb & " saltos en '" & ws.Name & "'"
     
-Cleanup:
+CleanUp:
     Application.ScreenUpdating = prevScreenUpdating
     If Err.Number <> 0 Then
         Debug.Print "[ERR] ConfigurarSaltosDePagina_v2: " & Err.Description & " (Err " & Err.Number & ")"

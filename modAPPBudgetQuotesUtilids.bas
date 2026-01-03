@@ -4,15 +4,10 @@ Attribute VB_Name = "modAPPBudgetQuotesUtilids"
 ' ==========================================
 'FIXME: Las funciones de este modulo son GENERICAS, no solo para Budgets (aunque alguna ESTA PENSADA SOLO PARA CIERTAS PLANTILLAS)
 '   mejor ponerlas en un modulo "generico".
+
+'@Folder "4-Oportunidades y compresores.d-Ofertas.Plantillas"
 Option Explicit
 Private Const bSheetReport As Boolean = True
-' ------------------------------------------
-' LIMPIEZA Y PREPARACIÓN DE LIBROS / HOJAS
-' Convertir un libro de Excel de oferta en
-' "editable para enviar a agente comercial"
-' ------------------------------------------
-
-
 
 ' ------------------------------------------
 ' Gestion de nombres de rangos y validaciones de datos

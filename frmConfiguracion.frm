@@ -19,6 +19,8 @@ Attribute VB_Exposed = False
 '              establecer rutas de carpetas, configurar números SAM, seleccionar carpetas de imágenes y
 '              planos de compresores, etc. Todos los cambios se persisten en la configuración de la aplicación.
 ' ==============================================================================================================
+
+'@Folder "2-Servicios.Configuracion"
 Option Explicit
 
 ' -------------------------------------------------------------------------------------------------------------

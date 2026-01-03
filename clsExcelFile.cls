@@ -7,11 +7,11 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = True
-'@Folder "4-Tipos de ficheros"
 ' Representa un Workbook abierto en el contexto de la aplicación.
 ' Es la única capa que conoce directamente al Workbook.
 ' Todas las operaciones que requieran wb deben pasar por aquí.
 
+'@Folder "2-Servicios.Archivos.Tipos de archivos"
 Option Explicit
 
 Private p_wb As Workbook
@@ -57,6 +57,13 @@ Public Static Sub BindTo(wb As Workbook)
     p_ObjectKey = ObjPtr(p_wb)
     'Debug.Print "[clsExcelFile.BindTo] Asociado a: " & Me.Path & " (key: " & p_ObjectKey & ")"
 End Sub
+' Factory Method estático: "Creador especializado"
+Public Static Function CreateFromWorkbook(wb As Workbook) As clsExcelFile
+    Dim instance As clsExcelFile
+    Set instance = New clsExcelFile
+    instance.BindTo wb
+    Set CreateFromWorkbook = instance
+End Function
 
 ' ==================================================================
 ' PROPIEDADES PÚBLICAS (API pública de la clase)

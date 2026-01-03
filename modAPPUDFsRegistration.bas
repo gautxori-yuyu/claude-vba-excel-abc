@@ -20,6 +20,7 @@ Attribute VB_Name = "modAPPUDFsRegistration"
 '  - Nuevos atributos: @Example, @Raises, @Throws, @Dependencies
 '  - Ver clsVBAProcedure.ParsearMetadataCompleta() para detalles
 
+'@Folder "1-Inicio e Instalacion.Gestion de modulos y procs"
 Option Explicit
 
 Private bVerbose As Boolean
@@ -32,7 +33,7 @@ Private bVerbose As Boolean
 '@ArgumentDescriptions: (sin argumentos)
 '@Returns: (ninguno)
 '@Category: Registro UDF
-Private Sub AutoRegistrarTodasLasUDFsNOPARAMS()
+Sub AutoRegistrarTodasLasUDFsNOPARAMS()
     Call AutoRegistrarTodasLasUDFs
 End Sub
 
@@ -76,16 +77,16 @@ Public Sub AutoRegistrarTodasLasUDFs(Optional bOnlyWithMetadata As Boolean = Fal
         ' Persistir lista para desinstalación posterior
         Call GuardarListaFuncionesRegistradas(funciones)
         
-        Debug.Print "[AutoRegistrarTodasLasUDFs] - " & funciones.Count & " funciones registradas correctamente."
+        LogInfo "modAPPUDFsRegistration", "[AutoRegistrarTodasLasUDFs] - " & funciones.Count & " funciones registradas correctamente."
         
     Else
-        Debug.Print "[AutoRegistrarTodasLasUDFs] - No se encontraron funciones UDF válidas."
+        LogWarning "modAPPUDFsRegistration", "[AutoRegistrarTodasLasUDFs] - No se encontraron funciones UDF válidas."
     End If
     
     Exit Sub
     
 ErrorHandler:
-    Debug.Print "Error en AutoRegistrarTodasLasUDFs: " & Err.Description
+    LogError "modAPPUDFsRegistration", "[AutoRegistrarTodasLasUDFs] - Error", , Err.Description
 End Sub
 
 '@Description: Desregistra todas las UDFs previamente registradas utilizando la información persistida.
@@ -119,9 +120,9 @@ Public Sub DesregistrarTodasLasUDFs(Optional bVerbose_ As Boolean = False)
         ' Limpiar lista guardada
         BorrarListaFuncionesRegistradas
         
-        Debug.Print "Desregistro UDF: " & (UBound(funciones) + 1) & " funciones desregistradas."
+        LogInfo "modAPPUDFsRegistration", "[DesregistrarTodasLasUDFs] : " & (UBound(funciones) + 1) & " funciones desregistradas."
     Else
-        Debug.Print "Desregistro UDF: No hay lista guardada, intentando desregistro manual."
+        LogWarning "modAPPUDFsRegistration", "[DesregistrarTodasLasUDFs] - No hay lista guardada, intentando desregistro manual."
         ' Fallback: desregistrar todas las funciones encontradas ahora
         DesregistrarTodasLasFuncionesActuales
     End If
@@ -129,7 +130,7 @@ Public Sub DesregistrarTodasLasUDFs(Optional bVerbose_ As Boolean = False)
     Exit Sub
     
 ErrorHandler:
-    Debug.Print "Error en DesregistrarTodasLasUDFs: " & Err.Description
+    LogError "modAPPUDFsRegistration", "[DesregistrarTodasLasUDFs] - Error", , Err.Description
     ' Intentar desregistro manual como respaldo
     DesregistrarTodasLasFuncionesActuales
 End Sub
@@ -182,9 +183,9 @@ Private Function RegistrarUDF(metadata As clsVBAProcedure) As Boolean
     End If
     
     If Err.Number <> 0 Then
-        Debug.Print "Error registrando '" & metadata.Name & "': " & Err.Description
+        LogError "modAPPUDFsRegistration", "[RegistrarUDF] - Error registrando '" & metadata.Name & "'", , Err.Description
     Else
-        If bVerbose Then Debug.Print "Registrada: " & metadata.Name
+        If bVerbose Then LogInfo "modAPPUDFsRegistration", "[RegistrarUDF] - Registrada: " & metadata.Name
         RegistrarUDF = True
     End If
     
@@ -206,7 +207,7 @@ Private Function DesregistrarUDF(nombreFuncion As String) As Boolean
         Category:=Empty
     
     If Err.Number = 0 Then
-        If bVerbose Then Debug.Print "Desregistrada: " & nombreFuncion
+        If bVerbose Then LogInfo "modAPPUDFsRegistration", "[DesregistrarUDF] - Desregistrada: " & nombreFuncion
         DesregistrarUDF = True
     End If
     
@@ -239,9 +240,9 @@ Private Sub GuardarListaFuncionesRegistradas(funciones As Object)
     CreateObject("WScript.Shell").RegWrite CFG_RUTA_UDFS, lista, "REG_SZ"
     
     If Err.Number <> 0 Then
-        Debug.Print "No se pudo guardar lista en registro: " & Err.Description
+        LogError "modAPPUDFsRegistration", "[DesregistrarUDF] - No se pudo guardar lista en registro", , Err.Description
     Else
-        If bVerbose Then Debug.Print "Lista de UDFs guardada en registro."
+        If bVerbose Then LogInfo "modAPPUDFsRegistration", "[DesregistrarUDF] - Lista de UDFs guardada en registro."
     End If
     
     On Error GoTo 0
@@ -258,7 +259,7 @@ Private Function ObtenerListaFuncionesRegistradas() As String
     
     If Err.Number <> 0 Then
         ObtenerListaFuncionesRegistradas = ""
-        Debug.Print "No se encontró lista guardada en registro."
+        LogError "modAPPUDFsRegistration", "[ObtenerListaFuncionesRegistradas] - No se encontró lista guardada en registro."
     End If
     
     On Error GoTo 0
@@ -274,7 +275,7 @@ Private Sub BorrarListaFuncionesRegistradas()
     CreateObject("WScript.Shell").RegDelete CFG_RUTA_UDFS
     
     If Err.Number = 0 Then
-        Debug.Print "Lista de UDFs eliminada del registro."
+        LogInfo "modAPPUDFsRegistration", "[BorrarListaFuncionesRegistradas] - Lista de UDFs eliminada del registro."
     End If
     
     On Error GoTo 0
@@ -302,9 +303,9 @@ Private Sub DesregistrarTodasLasFuncionesActuales()
     Next key
     
     If Count > 0 Then
-        If bVerbose Then Debug.Print "Desregistro dinámico: " & Count & " funciones procesadas."
+        If bVerbose Then LogInfo "modAPPUDFsRegistration", "[DesregistrarTodasLasFuncionesActuales] - Desregistro dinámico: " & Count & " funciones procesadas."
     Else
-        Debug.Print "Desregistro dinámico: No se encontraron funciones para desregistrar."
+        LogInfo "modAPPUDFsRegistration", "[DesregistrarTodasLasFuncionesActuales] - Desregistro dinámico: No se encontraron funciones para desregistrar."
     End If
 End Sub
 

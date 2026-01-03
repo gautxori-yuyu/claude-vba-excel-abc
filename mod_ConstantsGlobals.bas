@@ -89,7 +89,7 @@ Attribute VB_Name = "mod_ConstantsGlobals"
 'TODO Implementar sistema de versionado automático del complemento (baja prioridad)
 'TODO Añadir telemetría opcional (con consentimiento usuario) (baja prioridad)
 'TODO Crear manual de usuario con capturas (nula prioridad)
-
+'TODO: Encriptación RC4 del script, e incluso del codigo VBA (baja prioridad)
 
 '3. Code Metrics de Rubberduck
 'A. Métricas a revisar regularmente
@@ -142,7 +142,7 @@ Attribute VB_Name = "mod_ConstantsGlobals"
 'Validar: Ejecutar todos los tests
 
 '@IgnoreModule MissingAnnotationArgument
-'@Folder "2-Control de estado"
+'@Folder "2-Servicios.Configuracion"
 
 Option Explicit
 
@@ -152,6 +152,7 @@ Option Explicit
 
 ' Constantes para organizar la configuración
 Public Const APP_NAME As String = "ABC_ofertas maquina especial"
+Public Const FOLDERWATCHERCOM_NAME As String = "FolderWatcherCOM.dll"
 
 ' Nombres de las configuraciones
 Public Const CFG_BASEFOLDER As String = "HKEY_CURRENT_USER\Software\VB and VBA Program Settings\"
@@ -238,10 +239,11 @@ End Enum
 
 '@Category: UI / Ribbon
 Public Enum eRibbonMode
-    Ribbon_Hidden = 0                            ' no se muestra nunca
-    Ribbon_User = 1                              ' modo usuario (sin grupos admin/dev)
-    Ribbon_OpportunityOnly = 2                   ' solo visible si el libro es de oportunidad
-    Ribbon_Admin = 3                             ' todo visible permanentemente
+    Ribbon_Undefined = 0                         ' no inicializado
+    Ribbon_Hidden = 1                            ' no se muestra nunca
+    Ribbon_User = 2                              ' modo usuario (sin grupos admin/dev)
+    Ribbon_OpportunityOnly = 3                   ' solo visible si el libro es de oportunidad
+    Ribbon_Admin = 4                             ' todo visible permanentemente
 End Enum
 
 '--------------------------------------------------------------
@@ -296,4 +298,5 @@ End Type
     ' Declares antiguos sin PtrSafe
     Public Declare Sub Sleep Lib "kernel32" (ByVal dwMilliseconds As Long)
 #End If
+
 

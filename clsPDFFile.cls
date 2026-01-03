@@ -25,7 +25,7 @@ Attribute VB_Exposed = False
 ' mFileMgr.TrackFile pdfFile
 ' ==================================================================
 
-'@Folder "4-Tipos de ficheros"
+'@Folder "2-Servicios.Archivos.Tipos de archivos"
 '@Implements IFile
 Option Explicit
 

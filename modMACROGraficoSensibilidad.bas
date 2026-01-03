@@ -1,4 +1,6 @@
 Attribute VB_Name = "modMACROGraficoSensibilidad"
+
+'@Folder "4-Oportunidades y compresores.b-Calculos técnicos"
 Option Explicit
 Dim iSeriesNr As Integer
 
@@ -773,5 +775,3 @@ End Function
 Private Function RoundUp(Value As Double, base As Long) As Double
     RoundUp = base * -Int(-Value / base)
 End Function
-
-

@@ -20,6 +20,8 @@ Attribute VB_Exposed = False
 '              los complementos (Add-ins) instalados. Usado para operaciones de importación/exportación de
 '              componentes VBA.
 ' ==============================================================================================================
+
+'@Folder "0-Developer"
 Option Explicit
 
 ' -------------------------------------------------------------------------------------------------------------

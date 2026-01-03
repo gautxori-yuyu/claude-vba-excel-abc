@@ -1,4 +1,13 @@
 Attribute VB_Name = "modMACROWbkEditableCleaning"
+' ------------------------------------------
+' LIMPIEZA Y PREPARACIÓN DE LIBROS / HOJAS
+' Convertir un libro de Excel de oferta en
+' "editable para enviar a agente comercial"
+' ------------------------------------------
+
+'@Folder "4-Oportunidades y compresores.d-Ofertas.Plantillas"
+Option Explicit
+
 Public Sub LimpiarLibroActual()
     If SheetExists(ActiveWorkbook, "BUDGET_QUOTE") And SheetExists(ActiveWorkbook, "BUDGET_QUOTE") Then
         MsgBox ("DE MOMENTO ESTE PROCEDIMIENTO NO ES APLICABLE A BUDGET QUOTES, PTE REVISAR ERRORES EN FORMULAS")
@@ -48,7 +57,7 @@ Public Sub LimpiarLibroYHojas(Optional ByVal wb As Workbook = Nothing, Optional 
             If nErroresWs > 0 Then
                 If 6 = MsgBox("La hoja """ & ws.Name & """ contiene " & nErroresWs & " celda(s) con error(es) de cálculo." & vbCrLf & _
                        "Ver detalles en la Ventana Inmediato (Ctrl+G)." & vbCrLf & "¿DESEAS ELIMINAR TODAS LAS FORMULAS DE LA HOJA?", _
-                       vbExclamation + vbYesNo + vbDefaultButton) Then
+                       vbExclamation + vbYesNo + vbDefaultButton2) Then
                        ' el usuario consiente borrar formulas con errores
                        nErroresWs = 0
                 End If
@@ -71,38 +80,6 @@ Public Sub LimpiarLibroYHojas(Optional ByVal wb As Workbook = Nothing, Optional 
     ElseIf MsgBox("¿Deseas eliminar todas las hojas del libro no seleccionadas?", vbYesNo + vbDefaultButton2) = vbYes Then
         Call EliminarHojasNOSeleccionadas(wb)
     End If
-End Sub
-
-Sub FullRecalc()
-    Dim prevCalcMode As XlCalculation
-    Dim prevEnableEvents As Boolean
-    Dim prevScreenUpdating As Boolean
-    
-    On Error GoTo ErrorHandler
-    
-    prevCalcMode = Application.Calculation
-    prevEnableEvents = Application.EnableEvents
-    prevScreenUpdating = Application.ScreenUpdating
-    
-    ' === 1. Configurar entorno para recálculo fiable ===
-    Application.Calculation = xlCalculationAutomatic
-    Application.EnableEvents = True
-    Application.ScreenUpdating = False
-    
-    ' === 2. Recálculo TOTAL con reconstrucción de dependencias ===
-    Application.CalculateFullRebuild
-
-    ' === 5. Restaurar estado original ===
-Finish:
-    Application.Calculation = prevCalcMode
-    Application.EnableEvents = prevEnableEvents
-    Application.ScreenUpdating = prevScreenUpdating
-    
-    Exit Sub
-
-ErrorHandler:
-    Debug.Print "[ERR] Excepción en FullRecalc: " & Err.Description
-    Resume Finish
 End Sub
 ' =========================================================
 ' Función: ContarYListarErroresEnHoja

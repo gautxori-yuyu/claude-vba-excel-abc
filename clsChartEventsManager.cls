@@ -8,7 +8,7 @@ Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
 '@IgnoreModule MissingAnnotationArgument
-'@Folder "4-Tipos de ficheros.gas_vbnet.Graficos Rendimiento"
+'@Folder "2-Servicios.Excel.Charts"
 '@ModuleDescription "Gestor centralizado de eventos de gráficos (orquestador)"
 Option Explicit
 
@@ -37,12 +37,12 @@ Private mWatchingSheet As Object                 ' Hoja actualmente observada
 Private Sub Class_Initialize()
     Set mActiveCharts = New Collection
     Set mWatchingSheet = Nothing
-    Debug.Print "[clsChartEventsManager Class_Initialize]"
+    LogInfo "clsChartEventsManager", "[Class_Initialize]"
 End Sub
 
 Private Sub Class_Terminate()
     Call StopWatching
-    Debug.Print "[clsChartEventsManager Class_Terminate]"
+    LogInfo "clsChartEventsManager", "[Class_Terminate]"
 End Sub
 
 '@Description: Inicia la vigilancia de graficos en una hoja (normal o de grafico)
@@ -54,7 +54,7 @@ Public Sub WatchSheet(sh As Object)
     
     On Error GoTo ErrHandler
     
-    Debug.Print "[clsChartEventsManager WatchSheet] - Empezando a observar hoja: " & sh.Name
+    LogInfo "clsChartEventsManager", "[WatchSheet] - Empezando a observar hoja: " & sh.Name
     
     ' Detener observación anterior (libera eventos)
     ' Call StopWatching
@@ -81,11 +81,11 @@ Public Sub WatchSheet(sh As Object)
         Next chtObj
     End If
     
-    Debug.Print "[clsChartEventsManager WatchSheet] - gráficos en observación: " & mActiveCharts.Count
+    LogDebug "clsChartEventsManager", "[WatchSheet] - gráficos en observación: " & mActiveCharts.Count
     
     Exit Sub
 ErrHandler:
-    Debug.Print "[clsChartEventsManager WatchSheet] ERROR: " & Err.Description
+    LogError "clsChartEventsManager", "[WatchSheet] Error", , Err.Description
     Err.Raise Err.Number, "clsChartEventsManager.WatchSheet", _
               "Error al configurar la vigilancia de selección de gráficos en hoja: " & Err.Description
 End Sub
@@ -104,10 +104,11 @@ Public Sub StopWatching()
     Next oChartEvents
     Set mActiveCharts = New Collection
     Set mWatchingSheet = Nothing
-    Debug.Print "[clsChartEventsManager StopWatching] - Eventos de gráficos desactivados"
+    LogDebug "clsChartEventsManager", "[StopWatching] - Eventos de gráficos desactivados"
 
     Exit Sub
 ErrHandler:
+    LogError "clsChartEventsManager", "[StopWatching] Error", , Err.Description
     Err.Raise Err.Number, "clsChartEventsManager.StopWatching", _
               "Error al detener la vigilancia de selección de gráficos en hoja: " & Err.Description
 End Sub
@@ -116,14 +117,14 @@ Public Sub RefreshCurrentSheet()
     On Error GoTo ErrHandler
     
     If Not Application.ActiveSheet Is Nothing Then
-        Debug.Print "[clsChartEventsManager RefreshCurrentSheet] Re-inicializando vigilancia"
+        LogDebug "clsChartEventsManager", "[RefreshCurrentSheet] Re-inicializando vigilancia"
         Call StopWatching
         Call WatchSheet(Application.ActiveSheet)
     End If
     
     Exit Sub
 ErrHandler:
-    Debug.Print "[clsChartEventsManager RefreshCurrentSheet] ERROR: " & Err.Description
+    LogError "clsChartEventsManager", "[RefreshCurrentSheet] Error", , Err.Description
 End Sub
 
 '--------------------------------------------------------------
@@ -144,5 +145,4 @@ End Sub
 Friend Sub NotifyChartDeactivated(cht As Chart)
     RaiseEvent ChartDeactivated(cht)
 End Sub
-
 

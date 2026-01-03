@@ -2,15 +2,58 @@ Attribute VB_Name = "modUTILSProcedureParsing"
 ' ==========================================
 ' FUNCIONES DE PARSING
 ' ==========================================
-'@Folder "1-Inicio e Instalacion"
+'@Folder "1-Inicio e Instalacion.Gestion de modulos y procs"
 '@IgnoreModule MissingAnnotationArgument, ProcedureNotUsed
 Option Explicit
-
-' Parsea todos los procedimientos del proyecto VBA (CON Y SIN metadatos)
+' Requiere referencia a: Microsoft Visual Basic for Applications Extensibility 5.3
+Public Function ParsearUDFsDeTodosLosProyectos() As Object
+Attribute ParsearUDFsDeTodosLosProyectos.VB_Description = "[modUTILSProcedureParsing] Requiere referencia a: Microsoft Visual Basic for Applications Extensibility 5.3"
+Attribute ParsearUDFsDeTodosLosProyectos.VB_ProcData.VB_Invoke_Func = " \n21"
+    Dim vbeProj As Object ' VBIDE.VBProject
+    Dim oDicUDFs As Object
+    Dim oDicProcs As Object, key
+    Set oDicUDFs = CreateObject("Scripting.Dictionary")
+    
+    ' Usamos el objeto Application.VBE para acceder a todos los proyectos cargados
+    ' (incluyendo complementos XLAM, libros ocultos y Personal.xlsb)
+    On Error Resume Next
+    For Each vbeProj In Application.VBE.VBProjects
+        If vbeProj Is Nothing Then
+        ElseIf vbeProj.Protection = 0 Then ' 1 = vbext_pp_locked
+            ' Acceder al contenido
+            LogInfo "modUTILSProcedureParsing", "[ProcesarTodosLosProyectos] - Procesando proyecto: " & vbeProj.Name & " [" & vbeProj.fileName & "]"
+            
+            ' Llamamos a tu función de parseo pasando el proyecto actual
+            ' Suponiendo que tu función ahora acepta el argumento: ParsearProcsDelProyecto(vbProj As Object)
+            Set oDicProcs = ParsearProcs(vbeProj)
+        
+            oDicUDFs.Add vbeProj.fileName, CreateObject("Scripting.Dictionary")
+            For Each key In oDicProcs
+                If oDicProcs.Item(key).ProcedureType = udf Then
+                    oDicUDFs(vbeProj.fileName).Add oDicProcs.Item(key).Name, Empty
+                End If
+            Next key
+            If oDicUDFs(vbeProj.fileName).Count = 0 Then oDicUDFs.Remove (vbeProj.fileName)
+        End If
+    Next vbeProj
+    
+    Set ParsearUDFsDeTodosLosProyectos = oDicUDFs
+End Function
 Public Function ParsearProcsDelProyecto() As Object
-Attribute ParsearProcsDelProyecto.VB_Description = "[modUTILSProcedureParsing] Parsea todos los procedimientos del proyecto VBA (CON Y SIN metadatos). Aplica a: ThisWorkbook"
+Attribute ParsearProcsDelProyecto.VB_Description = "[modUTILSProcedureParsing] Parsear Procs Del Proyecto (función personalizada). Aplica a: ThisWorkbook"
 Attribute ParsearProcsDelProyecto.VB_ProcData.VB_Invoke_Func = " \n21"
-    Dim vbProj As Object, vbComp As VBIDE.VBComponent
+    On Error GoTo ErrorHandler
+    
+    Set ParsearProcsDelProyecto = ParsearProcs(ThisWorkbook.VBProject)
+    Exit Function
+ErrorHandler:
+    LogError "modUTILSProcedureParsing", "[ParsearProcsDelProyecto] - Error al parsear procedimientos", , Err.Description
+End Function
+' Parsea todos los procedimientos del proyecto VBA (CON Y SIN metadatos)
+Public Function ParsearProcs(ByVal vbProj As Object) As Object
+Attribute ParsearProcs.VB_Description = "[modUTILSProcedureParsing] Parsea todos los procedimientos del proyecto VBA (CON Y SIN metadatos)"
+Attribute ParsearProcs.VB_ProcData.VB_Invoke_Func = " \n21"
+    Dim vbComp As VBIDE.VBComponent
     
     Dim procName As String
     Dim PKind As ProcKind
@@ -24,14 +67,12 @@ Attribute ParsearProcsDelProyecto.VB_ProcData.VB_Invoke_Func = " \n21"
     Set funciones = CreateObject("Scripting.Dictionary")
     
     On Error GoTo ErrorHandler
-    ' Intentar acceder al VBA Project
-    Set vbProj = ThisWorkbook.VBProject
     
     If vbProj Is Nothing Then
-        Debug.Print "[ParsearProcsDelProyecto] - No hay acceso al VBA Project."
-        Debug.Print "  -> Habilita 'Confiar en el acceso al modelo de objetos de proyectos de VBA'"
-        Debug.Print "  -> En: Archivo > Opciones > Centro de confianza > Configuración"
-        Set ParsearProcsDelProyecto = Nothing
+        LogInfo "modUTILSProcedureParsing", "[ParsearProcs] - No hay acceso al VBA Project."
+        LogInfo "modUTILSProcedureParsing", "  -> Habilita 'Confiar en el acceso al modelo de objetos de proyectos de VBA'"
+        LogInfo "modUTILSProcedureParsing", "  -> En: Archivo > Opciones > Centro de confianza > Configuración"
+        Set ParsearProcs = Nothing
         Exit Function
     End If
     
@@ -66,15 +107,15 @@ Attribute ParsearProcsDelProyecto.VB_ProcData.VB_Invoke_Func = " \n21"
         End With
     Next vbComp
     
-    Set ParsearProcsDelProyecto = funciones
+    Set ParsearProcs = funciones
     
     If funciones.Count > 0 Then
-        Debug.Print "[ParsearProcsDelProyecto] - " & funciones.Count & " procedimientos encontrados."
+        LogInfo "modUTILSProcedureParsing", "[ParsearProcs] - " & funciones.Count & " procedimientos encontrados."
     End If
     
     Exit Function
 ErrorHandler:
-    Debug.Print "[ParsearProcsDelProyecto] - Error al parsear procedimientos: " & Err.Description
+    LogError "modUTILSProcedureParsing", "[ParsearProcs] - Error al parsear procedimientos", , Err.Description
 End Function
 
 '@Description: Corrige los desplazamientos erroneos en los modulos de codigo detectados por las funciones
@@ -119,7 +160,7 @@ Private Function getProcCode(CodeModule As Object, procName As String, PKind As 
     getProcCode = CodeBlock
     Exit Function
 ErrorHandler:
-    Debug.Print "[getProcCode] - Error: " & Err.Description
+    LogError "modUTILSProcedureParsing", "[getProcCode] - Error", , Err.Description
 End Function
 
 ' Verifica si un módulo tiene Option Private Module
@@ -143,7 +184,5 @@ Private Function EsModuloPrivado(CodeModule As Object) As Boolean
     Next i
     Exit Function
 ErrorHandler:
-    Debug.Print "[EsModuloPrivado] - Error: " & Err.Description
+    LogError "modUTILSProcedureParsing", "[EsModuloPrivado] - Error", , Err.Description
 End Function
-
-

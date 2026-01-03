@@ -7,11 +7,15 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
-'@Folder "2-Control de estado"
+'@Folder "3-Aplicac (Coord)"
 '@Description: Provee acceso seguro y explícito al contexto de ejecución (Workbook, Worksheet, Chart, Selection)
 '@Note: Diseñado para reemplazar ActiveWorkbook/ActiveSheet/ActiveChart/Selection con acceso seguro y consistente.
 '       Basado en la lógica real de EsValidoInvertirEjes y clsChartEvents.
 Option Explicit
+
+Public Event WorkbookChanged(ByVal wb As Workbook)
+Public Event WorksheetChanged(ByVal ws As Worksheet)
+Public Event SelectionChanged(ByVal sel As Object)
 
 Private m_app As Application
 Private m_lastWorkbookObjKey As Double   ' Cache coherente (solo si sigue vigente)

@@ -1,5 +1,6 @@
 Attribute VB_Name = "UDFs_CGASING"
 '@IgnoreModule MissingAnnotationArgument
+'@Folder "UDFS"
 Option Explicit
 
 ' Variable global para evitar múltiples mensajes
@@ -342,5 +343,3 @@ Attribute MaximaPotencia.VB_ProcData.VB_Invoke_Func = " \n21"
 ErrorHandler:
     MaximaPotencia = CVErr(xlErrNA)
 End Function
-
-

@@ -7,6 +7,7 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
+'@Folder "2-Servicios.DBs"
 Option Explicit
 
 Private m_Cnn As Object ' ADODB.Connection

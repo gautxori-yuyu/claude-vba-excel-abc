@@ -14,7 +14,7 @@ Attribute VB_Exposed = True
 ' que puedan ser gestionadas por clsFileManager
 ' ==================================================================
 
-'@Folder "4-Tipos de ficheros"
+'@Folder "2-Servicios.Archivos.Tipos de archivos"
 '@Interface
 '@IgnoreModule MissingAnnotationArgument
 Option Explicit
@@ -54,4 +54,3 @@ End Property
 ' 3. Implementar cada método delegando a las propiedades públicas
 '
 ' 4. Opcionalmente mantener las propiedades públicas originales
-

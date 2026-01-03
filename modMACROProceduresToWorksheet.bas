@@ -7,6 +7,9 @@ Attribute VB_Name = "modMACROProceduresToWorksheet"
 ' y todas las propiedades de clsVBAProcedure
 ' ==========================================
 
+'@Folder "1-Inicio e Instalacion.Gestion de modulos y procs"
+Option Explicit
+
 Private Const SHEET_NAME As String = "PROCEDIMIENTOS"
 
 '@Description: Sincroniza procedimientos del proyecto con hoja Excel "PROCEDIMIENTOS". Crea la hoja si no existe, o sincroniza cambios bidireccionales si existe.

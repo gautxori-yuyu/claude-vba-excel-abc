@@ -12,6 +12,7 @@ Attribute VB_Name = "modMACROImportExportMacros"
 ' - en Excel: Archivo > Opciones > Centro de confianza > Configuración del Centro de confianza
 '       > Configuración de macros > marca "Confiar en el acceso al modelo de objetos del proyecto VBA".
 
+'@Folder "0-Developer"
 Option Explicit
 
 ' -------------------------------------------------------------------------------------------------------------
@@ -283,4 +284,3 @@ Attribute ExportarComponentesVBAdesdeThisWorkbookXLAM.VB_ProcData.VB_Invoke_Func
     
     MsgBox "Exportación completada en: " & rutaExportacion, vbInformation
 End Sub
-

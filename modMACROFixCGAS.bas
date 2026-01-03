@@ -1,5 +1,7 @@
 Attribute VB_Name = "modMACROFixCGAS"
 ' ===== Módulo: modFixCGAS =====
+
+'@Folder "4-Oportunidades y compresores.b-Calculos técnicos"
 Option Explicit
 
 Public Sub FixCGASING()
@@ -12,7 +14,7 @@ Attribute FixCGASING.VB_ProcData.VB_Invoke_Func = " \n0"
     End If
     Dim ws As Worksheet
     Set ws = Nothing
-    Dim c As Double, d As Double, vtmp As Variant
+    Dim c As Double, d As Double, vTmp As Variant
     Dim bSave As Boolean
     Dim regEx As Object
     On Error Resume Next
@@ -179,9 +181,9 @@ Attribute FixCGASING.VB_ProcData.VB_Invoke_Func = " \n0"
             Do
                 If cell.Value > cell.Offset(d, 0).Value Then
                     'Stop
-                    vtmp = cell.Offset(d, 0).Value: cell.Offset(d, 0).Value = cell.Value: cell.Value = vtmp
-                    vtmp = cell.Offset(d, -1).Value: cell.Offset(d, -1).Value = cell.Offset(0, -1).Value: cell.Offset(0, -1).Value = vtmp
-                    vtmp = cell.Offset(d, 1).Value: cell.Offset(d, 1).Value = cell.Offset(0, 1).Value: cell.Offset(0, 1).Value = vtmp
+                    vTmp = cell.Offset(d, 0).Value: cell.Offset(d, 0).Value = cell.Value: cell.Value = vTmp
+                    vTmp = cell.Offset(d, -1).Value: cell.Offset(d, -1).Value = cell.Offset(0, -1).Value: cell.Offset(0, -1).Value = vTmp
+                    vTmp = cell.Offset(d, 1).Value: cell.Offset(d, 1).Value = cell.Offset(0, 1).Value: cell.Offset(0, 1).Value = vTmp
                 End If
                 d = d + 1
             Loop While d <= 0
@@ -370,7 +372,7 @@ Attribute FixCGASING.VB_ProcData.VB_Invoke_Func = " \n0"
     Debug.Print "FixCGASING: Recalculando hoja 'C-GAS-ING'."
     ws.Calculate
     
-Cleanup:
+CleanUp:
     ' Restaurar propiedades de Excel
     Application.Calculation = prevCalc
     Application.ScreenUpdating = prevScreen
@@ -382,7 +384,5 @@ Cleanup:
     
 ErrHandler:
     Debug.Print "FixCGASING: Error " & Err.Number & " - " & Err.Description
-    Resume Cleanup
+    Resume CleanUp
 End Sub
-
-

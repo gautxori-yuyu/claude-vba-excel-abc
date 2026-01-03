@@ -1,5 +1,5 @@
 Attribute VB_Name = "modOfertaTypes"
-
+'@Folder "4-Oportunidades y compresores.d-Ofertas.Gestion"
 Option Explicit
 
 Public Type tOfertasDatosGenerales

@@ -8,7 +8,7 @@ Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
 '@IgnoreModule MissingAnnotationArgument
-'@Folder "4-Tipos de ficheros.gas_vbnet.Graficos Rendimiento"
+'@Folder "2-Servicios.Excel.Charts"
 '@ModuleDescription "Evento ligero por grafico -- notifica a su gestor"
 Option Explicit
 '--------------------------------------------------------------

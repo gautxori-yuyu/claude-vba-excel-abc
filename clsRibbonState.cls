@@ -9,6 +9,8 @@ Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
 '@Description: Estado lógico del Ribbon
 '@Category: State
+
+'@Folder "2-Servicios.Excel.Ribbon"
 Option Explicit
 
 Public Event StateChanged()
@@ -21,7 +23,10 @@ Public Property Get Modo() As eRibbonMode
 End Property
 
 Public Property Let Modo(Value As eRibbonMode)
-    If mModoRibbon <> Value Then
+    If mModoRibbon = Ribbon_Undefined Then
+        ' se considera una INICIALIZACION, no un cambio de estado
+        mModoRibbon = Value
+    ElseIf mModoRibbon <> Value Then
         mModoRibbon = Value
         RaiseEvent StateChanged
     End If
