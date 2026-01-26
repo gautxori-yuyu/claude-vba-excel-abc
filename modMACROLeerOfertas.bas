@@ -1,6 +1,9 @@
 Attribute VB_Name = "modMACROLeerOfertas"
-'@Folder "4-Oportunidades y compresores.d-Ofertas.Gestion"
+'@Folder "6-DOMINIO-Oportunidades y compresores.d-Ofertas.Gestion"
 Option Explicit
+
+Private Const MODULE_NAME As String = "modMACROLeerOfertas"
+
 Const RUTA_BD As String = "C:\Program Files (x86)\Ofertas_Gas\BaseDatos\Ofertas_Gas.mdb"
 
 Function isGUID(ByVal strGUID)
@@ -26,6 +29,7 @@ End Function
 '=========================================================
 
 Public Sub Test_LeerOfertas()
+Attribute Test_LeerOfertas.VB_ProcData.VB_Invoke_Func = " \n0"
 
     Const OFER_ID As String = "XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
 
@@ -74,6 +78,7 @@ End Sub
 '=========================================================
 
 Public Sub Test_LeerOfertaConOtros()
+Attribute Test_LeerOfertaConOtros.VB_ProcData.VB_Invoke_Func = " \n0"
 
     Const OFER_ID As String = "XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
 
@@ -119,6 +124,7 @@ End Sub
 '@Category: Exportación / Ofertas
 
 Public Sub Test_VolcarTodasLasOfertasAExcel()
+Attribute Test_VolcarTodasLasOfertasAExcel.VB_ProcData.VB_Invoke_Func = " \n0"
 
 
     Dim ctx As clsDBContext

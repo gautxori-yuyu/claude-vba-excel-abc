@@ -1,6 +1,8 @@
 Attribute VB_Name = "modMACROWbkEditableFormatting"
-'@Folder "4-Oportunidades y compresores.d-Ofertas.Plantillas"
+'@Folder "6-DOMINIO-Oportunidades y compresores.d-Ofertas.Plantillas"
 Option Explicit
+
+Private Const MODULE_NAME As String = "modMACROWbkEditableFormatting"
 
 ' Declaraciones para Win32 API (64 bits)
 Private Declare PtrSafe Function CreateDC Lib "gdi32" Alias "CreateDCA" (ByVal lpDriverName As String, ByVal lpDeviceName As String, ByVal lpOutput As String, ByVal lpInitData As LongPtr) As LongPtr
@@ -38,6 +40,7 @@ Public Type CompactacionEstado
 End Type
 
 Sub AjustarAltoFilasSegunColor()
+Attribute AjustarAltoFilasSegunColor.VB_ProcData.VB_Invoke_Func = " \n0"
     Dim rng As Range
     Dim celda As Range, fila As Range
     Dim colorFondo As Long
@@ -172,13 +175,14 @@ Private Function ObtenerFactorCorreccion(c As Range) As Double
     ObtenerFactorCorreccion = factor
 End Function
 Sub AjustarSelWSheetsParaImpresionPDF()
+Attribute AjustarSelWSheetsParaImpresionPDF.VB_ProcData.VB_Invoke_Func = " \n0"
     On Error GoTo CleanUp
     Dim aw As Window
     Set aw = ActiveWindow
         
-    Dim wb As Workbook
-    Set wb = aw.Parent
-    If wb Is Nothing Then
+    Dim Wb As Workbook
+    Set Wb = aw.Parent
+    If Wb Is Nothing Then
         MsgBox "[ERR] No hay libro activo.", vbCritical
         Exit Sub
     End If
@@ -187,35 +191,35 @@ Sub AjustarSelWSheetsParaImpresionPDF()
     Set selSheets = aw.SelectedSheets
     
     If selSheets.Count = 0 Then
-        MsgBox "[WARN] No hay hojas seleccionadas en el libro '" & wb.Name & "'.", vbExclamation
+        MsgBox "[WARN] No hay hojas seleccionadas en el libro '" & Wb.Name & "'.", vbExclamation
         Exit Sub
     End If
     
-    Debug.Print "=== AjustarSelWSheetsParaImpresionPDF: " & selSheets.Count & " hoja(s) en '" & wb.Name & "' ==="
+    Debug.Print "=== AjustarSelWSheetsParaImpresionPDF: " & selSheets.Count & " hoja(s) en '" & Wb.Name & "' ==="
     
-    Dim sh As Object
+    Dim Sh As Object
     Dim hojasProcesadas As Long, hojasFallidas As Long
     Dim estados() As CompactacionEstado
     ReDim estados(1 To selSheets.Count)
     
     Dim i As Long: i = 0
     
-    For Each sh In selSheets
+    For Each Sh In selSheets
         i = i + 1
-        If TypeName(sh) = "Worksheet" Then
+        If TypeName(Sh) = "Worksheet" Then
             On Error Resume Next
-            estados(i) = AjustarWSParaPDF_ImpresionMaestra(sh)
+            estados(i) = AjustarWSParaPDF_ImpresionMaestra(Sh)
             If Err.Number = 0 Then
                 hojasProcesadas = hojasProcesadas + 1
             Else
-                Debug.Print "[ERR] Falló en '" & sh.Name & "': " & Err.Description
+                Debug.Print "[ERR] Falló en '" & Sh.Name & "': " & Err.Description
                 hojasFallidas = hojasFallidas + 1
             End If
             On Error GoTo 0
         Else
-            Debug.Print "[INFO] Saltada hoja no Worksheet: '" & sh.Name & "' (tipo: " & TypeName(sh) & ")"
+            Debug.Print "[INFO] Saltada hoja no Worksheet: '" & Sh.Name & "' (tipo: " & TypeName(Sh) & ")"
         End If
-    Next sh
+    Next Sh
     
     Debug.Print "[OK] Proceso finalizado: " & hojasProcesadas & " hojas ajustadas, " & hojasFallidas & " con error."
     
@@ -236,8 +240,8 @@ Sub AjustarSelWSheetsParaImpresionPDF()
         ' grabar el documento como PDF
         ' Exportar la hoja "Graficos" a PDF
         On Error Resume Next
-        wb.ExportAsFixedFormat Type:=xlTypePDF, _
-                fileName:=wb.Path & "\" & Left(wb.Name, InStrRev(wb.Name, ".") - 1) & ".pdf", _
+        Wb.ExportAsFixedFormat Type:=xlTypePDF, _
+                fileName:=Wb.Path & "\" & Left(Wb.Name, InStrRev(Wb.Name, ".") - 1) & ".pdf", _
                 Quality:=xlQualityStandard, _
                 OpenAfterPublish:=True
         On Error GoTo 0
@@ -254,22 +258,22 @@ CleanUp:
     hojasProcesadas = 0
     hojasFallidas = 0
     i = 0
-    For Each sh In selSheets
+    For Each Sh In selSheets
         i = i + 1
-        If TypeName(sh) = "Worksheet" Then
+        If TypeName(Sh) = "Worksheet" Then
             On Error Resume Next
-            RestaurarAreaDeImpresion sh, estados(i)
+            RestaurarAreaDeImpresion Sh, estados(i)
             If Err.Number = 0 Then
                 hojasProcesadas = hojasProcesadas + 1
             Else
-                Debug.Print "[ERR] Falló en '" & sh.Name & "': " & Err.Description
+                Debug.Print "[ERR] Falló en '" & Sh.Name & "': " & Err.Description
                 hojasFallidas = hojasFallidas + 1
             End If
             On Error GoTo 0
         Else
-            Debug.Print "[INFO] Saltada hoja no Worksheet: '" & sh.Name & "' (tipo: " & TypeName(sh) & ")"
+            Debug.Print "[INFO] Saltada hoja no Worksheet: '" & Sh.Name & "' (tipo: " & TypeName(Sh) & ")"
         End If
-    Next sh
+    Next Sh
     
     Debug.Print "[OK] Proceso finalizado: " & hojasProcesadas & " hojas ajustadas, " & hojasFallidas & " con error."
     
@@ -279,6 +283,7 @@ ErrorHandler:
     End If
 End Sub
 Function AjustarWSParaPDF_ImpresionMaestra(Optional ws As Worksheet = Nothing) As CompactacionEstado
+Attribute AjustarWSParaPDF_ImpresionMaestra.VB_ProcData.VB_Invoke_Func = " \n0"
     If ws Is Nothing Then Set ws = ActiveSheet
     
     Dim rangoImpresion As Range
@@ -388,6 +393,7 @@ Private Function GetCleanPrinterName() As String
 End Function
 
 Sub ReajustarRangoAreasImpresion(ws As Worksheet)
+Attribute ReajustarRangoAreasImpresion.VB_ProcData.VB_Invoke_Func = " \n0"
     Dim areasOriginales As Variant
     Dim areaActual As Range, nuevoPrintRange As Range
     Dim i As Integer
@@ -631,6 +637,7 @@ Attribute GetUsablePrintHeight.VB_ProcData.VB_Invoke_Func = " \n21"
 End Function
 
 Sub ConfigurarSaltosDePagina(ws As Worksheet, ultimaFila As Long)
+Attribute ConfigurarSaltosDePagina.VB_ProcData.VB_Invoke_Func = " \n0"
     Dim i As Long, j As Long
     Dim npb As Long
     Dim prevScreenUpdating As Boolean
@@ -723,7 +730,7 @@ Sub ConfigurarSaltosDePagina(ws As Worksheet, ultimaFila As Long)
             If pagina <= npb Then
                 ws.HPageBreaks(pagina).DragOff Direction:=xlToRight, RegionIndex:=1  ' eliminar salto automático
             End If
-            ws.HPageBreaks.Add Before:=ws.Rows(mejorFilaMarcador)
+            ws.HPageBreaks.Add before:=ws.Rows(mejorFilaMarcador)
             
             Debug.Print "[OK] Página " & pagina & ": salto ajustado a fila " & mejorFilaMarcador & _
                         " (f=" & Round(mejorFactorF, 2) & ", d=" & Round(mejorDistancia, 1) & " pts)"
@@ -743,6 +750,7 @@ End Sub
 
 ' PENDIENTE DE PROBAR, MEJOR ESTA QUE LA OLD si la otra no funciona
 Sub ConfigurarSaltosDePagina_v2(ws As Worksheet, ultimaFila As Long)
+Attribute ConfigurarSaltosDePagina_v2.VB_ProcData.VB_Invoke_Func = " \n0"
     Dim altoPaginaReal As Double
     Dim i As Long, j As Long, filaInicioPagina As Long
     Dim altoAcumulado As Double
@@ -818,7 +826,7 @@ Sub ConfigurarSaltosDePagina_v2(ws As Worksheet, ultimaFila As Long)
             Next j
             
             ' Insertar salto manual justo antes del marcador óptimo
-            ws.HPageBreaks.Add Before:=ws.Rows(filaMarcador)
+            ws.HPageBreaks.Add before:=ws.Rows(filaMarcador)
             npb = npb + 1
             filaInicioPagina = filaMarcador
             Debug.Print "[OK] Salto insertado antes de fila " & filaMarcador & " (posición de marcador)"
@@ -840,7 +848,7 @@ Sub ConfigurarSaltosDePagina_v2(ws As Worksheet, ultimaFila As Long)
                 For k = 1 To ws.HPageBreaks.Count
                     If ws.HPageBreaks(k).Location.Row > filaInicioPagina Then
                         j = ws.HPageBreaks(k).Location.Row
-                        ws.HPageBreaks.Add Before:=ws.Rows(j)
+                        ws.HPageBreaks.Add before:=ws.Rows(j)
                         npb = npb + 1
                         filaInicioPagina = j
                         Debug.Print "[OK] Salto automático adoptado en fila " & j
@@ -870,6 +878,7 @@ CleanUp:
 End Sub
 
 Sub ConfigurarSaltosDePagina_old(ws As Worksheet, ultimaFila As Long)
+Attribute ConfigurarSaltosDePagina_old.VB_ProcData.VB_Invoke_Func = " \n0"
     Dim altoPaginaReal As Double
     Dim i As Long, j As Long, filaInicioPagina As Long
     Dim altoAcumulado As Double
@@ -936,13 +945,13 @@ Sub ConfigurarSaltosDePagina_old(ws As Worksheet, ultimaFila As Long)
             Next j
             
             ' Insertar salto manual justo antes del marcador óptimo
-            ws.HPageBreaks.Add Before:=ws.Rows(filaMarcador)
+            ws.HPageBreaks.Add before:=ws.Rows(filaMarcador)
             npb = npb + 1
             filaInicioPagina = filaMarcador
         ElseIf i < ultimaFila Then
             ' Si no hubo marcador en el rango del 10%, buscamos el salto natural
             'Stop
-            ws.HPageBreaks.Add Before:=ws.HPageBreaks(npb + 1).Location
+            ws.HPageBreaks.Add before:=ws.HPageBreaks(npb + 1).Location
             filaInicioPagina = ws.HPageBreaks(npb + 1).Location.Row
             npb = npb + 1
 '            altoAcumulado = 0
@@ -996,6 +1005,7 @@ Attribute SaltoVerticalCortaRango.VB_ProcData.VB_Invoke_Func = " \n21"
 End Function
 
 Sub CompactarAreaDeImpresion(ws As Worksheet, ByRef estado As CompactacionEstado)
+Attribute CompactarAreaDeImpresion.VB_ProcData.VB_Invoke_Func = " \n0"
     Dim printAreas As Variant
     Dim i As Long, j As Long
     Dim totalRange As Range
@@ -1125,6 +1135,7 @@ ErrorHandler:
 End Sub
 
 Sub RestaurarAreaDeImpresion(ws As Worksheet, estado As CompactacionEstado)
+Attribute RestaurarAreaDeImpresion.VB_ProcData.VB_Invoke_Func = " \n0"
     On Error GoTo ErrorHandler
     
     If Not estado.EsValido Then

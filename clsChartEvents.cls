@@ -8,16 +8,18 @@ Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
 '@IgnoreModule MissingAnnotationArgument
-'@Folder "2-Servicios.Excel.Charts"
+'@Folder "2-Infraestructura.Excel.Charts"
 '@ModuleDescription "Evento ligero por grafico -- notifica a su gestor"
 Option Explicit
+
+Private Const MODULE_NAME As String = "clsChartEvents"
+
 '--------------------------------------------------------------
 ' Miembros
 '--------------------------------------------------------------
-'@MemberAttribute VB_VarHelpID, -1
-Public WithEvents mChart As Chart
+Private WithEvents mChart As Chart
 Attribute mChart.VB_VarHelpID = -1
-Private p_ParentChartEventsMgr As clsChartEventsManager
+Private mChartMgr As clsChartMgr
 
 '--------------------------------------------------------------
 ' Propiedad para asociar al gestor
@@ -25,11 +27,10 @@ Private p_ParentChartEventsMgr As clsChartEventsManager
 '@Description: Asigna el gestor padre al que notificar los eventos de activacion/desactivacion
 '@Category: Gráficos
 '@Scope: interna, auxiliar
-'@ArgumentDescriptions: p As clsChartEventsManager
-Public Property Set ParentManager(oChartEventsManager As clsChartEventsManager)
-    Set p_ParentChartEventsMgr = oChartEventsManager
-    Debug.Print "[clsChartEvents] [i] ParentManager " & _
-                IIf(oChartEventsManager Is Nothing, "DESASIGNADO", "asignado")
+'@ArgumentDescriptions: p As clsChartMgr
+Public Property Set ParentManager(oEvMgrChart As clsChartMgr)
+    Set mChartMgr = oEvMgrChart
+    LogInfo MODULE_NAME, "[ParentManager] - " & IIf(oEvMgrChart Is Nothing, "DESASIGNADO", "asignado")
 End Property
 
 '--------------------------------------------------------------
@@ -44,19 +45,21 @@ Public Property Set Chart(oChart As Chart)
     On Error GoTo ErrHandler
     
     If Not mChart Is Nothing Then
+        LogWarning MODULE_NAME, " - Reasignando mChart"
         Debug.Print "[clsChartEvents] [!] Reasignando mChart"
         Set mChart = Nothing
     End If
     Set mChart = oChart
     If Not oChart Is Nothing Then
-        Debug.Print "[clsChartEvents] [OK] mChart asignado: " & TypeName(oChart.Parent) & "!" & oChart.Name & " @ " & ObjPtr(oChart)
+        LogInfo MODULE_NAME, " - mChart asignado: " & TypeName(oChart.Parent) & "!" & oChart.Name & " @ " & ObjPtr(oChart)
     Else
-        Debug.Print "[clsChartEvents] [ERR] mChart liberado"
+        LogError MODULE_NAME, " - mChart liberado"
     End If
 
     Exit Property
 ErrHandler:
-    Debug.Print "[clsChartEvents Set chart] error: " & Err.Description
+    LogCurrentError MODULE_NAME, " [Chart]"
+    Err.Raise Err.Number, MODULE_NAME & " [Chart]", Err.Description
 End Property
 
 '--------------------------------------------------------------
@@ -66,32 +69,34 @@ Private Sub mChart_Activate()
     
     On Error GoTo ErrHandler
     
-    Debug.Print "[clsChartEvents.Activate] [i] " & TypeName(mChart.Parent) & "!" & mChart.Name
-    If p_ParentChartEventsMgr Is Nothing Then
-        Debug.Print "[clsChartEvents.Activate] [ERR] ParentManager es Nothing"
+    LogInfo MODULE_NAME, "[clsChartEvents.Activate] - " & TypeName(mChart.Parent) & "!" & mChart.Name
+    If mChartMgr Is Nothing Then
+        LogError MODULE_NAME, "[clsChartEvents.Activate] - ParentManager es Nothing"
     Else
-        p_ParentChartEventsMgr.NotifyChartActivated mChart
+        mChartMgr.NotifyChartActivated mChart
     End If
 
     Exit Sub
 ErrHandler:
-    Debug.Print "[clsChartEvents mChart_Activate] error: " & Err.Description
+    LogCurrentError MODULE_NAME, " [clsChartEvents.Activate]"
+    Err.Raise Err.Number, MODULE_NAME & " [clsChartEvents.Activate]", Err.Description
 End Sub
 
 Private Sub mChart_Deactivate()
     
     On Error GoTo ErrHandler
     
-    Debug.Print "[clsChartEvents.Deactivate] [i] " & TypeName(mChart.Parent) & "!" & mChart.Name
-    If p_ParentChartEventsMgr Is Nothing Then
-        Debug.Print "[clsChartEvents.Deactivate] [ERR] ParentManager es Nothing"
+    LogInfo MODULE_NAME, "[clsChartEvents.Deactivate] - " & TypeName(mChart.Parent) & "!" & mChart.Name
+    If mChartMgr Is Nothing Then
+        LogError MODULE_NAME, "[clsChartEvents.Deactivate] - ParentManager es Nothing"
     Else
-        p_ParentChartEventsMgr.NotifyChartDeactivated mChart
+        mChartMgr.NotifyChartDeactivated mChart
     End If
 
     Exit Sub
 ErrHandler:
-    Debug.Print "[clsChartEvents mChart_Deactivate] error: " & Err.Description
+    LogCurrentError MODULE_NAME, " [clsChartEvents.Deactivate]"
+    Err.Raise Err.Number, MODULE_NAME & " [clsChartEvents.Deactivate]", Err.Description
 End Sub
 
 

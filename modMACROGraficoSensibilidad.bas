@@ -1,7 +1,10 @@
 Attribute VB_Name = "modMACROGraficoSensibilidad"
 
-'@Folder "4-Oportunidades y compresores.b-Calculos técnicos"
+'@Folder "6-DOMINIO-Oportunidades y compresores.b-Calculos técnicos"
 Option Explicit
+
+Private Const MODULE_NAME As String = "modMACROGraficoSensibilidad"
+
 Dim iSeriesNr As Integer
 
 Public Function EsFicheroOportunidad() As Boolean
@@ -128,10 +131,10 @@ Attribute EjecutarGraficoEnLibroActivo.VB_ProcData.VB_Invoke_Func = " \n0"
     End If
     
     
-    Dim wb As Workbook
-    Set wb = ActiveWorkbook
+    Dim Wb As Workbook
+    Set Wb = ActiveWorkbook
     
-    If wb.FileFormat = xlOpenXMLAddIn Or wb.FileFormat = xlAddIn Then
+    If Wb.FileFormat = xlOpenXMLAddIn Or Wb.FileFormat = xlAddIn Then
         MsgBox "No se puede ejecutar este comando sobre un archivo de tipo complemento (.xlam o .xla).", vbCritical
         Exit Sub
     End If
@@ -141,11 +144,11 @@ Attribute EjecutarGraficoEnLibroActivo.VB_ProcData.VB_Invoke_Func = " \n0"
     Set hojasProcesar = New Collection
     
     Dim i As Long, c As Long: c = 1
-    For i = 1 To wb.Sheets.Count
-        If wb.Sheets(i).Type = xlWorksheet Then
-            If IsNumeric(wb.Sheets(i).Name) Then
-                If CLng(wb.Sheets(i).Name) = c Then
-                    hojasProcesar.Add wb.Sheets(i)
+    For i = 1 To Wb.Sheets.Count
+        If Wb.Sheets(i).Type = xlWorksheet Then
+            If IsNumeric(Wb.Sheets(i).Name) Then
+                If CLng(Wb.Sheets(i).Name) = c Then
+                    hojasProcesar.Add Wb.Sheets(i)
                     c = c + 1
                 End If
             End If
@@ -161,7 +164,7 @@ Attribute EjecutarGraficoEnLibroActivo.VB_ProcData.VB_Invoke_Func = " \n0"
     Dim chartSheet As Worksheet
     Dim SheetExists As Boolean: SheetExists = False
     On Error Resume Next
-    Set chartSheet = wb.Sheets(SHEET_NAME)
+    Set chartSheet = Wb.Sheets(SHEET_NAME)
     On Error GoTo 0
     If Not chartSheet Is Nothing Then SheetExists = True
     
@@ -188,7 +191,7 @@ Attribute EjecutarGraficoEnLibroActivo.VB_ProcData.VB_Invoke_Func = " \n0"
             Exit Sub
         End If
     ElseIf hojasProcesar.Count > 0 Then
-        Set chartSheet = wb.Sheets.Add(After:=wb.Sheets(wb.Sheets.Count))
+        Set chartSheet = Wb.Sheets.Add(After:=Wb.Sheets(Wb.Sheets.Count))
         chartSheet.Name = SHEET_NAME
     End If
     
@@ -223,7 +226,7 @@ Attribute EjecutarGraficoEnLibroActivo.VB_ProcData.VB_Invoke_Func = " \n0"
     
     ' Exportar la hoja "Graficos" a PDF
     Dim rutaArchivo As String
-    rutaArchivo = wb.Path & "\" & Left(wb.Name, InStrRev(wb.Name, ".") - 1) & "_Graficos.pdf"
+    rutaArchivo = Wb.Path & "\" & Left(Wb.Name, InStrRev(Wb.Name, ".") - 1) & "_Graficos.pdf"
     
     On Error Resume Next
     chartSheet.ExportAsFixedFormat Type:=xlTypePDF, fileName:=rutaArchivo, Quality:=xlQualityStandard
@@ -339,18 +342,18 @@ SiguienteColumna:
     ' Títulos de ejes
     With chartObj.Chart
         .HasTitle = True
-        .ChartTitle.text = "Correlation to " & Trim(Split(ws.Cells(1, xCol).Value, "(")(0))
+        .ChartTitle.Text = "Correlation to " & Trim(Split(ws.Cells(1, xCol).Value, "(")(0))
         .Axes(xlCategory).HasTitle = True
-        .Axes(xlCategory).AxisTitle.text = ws.Cells(1, xCol).Value
+        .Axes(xlCategory).AxisTitle.Text = ws.Cells(1, xCol).Value
         If Not IsEmpty(group1) Then
             .Axes(xlValue).HasTitle = True
-            .Axes(xlValue).AxisTitle.text = GenerarTituloEjeVertical(ws, group1)
+            .Axes(xlValue).AxisTitle.Text = GenerarTituloEjeVertical(ws, group1)
             '.Axes(xlValue).AxisTitle.Text = ConcatenarTextosEntreParentesis(ws, group1)
             '.Axes(xlValue).AxisTitle.Text = ExtraerTextoEnParentesis(ws.Cells(1, group1(0)).value)
         End If
         If Not IsEmpty(group2) Then
             .Axes(xlValue, xlSecondary).HasTitle = True
-            .Axes(xlValue, xlSecondary).AxisTitle.text = GenerarTituloEjeVertical(ws, group2)
+            .Axes(xlValue, xlSecondary).AxisTitle.Text = GenerarTituloEjeVertical(ws, group2)
             '.Axes(xlValue).AxisTitle.Text = ConcatenarTextosEntreParentesis(ws, group2)
             '.Axes(xlValue).AxisTitle.Text = ExtraerTextoEnParentesis(ws.Cells(1, group2(0)).value)
         End If
@@ -679,7 +682,7 @@ Private Function CapturarPropiedadesDeEje(ax As axis) As Object
     dict("DisplayUnit") = ax.DisplayUnit
     dict("HasTitle") = ax.HasTitle
     If ax.HasTitle Then
-        dict("TitleText") = ax.AxisTitle.text
+        dict("TitleText") = ax.AxisTitle.Text
     End If
     On Error GoTo 0
     
@@ -712,7 +715,7 @@ Private Sub AplicarPropiedadesAEje(ax As axis, dict As Object)
     If dict.Exists("HasTitle") Then
         ax.HasTitle = dict("HasTitle")
         If dict("HasTitle") And dict.Exists("TitleText") Then
-            ax.AxisTitle.text = dict("TitleText")
+            ax.AxisTitle.Text = dict("TitleText")
         End If
     End If
 End Sub

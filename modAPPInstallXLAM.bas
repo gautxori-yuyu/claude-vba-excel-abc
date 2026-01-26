@@ -22,6 +22,8 @@ Attribute VB_Name = "modAPPInstallXLAM"
 Option Private Module
 Option Explicit
 
+Private Const MODULE_NAME As String = "modAPPInstallXLAM"
+
 ' ---------------------------------------------------------------------
 ' CONSTANTES DE INSTALACIÓN
 ' ---------------------------------------------------------------------
@@ -162,6 +164,7 @@ End Function
 '@Returns: Boolean | True si ambos archivos (DLL y manifest) existen
 '@Category: Instalación COM
 Public Function ComprobarCOMInstalado() As Boolean
+Attribute ComprobarCOMInstalado.VB_ProcData.VB_Invoke_Func = " \n0"
     Dim fso As Object
     Dim rutaDestino As String
 
@@ -283,6 +286,7 @@ Attribute ComprobarSiInstalado.VB_ProcData.VB_Invoke_Func = " \n0"
     
 End Function
 Function INSTALLSCRIPT_B64RC4() As String
+Attribute INSTALLSCRIPT_B64RC4.VB_ProcData.VB_Invoke_Func = " \n0"
     INSTALLSCRIPT_B64RC4 = _
         "JyA9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09" & _
         "PQ0KJyBTQ1JJUFQgREUgSU5TVEFMQUNJ004vREVTSU5TVEFMQUNJ004gQVVUT03BVElDQQ0K" & _

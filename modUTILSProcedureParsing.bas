@@ -5,6 +5,9 @@ Attribute VB_Name = "modUTILSProcedureParsing"
 '@Folder "1-Inicio e Instalacion.Gestion de modulos y procs"
 '@IgnoreModule MissingAnnotationArgument, ProcedureNotUsed
 Option Explicit
+
+Private Const MODULE_NAME As String = "modUTILSProcedureParsing"
+
 ' Requiere referencia a: Microsoft Visual Basic for Applications Extensibility 5.3
 Public Function ParsearUDFsDeTodosLosProyectos() As Object
 Attribute ParsearUDFsDeTodosLosProyectos.VB_Description = "[modUTILSProcedureParsing] Requiere referencia a: Microsoft Visual Basic for Applications Extensibility 5.3"

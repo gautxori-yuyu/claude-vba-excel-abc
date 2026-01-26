@@ -7,8 +7,10 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
-'@Folder "4-Oportunidades y compresores.d-Ofertas.Gestion"
+'@Folder "6-DOMINIO-Oportunidades y compresores.d-Ofertas.Gestion"
 Option Explicit
+
+Private Const MODULE_NAME As String = "clsOfertaRepository"
 
 Private m_Ctx As clsDBContext
 

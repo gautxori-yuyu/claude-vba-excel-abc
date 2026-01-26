@@ -2,6 +2,8 @@ Attribute VB_Name = "modMACROUtilsExcelCheckbox"
 '@Folder "Funciones auxiliares"
 Option Explicit
 
+Private Const MODULE_NAME As String = "modMACROUtilsExcelCheckbox"
+
 ' Inserta un checkbox vinculado a una celda de datos con validaciones completas
 Sub InsertarCheckbox(Optional ByVal HojaDestino As String = "C.DATA", _
                      Optional ByVal ColumnaVinculo As String = "B", _
@@ -9,6 +11,7 @@ Sub InsertarCheckbox(Optional ByVal HojaDestino As String = "C.DATA", _
                      Optional ByVal BuscarTextoIzquierda As Boolean = True, _
                      Optional ByVal ValorInicial As Boolean = False, _
                      Optional ByVal TextoPersonalizado As String = "")
+Attribute InsertarCheckbox.VB_ProcData.VB_Invoke_Func = " \n0"
     
     '----------------------------------------------------------------------
     ' PROCEDIMIENTO: InsertarCheckbox
@@ -245,16 +248,19 @@ End Function
 
 '--- PROCEDIMIENTOS DE EJEMPLO PARA USO RÁPIDO ---
 Sub InsertarCheckboxConTexto()
+Attribute InsertarCheckboxConTexto.VB_ProcData.VB_Invoke_Func = " \n0"
     ' Ejemplo: Checkbox con texto visible
     Call InsertarCheckbox(MostrarCaption:=True)
 End Sub
 
 Sub InsertarCheckboxMarcado()
+Attribute InsertarCheckboxMarcado.VB_ProcData.VB_Invoke_Func = " \n0"
     ' Ejemplo: Checkbox marcado por defecto
     Call InsertarCheckbox(ValorInicial:=True, MostrarCaption:=False)
 End Sub
 
 Sub InsertarCheckboxPersonalizado()
+Attribute InsertarCheckboxPersonalizado.VB_ProcData.VB_Invoke_Func = " \n0"
     ' Ejemplo: Checkbox con texto personalizado
     Call InsertarCheckbox(TextoPersonalizado:="Opción Personalizada", _
                           MostrarCaption:=True, _

@@ -5,10 +5,13 @@ Attribute VB_Name = "modMACROWbkEditableCleaning"
 ' "editable para enviar a agente comercial"
 ' ------------------------------------------
 
-'@Folder "4-Oportunidades y compresores.d-Ofertas.Plantillas"
+'@Folder "6-DOMINIO-Oportunidades y compresores.d-Ofertas.Plantillas"
 Option Explicit
 
+Private Const MODULE_NAME As String = "modMACROWbkEditableCleaning"
+
 Public Sub LimpiarLibroActual()
+Attribute LimpiarLibroActual.VB_ProcData.VB_Invoke_Func = " \n0"
     If SheetExists(ActiveWorkbook, "BUDGET_QUOTE") And SheetExists(ActiveWorkbook, "BUDGET_QUOTE") Then
         MsgBox ("DE MOMENTO ESTE PROCEDIMIENTO NO ES APLICABLE A BUDGET QUOTES, PTE REVISAR ERRORES EN FORMULAS")
         Exit Sub
@@ -21,20 +24,21 @@ End Sub
 '@ArgumentDescriptions: wb: libro objetivo | hojas: array de Worksheet
 '@Returns: Nothing
 '@Category: Limpieza de datos
-Public Sub LimpiarLibroYHojas(Optional ByVal wb As Workbook = Nothing, Optional ByVal hojas As Variant = Empty)
+Public Sub LimpiarLibroYHojas(Optional ByVal Wb As Workbook = Nothing, Optional ByVal hojas As Variant = Empty)
+Attribute LimpiarLibroYHojas.VB_ProcData.VB_Invoke_Func = " \n0"
     Dim ws As Worksheet
     Dim hojaInicial As Worksheet
     Dim nErroresWs As Long
     
-    If wb Is Nothing And IsEmpty(hojas) Then Exit Sub
+    If Wb Is Nothing And IsEmpty(hojas) Then Exit Sub
     If IsEmpty(hojas) Then
-        Set hojas = wb.Worksheets 'Application.Transpose(Application.Transpose(wb.Worksheets))
+        Set hojas = Wb.Worksheets 'Application.Transpose(Application.Transpose(wb.Worksheets))
     End If
-    If wb Is Nothing Then
+    If Wb Is Nothing Then
         For Each ws In hojas
-            If wb Is Nothing Then
-                Set wb = ws.Parent
-            ElseIf Not wb Is ws.Parent Then
+            If Wb Is Nothing Then
+                Set Wb = ws.Parent
+            ElseIf Not Wb Is ws.Parent Then
                 MsgBox "Todas las hojas deben pertenecer al mismo libro de Excel", vbExclamation
                 Exit Sub
             End If
@@ -49,7 +53,7 @@ Public Sub LimpiarLibroYHojas(Optional ByVal wb As Workbook = Nothing, Optional 
     'Application.ScreenUpdating = False
     'Application.EnableEvents = False             ' Disable events to prevent triggering the change event recursively
     
-    EjecutarInspectorDeDocumentoVBA wb
+    EjecutarInspectorDeDocumentoVBA Wb
     
     For Each ws In hojas
         If Not ws Is Nothing Then
@@ -75,10 +79,10 @@ Public Sub LimpiarLibroYHojas(Optional ByVal wb As Workbook = Nothing, Optional 
     Application.ScreenUpdating = True
     
     ' el siguiente paso requiere que la ventana del libro con las hojas a eliminar esté activa
-    wb.Activate
+    Wb.Activate
     If ActiveWindow.SelectedSheets.Count = 0 Then
     ElseIf MsgBox("¿Deseas eliminar todas las hojas del libro no seleccionadas?", vbYesNo + vbDefaultButton2) = vbYes Then
-        Call EliminarHojasNOSeleccionadas(wb)
+        Call EliminarHojasNOSeleccionadas(Wb)
     End If
 End Sub
 ' =========================================================
@@ -178,6 +182,7 @@ End Function
 '@Returns: Nothing
 '@Category: Limpieza de datos
 Public Sub FormulasToValuesSheet(ByVal ws As Worksheet)
+Attribute FormulasToValuesSheet.VB_ProcData.VB_Invoke_Func = " \n0"
     If ws Is Nothing Then Exit Sub
     ws.UsedRange.Value = ws.UsedRange.Value
     Debug.Print "[modAPPBudgetQuotesUtilids FormulasToValuesAllSheets] - aplicada a: " & ws.Name
@@ -189,6 +194,7 @@ End Sub
 '@Returns: Nothing
 '@Category: Ajuste visual
 Public Sub ResetearZoomSheet(ByVal ws As Worksheet)
+Attribute ResetearZoomSheet.VB_ProcData.VB_Invoke_Func = " \n0"
     If ws Is Nothing Then Exit Sub
     ws.Activate
     ActiveWindow.Zoom = 100
@@ -202,6 +208,7 @@ End Sub
 '@Returns: Nothing
 '@Category: Limpieza de datos
 Public Sub EliminarFilasColumnasOcultasSheet(ByVal ws As Worksheet)
+Attribute EliminarFilasColumnasOcultasSheet.VB_ProcData.VB_Invoke_Func = " \n0"
     Dim i As Long
     
     If ws Is Nothing Then Exit Sub
@@ -250,13 +257,14 @@ End Sub
 '@ArgumentDescriptions: wb: libro a procesar
 '@Returns: Nothing
 '@Category: Seguridad / Privacidad
-Public Sub EjecutarInspectorDeDocumentoVBA(ByVal wb As Workbook)
-    If wb Is Nothing Then Exit Sub
+Public Sub EjecutarInspectorDeDocumentoVBA(ByVal Wb As Workbook)
+Attribute EjecutarInspectorDeDocumentoVBA.VB_ProcData.VB_Invoke_Func = " \n0"
+    If Wb Is Nothing Then Exit Sub
     
     ' 1. Eliminar propiedades del documento e información personal
     ' Equivale a la opción "Propiedades del documento e información personal"
-    wb.RemoveDocumentInformation (xlRDIDocumentProperties)
-    wb.RemoveDocumentInformation (xlRDIRemovePersonalInformation)
+    Wb.RemoveDocumentInformation (xlRDIDocumentProperties)
+    Wb.RemoveDocumentInformation (xlRDIRemovePersonalInformation)
     
     ' 2. Eliminar comentarios y notas
     ' wb.RemoveDocumentInformation (xlRDIInkAnnotations)
@@ -264,16 +272,17 @@ Public Sub EjecutarInspectorDeDocumentoVBA(ByVal wb As Workbook)
     ' wb.RemoveDocumentInformation (xlRDIDefinedNameComments)
     
     ' 3. Eliminar nombres definidos y rutas de publicación (si existen)
-    wb.RemoveDocumentInformation (xlRDIInlineWebExtensions)
-    wb.RemoveDocumentInformation (xlRDIDocumentManagementPolicy)
-    wb.RemoveDocumentInformation (xlRDIExcelDataModel)
-    wb.RemoveDocumentInformation (xlRDIPublishInfo)
+    Wb.RemoveDocumentInformation (xlRDIInlineWebExtensions)
+    Wb.RemoveDocumentInformation (xlRDIDocumentManagementPolicy)
+    Wb.RemoveDocumentInformation (xlRDIExcelDataModel)
+    Wb.RemoveDocumentInformation (xlRDIPublishInfo)
     
     Debug.Print "[modAPPBudgetQuotesUtilids EjecutarInspectorDeDocumentoVBA] - Metadatos y datos ocultos eliminados correctamente."
 End Sub
-Public Sub EliminarHojasNOSeleccionadas(ByVal wb As Workbook)
+Public Sub EliminarHojasNOSeleccionadas(ByVal Wb As Workbook)
+Attribute EliminarHojasNOSeleccionadas.VB_ProcData.VB_Invoke_Func = " \n0"
     Dim ws As Worksheet
-    For Each ws In wb.Sheets
+    For Each ws In Wb.Sheets
         If ws Is Nothing Then
         ElseIf Not HojaEstaSeleccionada(ws.Name) Then
             ws.Delete

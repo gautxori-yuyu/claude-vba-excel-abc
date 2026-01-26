@@ -2,6 +2,8 @@ Attribute VB_Name = "UDFs_Units"
 '@Folder "UDFS.Unidades"
 Option Explicit
 
+Private Const MODULE_NAME As String = "UDFs_Units"
+
 '==========================================
 ' FUNCIÓN PRINCIPAL - UDF para Excel
 '==========================================

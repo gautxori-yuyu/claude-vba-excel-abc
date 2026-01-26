@@ -6,8 +6,10 @@ Attribute VB_Name = "mod_Logger"
 ' Soporta diferentes niveles de log y salida a Debug.Print o archivo.
 ' ==========================================
 
-'@Folder "2-Servicios.Configuracion"
+'@Folder "4-Servicios.Configuracion"
 Option Explicit
+
+Private Const MODULE_NAME As String = "mod_Logger"
 
 ' Niveles de logging
 Public Enum LogLevel
@@ -30,6 +32,7 @@ Private mIncludeTimestamp As Boolean
 
 '@Description: Abre el fichero de log
 Public Sub AbrirLog()
+Attribute AbrirLog.VB_ProcData.VB_Invoke_Func = " \n0"
     On Error Resume Next
     Dim logPath As String
     logPath = GetLogFilePath()
@@ -49,6 +52,7 @@ End Sub
 Public Sub InitLogger(Optional ByVal minLevel As LogLevel = LOG_DEBUG, _
                       Optional ByVal logToFile As Boolean = False, _
                       Optional ByVal logFilePath As String = "")
+Attribute InitLogger.VB_ProcData.VB_Invoke_Func = " \n0"
     mMinLevel = minLevel
     mLogToFile = logToFile
     mIncludeTimestamp = True
@@ -66,16 +70,19 @@ End Sub
 
 '@Description: Registra un mensaje de debug (solo en modo desarrollo)
 Public Sub LogDebug(ByVal source As String, ByVal message As String)
+Attribute LogDebug.VB_ProcData.VB_Invoke_Func = " \n0"
     WriteLog LOG_DEBUG, source, message
 End Sub
 
 '@Description: Registra un mensaje informativo
 Public Sub LogInfo(ByVal source As String, ByVal message As String)
+Attribute LogInfo.VB_ProcData.VB_Invoke_Func = " \n0"
     WriteLog LOG_INFO, source, message
 End Sub
 
 '@Description: Registra una advertencia
 Public Sub LogWarning(ByVal source As String, ByVal message As String)
+Attribute LogWarning.VB_ProcData.VB_Invoke_Func = " \n0"
     WriteLog LOG_WARNING, source, message
 End Sub
 
@@ -83,6 +90,7 @@ End Sub
 Public Sub LogError(ByVal source As String, ByVal message As String, _
                     Optional ByVal errNumber As Long = 0, _
                     Optional ByVal errDescription As String = "")
+Attribute LogError.VB_ProcData.VB_Invoke_Func = " \n0"
     Dim fullMessage As String
     fullMessage = message
 
@@ -97,6 +105,7 @@ End Sub
 Public Sub LogCritical(ByVal source As String, ByVal message As String, _
                        Optional ByVal errNumber As Long = 0, _
                        Optional ByVal errDescription As String = "")
+Attribute LogCritical.VB_ProcData.VB_Invoke_Func = " \n0"
     Dim fullMessage As String
     fullMessage = "CRITICO: " & message
 
@@ -109,6 +118,7 @@ End Sub
 
 '@Description: Registra el error actual del objeto Err
 Public Sub LogCurrentError(ByVal source As String, Optional ByVal additionalInfo As String = "")
+Attribute LogCurrentError.VB_ProcData.VB_Invoke_Func = " \n0"
     If Err.Number = 0 Then Exit Sub
 
     Dim message As String
@@ -197,6 +207,7 @@ End Function
 
 '@Description: Limpia el archivo de log
 Public Sub ClearLogFile()
+Attribute ClearLogFile.VB_ProcData.VB_Invoke_Func = " \n0"
     On Error Resume Next
 
     If mLogFilePath <> "" Then

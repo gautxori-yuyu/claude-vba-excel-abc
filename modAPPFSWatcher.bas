@@ -12,10 +12,10 @@ Attribute VB_Name = "modAPPFSWatcher"
 '
 ' SOLUCION IMPLEMENTADA:
 ' - clsFolderWatch.Dispose() libera todos los recursos
-' - clsAplicacion.Terminate() llama a Dispose antes de Set = Nothing
+' - clsApplication.Terminate() llama a Dispose antes de Set = Nothing
 ' =====================================================
 
-'@Folder "2-Servicios.Archivos.Supervision"
+'@Folder "4-Servicios.Archivos.Supervision"
 Option Explicit
 
-Private Const MODULE_NAME As String = "modAPPFolderWatcher"
+Private Const MODULE_NAME As String = "modAPPFSWatcher"

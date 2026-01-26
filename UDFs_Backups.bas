@@ -12,6 +12,8 @@ Attribute VB_Name = "UDFs_Backups"
 '@Folder "MACROS"
 Option Explicit
 
+Private Const MODULE_NAME As String = "UDFs_Backups"
+
 #If VBA7 Then
     Private Declare PtrSafe Sub Sleep Lib "kernel32" (ByVal dwMilliseconds As LongPtr)
 #Else
@@ -27,7 +29,7 @@ Option Explicit
 '@ArgumentDescriptions: (sin argumentos)
 '@Returns: String | Ruta completa del archivo ZIP creado, o "" si falla
 Function CrearBackupCodigoVBA() As String
-Attribute CrearBackupCodigoVBA.VB_Description = "[modMACROBackups] FUNCIÓN 1: BACKUP DE CÓDIGO VBA A ZIP Exporta todos los componentes VBA de ThisWorkbook a una carpeta temporal y la comprime en ZIP. Aplica a: ThisWorkbook\r\nM.D.:Privado"
+Attribute CrearBackupCodigoVBA.VB_Description = "[UDFs_Backups] FUNCIÓN 1: BACKUP DE CÓDIGO VBA A ZIP Exporta todos los componentes VBA de ThisWorkbook a una carpeta temporal y la comprime en ZIP. Aplica a: ThisWorkbook\r\nM.D.:Privado"
 Attribute CrearBackupCodigoVBA.VB_ProcData.VB_Invoke_Func = " \n21"
     Dim rutaBackup As String
     Dim rutaTempExport As String
@@ -91,7 +93,7 @@ End Function
 '@ArgumentDescriptions: ws: Worksheet a duplicar
 '@Returns: Boolean | True si se creó correctamente
 Function CrearBackupHojaExcel(ws As Worksheet) As Boolean
-Attribute CrearBackupHojaExcel.VB_Description = "[modMACROBackups] FUNCIÓN 2: BACKUP DE HOJA EXCEL Crea una copia de seguridad de una hoja Excel añadiendo sufijo _bkp (VERSIÓN PARA XLAM). Aplica a: Cells Range\r\nM.D.:Privado"
+Attribute CrearBackupHojaExcel.VB_Description = "[UDFs_Backups] FUNCIÓN 2: BACKUP DE HOJA EXCEL Crea una copia de seguridad de una hoja Excel añadiendo sufijo _bkp (VERSIÓN PARA XLAM). Aplica a: Cells Range\r\nM.D.:Privado"
 Attribute CrearBackupHojaExcel.VB_ProcData.VB_Invoke_Func = " \n21"
     Dim nombreBackup As String
     Dim wsBackup As Worksheet

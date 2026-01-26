@@ -3,6 +3,8 @@ Attribute VB_Name = "UDFs_CGASING"
 '@Folder "UDFS"
 Option Explicit
 
+Private Const MODULE_NAME As String = "UDFs_CGASING"
+
 ' Variable global para evitar múltiples mensajes
 Private bMessageGases As Boolean
 
@@ -102,16 +104,16 @@ Attribute Gases.VB_ProcData.VB_Invoke_Func = " \n21"
     
     ' Procesar cada gas
     For Each c In r
-        If Len(c.text) > 0 Then
+        If Len(c.Text) > 0 Then
             ' Validación de coherencia (solo mostrar una vez)
             If Not bMessageGases Then
-                If InStr(LCase(c.text), "air") > 0 And _
+                If InStr(LCase(c.Text), "air") > 0 And _
                    InStr(fileName, "LT") > 0 And _
                    InStr(fileName, "GT") > 0 Then
                     MsgBox "La referencia del compresor debe terminar en 'LT', por ser compresor de aire"
                 End If
                 
-                If Trim(LCase(Replace(c.text, ":", ""))) = "h2" And _
+                If Trim(LCase(Replace(c.Text, ":", ""))) = "h2" And _
                    InStr(fileName(), "LGT") = 0 Then
                     MsgBox "La referencia del compresor debe terminar en 'LGT', por ser compresor de HIDRÓGENO - requiere distanciador largo"
                 End If
@@ -123,10 +125,10 @@ Attribute Gases.VB_ProcData.VB_Invoke_Func = " \n21"
             
             If cCellPc > 1 Then
                 ' Agregar gas a la cadena
-                s = s & IIf(Len(s), d, vbNullString) & Trim(Replace(c.text, ":", ""))
+                s = s & IIf(Len(s), d, vbNullString) & Trim(Replace(c.Text, ":", ""))
                 
                 ' Marcar si es gas saturado
-                If Trim(Replace(c.text, ":", "")) = "H2O" And _
+                If Trim(Replace(c.Text, ":", "")) = "H2O" And _
                    Not oH2OPCCell Is Nothing Then
                     If oH2OPCCell.Value = "100 %" Then
                         If Worksheets("BUDGET_ENTRY").Cells.SpecialCells(xlCellTypeFormulas).Find( _
@@ -139,7 +141,7 @@ Attribute Gases.VB_ProcData.VB_Invoke_Func = " \n21"
                 End If
                 
                 ' Guardar porcentaje en diccionario
-                oGasesPC.Add Trim(Replace(c.text, ":", "")), cCellPc
+                oGasesPC.Add Trim(Replace(c.Text, ":", "")), cCellPc
             End If
         End If
     Next c
@@ -264,7 +266,7 @@ End Function
 '@Description: Devuelve un array con los nombres de todas las hojas C-GAS-ING del libro activo
 '@Category: Comprobación de formato de ficheros
 '@ArgumentDescriptions: Libro de excel al que se aplica (opcional)
-Public Function HojasCGASING(Optional wb As Workbook = Nothing) As Variant
+Public Function HojasCGASING(Optional Wb As Workbook = Nothing) As Variant
 Attribute HojasCGASING.VB_Description = "[UDFs_CGASING] Devuelve un array con los nombres de todas las hojas C-GAS-ING del libro activo. Aplica a: ActiveWorkbook"
 Attribute HojasCGASING.VB_ProcData.VB_Invoke_Func = " \n21"
     Dim ws As Worksheet
@@ -274,8 +276,8 @@ Attribute HojasCGASING.VB_ProcData.VB_Invoke_Func = " \n21"
     On Error GoTo ErrorHandler
     
     n = 0
-    If wb Is Nothing Then Set wb = ActiveWorkbook
-    For Each ws In wb.Worksheets
+    If Wb Is Nothing Then Set Wb = ActiveWorkbook
+    For Each ws In Wb.Worksheets
         If IsCGASING(ws) Then
             ReDim Preserve tmp(0 To n)
             tmp(n) = ws.Name
@@ -305,15 +307,15 @@ Attribute MaximaPotencia.VB_ProcData.VB_Invoke_Func = " \n21"
     Dim strHoja As Variant
     Dim maxVal As Double, val As Variant
     Dim valorTexto As String
-    Dim wb As Workbook
+    Dim Wb As Workbook
     
     On Error GoTo ErrorHandler
     
     maxVal = 0
-    Set wb = CeldaBuscada.Worksheet.Parent
-    For Each strHoja In HojasCGASING(wb)
+    Set Wb = CeldaBuscada.Worksheet.Parent
+    For Each strHoja In HojasCGASING(Wb)
         If CStr(strHoja) <> "" Then
-            val = wb.Worksheets(CStr(strHoja)).Range(CeldaBuscada.Address).Value
+            val = Wb.Worksheets(CStr(strHoja)).Range(CeldaBuscada.Address).Value
             
             ' Extraer valor numérico del formato "xxx / yyy HP/kW"
             valorTexto = CStr(val)

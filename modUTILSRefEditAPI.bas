@@ -1,7 +1,9 @@
 Attribute VB_Name = "modUTILSRefEditAPI"
-'@Folder "2-Servicios.Excel"
+'@Folder "2-Infraestructura.Excel"
 Option Explicit
- 
+
+Private Const MODULE_NAME As String = "modUTILSRefEditAPI"
+
 Private Type POINTAPI
     x As Long
     y As Long
@@ -326,7 +328,7 @@ Private Sub SelectRange()
     Call KillTimer(Application.hwnd, 0)
     On Error Resume Next
     Range(sTextBoxText).Select
-    oTextBox.text = sTextBoxText
+    oTextBox.Text = sTextBoxText
     sTextBoxText = vbNullString
 End Sub
 

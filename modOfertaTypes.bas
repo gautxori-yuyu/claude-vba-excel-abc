@@ -1,6 +1,8 @@
 Attribute VB_Name = "modOfertaTypes"
-'@Folder "4-Oportunidades y compresores.d-Ofertas.Gestion"
+'@Folder "6-DOMINIO-Oportunidades y compresores.d-Ofertas.Gestion"
 Option Explicit
+
+Private Const MODULE_NAME As String = "modOfertaTypes"
 
 Public Type tOfertasDatosGenerales
     OFER_ID As String

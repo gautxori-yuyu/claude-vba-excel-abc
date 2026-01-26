@@ -1,8 +1,10 @@
 Attribute VB_Name = "modMACROFixCGAS"
 ' ===== Módulo: modFixCGAS =====
 
-'@Folder "4-Oportunidades y compresores.b-Calculos técnicos"
+'@Folder "6-DOMINIO-Oportunidades y compresores.b-Calculos técnicos"
 Option Explicit
+
+Private Const MODULE_NAME As String = "modMACROFixCGAS"
 
 Public Sub FixCGASING()
 Attribute FixCGASING.VB_ProcData.VB_Invoke_Func = " \n0"

@@ -1,16 +1,21 @@
 Attribute VB_Name = "modUTILSShellCmd"
-
 ' ==========================================
 ' FUNCIONES AUXILIARES
 ' ==========================================
 '@Folder "Funciones auxiliares"
 
+Option Explicit
+
+Private Const MODULE_NAME As String = "modUTILSShellCmd"
+
 Sub testFindImagesInFolder()
+Attribute testFindImagesInFolder.VB_ProcData.VB_Invoke_Func = " \n0"
     Call FindImagesInFolder
 End Sub
 
 ' Lanza una ventana de explorador con resultados de la busqueda indexada, de un patron de ficheros, en un path
 Sub FindImagesInFolder(Optional strImgPattern As String, Optional strFolderPath As String)
+Attribute FindImagesInFolder.VB_ProcData.VB_Invoke_Func = " \n0"
     Dim strcmd
     If strFolderPath = "" Then strFolderPath = ActiveSheet.Range("A1").Value2
     If strImgPattern = "" Then strImgPattern = ActiveSheet.Range("A2").Value2
@@ -22,6 +27,7 @@ End Sub
 ' @ArgumentDescriptions: ...cmdLineParams:parametros de linea de comandos al script; una cadena, con los argumentos debidamente separados;
 ' o un array, cuyos argumentos se separan debidamente en el script
 Public Sub EjecutarScript(strOptB64Script As String, strScriptName As String, cmdLineParams As Variant, Optional bB64 As Boolean)
+Attribute EjecutarScript.VB_ProcData.VB_Invoke_Func = " \n0"
     Dim rutaTemp As String: rutaTemp = Environ("TEMP") & "\" & strScriptName
     Call ExtraerScriptVBScript(strOptB64Script, rutaTemp, bB64)
     Dim comando As String
@@ -35,6 +41,7 @@ Public Sub EjecutarScript(strOptB64Script As String, strScriptName As String, cm
 End Sub
 
 Public Sub ExtraerScriptVBScript(strScript As String, rutaDestino As String, Optional bB64 As Boolean)
+Attribute ExtraerScriptVBScript.VB_ProcData.VB_Invoke_Func = " \n0"
     ' el script está almacenado como cadena Base64, PENDIENTE añadir encriptacion RC4
     Dim fso As Object, archivo As Object
     Set fso = CreateObject("Scripting.FileSystemObject")

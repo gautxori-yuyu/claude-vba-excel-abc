@@ -20,8 +20,11 @@ Attribute VB_Exposed = False
 '              planos de compresores, etc. Todos los cambios se persisten en la configuración de la aplicación.
 ' ==============================================================================================================
 
-'@Folder "2-Servicios.Configuracion"
+'@Folder "3-UI.Configuracion"
 Option Explicit
+
+Private Const MODULE_NAME As String = "frmConfiguracion"
+Private mConf As clsConfiguration
 
 ' -------------------------------------------------------------------------------------------------------------
 ' INICIALIZACIÓN DEL FORMULARIO
@@ -31,11 +34,10 @@ Option Explicit
 '@Scope: Private (evento)
 '@ArgumentDescriptions: (sin argumentos)
 '@Returns: (ninguno)
-'@Dependencies: clsAplicacion (variable App)
+'@Dependencies: clsApplication (variable App)
 '@Note: Se ejecuta automáticamente al abrir el formulario. Carga todos los valores actuales de
 '        configuración en los controles del formulario
 Private Sub UserForm_Initialize()
-    CargarConfiguracion
 End Sub
 
 Private Sub UserForm_Terminate()
@@ -46,24 +48,24 @@ End Sub
 '@Scope: Private
 '@ArgumentDescriptions: (sin argumentos)
 '@Returns: (ninguno)
-'@Dependencies: App.Configuration (objeto de configuración)
+'@Dependencies: mConf (objeto de configuración)
 '@Note: Sincroniza todos los TextBox y ListBox con los valores almacenados en la configuración
-Private Sub CargarConfiguracion()
+Public Sub Cargar(oConf As clsConfiguration)
     
     On Error GoTo ErrHandler
-    ' Cargar cada ruta desde el registro y mostrarla
+    Set mConf = oConf
     
     ' Cargar cada ruta desde el registro y mostrarla
-    TextBoxRutaOportunidades.text = App.Configuration.RutaOportunidades
-    TextBoxRutaPlantillas.text = App.Configuration.RutaPlantillas
-    TextBoxRutaOfergas.text = App.Configuration.RutaOfergas
-    TextBoxRutaGasVBNet.text = App.Configuration.RutaGasVBNet
-    TextBoxRutaExcelCalcTempl.text = App.Configuration.RutaExcelCalcTempl
-    ListBoxComprImgs.List = App.Configuration.ListComprImgs
-    ListBoxComprDrawPIDs.List = App.Configuration.ListComprDrawPIDs
+    TextBoxRutaOportunidades.Text = mConf.RutaOportunidades
+    TextBoxRutaPlantillas.Text = mConf.RutaPlantillas
+    TextBoxRutaOfergas.Text = mConf.RutaOfergas
+    TextBoxRutaGasVBNet.Text = mConf.RutaGasVBNet
+    TextBoxRutaExcelCalcTempl.Text = mConf.RutaExcelCalcTempl
+    ListBoxComprImgs.List = mConf.ListComprImgs
+    ListBoxComprDrawPIDs.List = mConf.ListComprDrawPIDs
     ListBoxComprImgs.ControlTipText = ListToText(ListBoxComprImgs)
     ListBoxComprDrawPIDs.ControlTipText = ListToText(ListBoxComprDrawPIDs)
-    TextBoxSAM.text = App.Configuration.SAM
+    TextBoxSAM.Text = mConf.SAM
     
     Exit Sub
 ErrHandler:
@@ -80,17 +82,17 @@ End Sub
 '@Scope: Private (evento)
 '@ArgumentDescriptions: (sin argumentos)
 '@Returns: (ninguno)
-'@Dependencies: App.Configuration.SAM
+'@Dependencies: mConf.SAM
 '@Note: Previene bucles infinitos verificando que el valor haya cambiado realmente antes de asignarlo.
 '        Registra en Debug cuando se asigna el valor
 Private Sub TextBoxSAM_AfterUpdate()
     ' Evitar bucle infinito: solo asignar si el valor ha cambiado
-    If TextBoxSAM.text = "" Then Exit Sub
-    If Not IsNumeric(TextBoxSAM.text) Then
+    If TextBoxSAM.Text = "" Then Exit Sub
+    If Not IsNumeric(TextBoxSAM.Text) Then
         MsgBox "Valor no válido. Introduce un número entre 0 y 255", vbExclamation
-    ElseIf CInt(TextBoxSAM.text) <> App.Configuration.SAM Then
+    ElseIf CInt(TextBoxSAM.Text) <> mConf.SAM Then
         Debug.Print "[frmConfiguracion TextBoxSAM_Change] Asignación de SAM desde UserForm"
-        App.Configuration.SAM = CInt(TextBoxSAM.text)
+        mConf.SAM = CInt(TextBoxSAM.Text)
     End If
 End Sub
 
@@ -102,55 +104,55 @@ End Sub
 '@Scope: Private (evento)
 '@ArgumentDescriptions: (sin argumentos)
 '@Returns: (ninguno)
-'@Dependencies: SeleccionarCarpetaATextBox, App.Configuration.RutaOportunidades
+'@Dependencies: SeleccionarCarpetaATextBox, mConf.RutaOportunidades
 '@Note: Abre un diálogo de selección de carpeta y actualiza el TextBox y la configuración
 Private Sub CommandButtonSelFldOportunidades_Click()
     SeleccionarCarpetaATextBox TextBoxRutaOportunidades, "Seleccionar carpeta para Oportunidades"
-    App.Configuration.RutaOportunidades = TextBoxRutaOportunidades.text
+    mConf.RutaOportunidades = TextBoxRutaOportunidades.Text
 End Sub
 
 '@Description: Maneja el clic en el botón de selección de carpeta para Plantillas
 '@Scope: Private (evento)
 '@ArgumentDescriptions: (sin argumentos)
 '@Returns: (ninguno)
-'@Dependencies: SeleccionarCarpetaATextBox, App.Configuration.RutaPlantillas
+'@Dependencies: SeleccionarCarpetaATextBox, mConf.RutaPlantillas
 '@Note: Abre un diálogo de selección de carpeta y actualiza el TextBox y la configuración
 Private Sub CommandButtonSelFldPlantillas_Click()
     SeleccionarCarpetaATextBox TextBoxRutaPlantillas, "Seleccionar carpeta para Plantillas"
-    App.Configuration.RutaPlantillas = TextBoxRutaPlantillas.text
+    mConf.RutaPlantillas = TextBoxRutaPlantillas.Text
 End Sub
 
 '@Description: Maneja el clic en el botón de selección de carpeta para Ofergas
 '@Scope: Private (evento)
 '@ArgumentDescriptions: (sin argumentos)
 '@Returns: (ninguno)
-'@Dependencies: SeleccionarCarpetaATextBox, App.Configuration.RutaOfergas
+'@Dependencies: SeleccionarCarpetaATextBox, mConf.RutaOfergas
 '@Note: Abre un diálogo de selección de carpeta y actualiza el TextBox y la configuración
 Private Sub CommandButtonSelFldOfergas_Click()
     SeleccionarCarpetaATextBox TextBoxRutaOfergas, "Seleccionar carpeta para Ofergas"
-    App.Configuration.RutaOfergas = TextBoxRutaOfergas.text
+    mConf.RutaOfergas = TextBoxRutaOfergas.Text
 End Sub
 
 '@Description: Maneja el clic en el botón de selección de carpeta para GasVBNet
 '@Scope: Private (evento)
 '@ArgumentDescriptions: (sin argumentos)
 '@Returns: (ninguno)
-'@Dependencies: SeleccionarCarpetaATextBox, App.Configuration.RutaGasVBNet
+'@Dependencies: SeleccionarCarpetaATextBox, mConf.RutaGasVBNet
 '@Note: Abre un diálogo de selección de carpeta y actualiza el TextBox y la configuración
 Private Sub CommandButtonSelFldGasVBNet_Click()
     SeleccionarCarpetaATextBox TextBoxRutaGasVBNet, "Seleccionar carpeta para GasVBNet"
-    App.Configuration.RutaGasVBNet = TextBoxRutaGasVBNet.text
+    mConf.RutaGasVBNet = TextBoxRutaGasVBNet.Text
 End Sub
 
 '@Description: Maneja el clic en el botón de selección de carpeta para plantillas de cálculos Excel
 '@Scope: Private (evento)
 '@ArgumentDescriptions: (sin argumentos)
 '@Returns: (ninguno)
-'@Dependencies: SeleccionarCarpetaATextBox, App.Configuration.RutaExcelCalcTempl
+'@Dependencies: SeleccionarCarpetaATextBox, mConf.RutaExcelCalcTempl
 '@Note: Abre un diálogo de selección de carpeta y actualiza el TextBox y la configuración
 Private Sub CommandButtonSelFldExcelCalcTempl_Click()
     SeleccionarCarpetaATextBox TextBoxRutaExcelCalcTempl, "Seleccionar carpeta para plantillas de calculos"
-    App.Configuration.RutaExcelCalcTempl = TextBoxRutaExcelCalcTempl.text
+    mConf.RutaExcelCalcTempl = TextBoxRutaExcelCalcTempl.Text
 End Sub
 
 ' -------------------------------------------------------------------------------------------------------------
@@ -161,11 +163,11 @@ End Sub
 '@Scope: Private (evento)
 '@ArgumentDescriptions: (sin argumentos)
 '@Returns: (ninguno)
-'@Dependencies: SeleccionarCarpetaAListBox, App.Configuration.ListComprImgs
+'@Dependencies: SeleccionarCarpetaAListBox, mConf.ListComprImgs
 '@Note: Permite múltiples carpetas de imágenes, se agregan al ListBox y se guardan en la configuración
 Private Sub CommandButtonComprImgs_Click()
     SeleccionarCarpetaAListBox ListBoxComprImgs, "Seleccionar carpeta de imágenes de compresores"
-    App.Configuration.ListComprImgs = ListBoxComprImgs.List
+    mConf.ListComprImgs = ListBoxComprImgs.List
     ListBoxComprImgs.ControlTipText = ListToText(ListBoxComprImgs)
 End Sub
 
@@ -173,11 +175,11 @@ End Sub
 '@Scope: Private (evento)
 '@ArgumentDescriptions: (sin argumentos)
 '@Returns: (ninguno)
-'@Dependencies: SeleccionarCarpetaAListBox, App.Configuration.ListComprDrawPIDs
+'@Dependencies: SeleccionarCarpetaAListBox, mConf.ListComprDrawPIDs
 '@Note: Permite múltiples carpetas de planos, se agregan al ListBox y se guardan en la configuración
 Private Sub CommandButtonComprDrawPIDs_Click()
     SeleccionarCarpetaAListBox ListBoxComprDrawPIDs, "Seleccionar carpeta de planos de compresores"
-    App.Configuration.ListComprDrawPIDs = ListBoxComprDrawPIDs.List
+    mConf.ListComprDrawPIDs = ListBoxComprDrawPIDs.List
     ListBoxComprDrawPIDs.ControlTipText = ListToText(ListBoxComprDrawPIDs)
 End Sub
 
@@ -185,22 +187,22 @@ End Sub
 '@Scope: Private (evento)
 '@ArgumentDescriptions: (sin argumentos)
 '@Returns: (ninguno)
-'@Dependencies: BorraItemsListBox, App.Configuration.ListComprImgs
+'@Dependencies: BorraItemsListBox, mConf.ListComprImgs
 '@Note: Elimina los items seleccionados del ListBox y actualiza la configuración
 Private Sub CommandButtonDelComprImgs_Click()
     Call BorraItemsListBox(ListBoxComprImgs)
-    App.Configuration.ListComprImgs = ListBoxComprImgs.List
+    mConf.ListComprImgs = ListBoxComprImgs.List
 End Sub
 
 '@Description: Maneja el clic en el botón para eliminar carpetas seleccionadas de la lista de planos
 '@Scope: Private (evento)
 '@ArgumentDescriptions: (sin argumentos)
 '@Returns: (ninguno)
-'@Dependencies: BorraItemsListBox, App.Configuration.ListComprDrawPIDs
+'@Dependencies: BorraItemsListBox, mConf.ListComprDrawPIDs
 '@Note: Elimina los items seleccionados del ListBox y actualiza la configuración
 Private Sub CommandButtonDelComprDrawPIDs_Click()
     Call BorraItemsListBox(ListBoxComprDrawPIDs)
-    App.Configuration.ListComprDrawPIDs = ListBoxComprDrawPIDs.List
+    mConf.ListComprDrawPIDs = ListBoxComprDrawPIDs.List
 End Sub
 
 ' -------------------------------------------------------------------------------------------------------------
@@ -245,8 +247,8 @@ End Function
 Private Sub SeleccionarCarpetaATextBox(txtDestino As MSForms.TextBox, titulo As String)
     Dim nuevaRuta As String
     
-    nuevaRuta = SeleccionarCarpeta(txtDestino.text, titulo)
-    If nuevaRuta <> "" Then txtDestino.text = nuevaRuta
+    nuevaRuta = SeleccionarCarpeta(txtDestino.Text, titulo)
+    If nuevaRuta <> "" Then txtDestino.Text = nuevaRuta
 End Sub
 
 '@Description: Selecciona una carpeta y la agrega a un ListBox si no existe ya en la lista
@@ -350,7 +352,7 @@ End Sub
 '@Returns: (ninguno)
 '@Dependencies: Ninguna
 '@Note: Código comentado - podría usarse para mostrar tooltip con contenido completo del ListBox
-Private Sub ListBoxComprDrawPIDs_MouseMove( _
+Private Sub ListBoxComprDrawPIDs_MouseMoveBKP( _
         ByVal Button As Integer, _
         ByVal Shift As Integer, _
         ByVal x As Single, _
@@ -366,7 +368,7 @@ End Sub
 '@Returns: (ninguno)
 '@Dependencies: Ninguna
 '@Note: Código comentado - podría usarse para ocultar tooltips al mover el mouse fuera de los controles
-Private Sub UserForm_MouseMove( _
+Private Sub UserForm_MouseMoveBKP( _
         ByVal Button As Integer, _
         ByVal Shift As Integer, _
         ByVal x As Single, _

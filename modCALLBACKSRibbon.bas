@@ -4,26 +4,31 @@ Attribute VB_Name = "modCALLBACKSRibbon"
 'FIXME: DETECCIÓN Y RECUPERACIÓN DE OBJETOS RIBBON; en ocasiones el ribbon se pierde. Es necesario revisar que lo causa
 '  Creo que casi siempre tiene que ver con que se desactive el XLAM, o se suspende la ejecución de VBA mediante STOP
 
-'@Folder "2-Servicios.Excel.Ribbon"
+'@Folder "2-Infraestructura.Excel.Ribbon"
 '@IgnoreModule ProcedureNotUsed
-Option Explicit
 Option Private Module
+Option Explicit
+
+Private Const MODULE_NAME As String = "modCALLBACKSRibbon"
 
 ' ==========================================
 ' CALLBACK: Se llama al cargar el Ribbon
 ' ==========================================
 Sub RibbonOnLoad(xlRibbon As IRibbonUI)
-    LogInfo "modCALLBACKSRibbon", "[callback: RibbonOnLoad] - Inicio"
+Attribute RibbonOnLoad.VB_ProcData.VB_Invoke_Func = " \n0"
+    LogInfo MODULE_NAME, "[callback: RibbonOnLoad] - Inicio"
     On Error GoTo ErrorHandler
     ' inicializamos la referencia al ribbon en la aplicación
-    App.RibbonHandler = xlRibbon
+    Dim mApp As clsApplication
+    Set mApp = App
+    mApp.Ribbon.Init xlRibbon
     
-    LogInfo "modCALLBACKSRibbon", "[callback: RibbonOnLoad] - ribbon cargado en la interfaz de excel"
-    App.Ribbon.InvalidarRibbon
+    LogInfo MODULE_NAME, "[callback: RibbonOnLoad] - ribbon cargado en la interfaz de excel"
+    mApp.Ribbon.InvalidarRibbon
     
     Exit Sub
 ErrorHandler:
-    LogError "modCALLBACKSRibbon", "[callback: RibbonOnLoad] - Error", , Err.Description
+    LogError MODULE_NAME, "[callback: RibbonOnLoad] - Error", , Err.Description
 End Sub
 
 ' ==========================================
@@ -31,81 +36,93 @@ End Sub
 ' ==========================================
 
 Sub OnCompararHojas(control As IRibbonControl)
-    MostrarComparador
+    App.Dispatcher.Dispatch (control.id)
+    LogInfo MODULE_NAME, "[callback: OnCompararHojas]"
 End Sub
 
 Sub OnDirtyRecalc(control As IRibbonControl)
-    AplicarDirtyATodasLasHojasConFormulas
+    App.Dispatcher.Dispatch (control.id)
+    LogInfo MODULE_NAME, "[callback: OnDirtyRecalc]"
 End Sub
 
 Sub OnEvalUDFs(control As IRibbonControl)
-    ReemplazarUDFsEnFormulas
+    App.Dispatcher.Dispatch (control.id)
+    LogInfo MODULE_NAME, "[callback: OnEvalUDFs]"
 End Sub
 
 Public Sub OnChangeAlturaFilas(control As IRibbonControl)
-    LogInfo "modCALLBACKSRibbon", "[callback: OnChangeAlturaFilas]"
-    On Error GoTo Finalizar
-    Call AjustarAltoFilasSegunColor
-Finalizar:
+    App.Dispatcher.Dispatch (control.id)
+    LogInfo MODULE_NAME, "[callback: OnChangeAlturaFilas]"
 End Sub
 
 Public Sub OnMakeEditableBook(control As IRibbonControl)
-    Call modMACROWbkEditableCleaning.LimpiarLibroActual
+    App.Dispatcher.Dispatch (control.id)
+    LogInfo MODULE_NAME, "[callback: OnMakeEditableBook]"
 End Sub
 
 Public Sub OnFitForPrint(control As IRibbonControl)
-    Call modMACROWbkEditableFormatting.AjustarSelWSheetsParaImpresionPDF
+    App.Dispatcher.Dispatch (control.id)
+    LogInfo MODULE_NAME, "[callback: OnFitForPrint]"
 End Sub
 
 Public Sub OnVBAExport(control As IRibbonControl)
-    Call modMACROImportExportMacros.ExportarComponentesVBA
+    App.Dispatcher.Dispatch (control.id)
+    LogInfo MODULE_NAME, "[callback: OnVBAExport]"
 End Sub
 
 Public Sub OnVBAImport(control As IRibbonControl)
-    Call modMACROImportExportMacros.ImportarComponentesVBA
+    App.Dispatcher.Dispatch (control.id)
+    LogInfo MODULE_NAME, "[callback: OnVBAImport]"
 End Sub
 
 Public Sub OnOpenLog(control As IRibbonControl)
-    Call mod_Logger.AbrirLog
+    App.Dispatcher.Dispatch (control.id)
+    LogInfo MODULE_NAME, "[callback: OnOpenLog]"
 End Sub
 
 Public Sub OnVBABackup(control As IRibbonControl)
-    Call CrearBackupCodigoVBA
-    LogInfo "modCALLBACKSRibbon", "[callback: OnVBABackup] - Creada copia de seguridad del código en " & ThisWorkbook.Path & "\Backups"
+    App.Dispatcher.Dispatch (control.id)
+    LogInfo MODULE_NAME, "[callback: OnVBABackup] - Creada copia de seguridad del código en " & ThisWorkbook.Path & "\Backups"
     MsgBox "Creada copia de seguridad del código en " & _
             ThisWorkbook.Path & "\Backups", vbInformation, "Copia de seguridad"
 End Sub
 
 Public Sub OnProcMetadataSync(control As IRibbonControl)
-    Call modMACROProceduresToWorksheet.WriteProcedimientosSheet_ConBackup
+    App.Dispatcher.Dispatch (control.id)
+    LogInfo MODULE_NAME, "[callback: OnProcMetadataSync]"
 End Sub
 
 Public Sub OnToggleXLAMVisibility(control As IRibbonControl)
-    LogInfo "modCALLBACKSRibbon", "[callback: OnToggleXLAMVisibility]"
-    ThisWorkbook.IsAddin = Not (ThisWorkbook.IsAddin)
+    App.Dispatcher.Dispatch (control.id)
+    LogInfo MODULE_NAME, "[callback: OnToggleXLAMVisibility]"
 End Sub
 
 ' ==========================================
 ' CALLBACKS DE APLICACION
 ' ==========================================
 Public Sub OnGenerarGraficosDesdeCurvasRto(control As IRibbonControl)
-    App.Ribbon.OnGenerarGraficosDesdeCurvasRto
+    App.Dispatcher.Dispatch (control.id)
+    LogInfo MODULE_NAME, "[callback: OnGenerarGraficosDesdeCurvasRto]"
 End Sub
 
 Public Sub OnInvertirEjes(control As IRibbonControl)
-    App.Ribbon.OnInvertirEjes
+    App.Dispatcher.Dispatch (control.id)
+    LogInfo MODULE_NAME, "[callback: OnInvertirEjes]"
 End Sub
 
 Public Sub OnFormatearCGASING(control As IRibbonControl)
-    App.Ribbon.OnFormatearCGASING
+    App.Dispatcher.Dispatch (control.id)
+    LogInfo MODULE_NAME, "[callback: OnFormatearCGASING]"
 End Sub
 
 Public Sub OnNuevaOportunidad(control As IRibbonControl)
-    App.Ribbon.OnNuevaOportunidad
+    App.Dispatcher.Dispatch (control.id)
+    LogInfo MODULE_NAME, "[callback: OnNuevaOportunidad]"
 End Sub
 
 Public Sub OnReplaceWithNamesInValidations(control As IRibbonControl)
-    App.Ribbon.OnReplaceWithNamesInValidations
+    App.Dispatcher.Dispatch (control.id)
+    LogInfo MODULE_NAME, "[callback: OnReplaceWithNamesInValidations]"
 End Sub
 
 '--------------------------------------------------------------
@@ -114,7 +131,8 @@ End Sub
 
 ' Callback del botón de configuración
 Sub OnConfigurador(control As IRibbonControl)
-    App.Ribbon.OnConfigurador
+    App.Dispatcher.Dispatch (control.id)
+    LogInfo MODULE_NAME, "[callback: OnConfigurador]"
 End Sub
 
 '--------------------------------------------------------------
@@ -136,10 +154,8 @@ End Sub
 ' @ArgumentDescriptions: control: control del Ribbon que dispara el evento
 '--------------------------------------------------------------
 Public Sub CallbackRefrescarOportunidades(control As IRibbonControl)
-    LogInfo "modCALLBACKSRibbon", "[callback: CallbackRefrescarOportunidades] - control de ribbon activado para actualizar la lista de oportunidades"
-    App.OpportunitiesMgr.actualizarColeccionOportunidades
-    App.Ribbon.InvalidarRibbon
-    'App.Ribbon.InvalidarControl "ddlOportunidades"
+    App.Dispatcher.Dispatch (control.id)
+    LogInfo MODULE_NAME, "[callback: CallbackRefrescarOportunidades] - control de ribbon activado para actualizar la lista de oportunidades"
 End Sub
 
 '--------------------------------------------------------------
@@ -150,7 +166,7 @@ End Sub
 ' @ArgumentDescriptions: control: control del Ribbon|getItemCount: valor devuelto
 '--------------------------------------------------------------
 Sub GetOportunidadesCount(control As IRibbonControl, ByRef returnedVal)
-    returnedVal = App.OpportunitiesMgr.numOpportunities
+    returnedVal = App.Dispatcher.GetRibbonItemsNr(control.id)
 End Sub
 
 '--------------------------------------------------------------
@@ -162,7 +178,7 @@ End Sub
 ' @ArgumentDescriptions: control: control del Ribbon|index: índice (base 0)|label: texto mostrado
 '--------------------------------------------------------------
 Sub GetOportunidadesLabel(control As IRibbonControl, Index As Integer, ByRef label)
-    label = App.OpportunitiesMgr.OportunityLabel(Index)
+    label = App.Dispatcher.GetRibbonItemLabel(control.id, Index)
 End Sub
 
 '--------------------------------------------------------------
@@ -174,68 +190,42 @@ End Sub
 ' @ArgumentDescriptions: control: control del Ribbon|id: identificador del control|index: índice seleccionado
 '--------------------------------------------------------------
 Sub OnOportunidadesSeleccionada(control As IRibbonControl, id As String, Index As Integer)
-    LogInfo "modCALLBACKSRibbon", "[callback: OnOportunidadesSeleccionada] - modificada la oportunidad seleccionada en el control de ribbon"
-    App.OpportunitiesMgr.CurrOpportunity = Index
-    ' invalidar, refrescar el UI
-    App.Ribbon.InvalidarControl "ddlOportunidades"
+    ' supongo que el id es el texto de la opcion...
+    Call App.Dispatcher.SetRibbonSelectionIndex(control.id, Index, id)
+    LogInfo MODULE_NAME, "[callback: OnOportunidadesSeleccionada] - modificada la oportunidad seleccionada en el control de ribbon: " & id
 End Sub
+
+
+' TODO: falta pasar al dispatcher el resto de callbacks
 
 'Callback for ddlOportunidades getSelectedItemIndex
 ' Índice del elemento seleccionado
 Sub GetSelectedOportunidadIndex(control As IRibbonControl, ByRef Index)
+Attribute GetSelectedOportunidadIndex.VB_ProcData.VB_Invoke_Func = " \n0"
     Index = App.OpportunitiesMgr.CurrOpportunity
 End Sub
-
-' ==========================================
-' CALLBACKS DE SUPERTIPS DINÁMICOS
-' ==========================================
-Sub GetSupertipRutaBaseOportunidades(control As IRibbonControl, ByRef returnedVal)
-    returnedVal = GetSupertipRutaBase(App.Configuration.RutaOportunidades)
-End Sub
-
-Sub GetSupertipRutaBasePlantillas(control As IRibbonControl, ByRef returnedVal)
-    returnedVal = GetSupertipRutaBase(App.Configuration.RutaPlantillas)
-End Sub
-
-Sub GetSupertipRutaBaseOfergas(control As IRibbonControl, ByRef returnedVal)
-    returnedVal = GetSupertipRutaBase(App.Configuration.RutaOfergas)
-End Sub
-
-Sub GetSupertipRutaBaseGasVBNet(control As IRibbonControl, ByRef returnedVal)
-    returnedVal = GetSupertipRutaBase(App.Configuration.RutaGasVBNet)
-End Sub
-
-Sub GetSupertipRutaBaseCalcTmpl(control As IRibbonControl, ByRef returnedVal)
-    returnedVal = GetSupertipRutaBase(App.Configuration.RutaExcelCalcTempl)
-End Sub
-
-' Para mostrar la ruta actual en el supertip (dinámico)
-Function GetSupertipRutaBase(ByVal strSettingRuta As String)
-    If strSettingRuta = "" Then strSettingRuta = "No configurada"
-    GetSupertipRutaBase = "Ruta actual: " & strSettingRuta & vbCrLf & "Haz clic para cambiar..."
-End Function
 
 ' ==========================================
 ' CALLBACKS GetEnabled (habilitar/deshabilitar controles)
 ' ==========================================
 ' Habilita el botón de gráfico si el fichero es válido y cumple condiciones internas
 Public Sub GetGraficoEnabled(control As IRibbonControl, ByRef enabled)
-    enabled = App.Ribbon.GetRibbonControlEnabled(control)
+    enabled = App.Dispatcher.GetRibbonControlEnabled(control.id)
 End Sub
 
 ' Habilita el botón de inversión de ejes si hay gráfico válido en contexto
 Public Sub GetInvertirEjesEnabled(control As IRibbonControl, ByRef enabled)
-    enabled = App.Ribbon.GetRibbonControlEnabled(control)
+    enabled = App.Dispatcher.GetRibbonControlEnabled(control.id)
 End Sub
 
 ' Habilita el botón de procesado C-GAS-ING si hoja válida en contexto
 Public Sub GetCGASINGEnabled(control As IRibbonControl, ByRef enabled)
-    enabled = App.Ribbon.GetRibbonControlEnabled(control)
+    enabled = App.Dispatcher.GetRibbonControlEnabled(control.id)
 End Sub
 
 ' Habilita el botón de creación de nuevas oportunidades
 Public Sub GetNuevaOportunidadEnabled(control As IRibbonControl, ByRef enabled)
-    enabled = App.Ribbon.GetRibbonControlEnabled(control)
+    enabled = App.Dispatcher.GetRibbonControlEnabled(control.id)
 End Sub
 
 ' Habilita el botón de cumplimentación de oferta FULL si hoja válida en contexto
@@ -255,9 +245,45 @@ Public Sub GetMenuEnabled(control As IRibbonControl, ByRef enabled)
 End Sub
 
 ' ==========================================
+' CALLBACKS DE SUPERTIPS DINÁMICOS
+' ==========================================
+Sub GetSupertipRutaBaseOportunidades(control As IRibbonControl, ByRef returnedVal)
+Attribute GetSupertipRutaBaseOportunidades.VB_ProcData.VB_Invoke_Func = " \n0"
+    returnedVal = GetSupertipRutaBase(App.OpportunitiesMgr.Conf.RutaOportunidades)
+End Sub
+
+Sub GetSupertipRutaBasePlantillas(control As IRibbonControl, ByRef returnedVal)
+Attribute GetSupertipRutaBasePlantillas.VB_ProcData.VB_Invoke_Func = " \n0"
+    returnedVal = GetSupertipRutaBase(App.OpportunitiesMgr.Conf.RutaPlantillas)
+End Sub
+
+Sub GetSupertipRutaBaseOfergas(control As IRibbonControl, ByRef returnedVal)
+Attribute GetSupertipRutaBaseOfergas.VB_ProcData.VB_Invoke_Func = " \n0"
+    returnedVal = GetSupertipRutaBase(App.OpportunitiesMgr.Conf.RutaOfergas)
+End Sub
+
+Sub GetSupertipRutaBaseGasVBNet(control As IRibbonControl, ByRef returnedVal)
+Attribute GetSupertipRutaBaseGasVBNet.VB_ProcData.VB_Invoke_Func = " \n0"
+    returnedVal = GetSupertipRutaBase(App.OpportunitiesMgr.Conf.RutaGasVBNet)
+End Sub
+
+Sub GetSupertipRutaBaseCalcTmpl(control As IRibbonControl, ByRef returnedVal)
+Attribute GetSupertipRutaBaseCalcTmpl.VB_ProcData.VB_Invoke_Func = " \n0"
+    returnedVal = GetSupertipRutaBase(App.OpportunitiesMgr.Conf.RutaExcelCalcTempl)
+End Sub
+
+' Para mostrar la ruta actual en el supertip (dinámico)
+Function GetSupertipRutaBase(ByVal strSettingRuta As String)
+Attribute GetSupertipRutaBase.VB_ProcData.VB_Invoke_Func = " \n0"
+    If strSettingRuta = "" Then strSettingRuta = "No configurada"
+    GetSupertipRutaBase = "Ruta actual: " & strSettingRuta & vbCrLf & "Haz clic para cambiar..."
+End Function
+
+' ==========================================
 ' CALLBACKS GetLabel (cambia la etiqueta de controles)
 ' ==========================================
 Public Sub GetLabelToggleXLAM(control As IRibbonControl, ByRef returnedVal)
+Attribute GetLabelToggleXLAM.VB_ProcData.VB_Invoke_Func = " \n0"
     If ThisWorkbook.IsAddin Then
         returnedVal = "Mostrar XLAM"
     Else
@@ -266,7 +292,8 @@ Public Sub GetLabelToggleXLAM(control As IRibbonControl, ByRef returnedVal)
 End Sub
 
 Public Sub GetLabelGrpConfiguracion(control As IRibbonControl, ByRef returnedVal)
-    returnedVal = App.RibbonState.RibbonStateDescription
+Attribute GetLabelGrpConfiguracion.VB_ProcData.VB_Invoke_Func = " \n0"
+    returnedVal = App.Ribbon.State.Description
 End Sub
 
 ' ==========================================
@@ -274,18 +301,23 @@ End Sub
 ' ==========================================
 '@Description: Callback getVisible de la pestaña "ABC"
 Public Sub GetTabABCVisible(control As IRibbonControl, ByRef Visible)
-    If Not App() Is Nothing Then
-        Visible = App.RibbonState.IsRibbonTabVisible
-    Else
-        Visible = False
-    End If
+Attribute GetTabABCVisible.VB_ProcData.VB_Invoke_Func = " \n0"
+    On Error GoTo ErrHandler
+    Visible = App.Ribbon.State.IsRibbonTabVisible
+    Exit Sub
+
+ErrHandler:
+    Visible = False
 End Sub
 
 Public Sub GetGrpDeveloperAdminVisible(control As IRibbonControl, ByRef Visible)
+Attribute GetGrpDeveloperAdminVisible.VB_ProcData.VB_Invoke_Func = " \n0"
+    On Error GoTo ErrHandler
+    Visible = App.Ribbon.State.IsAdminGroupVisible
+    Exit Sub
+
+ErrHandler:
     Visible = False
-    If Not App() Is Nothing Then
-        Visible = App.RibbonState.IsAdminGroupVisible
-    End If
 End Sub
 
 

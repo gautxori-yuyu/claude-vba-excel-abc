@@ -23,6 +23,8 @@ Attribute VB_Name = "modAPPUDFsRegistration"
 '@Folder "1-Inicio e Instalacion.Gestion de modulos y procs"
 Option Explicit
 
+Private Const MODULE_NAME As String = "modAPPUDFsRegistration"
+
 Private bVerbose As Boolean
 ' ---------------------------------------------------------------------
 ' PUNTOS DE ENTRADA PÚBLICOS
@@ -34,6 +36,7 @@ Private bVerbose As Boolean
 '@Returns: (ninguno)
 '@Category: Registro UDF
 Sub AutoRegistrarTodasLasUDFsNOPARAMS()
+Attribute AutoRegistrarTodasLasUDFsNOPARAMS.VB_ProcData.VB_Invoke_Func = " \n0"
     Call AutoRegistrarTodasLasUDFs
 End Sub
 
@@ -43,6 +46,7 @@ End Sub
 '@Returns: (ninguno)
 '@Category: Registro UDF
 Public Sub AutoRegistrarTodasLasUDFs(Optional bOnlyWithMetadata As Boolean = False, Optional bVerbose_ As Boolean = False)
+Attribute AutoRegistrarTodasLasUDFs.VB_ProcData.VB_Invoke_Func = " \n0"
     
     On Error GoTo ErrorHandler
     
@@ -95,6 +99,7 @@ End Sub
 '@Returns: (ninguno)
 '@Category: Registro UDF
 Public Sub DesregistrarTodasLasUDFs(Optional bVerbose_ As Boolean = False)
+Attribute DesregistrarTodasLasUDFs.VB_ProcData.VB_Invoke_Func = " \n0"
     
     On Error GoTo ErrorHandler
     

@@ -9,18 +9,20 @@ Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = True
 '@Folder "1-Inicio e Instalacion.Ciclo de vida"
 Option Explicit
-Private mApp As clsAplicacion
 
-Friend Function App() As clsAplicacion
+Private Const MODULE_NAME As String = "ThisWorkbook"
+
+Private mApp As clsApplication
+
+Friend Function App() As clsApplication
     If mApp Is Nothing Then
-        Set mApp = New clsAplicacion
+        Set mApp = New clsApplication
     End If
     Set App = mApp
 End Function
 
 Public Sub TerminateApp()
     If Not mApp Is Nothing Then
-        mApp.Terminate
         Set mApp = Nothing
     End If
 End Sub
@@ -30,7 +32,7 @@ Private Sub Workbook_Open()
     removeOldLogs
     InitLogger LOG_DEBUG, True, ThisWorkbook.Path & "\ABC_Log_" & Format(Now, "yyyy-mm-dd_hh-nn") & ".txt"
     
-    LogInfo "ThisWorkbook", "[Open] - Abriendo Workbook " & ThisWorkbook.Name
+    LogInfo MODULE_NAME, "[Open] - Abriendo Workbook " & ThisWorkbook.Name
     ' Sistema de instalación existente
     AutoInstalador
     AutoRegistrarTodasLasUDFs
@@ -46,7 +48,7 @@ Private Sub Workbook_BeforeClose(Cancel As Boolean)
 
     ' Si fue deshabilitado pero no se disparo AddinUninstall, limpiar
     If Not ComprobarSiInstalado Then
-        Debug.Print "[ThisWorkbook.BeforeClose] Complemento no instalado, realizando limpieza"
+        LogWarning MODULE_NAME, "[Workbook_BeforeClose] - Complemento no instalado, realizando limpieza"
     End If
 
     ' Limpiar atajos de teclado
@@ -57,12 +59,12 @@ Private Sub Workbook_BeforeClose(Cancel As Boolean)
 
     ' Desregistrar UDFs
     DesregistrarTodasLasUDFs
-    Debug.Print "BeforeClose: UDFs desregistradas (complemento deshabilitado)"
-
+    LogInfo MODULE_NAME, "[Workbook_BeforeClose] - UDFs desregistradas"
+    
     Exit Sub
 
 ErrHandler:
-    Debug.Print "[ThisWorkbook.BeforeClose] Error " & Err.Number & ": " & Err.Description
+    LogCurrentError MODULE_NAME, "[Workbook_BeforeClose]"
     ' Intentar limpieza minima en caso de error
     On Error Resume Next
     Application.OnKey "^+R"
@@ -110,7 +112,7 @@ Private Sub removeOldLogs()
     Dim oFile As Object
     Dim logFiles As Object ' Collection para filtrar solo logs de este tipo
     Dim fileDate As Date
-    Dim fileNamePattern As String
+    Dim fileNamePattern As String, i
     
     Set fso = CreateObject("Scripting.FileSystemObject")
     folderPath = ThisWorkbook.Path & "\"
@@ -125,38 +127,49 @@ Private Sub removeOldLogs()
     For Each oFile In oFolder.Files
         ' Verificamos si el nombre coincide con el patrón ABC_Log_...
         If oFile.Name Like fileNamePattern Then
-            logFiles.Add oFile
+            If logFiles.Count = 0 Then
+                logFiles.Add oFile
+            ElseIf (oFile.DateLastAccessed < logFiles.Item(logFiles.Count).DateLastAccessed) Then
+                logFiles.Add Item:=oFile, before:=logFiles.Count
+            Else
+                logFiles.Add oFile
+            End If
         End If
     Next oFile
     
     ' 2. Si hay más de 3 ficheros en total, evaluamos el borrado
-    If logFiles.Count > 3 Then
-        For Each oFile In logFiles
-            ' Calculamos la diferencia de días (DateDiff)
-            ' Usamos DateLastModified para mayor precisión, o DateCreated
-            fileDate = oFile.DateLastModified
-            
-            ' Requisito: Más de 3 días de antigüedad
-            If DateDiff("d", fileDate, Now) > 3 Then
-                ' Re-verificamos el conteo antes de cada borrado para asegurar que siempre queden 3
-                If logFiles.Count > 3 Then
-                    On Error Resume Next ' Por si el archivo está abierto o bloqueado
-                    oFile.Delete True
-                    If Err.Number = 0 Then
-                        ' Actualizar lógica si es necesario, aunque al ser una colección
-                        ' se recorre una foto fija. El "If logFiles.Count > 3"
-                        ' aquí dentro es preventivo.
-                    End If
-                    On Error GoTo 0
+    Do While logFiles.Count > 3
+        logFiles.Item(1).Delete True
+        logFiles.Remove 1
+    Loop
+    For Each oFile In logFiles
+        ' Calculamos la diferencia de días (DateDiff)
+        ' Usamos DateLastModified para mayor precisión, o DateCreated
+        fileDate = oFile.DateLastModified
+        
+        ' Requisito: Más de 3 días de antigüedad
+        If DateDiff("d", fileDate, Now) > 3 Then
+            ' Re-verificamos el conteo antes de cada borrado para asegurar que siempre queden 3
+            If logFiles.Count > 3 Then
+                On Error Resume Next ' Por si el archivo está abierto o bloqueado
+                oFile.Delete True
+                If Err.Number = 0 Then
+                    ' Actualizar lógica si es necesario, aunque al ser una colección
+                    ' se recorre una foto fija. El "If logFiles.Count > 3"
+                    ' aquí dentro es preventivo.
                 End If
+                On Error GoTo 0
             End If
-        Next oFile
-    End If
+        Else
+            Exit For
+        End If
+    Next oFile
     
     ' Limpieza de objetos
     Set oFile = Nothing
     Set oFolder = Nothing
     Set fso = Nothing
+    LogInfo MODULE_NAME, "[removeOldLogs] - Finalizado"
 End Sub
 
 

@@ -2,6 +2,8 @@ Attribute VB_Name = "modMACROUtilsExcel"
 '@Folder "MACROS"
 Option Explicit
 
+Private Const MODULE_NAME As String = "modMACROUtilsExcel"
+
 Sub AplicarDirtyATodasLasHojasConFormulas()
 Attribute AplicarDirtyATodasLasHojasConFormulas.VB_ProcData.VB_Invoke_Func = " \n0"
     Dim ws As Worksheet
@@ -33,6 +35,7 @@ Attribute AplicarDirtyATodasLasHojasConFormulas.VB_ProcData.VB_Invoke_Func = " \
 End Sub
 
 Sub FullRecalc()
+Attribute FullRecalc.VB_ProcData.VB_Invoke_Func = " \n0"
     Dim prevCalcMode As XlCalculation
     Dim prevEnableEvents As Boolean
     Dim prevScreenUpdating As Boolean
@@ -66,6 +69,7 @@ End Sub
 
 ' Requiere referencia a: Microsoft VBScript Regular Expressions 5.5
 Sub ReemplazarUDFsEnFormulas()
+Attribute ReemplazarUDFsEnFormulas.VB_ProcData.VB_Invoke_Func = " \n0"
     Const bReplaceIndirectionsInAllFormula = False ' Si es true, reemplaza indirecciones en toda la formula; si no, solo en los argumentos de las UDFs
     Dim ws As Worksheet, celda As Range, regEx As Object
     Dim strProjectFN, oDicUDFs As Object, funciones()

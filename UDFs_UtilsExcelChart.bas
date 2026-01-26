@@ -1,7 +1,9 @@
 Attribute VB_Name = "UDFs_UtilsExcelChart"
-'@Folder "2-Servicios.Excel.Charts"
+'@Folder "4-Servicios.Excel.Charts"
 '@IgnoreModule MissingAnnotationArgument
 Option Explicit
+
+Private Const MODULE_NAME As String = "UDFs_UtilsExcelChart"
 
 '@UDF
 '@Description: Establece el valor mínimo o máximo de un eje de gráfico (primario o secundario)
@@ -12,7 +14,7 @@ Public Function setChartAxis(MinOrMax As String, _
                              PrimaryOrSecondary As String, _
                              Value As Variant, _
                              Optional cht As Chart = Nothing) As String
-Attribute setChartAxis.VB_Description = "[modUTILSChart] Establece el valor mínimo o máximo de un eje de gráfico (primario o secundario). Aplica a: ActiveSheet|Cells Range"
+Attribute setChartAxis.VB_Description = "[UDFs_UtilsExcelChart] Establece el valor mínimo o máximo de un eje de gráfico (primario o secundario). Aplica a: ActiveSheet|Cells Range"
 Attribute setChartAxis.VB_ProcData.VB_Invoke_Func = " \n21"
     
     Dim valueAsText As String

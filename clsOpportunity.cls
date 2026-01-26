@@ -9,8 +9,10 @@ Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
 ' clase desde la que se gestiona cada oportunidad, y los elementos (entidad compresor, ficheros, etc) que la constituyen
 
-'@Folder "4-Oportunidades y compresores"
+'@Folder "6-DOMINIO-Oportunidades y compresores"
 Option Explicit
+
+Private Const MODULE_NAME As String = "clsOpportunity"
 
 ' Atributos básicos:
 Public Name As String
@@ -33,7 +35,7 @@ End Function
 Public Sub GenerateFolderStructure()
 
 End Sub
-Public Function GetBudgetTemplate() As clsExcelFile
+Public Function GetBudgetTemplate() As clsFileXLS
 
 End Function
 Public Sub SyncWithRepository()

@@ -14,10 +14,12 @@ Attribute VB_Exposed = True
 ' que puedan ser gestionadas por clsFileManager
 ' ==================================================================
 
-'@Folder "2-Servicios.Archivos.Tipos de archivos"
+'@Folder "4-Servicios.Archivos.Tipos de archivos"
 '@Interface
 '@IgnoreModule MissingAnnotationArgument
 Option Explicit
+
+Private Const MODULE_NAME As String = "IFile"
 
 '@Description: Identificador único del archivo
 '@Returns: Double - Puntero al objeto subyacente

@@ -14,6 +14,8 @@ Attribute VB_Name = "modMACROComparadorHojas"
 '@Folder "MACROS"
 Option Explicit
 
+Private Const MODULE_NAME As String = "modMACROComparadorHojas"
+
 ' Diccionario para guardar: clave = dirección celda, valor = color original
 ' Si una celda está en este diccionario, significa que fue modificada
 Private dictCeldasModificadas As Object
@@ -35,6 +37,7 @@ Private mFrmComparador As frmComparadorHojas
 '        Usa instanciacion explicita para evitar problemas de memoria con la instancia predeterminada.
 '        La referencia se mantiene a nivel de modulo para formularios no modales.
 Sub MostrarComparador()
+Attribute MostrarComparador.VB_ProcData.VB_Invoke_Func = " \n0"
     Set dictCeldasModificadas = CreateObject("Scripting.Dictionary")
 
     ' Si ya hay un formulario abierto, traerlo al frente
@@ -143,7 +146,7 @@ Attribute VerHojasEnParalelo.VB_ProcData.VB_Invoke_Func = " \n0"
     ' Activar primera hoja y crear/obtener su ventana
     Hoja1.Activate
     rango1.Cells(1, 1).Select                    ' Seleccionar primera celda del rango
-    Application.GoTo rango1.Cells(1, 1), True    ' Asegurar que está visible
+    Application.Goto rango1.Cells(1, 1), True    ' Asegurar que está visible
     Set win1 = ActiveWindow
     
     ' Si son del mismo libro, crear segunda ventana
@@ -152,7 +155,7 @@ Attribute VerHojasEnParalelo.VB_ProcData.VB_Invoke_Func = " \n0"
     End If
     Hoja2.Activate
     rango2.Cells(1, 1).Select                    ' Seleccionar primera celda del rango
-    Application.GoTo rango2.Cells(1, 1), True    ' Asegurar que está visible
+    Application.Goto rango2.Cells(1, 1), True    ' Asegurar que está visible
     Set win2 = ActiveWindow
     
     ' Asegurarse de que hay ventanas disponibles

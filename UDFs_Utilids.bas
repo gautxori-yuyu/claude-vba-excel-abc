@@ -3,6 +3,8 @@ Attribute VB_Name = "UDFs_Utilids"
 '@Folder "UDFS"
 Option Explicit
 
+Private Const MODULE_NAME As String = "UDFs_Utilids"
+
 '@UDF
 '@Description: Extrae la parte numérica inicial de un texto (soporta decimales con punto o coma). Sirve por ejemplo para separar el valor numerico, de las unidades, en celdas de gas_vbnet etc.
 '@Category: Texto
@@ -38,6 +40,8 @@ ErrorHandler:
 End Function
 
 Function LongToRGB(colorValue As Long) As String
+Attribute LongToRGB.VB_Description = "[UDFs_Utilids] Long To RGB (función personalizada)"
+Attribute LongToRGB.VB_ProcData.VB_Invoke_Func = " \n21"
     Dim r As Long, g As Long, b As Long
     
     r = colorValue And &HFF

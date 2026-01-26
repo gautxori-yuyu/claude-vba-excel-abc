@@ -9,6 +9,8 @@ Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = True
 Option Explicit
 
+Private Const MODULE_NAME As String = "wshUnidades"
+
 Private Sub Worksheet_Change(ByVal Target As Range)
     If Not Intersect(Target, Me.Range("A:E")) Is Nothing Then
         Call GenerarListasUnidades

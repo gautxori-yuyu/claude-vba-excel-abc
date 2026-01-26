@@ -25,7 +25,7 @@ Attribute VB_Name = "mod_ConstantsGlobals"
 
 'TODO: terminar de migrar la funcionalidad del FOLDER WATCHER, REVISARLO TODO BIEN.. Y ADAPTARLO AL USO DE LA APLICACION
 
-'TODO: terminar de implementar 'SUBCLASES DE ESTADOS'; "subclases de clsAplicacion", para repartir mejor la gestión de eventos....
+'TODO: terminar de implementar 'SUBCLASES DE ESTADOS'; "subclases de clsApplication", para repartir mejor la gestión de eventos....
 
 
 
@@ -142,9 +142,11 @@ Attribute VB_Name = "mod_ConstantsGlobals"
 'Validar: Ejecutar todos los tests
 
 '@IgnoreModule MissingAnnotationArgument
-'@Folder "2-Servicios.Configuracion"
+'@Folder "2-Infraestructura.Configuracion"
 
 Option Explicit
+
+Private Const MODULE_NAME As String = "mod_ConstantsGlobals"
 
 ' constantes de compilación
 #Const RubberduckTest = True
@@ -165,9 +167,9 @@ Public Const CFG_SECTION_RUTAS As String = "Folders"
 Public Const CFG_PATH_SECTION_RUTAS As String = CFG_BASEFOLDER & APP_NAME & "\" & CFG_SECTION_RUTAS & "\"
 
 Public Const CFG_RUTA_OPORTUNIDADES As String = "BaseFolderOportunidades"
-Public Const CFG_RUTA_OPORTUNIDADES_DEFAULT As String = "C:\abc compressors\INTRANET\OilGas\3_OFERTAS\OFERTAS\2025\41 - SER\"
+Public Const CFG_RUTA_OPORTUNIDADES_DEFAULT As String = "C:\abc compressors\INTRANET\OilGas\3_OFERTAS\OFERTAS\2026\41 - SER\"
 Public Const CFG_RUTA_PLANTILLAS As String = "BaseFolderPlantillas"
-Public Const CFG_RUTA_PLANTILLAS_DEFAULT As String = "C:\abc compressors\INTRANET\OilGas\3_OFERTAS\OFERTAS\2025\41 - SER\_plantilla\"
+Public Const CFG_RUTA_PLANTILLAS_DEFAULT As String = "C:\abc compressors\INTRANET\OilGas\3_OFERTAS\OFERTAS\2026\41 - SER\_plantilla\"
 Public Const CFG_RUTA_OFERGAS As String = "BaseFolderOfergas"
 Public Const CFG_RUTA_OFERGAS_DEFAULT As String = "C:\Program Files (x86)\Ofertas_Gas\Excel\"
 Public Const CFG_RUTA_GAS_VBNET As String = "BaseFolderGasVBNet"
@@ -240,9 +242,9 @@ End Enum
 '@Category: UI / Ribbon
 Public Enum eRibbonMode
     Ribbon_Undefined = 0                         ' no inicializado
-    Ribbon_Hidden = 1                            ' no se muestra nunca
+    Ribbon_OpportunityOnly = 1                   ' solo visible si el libro es de oportunidad
     Ribbon_User = 2                              ' modo usuario (sin grupos admin/dev)
-    Ribbon_OpportunityOnly = 3                   ' solo visible si el libro es de oportunidad
+    Ribbon_Hidden = 3                            ' no se muestra
     Ribbon_Admin = 4                             ' todo visible permanentemente
 End Enum
 

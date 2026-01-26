@@ -3,6 +3,8 @@ Attribute VB_Name = "modMACROListarProyectosVBA"
 '@Ignore VariableNotUsed
 Option Explicit
 
+Private Const MODULE_NAME As String = "modMACROListarProyectosVBA"
+
 Sub ListarProyectosAlternativo()
 Attribute ListarProyectosAlternativo.VB_ProcData.VB_Invoke_Func = " \n0"
     ' Este método intenta acceder de forma indirecta

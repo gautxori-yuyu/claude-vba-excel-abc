@@ -7,8 +7,10 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
-'@Folder "2-Servicios.DBs"
+'@Folder "4-Servicios.DBs"
 Option Explicit
+
+Private Const MODULE_NAME As String = "clsDBContext"
 
 Private m_Cnn As Object ' ADODB.Connection
 
@@ -70,10 +72,7 @@ Public Function AbrirRecordset(ByVal Sql As String) As Object
     Exit Function
 
 ErrHandler:
-    Debug.Print Err.Number, , _
-        "Error ADO al abrir Recordset." & vbCrLf & _
-        "SQL ejecutado:" & vbCrLf & Sql & vbCrLf & _
-        Err.Description
+    LogCurrentError MODULE_NAME, "[AbrirRecordset] - SQL ejecutado: " & Sql
     Err.Raise Err.Number, , _
         "Error ADO al abrir Recordset." & vbCrLf & _
         "SQL ejecutado:" & vbCrLf & Sql & vbCrLf & _

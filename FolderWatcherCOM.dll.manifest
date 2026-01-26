@@ -1,15 +1,19 @@
 ﻿<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <assembly xmlns="urn:schemas-microsoft-com:asm.v1" manifestVersion="1.0">
-	<!-- 1. Asegúrate de que processorArchitecture coincida con tu Office (x86 para 32-bit, amd64 para 64-bit) o usa 'msil' -->
-	<!-- 2. La clase principal que buscas con .CreateObject("FolderWatcher.Monitor") -->
-	<clrClass clsid="{C3E5F8B2-5678-4CDE-AB12-1234567890AD}" progid="FolderWatcher.Monitor" threadingModel="Both" name="FolderWatcherCOM.FolderWatcher" runtimeVersion="v4.0.30319">
-    </clrClass>
+	<clrSurrogate clsid="{D4F6A8C3-1111-4CDE-BC12-1234567890AB}" name="FolderWatcherCOM.FileFilterType"/>
+	<clrSurrogate clsid="{B1D9F7E1-AAAA-4CDE-BC12-123456789ABC}" name="FolderWatcherCOM.AutoActionType"/>
+	<clrSurrogate clsid="{C3E5F8B2-5678-4CDE-AB12-123456789ABD}" name="FolderWatcherCOM.DateCompareMode"/>
+	<clrClass clsid="{C3E5F8B2-5678-4CDE-AB12-1234567890AD}" progid="FolderWatcher.Monitor" threadingModel="Both" name="FolderWatcherCOM.FolderWatcher" runtimeVersion="v4.0.30319"/>
 	<clrClass clsid="{4A041902-0AB4-328A-9F92-2CC7FCAD4C08}" progid="FolderWatcherCOM.FolderWatcher+FileCreatedEventHandler" threadingModel="Both" name="FolderWatcherCOM.FolderWatcher+FileCreatedEventHandler" runtimeVersion="v4.0.30319"/>
 	<clrClass clsid="{20DC9327-841F-365D-A421-37CED145D4BB}" progid="FolderWatcherCOM.FolderWatcher+FileDeletedEventHandler" threadingModel="Both" name="FolderWatcherCOM.FolderWatcher+FileDeletedEventHandler" runtimeVersion="v4.0.30319"/>
 	<clrClass clsid="{4E60FA45-A771-3E52-A468-528385B64BA0}" progid="FolderWatcherCOM.FolderWatcher+FileChangedEventHandler" threadingModel="Both" name="FolderWatcherCOM.FolderWatcher+FileChangedEventHandler" runtimeVersion="v4.0.30319"/>
 	<clrClass clsid="{4EC5F990-E22D-30A1-935E-CD7A9CEBFE21}" progid="FolderWatcherCOM.FolderWatcher+FileRenamedEventHandler" threadingModel="Both" name="FolderWatcherCOM.FolderWatcher+FileRenamedEventHandler" runtimeVersion="v4.0.30319"/>
 	<clrClass clsid="{916FC4FE-BBCC-387A-803F-3B1CEF532E03}" progid="FolderWatcherCOM.FolderWatcher+HeartbeatEventHandler" threadingModel="Both" name="FolderWatcherCOM.FolderWatcher+HeartbeatEventHandler" runtimeVersion="v4.0.30319"/>
 	<clrClass clsid="{DF8AEFCA-C5E1-3F87-A546-EAB5F4DFD2E5}" progid="FolderWatcherCOM.FolderWatcher+ErrorOccurredEventHandler" threadingModel="Both" name="FolderWatcherCOM.FolderWatcher+ErrorOccurredEventHandler" runtimeVersion="v4.0.30319"/>
-	<!-- 3. Definición del archivo físico. Debe estar en la misma carpeta que el .manifest -->
+	<clrClass clsid="{234D8FD8-B4AD-3B8D-AA99-553FEBDAC669}" progid="FolderWatcherCOM.FolderWatcher+SubfolderCreatedEventHandler" threadingModel="Both" name="FolderWatcherCOM.FolderWatcher+SubfolderCreatedEventHandler" runtimeVersion="v4.0.30319"/>
+	<clrClass clsid="{49BBDAA5-EFEA-3BB8-8CAC-EAF66C9A3B17}" progid="FolderWatcherCOM.FolderWatcher+SubfolderDeletedEventHandler" threadingModel="Both" name="FolderWatcherCOM.FolderWatcher+SubfolderDeletedEventHandler" runtimeVersion="v4.0.30319"/>
+	<clrClass clsid="{9865F835-1D48-3240-A107-6759EAB2A672}" progid="FolderWatcherCOM.FolderWatcher+SubfolderRenamedEventHandler" threadingModel="Both" name="FolderWatcherCOM.FolderWatcher+SubfolderRenamedEventHandler" runtimeVersion="v4.0.30319"/>
+	<clrClass clsid="{967B8C24-DC60-38C0-AEE0-86F0B3E72C8F}" progid="FolderWatcherCOM.FolderWatcher+WatcherReconnectedEventHandler" threadingModel="Both" name="FolderWatcherCOM.FolderWatcher+WatcherReconnectedEventHandler" runtimeVersion="v4.0.30319"/>
+	<clrClass clsid="{C92AC0A5-4B73-37C1-8908-0AEBFFF596E9}" progid="FolderWatcherCOM.FolderWatcher+WatcherReconnectionFailedEventHandler" threadingModel="Both" name="FolderWatcherCOM.FolderWatcher+WatcherReconnectionFailedEventHandler" runtimeVersion="v4.0.30319"/>
 	<file name="FolderWatcherCOM.dll" hashalg="SHA1"/>
 </assembly>

@@ -10,6 +10,8 @@ Attribute VB_Name = "modMACROProceduresToWorksheet"
 '@Folder "1-Inicio e Instalacion.Gestion de modulos y procs"
 Option Explicit
 
+Private Const MODULE_NAME As String = "modMACROProceduresToWorksheet"
+
 Private Const SHEET_NAME As String = "PROCEDIMIENTOS"
 
 '@Description: Sincroniza procedimientos del proyecto con hoja Excel "PROCEDIMIENTOS". Crea la hoja si no existe, o sincroniza cambios bidireccionales si existe.
@@ -96,9 +98,9 @@ End Sub
 '@Scope: Privado
 '@ArgumentDescriptions: wb: Workbook donde crear | sheetName: Nombre de la hoja
 '@Returns: Worksheet | Referencia a la hoja creada
-Private Function CrearHojaProcedimientos(wb As Workbook, ByVal sheetName As String) As Worksheet
+Private Function CrearHojaProcedimientos(Wb As Workbook, ByVal sheetName As String) As Worksheet
     Dim ws As Worksheet
-    Set ws = wb.Worksheets.Add
+    Set ws = Wb.Worksheets.Add
     ws.Name = sheetName
     
     Call CrearEncabezadosHoja(ws)

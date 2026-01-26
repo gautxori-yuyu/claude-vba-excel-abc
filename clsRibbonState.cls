@@ -6,12 +6,14 @@ Attribute VB_Name = "clsRibbonState"
 Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = False
-Attribute VB_Exposed = False
+Attribute VB_Exposed = True
 '@Description: Estado lógico del Ribbon
 '@Category: State
 
-'@Folder "2-Servicios.Excel.Ribbon"
+'@Folder "3-UI.Excel.Ribbon"
 Option Explicit
+
+Private Const MODULE_NAME As String = "clsRibbonState"
 
 Public Event StateChanged()
 
@@ -34,32 +36,32 @@ End Property
 
 Public Sub ToggleModo()
     Select Case mModoRibbon
-    Case Ribbon_Admin
-        mModoRibbon = Ribbon_Hidden
-    Case Ribbon_Hidden
+    Case Ribbon_OpportunityOnly
         mModoRibbon = Ribbon_User
     Case Ribbon_User
-        mModoRibbon = Ribbon_OpportunityOnly
-    Case Ribbon_OpportunityOnly
+        mModoRibbon = Ribbon_Hidden
+    Case Ribbon_Hidden
         mModoRibbon = Ribbon_Admin
+    Case Ribbon_Admin
+        mModoRibbon = Ribbon_OpportunityOnly
     Case Else
         mModoRibbon = Ribbon_OpportunityOnly
     End Select
     RaiseEvent StateChanged
 End Sub
 
-Public Function RibbonStateDescription() As String
+Public Function Description() As String
     Select Case mModoRibbon
     Case Ribbon_Admin
-        RibbonStateDescription = "Admin"
+        Description = "Admin"
     Case Ribbon_Hidden
-        RibbonStateDescription = "(oculto)"
+        Description = "(oculto)"
     Case Ribbon_OpportunityOnly
-        RibbonStateDescription = "Fich. oportunidad"
+        Description = "Fich. oportunidad"
     Case Ribbon_User
-        RibbonStateDescription = "User"
+        Description = "User"
     Case Else
-        RibbonStateDescription = "Fich. oportunidad"
+        Description = "Fich. oportunidad"
     End Select
 End Function
 

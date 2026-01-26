@@ -12,6 +12,8 @@ Attribute VB_Exposed = False
 '@IgnoreModule MissingAnnotationArgument
 Option Explicit
 
+Private Const MODULE_NAME As String = "clsVBAProcedure"
+
 Public Name As String
 Public Module As String
 Public ContainerType As ProcContainerType
@@ -101,7 +103,8 @@ Public Sub Init(ByVal modl As String, ByVal bModuloPrivado_ As Boolean, ByVal Co
     
     Exit Sub
 ErrorHandler:
-    Debug.Print "[clsVBAProcedure Init] - Error: " & Err.Description
+    LogCurrentError MODULE_NAME, "[Init]"
+    Err.Raise Err.Number, MODULE_NAME & " [Init]", Err.Description
 End Sub
 
 '@Description: Determina si una función es visible para excel como macro o udf, o si es "interna",
@@ -173,7 +176,8 @@ Private Function TipoProcedimiento(ByVal firmaNormalizada As String) As ProcType
     
     Exit Function
 ErrorHandler:
-    Debug.Print "[TipoProcedimiento] - Error al procesar Code con expresiones regulares: " & Err.Description
+    LogCurrentError MODULE_NAME, "[TipoProcedimiento] - Error al procesar Code con expresiones regulares"
+    Err.Raise Err.Number, MODULE_NAME & " [TipoProcedimiento]", Err.Description
 End Function
 
 '@Description: Determina si una función es visible para excel como macro o udf, o si es "interna",
@@ -242,7 +246,8 @@ Private Function NormalizarLineasFirma(ByVal raw As String, ByVal SignatureLine 
     NormalizarLineasFirma = s
     Exit Function
 ErrHandler:
-    Debug.Print "[NormalizarLineasFirma] - Error al procesar Code con expresiones regulares: " & Err.Description
+    LogCurrentError MODULE_NAME, "[NormalizarLineasFirma]"
+    Err.Raise Err.Number, MODULE_NAME & " [NormalizarLineasFirma]", Err.Description
 End Function
 
 '@Description: Extrae contenido entre paréntesis de una firma normalizada y reemplaza comas por "|"

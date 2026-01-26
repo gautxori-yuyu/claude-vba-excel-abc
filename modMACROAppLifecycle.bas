@@ -8,9 +8,9 @@ Attribute VB_Name = "modMACROAppLifecycle"
 '@Folder "1-Inicio e Instalacion.Ciclo de vida"
 Option Explicit
 
-Private Const MODULE_NAME As String = "clsRibbonEvents"
+Private Const MODULE_NAME As String = "modMACROAppLifecycle"
 
-Public Function App() As clsAplicacion
+Public Function App() As clsApplication
 Attribute App.VB_Description = "[modMACROAppLifecycle] App (función personalizada). Aplica a: ThisWorkbook"
 Attribute App.VB_ProcData.VB_Invoke_Func = " \n21"
     Set App = ThisWorkbook.App
@@ -18,6 +18,7 @@ End Function
 
 '@Description: Fuerza el reinicio completo de la aplicacion
 Public Sub ReiniciarAplicacion()
+Attribute ReiniciarAplicacion.VB_ProcData.VB_Invoke_Func = " \n0"
     Dim result As VbMsgBoxResult
 
     result = MsgBox("Esto reiniciara completamente el complemento ABC." & vbCrLf & vbCrLf & _
@@ -40,7 +41,7 @@ Public Sub ReiniciarAplicacion()
     DoEvents
 
     ' Forzar reinicio llamando a App()
-    Dim dummy As clsAplicacion
+    Dim dummy As clsApplication
     Set dummy = App()
 
     On Error GoTo 0
@@ -68,6 +69,7 @@ End Sub
 '@Returns: (ninguno)
 '@Category: ComplementosExcel
 Sub DesactivarModoAddin()
+Attribute DesactivarModoAddin.VB_ProcData.VB_Invoke_Func = " \n0"
     On Error GoTo ErrHandler
     If ThisWorkbook.IsAddin Then
         ThisWorkbook.IsAddin = False     ' Hace que el libro se muestre
@@ -85,6 +87,7 @@ End Sub
 '@Returns: (ninguno)
 '@Category: ComplementosExcel
 Sub RestaurarModoAddin()
+Attribute RestaurarModoAddin.VB_ProcData.VB_Invoke_Func = " \n0"
     On Error GoTo ErrHandler
     ThisWorkbook.IsAddin = True
     Debug.Print "[RestaurarModoAddin] - XLAM restaurado como Add-in"
@@ -100,11 +103,10 @@ End Sub
 
 '@Description: Procedimiento puente para el atajo de teclado
 Public Sub ToggleRibbonTab()
+Attribute ToggleRibbonTab.VB_ProcData.VB_Invoke_Func = " \n0"
     On Error GoTo ErrHandler
 
-    If Not App() Is Nothing Then
-        App().ToggleRibbonMode
-    End If
+    App.Ribbon.ToggleModo
 
     Exit Sub
 ErrHandler:
@@ -116,6 +118,7 @@ End Sub
 '@Note: Ejecutar esta macro si el Ribbon desaparece o no responde
 '@Category: Ribbon / Recuperacion
 Public Sub RecuperarRibbon()
+Attribute RecuperarRibbon.VB_ProcData.VB_Invoke_Func = " \n0"
     Dim result As VbMsgBoxResult
 
     LogInfo MODULE_NAME, "[RecuperarRibbon] - Solicitado por usuario"
@@ -153,6 +156,7 @@ End Sub
 
 '@Description: Muestra el diagnostico del Ribbon en un cuadro de dialogo
 Public Sub MostrarDiagnosticoRibbon()
+Attribute MostrarDiagnosticoRibbon.VB_ProcData.VB_Invoke_Func = " \n0"
     LogInfo MODULE_NAME, "MostrarDiagnosticoRibbon - Solicitado"
     MsgBox GetRibbonDiagnostics(), vbInformation, "Diagnostico del Ribbon"
 End Sub
@@ -174,7 +178,9 @@ Attribute GetRibbonDiagnostics.VB_ProcData.VB_Invoke_Func = " \n21"
     info = info & vbCrLf
 
     ' Estado de App
-    If App Is Nothing Then
+    Dim mApp As clsApplication
+    Set mApp = App
+    If mApp Is Nothing Then
         info = info & "[X] App: Nothing (CRITICO)" & vbCrLf
         GetRibbonDiagnostics = info
         Exit Function
@@ -182,18 +188,18 @@ Attribute GetRibbonDiagnostics.VB_ProcData.VB_Invoke_Func = " \n21"
         info = info & "[OK] App: Disponible" & vbCrLf
     End If
 
-    ' Estado de Ribbon (clsRibbonEvents)
-    If App.Ribbon Is Nothing Then
+    ' Estado de Ribbon (clsRibbon)
+    If mApp.Ribbon Is Nothing Then
         info = info & "[X] App.Ribbon: Nothing (ERROR)" & vbCrLf
     Else
         info = info & "[OK] App.Ribbon: Disponible" & vbCrLf
 
         ' Diagnostico detallado
-        info = info & "    -> " & App.Ribbon.GetQuickDiagnostics() & vbCrLf
+        info = info & "    -> " & mApp.Ribbon.GetQuickDiagnostics() & vbCrLf
 
         ' Estado de ribbonUI (IRibbonUI)
         On Error Resume Next
-        If App.Ribbon.ribbonUI Is Nothing Then
+        If mApp.Ribbon.ribbonUI Is Nothing Then
             info = info & "[X] ribbonUI: Nothing (PERDIDO)" & vbCrLf
             info = info & "    -> El Ribbon necesita recuperacion" & vbCrLf
         Else
@@ -203,11 +209,11 @@ Attribute GetRibbonDiagnostics.VB_ProcData.VB_Invoke_Func = " \n21"
         On Error GoTo 0
     End If
 
-    ' Estado de RibbonState
-    If App.RibbonState Is Nothing Then
-        info = info & "[X] RibbonState: Nothing" & vbCrLf
+    ' Estado de Ribbon.State
+    If mApp.Ribbon.State Is Nothing Then
+        info = info & "[X] Ribbon State: Nothing" & vbCrLf
     Else
-        info = info & "[OK] RibbonState: " & App.RibbonState.RibbonStateDescription & vbCrLf
+        info = info & "[OK] Ribbon State: " & mApp.Ribbon.State.Description & vbCrLf
     End If
 
     GetRibbonDiagnostics = info
@@ -220,23 +226,24 @@ Public Function IsRibbonAvailable() As Boolean
 Attribute IsRibbonAvailable.VB_Description = "[modMACROAppLifecycle] Verifica si el Ribbon esta disponible y funcional DESDE EL CONTEXTO GLOBAL"
 Attribute IsRibbonAvailable.VB_ProcData.VB_Invoke_Func = " \n21"
     On Error Resume Next
-
+    Dim mApp As clsApplication
     ' Verificar que App existe
-    If App Is Nothing Then
+    Set mApp = App
+    If mApp Is Nothing Then
         LogDebug MODULE_NAME, "IsRibbonAvailable: App Is Nothing"
         IsRibbonAvailable = False
         Exit Function
     End If
 
     ' Verificar que Ribbon existe
-    If App.Ribbon Is Nothing Then
+    If mApp.Ribbon Is Nothing Then
         LogDebug MODULE_NAME, "IsRibbonAvailable: App.Ribbon Is Nothing"
         IsRibbonAvailable = False
         Exit Function
     End If
 
     ' Verificar que ribbonUI existe
-    If App.Ribbon.ribbonUI Is Nothing Then
+    If mApp.Ribbon.ribbonUI Is Nothing Then
         LogDebug MODULE_NAME, "IsRibbonAvailable: ribbonUI Is Nothing"
         IsRibbonAvailable = False
         Exit Function
@@ -244,7 +251,7 @@ Attribute IsRibbonAvailable.VB_ProcData.VB_Invoke_Func = " \n21"
 
     ' Intentar una operacion simple para verificar que funciona
     Dim testResult As Boolean
-    testResult = Not (TypeName(App.Ribbon.ribbonUI) = "Nothing")
+    testResult = Not (TypeName(mApp.Ribbon.ribbonUI) = "Nothing")
 
     If Err.Number <> 0 Then
         LogWarning MODULE_NAME, "IsRibbonAvailable: Error al verificar - " & Err.Description

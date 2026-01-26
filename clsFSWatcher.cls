@@ -38,11 +38,13 @@ Attribute VB_Exposed = False
 '
 ' SOLUCION IMPLEMENTADA:
 ' - clsFolderWatch.Dispose() libera todos los recursos
-' - clsAplicacion.Terminate() llama a Dispose antes de Set = Nothing
+' - clsApplication.Terminate() llama a Dispose antes de Set = Nothing
 ' =====================================================
 
-'@Folder "2-Servicios.Archivos.Supervision"
+'@Folder "4-Servicios.Archivos.Supervision"
 Option Explicit
+
+Private Const MODULE_NAME As String = "clsFSWatcher"
 
 ' =====================================================
 ' ENUMERACIONES (deben coincidir con FolderWatcher.vb)
@@ -84,10 +86,8 @@ Private mInitialized As Boolean
 Private mDisposed As Boolean                     ' Flag para evitar doble limpieza
 Private mWatchedFolders As Object                ' Dictionary de carpetas monitoreadas
 
-Private Const MODULE_NAME As String = "clsFolderWatch"
-
 ' =====================================================
-' EVENTOS PÚBLICOS (se propagan a clsAplicacion)
+' EVENTOS PÚBLICOS (se propagan a clsApplication)
 ' =====================================================
 
 Public Event FileCreated(ByVal folder As String, ByVal fileName As String)
@@ -159,7 +159,7 @@ Private Function CrearCOMConActivationContext() As Boolean
     ' Intentar crear el COM usando Activation Context (sin registro)
     ' Inicializar Activation Context
     With VBA.CreateObject("Microsoft.Windows.ActCtx")
-        .Manifest = ObtenerRutaManifest
+        .Manifest = ObtenerRutaManifest 'ObtenerRutaCOM '
         Set fw = .CreateObject("FolderWatcher.Monitor")
     End With
 
@@ -316,33 +316,6 @@ Public Sub DetenerMonitoreo(ByVal folderPath As String)
     End If
 
     LogInfo MODULE_NAME, "[DetenerMonitoreo] - Monitoreo detenido: " & folderPath
-End Sub
-
-'@Description: Detiene todos los monitoreos activos
-'@Note: Este metodo es llamado por Dispose, usar Dispose para limpieza completa
-Public Sub DetenerTodo()
-    On Error Resume Next
-
-    If mDisposed Then
-        LogDebug MODULE_NAME, "[DetenerTodo] - Objeto ya liberado"
-        Exit Sub
-    End If
-
-    If Not mWatchedFolders Is Nothing Then
-        Dim carpeta As Variant
-        Dim countStopped As Long
-        countStopped = 0
-
-        For Each carpeta In mWatchedFolders.Keys
-            If mInitialized And Not fw Is Nothing Then
-                fw.StopWatching CStr(carpeta)
-                countStopped = countStopped + 1
-            End If
-        Next carpeta
-
-        mWatchedFolders.RemoveAll
-        LogInfo MODULE_NAME, "[DetenerTodo] - " & countStopped & " monitoreos detenidos"
-    End If
 End Sub
 
 ' =====================================================
@@ -610,7 +583,7 @@ End Function
 ' =====================================================
 
 '@Description: Test de monitoreo de subcarpetas
-Public Sub Test_MonitoreoSubcarpetas()
+Public Sub TestMonitoreoSubcarpetas()
     Dim rutaTest As String
     rutaTest = Environ("TEMP") & "\TestFolderWatcher"
     
@@ -635,7 +608,7 @@ Public Sub Test_MonitoreoSubcarpetas()
 End Sub
 
 '@Description: Test de filtros de tamaño
-Public Sub Test_FiltroTamaño()
+Public Sub TestFiltroTamaño()
     Dim rutaTest As String
     rutaTest = Environ("TEMP") & "\TestFiltros"
     
@@ -658,7 +631,7 @@ Public Sub Test_FiltroTamaño()
 End Sub
 
 '@Description: Test de acción automática de mover
-Public Sub Test_AccionMover()
+Public Sub TestAccionMover()
     Dim rutaOrigen As String, rutaDestino As String
     rutaOrigen = Environ("TEMP") & "\TestOrigen"
     rutaDestino = Environ("TEMP") & "\TestDestino"
@@ -684,7 +657,7 @@ Public Sub Test_AccionMover()
 End Sub
 
 '@Description: Test completo del sistema
-Public Sub Test_SistemaCompleto()
+Public Sub TestSistemaCompleto()
     Debug.Print "==== TEST COMPLETO FOLDERWATCHER ===="
     Debug.Print "Configuración: " & Configuracion
     

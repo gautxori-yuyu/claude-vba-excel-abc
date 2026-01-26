@@ -5,8 +5,11 @@ Attribute VB_Name = "modAPPBudgetQuotesUtilids"
 'FIXME: Las funciones de este modulo son GENERICAS, no solo para Budgets (aunque alguna ESTA PENSADA SOLO PARA CIERTAS PLANTILLAS)
 '   mejor ponerlas en un modulo "generico".
 
-'@Folder "4-Oportunidades y compresores.d-Ofertas.Plantillas"
+'@Folder "6-DOMINIO-Oportunidades y compresores.d-Ofertas.Plantillas"
 Option Explicit
+
+Private Const MODULE_NAME As String = "modAPPBudgetQuotesUtilids"
+
 Private Const bSheetReport As Boolean = True
 
 ' ------------------------------------------
@@ -15,6 +18,7 @@ Private Const bSheetReport As Boolean = True
 
 ' Recalcula y crea nombres de rangos basados en la columna A de hojas específicas
 Sub recalcNames()
+Attribute recalcNames.VB_ProcData.VB_Invoke_Func = " \n0"
     Dim begin As Variant, rangename As String
     Dim rRange As Range, rCell As Range
     Dim namesCol As String, rangeCol As String
@@ -62,6 +66,7 @@ End Sub
 
 ' Aplica nombres de rangos a todas las hojas del libro
 Sub AplicarNombresARangosUsadosActWB()
+Attribute AplicarNombresARangosUsadosActWB.VB_ProcData.VB_Invoke_Func = " \n0"
     Dim ws As Worksheet
     Dim rangoUsado As Range
     
@@ -139,6 +144,7 @@ End Function
 '@Returns: Nothing
 '@Category: Validaciones de datos
 Public Sub AplicarNombresAValidacionesCeldasActWBConReporte()
+Attribute AplicarNombresAValidacionesCeldasActWBConReporte.VB_ProcData.VB_Invoke_Func = " \n0"
     Dim ws As Worksheet
     Dim rangoValidacion As Range
     Dim celda As Range
@@ -247,6 +253,7 @@ End Function
 '@Returns: Nothing
 '@Category: Reporting
 Sub MostrarReporteEnHoja(reporte As String)
+Attribute MostrarReporteEnHoja.VB_ProcData.VB_Invoke_Func = " \n0"
     Dim wsReporte As Worksheet
     Dim lineas() As String
     Dim i As Long

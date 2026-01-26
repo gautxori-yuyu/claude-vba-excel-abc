@@ -7,8 +7,10 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
-'@Folder "2-Servicios.Excel"
+'@Folder "2-Infraestructura.Excel"
 Option Explicit
+
+Private Const MODULE_NAME As String = "CRefEdit"
 
 Private WithEvents oTextBox As MSForms.TextBox
 Attribute oTextBox.VB_VarHelpID = -1

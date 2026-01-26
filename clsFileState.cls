@@ -7,6 +7,9 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
-'@Folder "2-Servicios.Archivos"
+'@Folder "4-Servicios.Archivos"
 Option Explicit
+
+Private Const MODULE_NAME As String = "clsFileState"
+
 

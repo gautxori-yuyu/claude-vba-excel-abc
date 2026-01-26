@@ -3,6 +3,8 @@ Attribute VB_Name = "UDFs_COOLPROP"
 '@Folder "UDFS"
 Option Explicit
 
+Private Const MODULE_NAME As String = "UDFs_COOLPROP"
+
 '@UDF
 '@Description: Construye una cadena HEOS::... para CoolProp procesando uno o varios rangos
 '              disjuntos. Cada área del rango es tratada como una tabla independiente con
