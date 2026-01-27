@@ -32,6 +32,9 @@ Private mEvMediatorDomain As clsEventsMediatorDomain
 
 Private mRibbon As clsRibbon
 
+' Estado centralizado de la aplicación
+Private mApplicationState As clsApplicationState
+
 Public Property Get ChartManager() As clsChartMgr
     Set ChartManager = mChartManager
 End Property
@@ -56,6 +59,11 @@ Public Property Get OpportunitiesMgr() As clsOpportunitiesMgr
     Set OpportunitiesMgr = mOpportunities
 End Property
 
+'@Description: Obtiene el gestor de estado centralizado de la aplicación
+Public Property Get AppState() As clsApplicationState
+    Set AppState = mApplicationState
+End Property
+
 ' -------------------------------------------------------------
 ' Class_Initialize: SOLO inicializaci?n m?nima (ligera y segura)
 ' NO debe hacer trabajo pesado ni depender de App
@@ -64,15 +72,18 @@ Private Sub Class_Initialize()
     On Error GoTo ErrHandler
 
     LogInfo MODULE_NAME, "[Class_Initialize] - Iniciando aplicacion"
-    
+
+    ' ESTADO CENTRALIZADO (crear primero para inyectar en otros componentes)
+    Set mApplicationState = New clsApplicationState
+
     ' INFRAESTRUCTURA
     Set mChartManager = New clsChartMgr
-    
+
     Set mEventDispatcher = New clsEventDispatcher
-    
+
     Set mEvMgrInfrastructure = New clsEventsMgrInfrastructure
     Call mEvMgrInfrastructure.Initialize(mRibbon, mChartManager)
-    
+
     ' DOMINIO
     Set mFileMgr = New clsFileManager
 
@@ -83,13 +94,16 @@ Private Sub Class_Initialize()
     ' SERVICIOS DE NIVEL DE DOMINIO (crean eventos y generan logica "de negocio")
     Set mFSMonitoringCoord = New clsFSMonitoringCoord
     mFSMonitoringCoord.IniciarMonitoreo mOpportunities.Conf.oDicFoldersToWatch
-    
+
     Set mEvMediatorDomain = New clsEventsMediatorDomain
     Call mEvMediatorDomain.Initialize(mFSMonitoringCoord, mOpportunities, mRibbon, mFileMgr)
-    
+
     ' INTERFAZ
     Set mRibbon = New clsRibbon
-    
+
+    ' Conectar ApplicationState con Ribbon para invalidación de controles
+    mApplicationState.SetRibbon mRibbon
+
     LogInfo MODULE_NAME, "[Class_Initialize] - inicializaci?n completada"
     
     Exit Sub
@@ -125,8 +139,11 @@ Private Sub Class_Terminate()
     Set mEvMgrInfrastructure = Nothing
 
     Set mEventDispatcher = Nothing
-    
+
     Set mChartManager = Nothing
+
+    ' Liberar estado centralizado
+    Set mApplicationState = Nothing
 
     LogInfo MODULE_NAME, "[Terminate] - Limpieza completada"
 End Sub

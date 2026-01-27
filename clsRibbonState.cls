@@ -7,7 +7,7 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = True
-'@Description: Estado lógico del Ribbon
+'@Description: Estado lï¿½gico del Ribbon
 '@Category: State
 
 '@Folder "3-UI.Excel.Ribbon"
@@ -76,11 +76,12 @@ Public Property Let Visible(Value As Boolean)
     End If
 End Property
 
-'@Description: Indica si la pestaña principal del Ribbon debe ser visible
-'@Scope: público (consultado por callbacks)
+'@Description: Indica si la pestaÃ±a principal del Ribbon debe ser visible
+'@Param isOpportunityFileActive: Indica si hay un archivo de oportunidad activo
+'@Scope: pÃºblico (consultado por callbacks)
 '@Returns: Boolean
 '@Category: UI / Estado
-Public Function IsRibbonTabVisible() As Boolean
+Public Function IsRibbonTabVisible(isOpportunityFileActive As Boolean) As Boolean
     Select Case mModoRibbon
     Case Ribbon_Admin
         IsRibbonTabVisible = True
@@ -89,7 +90,7 @@ Public Function IsRibbonTabVisible() As Boolean
         IsRibbonTabVisible = True
 
     Case Ribbon_OpportunityOnly
-        IsRibbonTabVisible = EsFicheroOportunidad()
+        IsRibbonTabVisible = isOpportunityFileActive
 
     Case Else
         IsRibbonTabVisible = False
