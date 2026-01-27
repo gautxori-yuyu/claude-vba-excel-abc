@@ -8,16 +8,16 @@ Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
 ' ==================================================================
-' GESTOR GENÉRICO DE ARCHIVOS
+' GESTOR GEN?RICO DE ARCHIVOS
 ' ==================================================================
 ' Responsabilidades:
 ' - Supervisar CUALQUIER tipo de archivo (Excel, PDF, Word, etc.)
-'   relacionado con la gestión que hace "la aplicación": supervisa
+'   relacionado con la gesti?n que hace "la aplicaci?n": supervisa
 '   por tanto tanto ficheros abiertos por Excel, como los ficheros
-'   que pudieran estar En ciertas carpetas o árbol de carpetas
-' - Mantener un índice de archivos supervisados, por su ObjectKey
+'   que pudieran estar En ciertas carpetas o ?rbol de carpetas
+' - Mantener un ?ndice de archivos supervisados, por su ObjectKey
 ' - Mantener "sincronizado" el archivo de Excel activo
-' - Proveer análisis de archivos sin duplicar lógica
+' - Proveer an?lisis de archivos sin duplicar l?gica
 ' ==================================================================
 
 '@IgnoreModule MissingAnnotationArgument
@@ -35,7 +35,7 @@ Private WithEvents mXlApp As Application
 Attribute mXlApp.VB_VarHelpID = -1
 
 ' ==================================================================
-' INICIALIZACIÓN Y LIMPIEZA
+' INICIALIZACI?N Y LIMPIEZA
 ' ==================================================================
 
 Private Sub Class_Initialize()
@@ -54,7 +54,7 @@ Private Sub Class_Terminate()
 '    Set p_currExcelFile = Nothing
 End Sub
 ' -------------------------------------------------------------
-' InitFileManager: GESTIONA LA COLECCIÓN DE WORKBOOKS
+' InitFileManager: GESTIONA LA COLECCI?N DE WORKBOOKS
 ' (Es responsabilidad de clsApplication, NO de clsFileManager)
 ' -------------------------------------------------------------
 Private Sub InitFileManager()
@@ -78,7 +78,7 @@ ErrHandler:
 End Sub
 
 ' ==================================================================
-' PROPIEDADES PÚBLICAS
+' PROPIEDADES P?BLICAS
 ' ==================================================================
 
 '@Description: Obtiene el archivo Excel activo
@@ -88,7 +88,7 @@ Public Property Get ActiveExcelFile() As clsFileXLS
 End Property
 
 ' ==================================================================
-' MÉTODOS PÚBLICOS - TRACKING
+' M?TODOS P?BLICOS - TRACKING
 ' ==================================================================
 
 '@Description: Obtiene o crea el tracker para un Workbook
@@ -106,9 +106,9 @@ Public Function GetOrTrackWorkbook(Wb As Workbook) As clsFileXLS
     Dim key As Double
     key = GetFileKey(f)
     
-    ' Validar que la clave es válida
+    ' Validar que la clave es v?lida
     If key = 0 Then
-        LogError MODULE_NAME, "[GetOrTrackWorkbook] - ObjectKey inválido para " & Wb.Name
+        LogError MODULE_NAME, "[GetOrTrackWorkbook] - ObjectKey inv?lido para " & Wb.Name
         Exit Function
     End If
     
@@ -130,7 +130,7 @@ ErrHandler:
     LogCurrentError MODULE_NAME, "[GetOrTrackWorkbook]"
 End Function
 
-'@Description: Remueve un Workbook del tracking (interfaz específica Excel)
+'@Description: Remueve un Workbook del tracking (interfaz espec?fica Excel)
 Public Sub UntrackWorkbook(Wb As Workbook)
     If Wb Is Nothing Then Exit Sub
     
@@ -144,10 +144,10 @@ Public Sub UntrackWorkbook(Wb As Workbook)
 End Sub
 
 ' ==================================================================
-' MÉTODOS PÚBLICOS - TRACKING GENÉRICO
+' M?TODOS P?BLICOS - TRACKING GEN?RICO
 ' ==================================================================
 
-'@Description: Agrega un archivo al tracking (genérico)
+'@Description: Agrega un archivo al tracking (gen?rico)
 '@Note: Acepta clsFileXLS, clsFilePDF, o cualquier clase con ObjectKey
 Public Sub TrackFile(f As Object)
     If f Is Nothing Then Exit Sub
@@ -158,7 +158,7 @@ Public Sub TrackFile(f As Object)
     key = GetFileKey(f)
     
     If mTrackedFiles.Exists(key) Then
-        LogWarning MODULE_NAME, "[TrackFile] Advertencia: Archivo ya está tracked"
+        LogWarning MODULE_NAME, "[TrackFile] Advertencia: Archivo ya est? tracked"
         Exit Sub
     End If
     
@@ -170,8 +170,8 @@ ErrHandler:
     LogCurrentError MODULE_NAME, "[TrackFile]"
 End Sub
 
-'@Description: Remueve un archivo del tracking (genérico)
-'@Note: Usa ObjPtr de la clase de archivo, no necesita conocer el tipo específico
+'@Description: Remueve un archivo del tracking (gen?rico)
+'@Note: Usa ObjPtr de la clase de archivo, no necesita conocer el tipo espec?fico
 Public Sub UntrackFile(f As Object)
     If f Is Nothing Then Exit Sub
     
@@ -192,11 +192,11 @@ Public Sub UntrackFile(f As Object)
 End Sub
 
 ' ==================================================================
-' MÉTODOS PÚBLICOS - ANÁLISIS
+' M?TODOS P?BLICOS - AN?LISIS
 ' ==================================================================
 
-'@Description: Analiza un workbook y devuelve su información
-'@Returns: T_InfoArchivo con el análisis completo
+'@Description: Analiza un workbook y devuelve su informaci?n
+'@Returns: T_InfoArchivo con el an?lisis completo
 Public Function AnalizarArchivo(fich As Object) As mod_ConstantsGlobals.T_InfoArchivo
     Dim info As mod_ConstantsGlobals.T_InfoArchivo
     Select Case TypeName(fich)
@@ -216,23 +216,23 @@ Public Function AnalizarArchivo(fich As Object) As mod_ConstantsGlobals.T_InfoAr
 End Function
 
 '@Description: Analiza el workbook activo actual
-'@Returns: T_InfoArchivo del workbook activo, o estructura vacía si no hay activo
+'@Returns: T_InfoArchivo del workbook activo, o estructura vac?a si no hay activo
 Public Function AnalizarArchivoActivo() As mod_ConstantsGlobals.T_InfoArchivo
     AnalizarArchivoActivo = AnalizarArchivo(mXlApp.ActiveWorkbook)
 End Function
 
 ' ==================================================================
-' MÉTODOS DE UTILIDAD
+' M?TODOS DE UTILIDAD
 ' ==================================================================
 
-'@Description: Verifica si un workbook está siendo tracked
+'@Description: Verifica si un workbook est? siendo tracked
 Public Function IsTracked(Wb As Workbook) As Boolean
     If Wb Is Nothing Then Exit Function
     IsTracked = Not (FindTrackedWorkbook(Wb) Is Nothing)
 End Function
 
 '@Description: Busca el clsFileXLS correspondiente a un Workbook
-'@Returns: clsFileXLS si está tracked, Nothing si no
+'@Returns: clsFileXLS si est? tracked, Nothing si no
 Private Function FindTrackedWorkbook(Wb As Workbook) As clsFileXLS
     If Wb Is Nothing Then Exit Function
     
@@ -260,7 +260,7 @@ Private Function GetFileKey(f As Object) As Double
     ' Usar ObjectKey de la interfaz
     GetFileKey = IFile.ObjectKey
 
-    ' Validar que sea válido
+    ' Validar que sea v?lido
     If GetFileKey = 0 Then
         LogWarning MODULE_NAME, "[GetFileKey] ObjectKey = 0 para " & TypeName(f)
     End If
@@ -288,7 +288,7 @@ ErrHandler:
     GetFilePath = "(desconocido)"
 End Function
 
-'@Description: Obtiene información de todos los archivos tracked (para debugging)
+'@Description: Obtiene informaci?n de todos los archivos tracked (para debugging)
 Public Function GetTrackedFilesInfo() As String
     Dim info As String
     info = "Archivos tracked: " & mTrackedFiles.Count & vbCrLf
@@ -308,6 +308,157 @@ Public Function GetTrackedFilesInfo() As String
     End If
     
     GetTrackedFilesInfo = info
+End Function
+
+' ==================================================================
+' METODOS PUBLICOS - SISTEMA DE ARCHIVOS
+' ==================================================================
+
+'@Description: Lista las subcarpetas de una ruta base
+'@Param rutaBase: Ruta del directorio a explorar
+'@Returns: Collection de nombres de subcarpetas (solo nombres, no rutas completas)
+'@Note: Devuelve Collection vacia si la ruta no existe o no es accesible
+'@Category: Sistema de archivos
+Public Function ListarSubcarpetas(rutaBase As String) As Collection
+    Dim resultado As Collection
+    Set resultado = New Collection
+
+    On Error GoTo ErrHandler
+
+    Dim fso As Object
+    Dim carpeta As Object
+    Dim subcarpeta As Object
+
+    Set fso = CreateObject("Scripting.FileSystemObject")
+
+    If Not fso.FolderExists(rutaBase) Then
+        LogWarning MODULE_NAME, "[ListarSubcarpetas] - Carpeta no existe: " & rutaBase
+        Set ListarSubcarpetas = resultado
+        Exit Function
+    End If
+
+    Set carpeta = fso.GetFolder(rutaBase)
+
+    For Each subcarpeta In carpeta.SubFolders
+        resultado.Add subcarpeta.Name
+    Next subcarpeta
+
+    LogDebug MODULE_NAME, "[ListarSubcarpetas] - Encontradas " & resultado.Count & " subcarpetas en: " & rutaBase
+
+    Set ListarSubcarpetas = resultado
+    Exit Function
+
+ErrHandler:
+    LogError MODULE_NAME, "[ListarSubcarpetas] Error listando carpetas", Err.Number, Err.Description
+    Set ListarSubcarpetas = resultado
+End Function
+
+'@Description: Copia una carpeta completa de origen a destino
+'@Param rutaOrigen: Ruta de la carpeta a copiar
+'@Param rutaDestino: Ruta destino donde se copiara la carpeta
+'@Returns: True si la copia fue exitosa, False en caso contrario
+'@Category: Sistema de archivos
+Public Function CopiarCarpeta(rutaOrigen As String, rutaDestino As String) As Boolean
+    On Error GoTo ErrHandler
+
+    Dim fso As Object
+    Set fso = CreateObject("Scripting.FileSystemObject")
+
+    If Not fso.FolderExists(rutaOrigen) Then
+        LogError MODULE_NAME, "[CopiarCarpeta] - Carpeta origen no existe: " & rutaOrigen
+        CopiarCarpeta = False
+        Exit Function
+    End If
+
+    If fso.FolderExists(rutaDestino) Then
+        LogWarning MODULE_NAME, "[CopiarCarpeta] - Carpeta destino ya existe: " & rutaDestino
+        CopiarCarpeta = False
+        Exit Function
+    End If
+
+    fso.CopyFolder rutaOrigen, rutaDestino
+
+    LogInfo MODULE_NAME, "[CopiarCarpeta] - Carpeta copiada exitosamente: " & rutaOrigen & " -> " & rutaDestino
+    CopiarCarpeta = True
+    Exit Function
+
+ErrHandler:
+    LogError MODULE_NAME, "[CopiarCarpeta] Error copiando carpeta", Err.Number, Err.Description
+    CopiarCarpeta = False
+End Function
+
+'@Description: Verifica si una carpeta existe
+'@Param ruta: Ruta de la carpeta a verificar
+'@Returns: True si la carpeta existe, False en caso contrario
+'@Category: Sistema de archivos
+Public Function ExisteCarpeta(ruta As String) As Boolean
+    On Error GoTo ErrHandler
+
+    Dim fso As Object
+    Set fso = CreateObject("Scripting.FileSystemObject")
+
+    ExisteCarpeta = fso.FolderExists(ruta)
+    Exit Function
+
+ErrHandler:
+    LogError MODULE_NAME, "[ExisteCarpeta] Error verificando existencia", Err.Number, Err.Description
+    ExisteCarpeta = False
+End Function
+
+'@Description: Construye una ruta completa a partir de componentes
+'@Param componentes: Array de componentes de ruta a combinar
+'@Returns: String con la ruta combinada correctamente
+'@Category: Sistema de archivos
+'@Example: ConstruirRuta("C:\Base", "Subfolder", "File.txt") -> "C:\Base\Subfolder\File.txt"
+Public Function ConstruirRuta(ParamArray componentes() As Variant) As String
+    On Error GoTo ErrHandler
+
+    Dim fso As Object
+    Set fso = CreateObject("Scripting.FileSystemObject")
+
+    Dim rutaFinal As String
+    Dim i As Long
+
+    If UBound(componentes) < 0 Then
+        ConstruirRuta = ""
+        Exit Function
+    End If
+
+    rutaFinal = CStr(componentes(0))
+
+    For i = 1 To UBound(componentes)
+        rutaFinal = fso.BuildPath(rutaFinal, CStr(componentes(i)))
+    Next i
+
+    ConstruirRuta = rutaFinal
+    Exit Function
+
+ErrHandler:
+    LogError MODULE_NAME, "[ConstruirRuta] Error construyendo ruta", Err.Number, Err.Description
+    ConstruirRuta = ""
+End Function
+
+'@Description: Obtiene el objeto Folder de FSO para una ruta
+'@Param ruta: Ruta de la carpeta
+'@Returns: Objeto Folder o Nothing si no existe
+'@Category: Sistema de archivos
+Public Function ObtenerCarpeta(ruta As String) As Object
+    On Error GoTo ErrHandler
+
+    Dim fso As Object
+    Set fso = CreateObject("Scripting.FileSystemObject")
+
+    If Not fso.FolderExists(ruta) Then
+        Set ObtenerCarpeta = Nothing
+        Exit Function
+    End If
+
+    Set ObtenerCarpeta = fso.GetFolder(ruta)
+    Exit Function
+
+ErrHandler:
+    LogError MODULE_NAME, "[ObtenerCarpeta] Error obteniendo carpeta", Err.Number, Err.Description
+    Set ObtenerCarpeta = Nothing
 End Function
 
 ' ==================================================================

@@ -57,7 +57,7 @@ Public Property Get OpportunitiesMgr() As clsOpportunitiesMgr
 End Property
 
 ' -------------------------------------------------------------
-' Class_Initialize: SOLO inicialización mínima (ligera y segura)
+' Class_Initialize: SOLO inicializaci?n m?nima (ligera y segura)
 ' NO debe hacer trabajo pesado ni depender de App
 ' -------------------------------------------------------------
 Private Sub Class_Initialize()
@@ -77,6 +77,8 @@ Private Sub Class_Initialize()
     Set mFileMgr = New clsFileManager
 
     Set mOpportunities = New clsOpportunitiesMgr
+    ' Inyectar dependencia de FileManager
+    Set mOpportunities.FileManager = mFileMgr
 
     ' SERVICIOS DE NIVEL DE DOMINIO (crean eventos y generan logica "de negocio")
     Set mFSMonitoringCoord = New clsFSMonitoringCoord
@@ -88,13 +90,13 @@ Private Sub Class_Initialize()
     ' INTERFAZ
     Set mRibbon = New clsRibbon
     
-    LogInfo MODULE_NAME, "[Class_Initialize] - inicialización completada"
+    LogInfo MODULE_NAME, "[Class_Initialize] - inicializaci?n completada"
     
     Exit Sub
 ErrHandler:
     LogCurrentError MODULE_NAME, "[Class_Initialize]"
     Err.Raise Err.Number, MODULE_NAME & "[Class_Initialize]", _
-              "Error inicializando aplicación: " & Err.Description
+              "Error inicializando aplicaci?n: " & Err.Description
 End Sub
 
 ' -------------------------------------------------------------
@@ -103,7 +105,7 @@ End Sub
 Private Sub Class_Terminate()
     LogInfo MODULE_NAME, "[Terminate] - Iniciando limpieza de la aplicacion"
 
-    On Error Resume Next  ' Asegurar que la limpieza continúa aunque haya errores
+    On Error Resume Next  ' Asegurar que la limpieza contin?a aunque haya errores
     
     ' 2. Liberar Ribbon events
     If Not mRibbon Is Nothing Then

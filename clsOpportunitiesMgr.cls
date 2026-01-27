@@ -12,12 +12,12 @@ Attribute VB_Exposed = False
 ' Clase: clsOpportunitiesMgr
 '--------------------------------------------------------------
 ' Gestiona la lista de "Oportunidades" (subcarpetas) de un
-' directorio base configurado en el sistema. Expone métodos
-' para refrescar, enumerar y cambiar oportunidad actual, así
+' directorio base configurado en el sistema. Expone m?todos
+' para refrescar, enumerar y cambiar oportunidad actual, as?
 ' como un evento para notificar cambio de oportunidad actual.
 '==============================================================
-'TODO Implementar filtrado de oportunidades por año
-'TODO Anadir búsqueda incremental en dropdown
+'TODO Implementar filtrado de oportunidades por a?o
+'TODO Anadir b?squeda incremental en dropdown
 'TODO Cachear resultado de actualizarColeccionOportunidades (5 min)
 
 '@Exposed
@@ -43,8 +43,9 @@ Public Event OpportunityCollectionUpdate(ByVal cambios As String)
 ' Variables miembro
 '--------------------------------------------------------------
 Private mConfiguration As clsConfiguration
+Private mFileManager As clsFileManager            ' Gestor de sistema de archivos (inyectado)
 Private p_ColOpportunities As Collection         ' Lista de subcarpetas encontradas
-Private p_CurrOpportunity As Long                 ' Índice en p_ColOpportunities de la carpeta actual
+Private p_CurrOpportunity As Long                 ' ?ndice en p_ColOpportunities de la carpeta actual
 
 Private WithEvents mXlApp As Application
 Attribute mXlApp.VB_VarHelpID = -1
@@ -76,59 +77,72 @@ Public Property Get Conf() As clsConfiguration
     Set Conf = mConfiguration
 End Property
 
+'@Description: Inyecta la dependencia de FileManager
+'@Param fm: Instancia de clsFileManager
+'@Category: Inicializacion
+Friend Property Set FileManager(fm As clsFileManager)
+    Set mFileManager = fm
+End Property
+
 Public Property Get BaseFolder() As String
     BaseFolder = mConfiguration.RutaOportunidades
 End Property
 
 '--------------------------------------------------------------
-' @Description: Actualiza la colección p_ColOpportunities con
+' @Description: Actualiza la colecci?n p_ColOpportunities con
 ' las subcarpetas existentes en la ruta base configurada.
-' El listado resultante se ordena en orden numérico inverso
-' (de mayor a menor) según el número detectado en el nombre
-' de cada carpeta. Si no se detectan números, se ordena en
-' orden alfabético descendente.
+' El listado resultante se ordena en orden num?rico inverso
+' (de mayor a menor) seg?n el n?mero detectado en el nombre
+' de cada carpeta. Si no se detectan n?meros, se ordena en
+' orden alfab?tico descendente.
 '--------------------------------------------------------------
-' @Category: Información de archivo
+' @Category: Informaci?n de archivo
 ' @ArgumentDescriptions: (sin argumentos)
 '--------------------------------------------------------------
 Public Function actualizarColeccionOportunidades()
-    Dim fso As Object, carpeta As Object, subcarpeta As Object
-    
     Set p_ColOpportunities = New Collection      ' limpia y reinicia
 
     LogInfo MODULE_NAME, "[actualizarColeccionOportunidades] - regenerando la variable local que contiene la lista de carpetas de oportunidades"
-    On Error Resume Next
-    Set fso = CreateObject("Scripting.FileSystemObject")
-    Set carpeta = fso.GetFolder(BaseFolder)
-    On Error GoTo 0
-    
+
     Dim arr() As String, i As Long
-    
-    If carpeta Is Nothing Then
-        LogError MODULE_NAME, "[actualizarColeccionOportunidades] - No se ha definido la carpeta de oportunidades"
+
+    ' Verificar que FileManager esta disponible
+    If mFileManager Is Nothing Then
+        LogError MODULE_NAME, "[actualizarColeccionOportunidades] - FileManager no ha sido inyectado"
         GoTo Salida
     End If
-    
+
+    ' Delegar obtencion de subcarpetas al FileManager
+    Dim subcarpetas As Collection
+    Set subcarpetas = mFileManager.ListarSubcarpetas(BaseFolder)
+
+    If subcarpetas.Count = 0 Then
+        LogWarning MODULE_NAME, "[actualizarColeccionOportunidades] - No se encontraron subcarpetas en: " & BaseFolder
+        GoTo Salida
+    End If
+
+    ' Filtrar carpetas validas usando expresiones regulares (logica de dominio)
     Dim regEx As Object
     Set regEx = CreateObject("VBScript.RegExp")
-    ReDim arr(carpeta.SubFolders.Count)
-    ' Copiamos rutas en un array para poder ordenarlas
-    For Each subcarpeta In carpeta.SubFolders
+    ReDim arr(subcarpetas.Count - 1)
+
+    Dim nombreCarpeta As Variant
+    For Each nombreCarpeta In subcarpetas
         regEx.Pattern = FILEORFOLDERNAME_QUOTE_CUSTOMER_OTHER_MODEL_PATTERN
-        If Not regEx.Test(subcarpeta.Name) Then
+        If Not regEx.Test(nombreCarpeta) Then
             regEx.Pattern = FILEORFOLDERNAME_QUOTE_CUSTOMER_OTHER_PATTERN
-            If Not regEx.Test(subcarpeta.Name) Then
+            If Not regEx.Test(nombreCarpeta) Then
                 ' Nombre de carpeta mal implementado. Trata de corregirlo a partir de ofertas creadas
             End If
         End If
         regEx.Pattern = FILEORFOLDERNAME_QUOTE_CUSTOMER_OTHER_MODEL_PATTERN
-        If regEx.Test(subcarpeta.Name) Then
-            arr(i) = subcarpeta.Name
+        If regEx.Test(nombreCarpeta) Then
+            arr(i) = CStr(nombreCarpeta)
             i = i + 1
         End If
-    Next subcarpeta
-    
-    ' Orden numérico inverso
+    Next nombreCarpeta
+
+    ' Orden numerico inverso (logica de dominio)
     If i > 0 Then
         ReDim Preserve arr(i - 1)
         arr = OrdenarCarpetasDesc(arr)
@@ -136,7 +150,7 @@ Public Function actualizarColeccionOportunidades()
             p_ColOpportunities.Add arr(i)
         Next i
     End If
-    
+
 Salida:
     p_CurrOpportunity = IIf(p_CurrOpportunity > 0, p_CurrOpportunity, IIf(p_ColOpportunities.Count > 0, 0, -1))
     actualizarColeccionOportunidades = arr
@@ -153,7 +167,7 @@ Public Sub ProcesarCambiosEnOportunidades(ByVal subfolderName As String)
     Dim bCambiosEnOportunidades As Boolean
     
     LogInfo MODULE_NAME, "[ProcesarCambiosEnOportunidades] - identificando si los cambios introducidos por el watcher son oportunidades"
-    ' Verificar si los cambios afectan a oportunidades válidas
+    ' Verificar si los cambios afectan a oportunidades v?lidas
     regEx.Pattern = FILEORFOLDERNAME_QUOTE_CUSTOMER_OTHER_MODEL_PATTERN
     bCambiosEnOportunidades = regEx.Test(subfolderName)
     
@@ -164,7 +178,7 @@ Public Sub ProcesarCambiosEnOportunidades(ByVal subfolderName As String)
         ' NO actualizar ribbon directamente - delegar al evento
         ' La clase NO debe conocer el ribbon
         ' Disparar evento para que otros componentes reaccionen
-        LogInfo MODULE_NAME, "[ProcesarCambiosEnOportunidades] - promoviendo evento OpportunityCollectionUpdate para poner al corriente a otros módulos"
+        LogInfo MODULE_NAME, "[ProcesarCambiosEnOportunidades] - promoviendo evento OpportunityCollectionUpdate para poner al corriente a otros m?dulos"
         RaiseEvent OpportunityCollectionUpdate(subfolderName)
     End If
 End Sub
@@ -176,9 +190,9 @@ Public Sub ProcesarCambiosEnItemsOportunidad(ByVal cambios As String)
 End Sub
 
 '--------------------------------------------------------------
-' @Description: Devuelve el número de oportunidades cargadas.
+' @Description: Devuelve el n?mero de oportunidades cargadas.
 '--------------------------------------------------------------
-' @Category: Información de archivo
+' @Category: Informaci?n de archivo
 ' @ArgumentDescriptions: (sin argumentos)
 '--------------------------------------------------------------
 Public Function numOpportunities() As Variant
@@ -187,10 +201,10 @@ End Function
 
 '--------------------------------------------------------------
 ' @Description: Devuelve una oportunidad
-' según el índice indicado.
+' seg?n el ?ndice indicado.
 '--------------------------------------------------------------
-' @Category: Información de archivo
-' @ArgumentDescriptions: index: índice (base 0) de la oportunidad
+' @Category: Informaci?n de archivo
+' @ArgumentDescriptions: index: ?ndice (base 0) de la oportunidad
 '--------------------------------------------------------------
 Public Property Get OportunityLabel(Index As Integer) As String
     If Index >= 0 And Index < p_ColOpportunities.Count Then
@@ -202,10 +216,10 @@ End Property
 
 '--------------------------------------------------------------
 ' @Description: Devuelve la ruta completa de una oportunidad
-' según el índice indicado.
+' seg?n el ?ndice indicado.
 '--------------------------------------------------------------
-' @Category: Información de archivo
-' @ArgumentDescriptions: index: índice (base 0) de la oportunidad
+' @Category: Informaci?n de archivo
+' @ArgumentDescriptions: index: ?ndice (base 0) de la oportunidad
 '--------------------------------------------------------------
 Public Property Get OportunityPath(Index As Long) As String
     If Index >= 0 And Index < p_ColOpportunities.Count Then
@@ -217,14 +231,14 @@ End Property
 ' @Description: Actualiza la oportunidad actual y dispara
 ' el evento currOpportunityChanged.
 '--------------------------------------------------------------
-' @Category: Información de archivo
-' @ArgumentDescriptions: index: índice (base 0) de la oportunidad
+' @Category: Informaci?n de archivo
+' @ArgumentDescriptions: index: ?ndice (base 0) de la oportunidad
 '--------------------------------------------------------------
 Public Property Let CurrOpportunity(Index As Long)
     If Index >= 0 And Index < p_ColOpportunities.Count Then
         p_CurrOpportunity = Index
         
-        LogInfo MODULE_NAME, "[CurrOpportunity] - cambio de oportunidad actual -> promoviendo evento OpportunityChanged para poner al corriente a otros módulos"
+        LogInfo MODULE_NAME, "[CurrOpportunity] - cambio de oportunidad actual -> promoviendo evento OpportunityChanged para poner al corriente a otros m?dulos"
         RaiseEvent currOpportunityChanged(Index, p_ColOpportunities(Index + 1))
     End If
 End Property
@@ -234,9 +248,9 @@ Public Property Get CurrOpportunity() As Long
 End Property
 
 '--------------------------------------------------------------
-' @Description: Ordena un array de rutas en orden numérico
-' inverso, detectando el último número en el nombre de cada
-' carpeta. Si no hay número, orden alfabético descendente.
+' @Description: Ordena un array de rutas en orden num?rico
+' inverso, detectando el ?ltimo n?mero en el nombre de cada
+' carpeta. Si no hay n?mero, orden alfab?tico descendente.
 '--------------------------------------------------------------
 Private Function OrdenarCarpetasDesc(arr() As String) As String()
     Dim i As Long, j As Long, tmp As String
@@ -258,8 +272,8 @@ Private Function OrdenarCarpetasDesc(arr() As String) As String()
 End Function
 
 '--------------------------------------------------------------
-' @Description: Extrae el último número del nombre de la carpeta.
-' Si no hay número, devuelve -1E+99 para forzar orden al final.
+' @Description: Extrae el ?ltimo n?mero del nombre de la carpeta.
+' Si no hay n?mero, devuelve -1E+99 para forzar orden al final.
 '--------------------------------------------------------------
 Private Function ExtraerClaveNumerica(ruta As String) As Double
     Dim re As Object, matches As Object, s As String
@@ -282,23 +296,43 @@ End Function
 '--------------------------------------------------------------
 ' @Description: Crea una nueva carpeta de oportunidad, a partir de la estructura de plantilla
 '--------------------------------------------------------------
+'@Description: Crea una nueva carpeta de oportunidad a partir de la estructura de plantilla
+'@Note: Solicita el nombre del cliente mediante InputBox y valida el formato
+'@Category: Oportunidades
 Public Sub CreaOportunidad()
-    Dim fso As Object, carpeta As Object
+    On Error GoTo ErrHandler
+
     Dim arrOps() As String, i, strSAM As String, strCustomer As String, strOpName As String, dblLastOpSeq As Double
-    
+
+    ' Verificar que FileManager esta disponible
+    If mFileManager Is Nothing Then
+        LogError MODULE_NAME, "[CreaOportunidad] - FileManager no ha sido inyectado"
+        MsgBox "Error interno: FileManager no disponible", vbCritical
+        Exit Sub
+    End If
+
+    ' Verificar que la carpeta base existe
+    If Not mFileManager.ExisteCarpeta(BaseFolder) Then
+        MsgBox "No se pudo abrir la ruta de oportunidades: " & BaseFolder, vbExclamation
+        Exit Sub
+    End If
+
+    ' Actualizar lista de oportunidades y calcular siguiente secuencia
     arrOps = actualizarColeccionOportunidades
     dblLastOpSeq = 0
     For i = 0 To UBound(arrOps)
         arrOps(i) = Left(arrOps(i), 9)
-        'If CDbl(Mid(arrOps(i), 7)) > dblLastOpSeq Then dblLastOpSeq = CDbl(Mid(arrOps(i), 7))
     Next
     If UBound(arrOps) >= 0 Then dblLastOpSeq = CDbl(Mid(arrOps(0), 7))
+
+    ' Generar nombre de oportunidad (logica de dominio)
     strSAM = App.OpportunitiesMgr.Conf.SAM
     Do
         dblLastOpSeq = dblLastOpSeq + 1
         strOpName = strSAM & Mid(Year(Now), 3) & String(2 - Len(Month(Now)), "0") & Month(Now) & String(3 - Len(CStr(dblLastOpSeq)), "0") & dblLastOpSeq
     Loop While UBound(Filter(arrOps, strOpName)) >= 0
-    
+
+    ' Solicitar y validar nombre de cliente
     Dim regEx As Object, strMsg
     Set regEx = CreateObject("VBScript.RegExp")
     regEx.Pattern = FILEORFOLDERNAME_QUOTE_CUSTOMER_OTHER_MODEL_PATTERN
@@ -306,26 +340,36 @@ Public Sub CreaOportunidad()
         strCustomer = InputBox(strMsg & "Introduce el nombre del cliente, o cliente - proyecto:", "Cliente - Proyecto", strCustomer)
         strMsg = "NOMBRE NO VALIDO. "
     Loop While strCustomer <> "" And Not regEx.Test(strOpName & " - " & strCustomer & " - XXX")
-    
+
     If strCustomer <> "" Then
-        Set fso = CreateObject("Scripting.FileSystemObject")
-        On Error Resume Next
-        Set carpeta = fso.GetFolder(BaseFolder)
-        On Error GoTo 0
-        If carpeta Is Nothing Then GoTo ErrHandler
-        
-        Dim templFold As String
-        templFold = App.OpportunitiesMgr.Conf.RutaPlantillas
-        If Right(templFold, 1) = "\" Then templFold = Left(templFold, Len(templFold) - 1)
-        fso.CopyFolder templFold, _
-                       fso.BuildPath(carpeta.Path, strOpName & " - " & strCustomer & " - XXX")
+        ' Construir rutas usando FileManager
+        Dim rutaOrigen As String
+        Dim rutaDestino As String
+        Dim nombreCarpetaDestino As String
+
+        rutaOrigen = App.OpportunitiesMgr.Conf.RutaPlantillas
+        ' Eliminar barra final si existe
+        If Right(rutaOrigen, 1) = "\" Then rutaOrigen = Left(rutaOrigen, Len(rutaOrigen) - 1)
+
+        nombreCarpetaDestino = strOpName & " - " & strCustomer & " - XXX"
+        rutaDestino = mFileManager.ConstruirRuta(BaseFolder, nombreCarpetaDestino)
+
+        ' Delegar copia de carpeta al FileManager
+        If mFileManager.CopiarCarpeta(rutaOrigen, rutaDestino) Then
+            LogInfo MODULE_NAME, "[CreaOportunidad] - Nueva oportunidad creada: " & nombreCarpetaDestino
+        Else
+            LogError MODULE_NAME, "[CreaOportunidad] - Fallo al copiar carpeta de plantilla"
+            MsgBox "Error al crear la oportunidad. Revise el log para mas detalles.", vbExclamation
+        End If
     End If
 
+    ' Actualizar coleccion de oportunidades
     arrOps = actualizarColeccionOportunidades
     Exit Sub
 
 ErrHandler:
-    MsgBox "No se pudo abrir la ruta de oportunidades, " & BaseFolder & vbCrLf & Err.Description, vbExclamation
+    LogCurrentError MODULE_NAME, "[CreaOportunidad]"
+    MsgBox "No se pudo crear la oportunidad: " & Err.Description, vbExclamation
 End Sub
 
 ' ==================================================================
@@ -333,7 +377,7 @@ End Sub
 ' ==================================================================
 
 Private Sub mXlApp_WorkbookActivate(ByVal Wb As Workbook)
-    ' Verificar si el workbook está en una oportunidad
+    ' Verificar si el workbook est? en una oportunidad
     ' Actualizar p_CurrOpportunity si corresponde
 End Sub
 
