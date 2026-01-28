@@ -14,30 +14,119 @@ Option Explicit
 
 Private Const MODULE_NAME As String = "clsOpportunity"
 
-' Atributos b醩icos:
-Public Name As String
-Public Path As String
-Public Customer As String
-Public QuoteNumber As String
-Public CreatedDate As Date
-'Public Status As OpportunityStatus ' Enum
+' ==========================================
+' ATRIBUTOS PRIVADOS
+' ==========================================
+Private mLabel As String        ' Nombre completo de la oportunidad (ej: "412601015 - Cliente - Proyecto")
+Private mName As String         ' Nombre corto (ej: "412601015")
+Private mPath As String         ' Ruta completa a la carpeta
+Private mCustomer As String     ' Nombre del cliente
+Private mQuoteNumber As String  ' N煤mero de cotizaci贸n
+Private mCreatedDate As Date    ' Fecha de creaci贸n
 
-' Componentes:
-'Public Files As clsOpportunityFileCollection ' Implementa IFile
-'Public Compressors As clsCompressorCollection
-'Public Offers As clsOfferCollection
-'Public Documents As clsDocumentCollection
+' Componentes futuros (no implementados a煤n):
+'Private mFiles As clsOpportunityFileCollection
+'Private mCompressors As clsCompressorCollection
+'Private mOffers As clsOfferCollection
+'Private mDocuments As clsDocumentCollection
+'Private mStatus As OpportunityStatus
 
-' M閠odos:
-Public Function IsValid() As Boolean
+' ==========================================
+' INICIALIZACI脫N
+' ==========================================
 
-End Function
-Public Sub GenerateFolderStructure()
-
+Private Sub Class_Initialize()
+    mLabel = ""
+    mName = ""
+    mPath = ""
+    mCustomer = ""
+    mQuoteNumber = ""
+    mCreatedDate = 0
 End Sub
-Public Function GetBudgetTemplate() As clsFileXLS
 
+Private Sub Class_Terminate()
+    ' Limpiar referencias si necesario
+End Sub
+
+' ==========================================
+' PROPIEDADES P脷BLICAS
+' ==========================================
+
+'@Description: Obtiene o establece el label completo de la oportunidad
+Public Property Get Label() As String
+    Label = mLabel
+End Property
+
+Public Property Let Label(value As String)
+    mLabel = value
+End Property
+
+'@Description: Obtiene o establece el nombre corto de la oportunidad
+Public Property Get Name() As String
+    Name = mName
+End Property
+
+Public Property Let Name(value As String)
+    mName = value
+End Property
+
+'@Description: Obtiene o establece la ruta completa a la carpeta
+Public Property Get Path() As String
+    Path = mPath
+End Property
+
+Public Property Let Path(value As String)
+    mPath = value
+End Property
+
+'@Description: Obtiene o establece el nombre del cliente
+Public Property Get Customer() As String
+    Customer = mCustomer
+End Property
+
+Public Property Let Customer(value As String)
+    mCustomer = value
+End Property
+
+'@Description: Obtiene o establece el n煤mero de cotizaci贸n
+Public Property Get QuoteNumber() As String
+    QuoteNumber = mQuoteNumber
+End Property
+
+Public Property Let QuoteNumber(value As String)
+    mQuoteNumber = value
+End Property
+
+'@Description: Obtiene o establece la fecha de creaci贸n
+Public Property Get CreatedDate() As Date
+    CreatedDate = mCreatedDate
+End Property
+
+Public Property Let CreatedDate(value As Date)
+    mCreatedDate = value
+End Property
+
+' ==========================================
+' M脡TODOS P脷BLICOS
+' ==========================================
+
+'@Description: Valida si la oportunidad tiene datos m铆nimos requeridos
+Public Function IsValid() As Boolean
+    IsValid = Len(mLabel) > 0 And Len(mPath) > 0
 End Function
-Public Sub SyncWithRepository()
 
+'@Description: Genera la estructura de carpetas para la oportunidad (pendiente implementaci贸n)
+Public Sub GenerateFolderStructure()
+    ' TODO: Implementar creaci贸n de estructura de carpetas
+End Sub
+
+'@Description: Obtiene la plantilla de presupuesto (pendiente implementaci贸n)
+Public Function GetBudgetTemplate() As clsFileXLS
+    ' TODO: Implementar obtenci贸n de plantilla
+    Set GetBudgetTemplate = Nothing
+End Function
+
+'@Description: Sincroniza con el repositorio (pendiente implementaci贸n)
+Public Sub SyncWithRepository()
+    ' TODO: Implementar sincronizaci贸n
 End Sub

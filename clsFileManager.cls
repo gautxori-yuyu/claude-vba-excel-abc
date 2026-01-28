@@ -27,6 +27,7 @@ Option Explicit
 Private Const MODULE_NAME As String = "clsFileManager"
 
 Private mTrackedFiles As Object                 ' Diccionario de TODOS los ficheros de excel, en TODAS las oportunidades procesadas
+Private mFileState As clsFileState              ' Estado de archivo activo (composición)
 
 ' ==========================================
 ' SUSCRIPCION A EVENTOS DE APPLICATION
@@ -40,6 +41,10 @@ Attribute mXlApp.VB_VarHelpID = -1
 
 Private Sub Class_Initialize()
     LogInfo MODULE_NAME, "[Class_Initialize]"
+
+    ' Crear estado de archivo (composición - Manager posee el estado)
+    Set mFileState = New clsFileState
+
     Set mXlApp = Application
     Set mTrackedFiles = CreateObject("Scripting.Dictionary")
     InitFileManager
@@ -47,12 +52,19 @@ End Sub
 
 Private Sub Class_Terminate()
     LogInfo MODULE_NAME, "[Class_Terminate]"
-    
+
+    ' Liberar estado
+    Set mFileState = Nothing
+
     ' Limpiar todas las referencias
     mTrackedFiles.RemoveAll
     Set mTrackedFiles = Nothing
-'    Set p_currExcelFile = Nothing
 End Sub
+
+'@Description: Expone el estado de archivo (para inyección en ApplicationState)
+Public Property Get State() As clsFileState
+    Set State = mFileState
+End Property
 ' -------------------------------------------------------------
 ' InitFileManager: GESTIONA LA COLECCI?N DE WORKBOOKS
 ' (Es responsabilidad de clsApplication, NO de clsFileManager)

@@ -50,21 +50,47 @@ Public Event ApplicationContextChanged()
 
 Private Sub Class_Initialize()
     LogInfo MODULE_NAME, "[Class_Initialize]"
-
-    Set mRibbonState = New clsRibbonState
-    Set mOpportunityState = New clsOpportunityState
-    Set mChartState = New clsChartState
-    Set mFileState = New clsFileState
+    ' NO crear subestados aquí - se inyectan mediante Initialize()
 End Sub
 
 Private Sub Class_Terminate()
     LogInfo MODULE_NAME, "[Class_Terminate]"
 
+    ' Solo liberar referencias (NO poseemos subestados, solo referencias compartidas)
     Set mRibbonState = Nothing
     Set mOpportunityState = Nothing
     Set mChartState = Nothing
     Set mFileState = Nothing
     Set mRibbon = Nothing
+End Sub
+
+'@Description: Inicializa el coordinador con referencias a subestados (Dependency Injection)
+'@Note: Todos los parámetros son opcionales (Nothing es un estado válido)
+'@Param ribbonState: Instancia de clsRibbonState (creada y poseída por clsRibbon)
+'@Param opportunityState: Instancia de clsOpportunityState (creada y poseída por clsOpportunitiesMgr)
+'@Param fileState: Instancia de clsFileState (creada y poseída por clsFileManager)
+'@Param chartState: Instancia de clsChartState (creada y poseída por clsChartMgr)
+Public Sub Initialize(Optional ribbonState As clsRibbonState = Nothing, _
+                      Optional opportunityState As clsOpportunityState = Nothing, _
+                      Optional fileState As clsFileState = Nothing, _
+                      Optional chartState As clsChartState = Nothing)
+    On Error GoTo ErrHandler
+
+    ' Inyectar referencias a subestados
+    Set mRibbonState = ribbonState
+    Set mOpportunityState = opportunityState
+    Set mFileState = fileState
+    Set mChartState = chartState
+
+    LogInfo MODULE_NAME, "[Initialize] Referencias inyectadas: " & _
+            "Ribbon=" & Not (ribbonState Is Nothing) & ", " & _
+            "Opportunity=" & Not (opportunityState Is Nothing) & ", " & _
+            "File=" & Not (fileState Is Nothing) & ", " & _
+            "Chart=" & Not (chartState Is Nothing)
+
+    Exit Sub
+ErrHandler:
+    LogCurrentError MODULE_NAME, "[Initialize]"
 End Sub
 
 ' ==========================================

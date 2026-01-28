@@ -73,38 +73,43 @@ Private Sub Class_Initialize()
 
     LogInfo MODULE_NAME, "[Class_Initialize] - Iniciando aplicacion"
 
-    ' ESTADO CENTRALIZADO (crear primero para inyectar en otros componentes)
-    Set mApplicationState = New clsApplicationState
-
     ' INFRAESTRUCTURA
     Set mChartManager = New clsChartMgr
-
     Set mEventDispatcher = New clsEventDispatcher
 
+    ' DOMINIO - Crear managers (ellos crean sus estados internamente)
+    Set mFileMgr = New clsFileManager
+    Set mOpportunities = New clsOpportunitiesMgr
+    Set mOpportunities.FileManager = mFileMgr
+
+    ' INTERFAZ - Crear Ribbon (crea RibbonState internamente)
+    Set mRibbon = New clsRibbon
+
+    ' ESTADO CENTRALIZADO - Inyectar referencias a subestados (Dependency Injection)
+    Set mApplicationState = New clsApplicationState
+    mApplicationState.Initialize ribbonState:=mRibbon.State, _
+                                 opportunityState:=mOpportunities.State, _
+                                 fileState:=mFileMgr.State, _
+                                 chartState:=mChartManager.State
+    mApplicationState.SetRibbon mRibbon
+
+    ' GESTOR DE EVENTOS DE INFRAESTRUCTURA
     Set mEvMgrInfrastructure = New clsEventsMgrInfrastructure
     Call mEvMgrInfrastructure.Initialize(mRibbon, mChartManager)
 
-    ' DOMINIO
-    Set mFileMgr = New clsFileManager
-
-    Set mOpportunities = New clsOpportunitiesMgr
-    ' Inyectar dependencia de FileManager
-    Set mOpportunities.FileManager = mFileMgr
-
-    ' SERVICIOS DE NIVEL DE DOMINIO (crean eventos y generan logica "de negocio")
+    ' SERVICIOS DE MONITOREO
     Set mFSMonitoringCoord = New clsFSMonitoringCoord
     mFSMonitoringCoord.IniciarMonitoreo mOpportunities.Conf.oDicFoldersToWatch
 
+    ' MEDIADOR DE EVENTOS DE DOMINIO - Inyectar ApplicationState
     Set mEvMediatorDomain = New clsEventsMediatorDomain
-    Call mEvMediatorDomain.Initialize(mFSMonitoringCoord, mOpportunities, mRibbon, mFileMgr)
+    Call mEvMediatorDomain.Initialize(mFSMonitoringCoord, _
+                                      mOpportunities, _
+                                      mRibbon, _
+                                      mFileMgr, _
+                                      mApplicationState)
 
-    ' INTERFAZ
-    Set mRibbon = New clsRibbon
-
-    ' Conectar ApplicationState con Ribbon para invalidación de controles
-    mApplicationState.SetRibbon mRibbon
-
-    LogInfo MODULE_NAME, "[Class_Initialize] - inicializaci?n completada"
+    LogInfo MODULE_NAME, "[Class_Initialize] - inicializacion completada"
     
     Exit Sub
 ErrHandler:

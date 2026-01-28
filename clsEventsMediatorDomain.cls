@@ -19,11 +19,16 @@ Attribute mFSMonitoringCoord.VB_VarHelpID = -1
 Private WithEvents mOpportunities As clsOpportunitiesMgr
 Attribute mOpportunities.VB_VarHelpID = -1
 
+' NUEVO: Escuchar eventos de subestados
+Private WithEvents mOpportunityState As clsOpportunityState
+Attribute mOpportunityState.VB_VarHelpID = -1
+
 Private mRibbon As clsRibbon
 Private mFileMgr As clsFileManager
+Private mApplicationState As clsApplicationState
 
 '--------------------------------------------------------------
-' Inicialización
+' Inicializaciï¿½n
 '--------------------------------------------------------------
 Private Sub Class_Initialize()
     LogInfo MODULE_NAME, "[Class_Initialize]"
@@ -38,17 +43,24 @@ End Sub
 Public Sub Initialize(oFSMonitoringCoord As clsFSMonitoringCoord, _
                 oOpportunities As clsOpportunitiesMgr, _
                 oRibbon As clsRibbon, _
-                oFileMgr As clsFileManager)
+                oFileMgr As clsFileManager, _
+                oApplicationState As clsApplicationState)
     On Error GoTo ErrHandler
-    
+
     Set mRibbon = oRibbon
-    
+
     Set mFileMgr = oFileMgr
-    
+
     Set mFSMonitoringCoord = oFSMonitoringCoord
-    
+
     Set mOpportunities = oOpportunities
-    
+
+    ' NUEVO: Guardar referencia a ApplicationState y escuchar eventos de subestados
+    Set mApplicationState = oApplicationState
+    Set mOpportunityState = oOpportunities.State
+
+    LogInfo MODULE_NAME, "[Initialize] Mediador configurado con ApplicationState y subestados"
+
     Exit Sub
 ErrHandler:
     LogCurrentError MODULE_NAME, "[Initialize]"
@@ -57,20 +69,23 @@ End Sub
 
 Public Sub Terminate()
     On Error GoTo ErrHandler
-    
+
+    ' Liberar referencias WithEvents primero
+    Set mOpportunityState = Nothing
     Set mOpportunities = Nothing
-    
     Set mFSMonitoringCoord = Nothing
-    
+
+    ' Luego referencias normales
+    Set mApplicationState = Nothing
     Set mFileMgr = Nothing
-    
     Set mRibbon = Nothing
-    
+
     Exit Sub
 ErrHandler:
     LogCurrentError MODULE_NAME, "[Terminate]"
     Err.Raise Err.Number, MODULE_NAME & " [Terminate]", _
-              "Error finalizando aplicación: " & Err.Description
+              "Error finalizando aplicacion: " & Err.Description
+End Sub
 End Sub
 
 ' ==================================================================
@@ -89,7 +104,7 @@ Private Sub mOpportunities_OpportunityCollectionUpdate(ByVal cambios As String)
         LogDebug MODULE_NAME, "[mOpportunities_OpportunityCollectionUpdate] - Ribbon invalidado"
     End If
 End Sub
-'TODO: Extraer la lógica de clsFileXLS A una función (En principio se mantendrá en Celesa aplicación pero es posible que se lleve a otra clase)
+'TODO: Extraer la lï¿½gica de clsFileXLS A una funciï¿½n (En principio se mantendrï¿½ en Celesa aplicaciï¿½n pero es posible que se lleve a otra clase)
 Private Sub mOpportunities_currOpportunityChanged(ByVal Index As Long, ByVal Path As String)
     LogInfo MODULE_NAME, "[callback: clsOpportunitiesMgr currOpportunityChanged] - Oportunidad seleccionada: " & Path
     
@@ -100,7 +115,21 @@ Private Sub mOpportunities_currOpportunityChanged(ByVal Index As Long, ByVal Pat
             f.MoverAOp Path, mOpportunities.BaseFolder
         End If
     End If
-    ' (Aquí no tiene sentido invalidar el ribbon, esto no tiene nada que ver con ribbon, SOLO LÓGICA DE NEGOCIO)
+    ' (Aquï¿½ no tiene sentido invalidar el ribbon, esto no tiene nada que ver con ribbon, SOLO Lï¿½GICA DE NEGOCIO)
+End Sub
+
+'--------------------------------------------------------------
+' NUEVO: Evento de cambio de oportunidad desde OpportunityState
+'--------------------------------------------------------------
+Private Sub mOpportunityState_CurrentOpportunityChanged(op As clsOpportunity, index As Long)
+    LogInfo MODULE_NAME, "[callback: OpportunityState CurrentOpportunityChanged] - Index=" & index
+
+    ' Llamar a ApplicationState para coordinar estados
+    If Not mApplicationState Is Nothing Then
+        mApplicationState.OnOpportunityChanged op, index
+    End If
+
+    ' NOTA: La lÃ³gica de mover archivo se mantiene en handler viejo por compatibilidad
 End Sub
 
 ' -------------------------------------------------------------

@@ -15,6 +15,13 @@ Option Explicit
 Private Const MODULE_NAME As String = "clsOpportunityState"
 
 ' ==========================================
+' EVENTOS (para Mediadores)
+' ==========================================
+
+'@Description: Se dispara cuando cambia la oportunidad actual (solicitud de coordinación)
+Public Event CurrentOpportunityChanged(op As clsOpportunity, index As Long)
+
+' ==========================================
 ' ESTADO DE OPORTUNIDAD
 ' ==========================================
 Private mCurrentOpportunity As clsOpportunity
@@ -29,8 +36,12 @@ Private Sub Class_Initialize()
     mCurrentIndex = -1
 End Sub
 
+Private Sub Class_Terminate()
+    Set mCurrentOpportunity = Nothing
+End Sub
+
 ' ==========================================
-' PROPIEDADES PÚBLICAS
+' PROPIEDADES PÚBLICAS CON FLAGS NATURALES
 ' ==========================================
 
 '@Description: Obtiene o establece la oportunidad actual
@@ -39,7 +50,15 @@ Public Property Get CurrentOpportunity() As clsOpportunity
 End Property
 
 Friend Property Set CurrentOpportunity(op As clsOpportunity)
+    ' FLAG NATURAL: solo cambia si es diferente
+    If AreSameOpportunity(mCurrentOpportunity, op) Then Exit Property
+
     Set mCurrentOpportunity = op
+
+    LogDebug MODULE_NAME, "[CurrentOpportunity] Changed to: " & GetCurrentOpportunityLabel()
+
+    ' Generar evento para MEDIADORES (solicitud de coordinación)
+    RaiseEvent CurrentOpportunityChanged(op, mCurrentIndex)
 End Property
 
 '@Description: Obtiene o establece el índice de la oportunidad actual en la colección
@@ -48,7 +67,12 @@ Public Property Get CurrentIndex() As Long
 End Property
 
 Friend Property Let CurrentIndex(value As Long)
+    ' FLAG NATURAL: solo cambia si es diferente
+    If mCurrentIndex = value Then Exit Property
+
     mCurrentIndex = value
+
+    LogDebug MODULE_NAME, "[CurrentIndex] Changed to: " & value
 End Property
 
 ' ==========================================
@@ -66,7 +90,25 @@ Public Function GetCurrentOpportunityLabel() As String
     If mCurrentOpportunity Is Nothing Then
         GetCurrentOpportunityLabel = "(ninguna)"
     Else
+        On Error Resume Next
         GetCurrentOpportunityLabel = mCurrentOpportunity.Label
+        If Err.Number <> 0 Then GetCurrentOpportunityLabel = "(error)"
+        On Error GoTo 0
     End If
 End Function
 
+' ==========================================
+' FUNCIONES AUXILIARES DE COMPARACIÓN
+' ==========================================
+
+'@Description: Compara dos oportunidades para ver si son la misma
+Private Function AreSameOpportunity(op1 As clsOpportunity, op2 As clsOpportunity) As Boolean
+    If op1 Is Nothing And op2 Is Nothing Then
+        AreSameOpportunity = True
+    ElseIf op1 Is Nothing Or op2 Is Nothing Then
+        AreSameOpportunity = False
+    Else
+        ' Comparar por puntero de objeto
+        AreSameOpportunity = (ObjPtr(op1) = ObjPtr(op2))
+    End If
+End Function
