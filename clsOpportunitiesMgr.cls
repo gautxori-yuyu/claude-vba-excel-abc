@@ -43,6 +43,7 @@ Public Event OpportunityCollectionUpdate(ByVal cambios As String)
 ' Variables miembro
 '--------------------------------------------------------------
 Private mConfiguration As clsConfiguration
+Private mFileManager As clsFileManager            ' Gestor de sistema de archivos (inyectado)
 Private p_ColOpportunities As Collection         ' Lista de subcarpetas encontradas
 Private p_CurrOpportunity As Long                 ' Índice en p_ColOpportunities de la carpeta actual
 
@@ -76,6 +77,13 @@ Public Property Get Conf() As clsConfiguration
     Set Conf = mConfiguration
 End Property
 
+'@Description: Inyecta la dependencia de FileManager
+'@Param fm: Instancia de clsFileManager
+'@Category: Inicializacion
+Friend Property Set FileManager(fm As clsFileManager)
+    Set mFileManager = fm
+End Property
+
 Public Property Get BaseFolder() As String
     BaseFolder = mConfiguration.RutaOportunidades
 End Property
@@ -92,42 +100,48 @@ End Property
 ' @ArgumentDescriptions: (sin argumentos)
 '--------------------------------------------------------------
 Public Function actualizarColeccionOportunidades()
-    Dim fso As Object, carpeta As Object, subcarpeta As Object
-    
     Set p_ColOpportunities = New Collection      ' limpia y reinicia
 
     LogInfo MODULE_NAME, "[actualizarColeccionOportunidades] - regenerando la variable local que contiene la lista de carpetas de oportunidades"
-    On Error Resume Next
-    Set fso = CreateObject("Scripting.FileSystemObject")
-    Set carpeta = fso.GetFolder(BaseFolder)
-    On Error GoTo 0
-    
+
     Dim arr() As String, i As Long
-    
-    If carpeta Is Nothing Then
-        LogError MODULE_NAME, "[actualizarColeccionOportunidades] - No se ha definido la carpeta de oportunidades"
+
+    ' Verificar que FileManager esta disponible
+    If mFileManager Is Nothing Then
+        LogError MODULE_NAME, "[actualizarColeccionOportunidades] - FileManager no ha sido inyectado"
         GoTo Salida
     End If
-    
+
+    ' Delegar obtencion de subcarpetas al FileManager
+    Dim subcarpetas As Collection
+    Set subcarpetas = mFileManager.ListarSubcarpetas(BaseFolder)
+
+    If subcarpetas.Count = 0 Then
+        LogWarning MODULE_NAME, "[actualizarColeccionOportunidades] - No se encontraron subcarpetas en: " & BaseFolder
+        GoTo Salida
+    End If
+
+    ' Filtrar carpetas validas usando expresiones regulares (logica de dominio)
     Dim regEx As Object
     Set regEx = CreateObject("VBScript.RegExp")
-    ReDim arr(carpeta.SubFolders.Count)
-    ' Copiamos rutas en un array para poder ordenarlas
-    For Each subcarpeta In carpeta.SubFolders
+    ReDim arr(subcarpetas.Count - 1)
+
+    Dim nombreCarpeta As Variant
+    For Each nombreCarpeta In subcarpetas
         regEx.Pattern = FILEORFOLDERNAME_QUOTE_CUSTOMER_OTHER_MODEL_PATTERN
-        If Not regEx.Test(subcarpeta.Name) Then
+        If Not regEx.Test(nombreCarpeta) Then
             regEx.Pattern = FILEORFOLDERNAME_QUOTE_CUSTOMER_OTHER_PATTERN
-            If Not regEx.Test(subcarpeta.Name) Then
+            If Not regEx.Test(nombreCarpeta) Then
                 ' Nombre de carpeta mal implementado. Trata de corregirlo a partir de ofertas creadas
             End If
         End If
         regEx.Pattern = FILEORFOLDERNAME_QUOTE_CUSTOMER_OTHER_MODEL_PATTERN
-        If regEx.Test(subcarpeta.Name) Then
-            arr(i) = subcarpeta.Name
+        If regEx.Test(nombreCarpeta) Then
+            arr(i) = CStr(nombreCarpeta)
             i = i + 1
         End If
-    Next subcarpeta
-    
+    Next nombreCarpeta
+
     ' Orden numérico inverso
     If i > 0 Then
         ReDim Preserve arr(i - 1)
@@ -136,7 +150,7 @@ Public Function actualizarColeccionOportunidades()
             p_ColOpportunities.Add arr(i)
         Next i
     End If
-    
+
 Salida:
     p_CurrOpportunity = IIf(p_CurrOpportunity > 0, p_CurrOpportunity, IIf(p_ColOpportunities.Count > 0, 0, -1))
     actualizarColeccionOportunidades = arr
@@ -271,33 +285,29 @@ Private Function ExtraerClaveNumerica(ruta As String) As Double
     re.Global = True
     If re.Test(nombre) Then
         Set matches = re.Execute(nombre)
-        s = matches(matches.Count - 1).Value
+        s = matches(matches.Count - 1).value
         ExtraerClaveNumerica = CDbl(s)
         Exit Function
     End If
 ErrHandler:
     ExtraerClaveNumerica = -1E+99
 End Function
-
-'--------------------------------------------------------------
-' @Description: Crea una nueva carpeta de oportunidad, a partir de la estructura de plantilla
-'--------------------------------------------------------------
-Public Sub CreaOportunidad()
-    Dim fso As Object, carpeta As Object
-    Dim arrOps() As String, i, strSAM As String, strCustomer As String, strOpName As String, dblLastOpSeq As Double
-    
+Private Function getNextOpportunityCode()
+    Dim arrOps() As String, i, dblLastOpSeq As Double, strOpName As String
     arrOps = actualizarColeccionOportunidades
     dblLastOpSeq = 0
     For i = 0 To UBound(arrOps)
         arrOps(i) = Left(arrOps(i), 9)
-        'If CDbl(Mid(arrOps(i), 7)) > dblLastOpSeq Then dblLastOpSeq = CDbl(Mid(arrOps(i), 7))
     Next
     If UBound(arrOps) >= 0 Then dblLastOpSeq = CDbl(Mid(arrOps(0), 7))
-    strSAM = App.OpportunitiesMgr.Conf.SAM
     Do
         dblLastOpSeq = dblLastOpSeq + 1
-        strOpName = strSAM & Mid(Year(Now), 3) & String(2 - Len(Month(Now)), "0") & Month(Now) & String(3 - Len(CStr(dblLastOpSeq)), "0") & dblLastOpSeq
+        strOpName = mConfiguration.SAM & Mid(Year(Now), 3) & String(2 - Len(Month(Now)), "0") & Month(Now) & String(3 - Len(CStr(dblLastOpSeq)), "0") & dblLastOpSeq
     Loop While UBound(Filter(arrOps, strOpName)) >= 0
+    getNextOpportunityCode = strOpName
+End Function
+Private Function getCustomerNameInputBox(strOpName As String)
+    Dim strCustomer As String
     
     Dim regEx As Object, strMsg
     Set regEx = CreateObject("VBScript.RegExp")
@@ -307,25 +317,64 @@ Public Sub CreaOportunidad()
         strMsg = "NOMBRE NO VALIDO. "
     Loop While strCustomer <> "" And Not regEx.Test(strOpName & " - " & strCustomer & " - XXX")
     
-    If strCustomer <> "" Then
-        Set fso = CreateObject("Scripting.FileSystemObject")
-        On Error Resume Next
-        Set carpeta = fso.GetFolder(BaseFolder)
-        On Error GoTo 0
-        If carpeta Is Nothing Then GoTo ErrHandler
-        
-        Dim templFold As String
-        templFold = App.OpportunitiesMgr.Conf.RutaPlantillas
-        If Right(templFold, 1) = "\" Then templFold = Left(templFold, Len(templFold) - 1)
-        fso.CopyFolder templFold, _
-                       fso.BuildPath(carpeta.Path, strOpName & " - " & strCustomer & " - XXX")
+    getCustomerNameInputBox = strCustomer
+End Function
+'--------------------------------------------------------------
+' @Description: Crea una nueva carpeta de oportunidad, a partir de la estructura de plantilla
+'--------------------------------------------------------------
+Public Sub CreaOportunidad()
+    On Error GoTo ErrHandler
+
+
+    ' Verificar que FileManager esta disponible
+    If mFileManager Is Nothing Then
+        LogError MODULE_NAME, "[CreaOportunidad] - FileManager no ha sido inyectado"
+        MsgBox "Error interno: FileManager no disponible", vbCritical
+        Exit Sub
     End If
 
-    arrOps = actualizarColeccionOportunidades
+    ' Verificar que la carpeta base existe
+    If Not mFileManager.ExisteCarpeta(BaseFolder) Then
+        MsgBox "No se pudo abrir la ruta de oportunidades: " & BaseFolder, vbExclamation
+        Exit Sub
+    End If
+
+    Dim strOpName As String, strCustomer As String
+    
+    strOpName = getNextOpportunityCode
+    
+    strCustomer = getCustomerNameInputBox(strOpName)
+    
+    If strCustomer <> "" Then
+        ' Construir rutas usando FileManager
+        Dim rutaOrigen As String
+        Dim rutaDestino As String
+        Dim nombreCarpetaDestino As String
+
+        rutaOrigen = App.OpportunitiesMgr.Conf.RutaPlantillas
+        ' Eliminar barra final si existe
+        If Right(rutaOrigen, 1) = "\" Then rutaOrigen = Left(rutaOrigen, Len(rutaOrigen) - 1)
+
+        nombreCarpetaDestino = strOpName & " - " & strCustomer & " - XXX"
+        rutaDestino = mFileManager.ConstruirRuta(BaseFolder, nombreCarpetaDestino)
+
+        ' Delegar copia de carpeta al FileManager
+        If mFileManager.CopiarCarpeta(rutaOrigen, rutaDestino) Then
+            LogInfo MODULE_NAME, "[CreaOportunidad] - Nueva oportunidad creada: " & nombreCarpetaDestino
+        Else
+            LogError MODULE_NAME, "[CreaOportunidad] - Fallo al copiar carpeta de plantilla"
+            MsgBox "Error al crear la oportunidad. Revise el log para mas detalles.", vbExclamation
+        End If
+
+        ' Actualizar coleccion de oportunidades
+        actualizarColeccionOportunidades
+    End If
+    
     Exit Sub
 
 ErrHandler:
-    MsgBox "No se pudo abrir la ruta de oportunidades, " & BaseFolder & vbCrLf & Err.Description, vbExclamation
+    LogCurrentError MODULE_NAME, "[CreaOportunidad]"
+    MsgBox "No se pudo crear la oportunidad: " & Err.Description, vbExclamation
 End Sub
 
 ' ==================================================================

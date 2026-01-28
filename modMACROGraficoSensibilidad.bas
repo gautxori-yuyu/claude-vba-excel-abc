@@ -119,30 +119,29 @@ End Function
 
 ' Ejecuta la macro para cada hoja válida del libro activo
 Public Sub EjecutarGraficoEnLibroActivo()
-Attribute EjecutarGraficoEnLibroActivo.VB_ProcData.VB_Invoke_Func = " \n0"
-    On Error GoTo ManejoErrores
+    On Error GoTo ErrHandler
     Const SHEET_NAME As String = "Graficos"
     Const A4_WIDTH_POINTS As Double = 595        ' Aproximado a A4 horizontal en puntos
     Const GRAPH_ASPECT_RATIO As Double = 3 / 2   ' Proporción ancho/alto (3:2)
-    
+
+    ' Validaciones iniciales (ANTES de modificar estado)
     If Not EsValidoGenerarGrafico Then
         MsgBox "El libro no cumple los requisitos para generar el gráfico.", vbExclamation
         Exit Sub
     End If
-    
-    
+
     Dim Wb As Workbook
     Set Wb = ActiveWorkbook
-    
+
     If Wb.FileFormat = xlOpenXMLAddIn Or Wb.FileFormat = xlAddIn Then
         MsgBox "No se puede ejecutar este comando sobre un archivo de tipo complemento (.xlam o .xla).", vbCritical
         Exit Sub
     End If
-    
+
     ' Determinar hojas de datos válidas
     Dim hojasProcesar As Collection
     Set hojasProcesar = New Collection
-    
+
     Dim i As Long, c As Long: c = 1
     For i = 1 To Wb.Sheets.Count
         If Wb.Sheets(i).Type = xlWorksheet Then
@@ -154,24 +153,28 @@ Attribute EjecutarGraficoEnLibroActivo.VB_ProcData.VB_Invoke_Func = " \n0"
             End If
         End If
     Next i
-    If hojasProcesar.Count = 0 Then GoTo NoDataToProcess
+    If hojasProcesar.Count = 0 Then
+        MsgBox "No hay hojas de datos que procesar, no es un fichero de curvas de rendimiento", vbInformation
+        Exit Sub
+    End If
+
     ' En el caso de que solo se genere UNA serie de variaciones (presion, temp, etc),
     ' SOLO SE CREA UNA hoja de datos; pero para DOS O MAS SERIES, se crea una hoja adicional, con TODOS LOS DATOS.
     ' en este segundo caso SE DESCARTA LA ULTIMA HOJA
     If hojasProcesar.Count > 1 Then hojasProcesar.Remove (hojasProcesar.Count)
-    
+
     ' Verificar si existe la hoja "Graficos"
     Dim chartSheet As Worksheet
     Dim SheetExists As Boolean: SheetExists = False
     On Error Resume Next
     Set chartSheet = Wb.Sheets(SHEET_NAME)
-    On Error GoTo 0
+    On Error GoTo ErrHandler
     If Not chartSheet Is Nothing Then SheetExists = True
-    
+
     If SheetExists Then
         Dim totalShapes As Long: totalShapes = chartSheet.ChartObjects.Count
         Dim msg As String
-        
+
         If totalShapes > hojasProcesar.Count Then
             msg = "La hoja '" & SHEET_NAME & "' ya contiene " & totalShapes & " gráficos." & vbCrLf & _
                   "Esto incluye gráficos personalizados añadidos manualmente." & vbCrLf & _
@@ -180,10 +183,10 @@ Attribute EjecutarGraficoEnLibroActivo.VB_ProcData.VB_Invoke_Func = " \n0"
             msg = "La hoja '" & SHEET_NAME & "' ya existe." & vbCrLf & _
                   "¿Deseas eliminar sus gráficos y generar nuevos?"
         End If
-        
+
         Dim respuesta As VbMsgBoxResult
         respuesta = MsgBox(msg, vbQuestion + vbYesNoCancel, "Reemplazar gráficos")
-        
+
         If respuesta = vbCancel Then Exit Sub
         If respuesta = vbYes Then
             chartSheet.ChartObjects.Delete
@@ -194,10 +197,15 @@ Attribute EjecutarGraficoEnLibroActivo.VB_ProcData.VB_Invoke_Func = " \n0"
         Set chartSheet = Wb.Sheets.Add(After:=Wb.Sheets(Wb.Sheets.Count))
         chartSheet.Name = SHEET_NAME
     End If
-    
+
+    ' === GUARDAR ESTADO ORIGINAL ===
+    Dim prevScreenUpdating As Boolean
+    prevScreenUpdating = Application.ScreenUpdating
+
+    ' === MODIFICAR ESTADO PARA MEJOR RENDIMIENTO ===
     DoEvents
     Application.ScreenUpdating = False
-    
+
     ' Configurar impresión de la hoja de gráficos
     With chartSheet.PageSetup
         .PaperSize = xlPaperA4
@@ -208,14 +216,14 @@ Attribute EjecutarGraficoEnLibroActivo.VB_ProcData.VB_Invoke_Func = " \n0"
         .FitToPagesWide = 1
         .FitToPagesTall = False
     End With
-    
+
     ' Crear gráficos en la hoja "Graficos"
     Dim topOffset As Double: topOffset = 20
     Dim graficoAltura As Double: graficoAltura = (A4_WIDTH_POINTS - 40) / GRAPH_ASPECT_RATIO
     Dim espacio As Double: espacio = 30
     Dim chartObj As ChartObject
     Dim ws As Worksheet
-    
+
     For Each ws In hojasProcesar
         Call TraducirEncabezados(ws)
         Set chartObj = chartSheet.ChartObjects.Add(Left:=20, Width:=A4_WIDTH_POINTS - 40, Top:=topOffset, Height:=graficoAltura)
@@ -223,29 +231,30 @@ Attribute EjecutarGraficoEnLibroActivo.VB_ProcData.VB_Invoke_Func = " \n0"
         topOffset = topOffset + graficoAltura + espacio
     Next ws
     DoEvents
-    
+
     ' Exportar la hoja "Graficos" a PDF
     Dim rutaArchivo As String
     rutaArchivo = Wb.Path & "\" & Left(Wb.Name, InStrRev(Wb.Name, ".") - 1) & "_Graficos.pdf"
-    
+
     On Error Resume Next
     chartSheet.ExportAsFixedFormat Type:=xlTypePDF, fileName:=rutaArchivo, Quality:=xlQualityStandard
-    On Error GoTo 0
-    
-    Application.ScreenUpdating = True
-    DoEvents
-    
+    On Error GoTo ErrHandler
+
+    ' Mostrar mensaje de éxito (solo si no hubo error)
     MsgBox "Se han generado " & hojasProcesar.Count & " gráficos en la hoja '" & SHEET_NAME & "'." & vbCrLf & _
            "Además, se ha guardado un PDF en la carpeta del fichero Excel, con el nombre:" & vbCrLf & Mid(rutaArchivo, InStrRev(rutaArchivo, "\") + 1) & vbCrLf & vbCrLf & _
            "(si se hacen cambios en la hoja de gráficos, para preservar su contenido basta con cambiar su nombre)", vbInformation
+
+CleanUp:
+    ' === RESTAURAR ESTADO ORIGINAL ===
+    Application.ScreenUpdating = prevScreenUpdating
+    DoEvents
     Exit Sub
-NoDataToProcess:
-    Application.ScreenUpdating = True
-    MsgBox ("No hay hojas de datos que procesar, no es un fichero de curvas de rendimiento")
-    Exit Sub
-ManejoErrores:
-    Application.ScreenUpdating = True
+
+ErrHandler:
+    LogError MODULE_NAME, "[EjecutarGraficoEnLibroActivo]", Err.Number, Err.Description
     MsgBox "Error en GenerarGraficoSensibilidad: " & Err.Description, vbCritical
+    Resume CleanUp
 End Sub
 
 Private Sub GenerarGraficoSensibilidad(ws As Worksheet, chartObj As ChartObject)
@@ -261,14 +270,14 @@ Private Sub GenerarGraficoSensibilidad(ws As Worksheet, chartObj As ChartObject)
     
     ' Identificar columnas con valores que varían (excepto encabezados)
     For col = 1 To lastCol
-        If InStr(ws.Cells(1, col).Value, "Agua") = 0 Then
+        If InStr(ws.Cells(1, col).value, "Agua") = 0 Then
             Dim firstVal As Variant
             ' Buscar el primer valor numérico en la columna para usar como referencia
             firstVal = Empty
             Dim filaTemp As Long
             For filaTemp = 2 To ws.Cells(ws.Rows.Count, col).End(xlUp).Row
-                If IsNumeric(ws.Cells(filaTemp, col).Value) Then
-                    firstVal = CDbl(ws.Cells(filaTemp, col).Value)
+                If IsNumeric(ws.Cells(filaTemp, col).value) Then
+                    firstVal = CDbl(ws.Cells(filaTemp, col).value)
                     Exit For
                 End If
             Next filaTemp
@@ -277,9 +286,9 @@ Private Sub GenerarGraficoSensibilidad(ws As Worksheet, chartObj As ChartObject)
             If IsEmpty(firstVal) Then GoTo SiguienteColumna
             
             For i = filaTemp + 1 To ws.Cells(ws.Rows.Count, col).End(xlUp).Row
-                If IsNumeric(ws.Cells(i, col).Value) Then
+                If IsNumeric(ws.Cells(i, col).value) Then
                     Dim currentVal As Double
-                    currentVal = CDbl(ws.Cells(i, col).Value)
+                    currentVal = CDbl(ws.Cells(i, col).value)
                     If Abs(currentVal - firstVal) > 0.00000001 Then
                         countVar = countVar + 1
                         variableCols(countVar) = col
@@ -342,9 +351,9 @@ SiguienteColumna:
     ' Títulos de ejes
     With chartObj.Chart
         .HasTitle = True
-        .ChartTitle.Text = "Correlation to " & Trim(Split(ws.Cells(1, xCol).Value, "(")(0))
+        .ChartTitle.Text = "Correlation to " & Trim(Split(ws.Cells(1, xCol).value, "(")(0))
         .Axes(xlCategory).HasTitle = True
-        .Axes(xlCategory).AxisTitle.Text = ws.Cells(1, xCol).Value
+        .Axes(xlCategory).AxisTitle.Text = ws.Cells(1, xCol).value
         If Not IsEmpty(group1) Then
             .Axes(xlValue).HasTitle = True
             .Axes(xlValue).AxisTitle.Text = GenerarTituloEjeVertical(ws, group1)
@@ -470,8 +479,8 @@ Private Sub TraducirEncabezados(ws As Worksheet)
     For col = 1 To ws.Cells(1, ws.Columns.Count).End(xlToLeft).Column
         Set celda = ws.Cells(1, col)
         For i = LBound(reemplazos) To UBound(reemplazos)
-            If InStr(1, celda.Value, reemplazos(i)(0), vbTextCompare) > 0 Then
-                celda.Value = Replace(celda.Value, reemplazos(i)(0), reemplazos(i)(1))
+            If InStr(1, celda.value, reemplazos(i)(0), vbTextCompare) > 0 Then
+                celda.value = Replace(celda.value, reemplazos(i)(0), reemplazos(i)(1))
             End If
         Next i
     Next col
@@ -500,18 +509,18 @@ Private Sub AgruparColumnasPorVariacion(ws As Worksheet, columnas() As Long, ByR
     
     ' Calcular variaciones y etiquetas
     For i = LBound(columnas) To UBound(columnas)
-        minVal = CDbl(ws.Cells(2, columnas(i)).Value)
+        minVal = CDbl(ws.Cells(2, columnas(i)).value)
         maxVal = minVal
         For r = 3 To lastRow
-            If IsNumeric(ws.Cells(r, columnas(i)).Value) Then
+            If IsNumeric(ws.Cells(r, columnas(i)).value) Then
                 Dim valor As Double
-                valor = Round(CDbl(ws.Cells(r, columnas(i)).Value), 8)
+                valor = Round(CDbl(ws.Cells(r, columnas(i)).value), 8)
                 If valor < Round(minVal, 8) Then minVal = valor
                 If valor > Round(maxVal, 8) Then maxVal = valor
             End If
         Next r
         variaciones(i) = Round(maxVal - minVal, 8)
-        etiquetas(i) = ExtraerTextoEnParentesis(ws.Cells(1, columnas(i)).Value)
+        etiquetas(i) = ExtraerTextoEnParentesis(ws.Cells(1, columnas(i)).value)
     Next i
     
     ' Agrupar por etiquetas idénticas
@@ -557,7 +566,7 @@ Private Sub AddGroupSeriesToChart(chartObj As Chart, ws As Worksheet, xCol As Lo
         With chartObj.SeriesCollection.NewSeries
             .XValues = ws.Range(ws.Cells(2, xCol), ws.Cells(lastRow, xCol))
             .Values = ws.Range(ws.Cells(2, groupCols(i)), ws.Cells(lastRow, groupCols(i)))
-            .Name = ws.Cells(1, groupCols(i)).Value
+            .Name = ws.Cells(1, groupCols(i)).value
             .ChartType = xlLineMarkers
             .AxisGroup = IIf(useSecondaryAxis, xlSecondary, xlPrimary)
             .Format.Line.ForeColor.RGB = palette((iSeriesNr Mod UBound(palette)) + 1)
@@ -581,15 +590,15 @@ Private Sub AjustarEjeDesdeDatos(axis As axis, ws As Worksheet, cols() As Long)
     On Error GoTo ManejoErrores
     Dim minVal As Double: minVal = WorksheetFunction.Max(ws.Cells.Rows.Count, 1)
     Dim maxVal As Double: maxVal = WorksheetFunction.Min(ws.Cells.Rows.Count, 1)
-    Dim i As Long, r As Long, Value As Variant
+    Dim i As Long, r As Long, value As Variant
     Dim lastRow As Long: lastRow = ws.Cells(ws.Rows.Count, cols(0)).End(xlUp).Row
     
     For i = LBound(cols) To UBound(cols)
         For r = 2 To lastRow
-            Value = ws.Cells(r, cols(i)).Value
-            If IsNumeric(Value) Then
-                If Value < minVal Then minVal = Value
-                If Value > maxVal Then maxVal = Value
+            value = ws.Cells(r, cols(i)).value
+            If IsNumeric(value) Then
+                If value < minVal Then minVal = value
+                If value > maxVal Then maxVal = value
             End If
         Next r
     Next i
@@ -632,7 +641,7 @@ Private Function GenerarTituloEjeVertical(ws As Worksheet, cols() As Long) As St
     Dim parte As String
     
     For i = LBound(cols) To UBound(cols)
-        texto = ws.Cells(1, cols(i)).Value
+        texto = ws.Cells(1, cols(i)).value
         inicio = InStr(texto, "(")
         fin = InStr(texto, ")")
         If inicio > 0 And fin > inicio Then
@@ -750,7 +759,7 @@ Private Function ConcatenarTextosEntreParentesis(ws As Worksheet, cols() As Long
     Set dictUniq = CreateObject("Scripting.Dictionary")
     
     For i = LBound(cols) To UBound(cols)
-        texto = Trim(ws.Cells(1, cols(i)).Value)
+        texto = Trim(ws.Cells(1, cols(i)).value)
         If Len(texto) > 0 Then
             texto = ExtraerTextoEnParentesis(texto)
             If Len(texto) > 0 Then
@@ -771,10 +780,10 @@ Private Function ConcatenarTextosEntreParentesis(ws As Worksheet, cols() As Long
 End Function
 
 ' Redondeos a múltiplos de cinco
-Private Function RoundDown(Value As Double, base As Long) As Double
-    RoundDown = base * Int(Value / base)
+Private Function RoundDown(value As Double, base As Long) As Double
+    RoundDown = base * Int(value / base)
 End Function
 
-Private Function RoundUp(Value As Double, base As Long) As Double
-    RoundUp = base * -Int(-Value / base)
+Private Function RoundUp(value As Double, base As Long) As Double
+    RoundUp = base * -Int(-value / base)
 End Function

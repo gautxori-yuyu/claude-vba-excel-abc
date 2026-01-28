@@ -25,11 +25,13 @@ End Sub
 '@Returns: Nothing
 '@Category: Limpieza de datos
 Public Sub LimpiarLibroYHojas(Optional ByVal Wb As Workbook = Nothing, Optional ByVal hojas As Variant = Empty)
-Attribute LimpiarLibroYHojas.VB_ProcData.VB_Invoke_Func = " \n0"
+    On Error GoTo ErrHandler
+
     Dim ws As Worksheet
     Dim hojaInicial As Worksheet
     Dim nErroresWs As Long
-    
+
+    ' Validaciones iniciales (ANTES de modificar estado)
     If Wb Is Nothing And IsEmpty(hojas) Then Exit Sub
     If IsEmpty(hojas) Then
         Set hojas = Wb.Worksheets 'Application.Transpose(Application.Transpose(wb.Worksheets))
@@ -44,17 +46,24 @@ Attribute LimpiarLibroYHojas.VB_ProcData.VB_Invoke_Func = " \n0"
             End If
         Next
      End If
-   
+
     Set hojaInicial = ActiveSheet
-    
-    ' —— Forzar recálculo completo de *todo el libro*
+
+    ' === GUARDAR ESTADO ORIGINAL ===
+    Dim prevScreenUpdating As Boolean
+    Dim prevEnableEvents As Boolean
+    prevScreenUpdating = Application.ScreenUpdating
+    prevEnableEvents = Application.EnableEvents
+
+    ' === MODIFICAR ESTADO PARA MEJOR RENDIMIENTO ===
+    Application.ScreenUpdating = False
+    Application.EnableEvents = False
+
+    ' Forzar recálculo completo de *todo el libro*
     FullRecalc
-    
-    'Application.ScreenUpdating = False
-    'Application.EnableEvents = False             ' Disable events to prevent triggering the change event recursively
-    
+
     EjecutarInspectorDeDocumentoVBA Wb
-    
+
     For Each ws In hojas
         If Not ws Is Nothing Then
             nErroresWs = ContarYListarErroresEnHoja(ws)
@@ -72,18 +81,31 @@ Attribute LimpiarLibroYHojas.VB_ProcData.VB_Invoke_Func = " \n0"
             ResetearZoomSheet ws
         End If
     Next
-    
+
     hojaInicial.Activate
-    
-    Application.EnableEvents = True
+
+    ' El siguiente paso requiere ScreenUpdating = True temporalmente para activar ventana
     Application.ScreenUpdating = True
-    
-    ' el siguiente paso requiere que la ventana del libro con las hojas a eliminar esté activa
     Wb.Activate
-    If ActiveWindow.SelectedSheets.Count = 0 Then
-    ElseIf MsgBox("¿Deseas eliminar todas las hojas del libro no seleccionadas?", vbYesNo + vbDefaultButton2) = vbYes Then
-        Call EliminarHojasNOSeleccionadas(Wb)
+
+    If ActiveWindow.SelectedSheets.Count > 0 Then
+        If MsgBox("¿Deseas eliminar todas las hojas del libro no seleccionadas?", vbYesNo + vbDefaultButton2) = vbYes Then
+            Call EliminarHojasNOSeleccionadas(Wb)
+        End If
     End If
+
+CleanUp:
+    ' === RESTAURAR ESTADO ORIGINAL ===
+    On Error Resume Next
+    Application.EnableEvents = prevEnableEvents
+    Application.ScreenUpdating = prevScreenUpdating
+    On Error GoTo 0
+    Exit Sub
+
+ErrHandler:
+    LogError MODULE_NAME, "[LimpiarLibroYHojas]", Err.Number, Err.Description
+    MsgBox "Error en limpieza de libro: " & Err.Description, vbCritical
+    Resume CleanUp
 End Sub
 ' =========================================================
 ' Función: ContarYListarErroresEnHoja
@@ -184,7 +206,7 @@ End Function
 Public Sub FormulasToValuesSheet(ByVal ws As Worksheet)
 Attribute FormulasToValuesSheet.VB_ProcData.VB_Invoke_Func = " \n0"
     If ws Is Nothing Then Exit Sub
-    ws.UsedRange.Value = ws.UsedRange.Value
+    ws.UsedRange.value = ws.UsedRange.value
     Debug.Print "[modAPPBudgetQuotesUtilids FormulasToValuesAllSheets] - aplicada a: " & ws.Name
 End Sub
 

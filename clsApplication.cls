@@ -77,6 +77,8 @@ Private Sub Class_Initialize()
     Set mFileMgr = New clsFileManager
 
     Set mOpportunities = New clsOpportunitiesMgr
+    ' Inyectar dependencia de FileManager
+    Set mOpportunities.FileManager = mFileMgr
 
     ' SERVICIOS DE NIVEL DE DOMINIO (crean eventos y generan logica "de negocio")
     Set mFSMonitoringCoord = New clsFSMonitoringCoord

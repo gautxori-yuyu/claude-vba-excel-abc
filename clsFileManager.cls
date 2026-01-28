@@ -311,6 +311,157 @@ Public Function GetTrackedFilesInfo() As String
 End Function
 
 ' ==================================================================
+' METODOS PUBLICOS - SISTEMA DE ARCHIVOS
+' ==================================================================
+
+'@Description: Lista las subcarpetas de una ruta base
+'@Param rutaBase: Ruta del directorio a explorar
+'@Returns: Collection de nombres de subcarpetas (solo nombres, no rutas completas)
+'@Note: Devuelve Collection vacia si la ruta no existe o no es accesible
+'@Category: Sistema de archivos
+Public Function ListarSubcarpetas(rutaBase As String) As Collection
+    Dim resultado As Collection
+    Set resultado = New Collection
+
+    On Error GoTo ErrHandler
+
+    Dim fso As Object
+    Dim carpeta As Object
+    Dim subcarpeta As Object
+
+    Set fso = CreateObject("Scripting.FileSystemObject")
+
+    If Not fso.FolderExists(rutaBase) Then
+        LogWarning MODULE_NAME, "[ListarSubcarpetas] - Carpeta no existe: " & rutaBase
+        Set ListarSubcarpetas = resultado
+        Exit Function
+    End If
+
+    Set carpeta = fso.GetFolder(rutaBase)
+
+    For Each subcarpeta In carpeta.SubFolders
+        resultado.Add subcarpeta.Name
+    Next subcarpeta
+
+    LogDebug MODULE_NAME, "[ListarSubcarpetas] - Encontradas " & resultado.Count & " subcarpetas en: " & rutaBase
+
+    Set ListarSubcarpetas = resultado
+    Exit Function
+
+ErrHandler:
+    LogError MODULE_NAME, "[ListarSubcarpetas] Error listando carpetas", Err.Number, Err.Description
+    Set ListarSubcarpetas = resultado
+End Function
+
+'@Description: Copia una carpeta completa de origen a destino
+'@Param rutaOrigen: Ruta de la carpeta a copiar
+'@Param rutaDestino: Ruta destino donde se copiara la carpeta
+'@Returns: True si la copia fue exitosa, False en caso contrario
+'@Category: Sistema de archivos
+Public Function CopiarCarpeta(rutaOrigen As String, rutaDestino As String) As Boolean
+    On Error GoTo ErrHandler
+
+    Dim fso As Object
+    Set fso = CreateObject("Scripting.FileSystemObject")
+
+    If Not fso.FolderExists(rutaOrigen) Then
+        LogError MODULE_NAME, "[CopiarCarpeta] - Carpeta origen no existe: " & rutaOrigen
+        CopiarCarpeta = False
+        Exit Function
+    End If
+
+    If fso.FolderExists(rutaDestino) Then
+        LogWarning MODULE_NAME, "[CopiarCarpeta] - Carpeta destino ya existe: " & rutaDestino
+        CopiarCarpeta = False
+        Exit Function
+    End If
+
+    fso.CopyFolder rutaOrigen, rutaDestino
+
+    LogInfo MODULE_NAME, "[CopiarCarpeta] - Carpeta copiada exitosamente: " & rutaOrigen & " -> " & rutaDestino
+    CopiarCarpeta = True
+    Exit Function
+
+ErrHandler:
+    LogError MODULE_NAME, "[CopiarCarpeta] Error copiando carpeta", Err.Number, Err.Description
+    CopiarCarpeta = False
+End Function
+
+'@Description: Verifica si una carpeta existe
+'@Param ruta: Ruta de la carpeta a verificar
+'@Returns: True si la carpeta existe, False en caso contrario
+'@Category: Sistema de archivos
+Public Function ExisteCarpeta(ruta As String) As Boolean
+    On Error GoTo ErrHandler
+
+    Dim fso As Object
+    Set fso = CreateObject("Scripting.FileSystemObject")
+
+    ExisteCarpeta = fso.FolderExists(ruta)
+    Exit Function
+
+ErrHandler:
+    LogError MODULE_NAME, "[ExisteCarpeta] Error verificando existencia", Err.Number, Err.Description
+    ExisteCarpeta = False
+End Function
+
+'@Description: Construye una ruta completa a partir de componentes
+'@Param componentes: Array de componentes de ruta a combinar
+'@Returns: String con la ruta combinada correctamente
+'@Category: Sistema de archivos
+'@Example: ConstruirRuta("C:\Base", "Subfolder", "File.txt") -> "C:\Base\Subfolder\File.txt"
+Public Function ConstruirRuta(ParamArray componentes() As Variant) As String
+    On Error GoTo ErrHandler
+
+    Dim fso As Object
+    Set fso = CreateObject("Scripting.FileSystemObject")
+
+    Dim rutaFinal As String
+    Dim i As Long
+
+    If UBound(componentes) < 0 Then
+        ConstruirRuta = ""
+        Exit Function
+    End If
+
+    rutaFinal = CStr(componentes(0))
+
+    For i = 1 To UBound(componentes)
+        rutaFinal = fso.BuildPath(rutaFinal, CStr(componentes(i)))
+    Next i
+
+    ConstruirRuta = rutaFinal
+    Exit Function
+
+ErrHandler:
+    LogError MODULE_NAME, "[ConstruirRuta] Error construyendo ruta", Err.Number, Err.Description
+    ConstruirRuta = ""
+End Function
+
+'@Description: Obtiene el objeto Folder de FSO para una ruta
+'@Param ruta: Ruta de la carpeta
+'@Returns: Objeto Folder o Nothing si no existe
+'@Category: Sistema de archivos
+Public Function ObtenerCarpeta(ruta As String) As Object
+    On Error GoTo ErrHandler
+
+    Dim fso As Object
+    Set fso = CreateObject("Scripting.FileSystemObject")
+
+    If Not fso.FolderExists(ruta) Then
+        Set ObtenerCarpeta = Nothing
+        Exit Function
+    End If
+
+    Set ObtenerCarpeta = fso.GetFolder(ruta)
+    Exit Function
+
+ErrHandler:
+    LogError MODULE_NAME, "[ObtenerCarpeta] Error obteniendo carpeta", Err.Number, Err.Description
+    Set ObtenerCarpeta = Nothing
+End Function
+
+' ==================================================================
 ' IMPLEMENTACION DE EVENTOS: CALLBACKS
 ' ==================================================================
 
