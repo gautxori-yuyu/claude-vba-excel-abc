@@ -149,8 +149,8 @@ Option Explicit
 Private Const MODULE_NAME As String = "mod_ConstantsGlobals"
 
 ' constantes de compilación
-#Const RubberduckTest = True
-#Const DebugMode = True
+#Const RubberduckTest = 1 'True
+#Const DebugMode = 1 'True
 
 ' Constantes para organizar la configuración
 Public Const APP_NAME As String = "ABC_ofertas maquina especial"
