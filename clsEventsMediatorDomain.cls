@@ -23,6 +23,9 @@ Attribute mOpportunities.VB_VarHelpID = -1
 Private WithEvents mOpportunityState As clsOpportunityState
 Attribute mOpportunityState.VB_VarHelpID = -1
 
+Private WithEvents mFileState As clsFileState
+Attribute mFileState.VB_VarHelpID = -1
+
 Private mRibbon As clsRibbon
 Private mFileMgr As clsFileManager
 Private mApplicationState As clsApplicationState
@@ -58,6 +61,7 @@ Public Sub Initialize(oFSMonitoringCoord As clsFSMonitoringCoord, _
     ' NUEVO: Guardar referencia a ApplicationState y escuchar eventos de subestados
     Set mApplicationState = oApplicationState
     Set mOpportunityState = oOpportunities.State
+    Set mFileState = oFileMgr.State
 
     LogInfo MODULE_NAME, "[Initialize] Mediador configurado con ApplicationState y subestados"
 
@@ -71,6 +75,7 @@ Public Sub Terminate()
     On Error GoTo ErrHandler
 
     ' Liberar referencias WithEvents primero
+    Set mFileState = Nothing
     Set mOpportunityState = Nothing
     Set mOpportunities = Nothing
     Set mFSMonitoringCoord = Nothing
@@ -86,7 +91,6 @@ ErrHandler:
     Err.Raise Err.Number, MODULE_NAME & " [Terminate]", _
               "Error finalizando aplicacion: " & Err.Description
 End Sub
-End Sub
 
 ' ==================================================================
 ' GESTION DE EVENTOS
@@ -97,7 +101,13 @@ End Sub
 ' -------------------------------------------------------------
 Private Sub mOpportunities_OpportunityCollectionUpdate(ByVal cambios As String)
     LogInfo MODULE_NAME, "[callback: clsOpportunitiesMgr OpportunityCollectionUpdate] - cambios detectados: " & cambios
-    
+
+    ' Llamar a ApplicationState para coordinar estados
+    If Not mApplicationState Is Nothing Then
+        mApplicationState.OnOpportunityCollectionChanged cambios
+    End If
+
+    ' MANTENER invalidación directa temporalmente por compatibilidad
     If Not mRibbon Is Nothing Then
         'mRibbon.InvalidarRibbon
         mRibbon.InvalidarControl "ddlOportunidades"
@@ -130,6 +140,29 @@ Private Sub mOpportunityState_CurrentOpportunityChanged(op As clsOpportunity, in
     End If
 
     ' NOTA: La lógica de mover archivo se mantiene en handler viejo por compatibilidad
+End Sub
+
+'--------------------------------------------------------------
+' NUEVO: Evento de cambio de archivo desde FileState
+'--------------------------------------------------------------
+Private Sub mFileState_CurrentFileChanged(f As clsFileXLS, isOpportunityFile As Boolean)
+    Dim fileName As String
+    If f Is Nothing Then
+        fileName = "(ninguno)"
+    Else
+        On Error Resume Next
+        fileName = f.Name
+        If Err.Number <> 0 Then fileName = "(error)"
+        On Error GoTo 0
+    End If
+
+    LogInfo MODULE_NAME, "[callback: FileState CurrentFileChanged] - File=" & fileName & _
+                         ", IsOpportunity=" & isOpportunityFile
+
+    ' Llamar a ApplicationState para coordinar estados
+    If Not mApplicationState Is Nothing Then
+        mApplicationState.OnFileChanged f
+    End If
 End Sub
 
 ' -------------------------------------------------------------

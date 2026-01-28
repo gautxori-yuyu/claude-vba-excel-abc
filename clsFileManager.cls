@@ -96,8 +96,31 @@ End Sub
 '@Description: Obtiene el archivo Excel activo
 '@Note: Devuelve clsFileXLS o Nothing si no hay archivo activo o no es Excel
 Public Property Get ActiveExcelFile() As clsFileXLS
-    Set ActiveExcelFile = GetOrTrackWorkbook(mXlApp.ActiveWorkbook)
+    Dim f As clsFileXLS
+    Set f = GetOrTrackWorkbook(mXlApp.ActiveWorkbook)
+
+    ' Actualizar estado si cambió
+    If Not AreSameFile(mFileState.CurrentFile, f) Then
+        Set mFileState.CurrentFile = f
+        ' El estado genera evento CurrentFileChanged
+    End If
+
+    Set ActiveExcelFile = f
 End Property
+
+'@Description: Compara dos archivos para ver si son el mismo
+Private Function AreSameFile(f1 As clsFileXLS, f2 As clsFileXLS) As Boolean
+    On Error Resume Next
+    If f1 Is Nothing And f2 Is Nothing Then
+        AreSameFile = True
+    ElseIf f1 Is Nothing Or f2 Is Nothing Then
+        AreSameFile = False
+    Else
+        AreSameFile = (f1.ObjectKey = f2.ObjectKey)
+        If Err.Number <> 0 Then AreSameFile = False
+    End If
+    On Error GoTo 0
+End Function
 
 ' ==================================================================
 ' M?TODOS P?BLICOS - TRACKING
@@ -487,5 +510,19 @@ End Sub
 Private Sub mXlApp_WorkbookBeforeClose(ByVal Wb As Workbook, Cancel As Boolean)
     LogDebug MODULE_NAME, "[mXlApp_WorkbookBeforeClose] " & Wb.Name
     UntrackWorkbook Wb
+End Sub
+
+'@Description: Callback cuando se activa un workbook (cambio de ventana activa)
+Private Sub mXlApp_WindowActivate(ByVal Wb As Workbook, ByVal Wn As Window)
+    LogDebug MODULE_NAME, "[mXlApp_WindowActivate] " & Wb.Name
+
+    Dim f As clsFileXLS
+    Set f = GetOrTrackWorkbook(Wb)
+
+    ' Actualizar estado si cambió
+    If Not AreSameFile(mFileState.CurrentFile, f) Then
+        Set mFileState.CurrentFile = f
+        ' El estado genera evento CurrentFileChanged para mediadores
+    End If
 End Sub
 

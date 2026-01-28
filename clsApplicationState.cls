@@ -395,3 +395,70 @@ Private Function AreSameChart(ch1 As Chart, ch2 As Chart) As Boolean
     On Error GoTo 0
 End Function
 
+' ==========================================
+' COORDINACIÓN DE EVENTOS (llamados por Mediadores)
+' ==========================================
+
+'@Description: Coordinación cuando cambia la oportunidad actual (llamado desde EventsMediatorDomain)
+'@Param op: Nueva oportunidad seleccionada
+'@Param index: Índice en la colección
+Friend Sub OnOpportunityChanged(op As clsOpportunity, index As Long)
+    On Error Resume Next
+
+    LogDebug MODULE_NAME, "[OnOpportunityChanged] op=" & IIf(op Is Nothing, "(Nothing)", op.Label) & _
+                         ", index=" & index
+
+    ' Actualizar índice en OpportunityState si hace falta
+    If mOpportunityState.CurrentIndex <> index Then
+        mOpportunityState.CurrentIndex = index
+    End If
+
+    ' Sincronizar ribbon si hace falta
+    SyncRibbonAfterOpportunityChange
+
+    ' Invalidar controles relacionados con oportunidades
+    InvalidateOpportunityControls
+
+    On Error GoTo 0
+End Sub
+
+'@Description: Coordinación cuando cambia el archivo activo (llamado desde EventsMediatorDomain)
+'@Param f: Nuevo archivo activo
+Friend Sub OnFileChanged(f As clsFileXLS)
+    On Error Resume Next
+
+    Dim fileName As String
+    If f Is Nothing Then
+        fileName = "(ninguno)"
+    Else
+        fileName = f.Name
+        If Err.Number <> 0 Then fileName = "(error)"
+    End If
+
+    LogDebug MODULE_NAME, "[OnFileChanged] file=" & fileName
+
+    ' Sincronizar oportunidad desde archivo si aplica
+    SyncOpportunityFromFile f
+
+    ' Invalidar controles relacionados con archivos
+    InvalidateFileControls
+
+    On Error GoTo 0
+End Sub
+
+'@Description: Coordinación cuando cambia la colección de oportunidades (llamado desde EventsMediatorDomain)
+'@Param changeType: Tipo de cambio (agregado, eliminado, renombrado)
+Friend Sub OnOpportunityCollectionChanged(changeType As String)
+    On Error Resume Next
+
+    LogDebug MODULE_NAME, "[OnOpportunityCollectionChanged] changeType=" & changeType
+
+    ' Cuando cambia la colección, invalidar el dropdown de oportunidades
+    If Not mRibbon Is Nothing Then
+        mRibbon.InvalidateControl "ddlOportunidades"
+        mRibbon.InvalidateControl "dropdownOportunidades"
+    End If
+
+    On Error GoTo 0
+End Sub
+
