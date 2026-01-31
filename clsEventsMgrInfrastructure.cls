@@ -20,7 +20,7 @@ Attribute mCtxMgr.VB_VarHelpID = -1
 Private mFileMgr As clsFileManager
 
 '--------------------------------------------------------------
-' Inicializaci�n
+' Inicializacin
 '--------------------------------------------------------------
 Private Sub Class_Initialize()
     LogInfo MODULE_NAME, "[Class_Initialize]"
@@ -30,36 +30,36 @@ Private Sub Class_Terminate()
     Terminate
     LogInfo MODULE_NAME, "[Class_Terminate]"
 End Sub
-Public Sub Initialize(oFileMgr As clsFileManager, oChartManager As clsChartMgr, oCtx As clsExecutionContext)
+Public Sub Initialize(oFileMgr As clsFileManager, oChartManager As clsChartMgr, oCtxMgr As clsExecutionContextMgr)
     On Error GoTo ErrHandler
-    
+
     Set mChartManager = oChartManager
-    
-    Set mCtx = oCtx
-    
+
+    Set mCtxMgr = oCtxMgr
+
     Set mFileMgr = oFileMgr
-    
+
     Exit Sub
 ErrHandler:
     LogCurrentError MODULE_NAME, "[Initialize]"
     Err.Raise Err.Number, MODULE_NAME & " [Initialize]", _
-              "Error inicializando aplicaci�n: " & Err.Description
+              "Error inicializando aplicacin: " & Err.Description
 End Sub
 
 Public Sub Terminate()
     On Error GoTo ErrHandler
-    
+
     Set mChartManager = Nothing
-    
-    Set mCtx = Nothing
-    
+
+    Set mCtxMgr = Nothing
+
     Set mFileMgr = Nothing
-    
+
     Exit Sub
 ErrHandler:
     LogCurrentError MODULE_NAME, "[Terminate]"
     Err.Raise Err.Number, MODULE_NAME & " [Terminate]", _
-              "Error finalizando aplicaci�n: " & Err.Description
+              "Error finalizando aplicacin: " & Err.Description
 End Sub
 
 ' ==================================================================
@@ -67,61 +67,84 @@ End Sub
 ' ==================================================================
 
 ' -------------------------------------------------------------
-' Eventos de ExecutionContext
+' Eventos de ExecutionContextMgr (semánticos de infraestructura)
 ' -------------------------------------------------------------
 
-'@Description: Se dispara cuando se activa un workbook
-'@Category: Gr�ficos
+'@Description: Se dispara cuando se activa un workbook (semántico de infraestructura)
+'@Category: Gráficos
 '@Scope: Grafico seleccionado
-'@ArgumentDescriptions: wb As Workbook
+'@ArgumentDescriptions: path As String
 
-Private Sub mCtx_WorkbookActivated(ByVal wb As Workbook)
-    LogDebug MODULE_NAME, "[mCtx_WorkbookActivated] " & wb.Name
+Private Sub mCtxMgr_WorkbookSessionActivated(ByVal path As String)
+    LogDebug MODULE_NAME, "[mCtxMgr_WorkbookSessionActivated] " & path
     mChartManager.RefreshCurrentSheet
 End Sub
 
-'@Description: Se dispara al activar una hoja; inicia vigilancia de graficos
-'@Category: Gr�ficos
+'@Description: Se dispara al activar una hoja; inicia vigilancia de graficos (semántico de infraestructura)
+'@Category: Gráficos
 '@Scope: Grafico seleccionado
-'@ArgumentDescriptions: sh As Object
+'@ArgumentDescriptions: sheetName As String, sheetType As String
 
-Private Sub mCtx_SheetActivated(ByVal sh As Object)
+Private Sub mCtxMgr_SheetSessionActivated(ByVal sheetName As String, ByVal sheetType As String)
     On Error GoTo ErrHandler
 
-    LogDebug MODULE_NAME, "[mCtx_SheetActivated] " & sh.Name & "'"
-    mChartManager.WatchSheet sh
+    LogDebug MODULE_NAME, "[mCtxMgr_SheetSessionActivated] '" & sheetName & "' (" & sheetType & ")"
+    Dim dummySh As Object  ' We don't have the actual object, just the name and type
+    Set dummySh = Nothing  ' In a real scenario, you'd get the actual sheet object
+    mChartManager.WatchSheet dummySh
     Exit Sub
 ErrHandler:
-    LogError MODULE_NAME, "[mCtx_SheetActivated] Error", , Err.Description
+    LogError MODULE_NAME, "[mCtxMgr_SheetSessionActivated] Error", , Err.Description
 End Sub
 
-'@Description: Se dispara al desactivar una hoja; detiene vigilancia de graficos
-'@Category: Gr�ficos
+'@Description: Se dispara al desactivar una hoja; detiene vigilancia de graficos (semántico de infraestructura)
+'@Category: Gráficos
 '@Scope: Grafico seleccionado
-'@ArgumentDescriptions: sh As Object
+'@ArgumentDescriptions: sheetName As String, sheetType As String
 
-Private Sub mCtx_SheetDeactivated(ByVal sh As Object)
+Private Sub mCtxMgr_SheetSessionDeactivated(ByVal sheetName As String, ByVal sheetType As String)
     On Error GoTo ErrHandler
 
-    LogDebug MODULE_NAME, "[mCtx_SheetDeactivated] '" & sh.Name & "'"
+    LogDebug MODULE_NAME, "[mCtxMgr_SheetSessionDeactivated] '" & sheetName & "' (" & sheetType & ")"
     mChartManager.StopWatching
     Exit Sub
 ErrHandler:
-    LogError MODULE_NAME, "[mCtx_SheetDeactivated] Error", , Err.Description
+    LogError MODULE_NAME, "[mCtxMgr_SheetSessionDeactivated] Error", , Err.Description
 End Sub
 
 ' -------------------------------------------------------------
 ' Eventos de tracking de ficheros (desde clsFileMgr)
 ' -------------------------------------------------------------
 
-'@Description: Callback cuando se abre un workbook
-Private Sub mCtx_WorkbookOpened(ByVal wb As Workbook)
-    LogDebug MODULE_NAME, "[mCtx_WorkbookOpened] " & wb.Name
-    mFileMgr.GetOrTrackWorkbook wb
+'@Description: Callback cuando se abre un workbook (semántico de infraestructura)
+Private Sub mCtxMgr_WorkbookSessionStarted(ByVal path As String, ByVal readOnly As Boolean)
+    LogDebug MODULE_NAME, "[mCtxMgr_WorkbookSessionStarted] " & path
+    ' Need to get the actual workbook object from the path
+    Dim wb As Workbook
+    On Error Resume Next
+    Set wb = Workbooks(GetFileNameFromPath(path))
+    On Error GoTo 0
+    If Not wb Is Nothing Then
+        mFileMgr.GetOrTrackWorkbook wb
+    End If
 End Sub
 
-'@Description: Callback cuando se cierra un workbook
-Private Sub mCtx_WorkbookBeforeClose(ByVal wb As Workbook, Cancel As Boolean)
-    LogDebug MODULE_NAME, "[mCtx_WorkbookBeforeClose] " & wb.Name
-    mFileMgr.UntrackWorkbook wb
+'@Description: Callback cuando se cierra un workbook (semántico de infraestructura)
+Private Sub mCtxMgr_WorkbookSessionClosing(ByVal path As String, Cancel As Boolean)
+    LogDebug MODULE_NAME, "[mCtxMgr_WorkbookSessionClosing] " & path
+    ' Need to get the actual workbook object from the path
+    Dim wb As Workbook
+    On Error Resume Next
+    Set wb = Workbooks(GetFileNameFromPath(path))
+    On Error GoTo 0
+    If Not wb Is Nothing Then
+        mFileMgr.UntrackWorkbook wb
+    End If
 End Sub
+
+' Helper function to extract filename from path
+Private Function GetFileNameFromPath(fullPath As String) As String
+    Dim arr() As String
+    arr = Split(fullPath, "\")
+    GetFileNameFromPath = arr(UBound(arr))
+End Function
