@@ -14,33 +14,33 @@ Option Explicit
 Private Const MODULE_NAME As String = "clsApplication"
 
 Private mChartManager As clsChartMgr
-Attribute mChartManager.VB_VarHelpID = -1
+Private mCtx As clsExecutionContext
+Attribute mCtx.VB_VarHelpID = -1
 
 Private mEventDispatcher As clsEventDispatcher
-
 Private mEvMgrInfrastructure As clsEventsMgrInfrastructure
 
 Private mFileMgr As clsFileManager
-
 Private mOpportunities As clsOpportunitiesMgr
-Attribute mOpportunities.VB_VarHelpID = -1
-
 Private mFSMonitoringCoord As clsFSMonitoringCoord
-Attribute mFSMonitoringCoord.VB_VarHelpID = -1
                 '
 Private mEvMediatorDomain As clsEventsMediatorDomain
 
 Private mRibbon As clsRibbon
 
-' Estado centralizado de la aplicaciÃ³n
+' Estado centralizado de la aplicación
 Private mApplicationState As clsApplicationState
 
 Public Property Get ChartManager() As clsChartMgr
     Set ChartManager = mChartManager
 End Property
 
-Public Static Property Get Ribbon() As clsRibbon
-    Set Ribbon = mRibbon
+Public Property Get executionContext() As clsExecutionContext
+    Set executionContext = mCtx
+End Property
+
+Public Static Property Get ribbon() As clsRibbon
+    Set ribbon = mRibbon
 End Property
 
 Public Property Get Dispatcher() As clsEventDispatcher
@@ -59,13 +59,13 @@ Public Property Get OpportunitiesMgr() As clsOpportunitiesMgr
     Set OpportunitiesMgr = mOpportunities
 End Property
 
-'@Description: Obtiene el gestor de estado centralizado de la aplicaciÃ³n
+'@Description: Obtiene el gestor de estado centralizado de la aplicación
 Public Property Get AppState() As clsApplicationState
     Set AppState = mApplicationState
 End Property
 
 ' -------------------------------------------------------------
-' Class_Initialize: SOLO inicializaci?n m?nima (ligera y segura)
+' Class_Initialize: SOLO inicialización mínima (ligera y segura)
 ' NO debe hacer trabajo pesado ni depender de App
 ' -------------------------------------------------------------
 Private Sub Class_Initialize()
@@ -74,48 +74,57 @@ Private Sub Class_Initialize()
     LogInfo MODULE_NAME, "[Class_Initialize] - Iniciando aplicacion"
 
     ' INFRAESTRUCTURA
+    Set mCtx = New clsExecutionContext
+    mCtx.Initialize
+    ' TODO: creo que es mejor UNIFICARLO, o HACER COMPOSICION, de clsChartMgr, dentro de clsExecutionContext (ChartMgr PERTENECE al exec context,
+    ' mas que depender de él; actualmente parece que la relación está invertida, está asi para minimizar los cambios al resto del codigo...)
     Set mChartManager = New clsChartMgr
+    mChartManager.Initialize mCtx
     Set mEventDispatcher = New clsEventDispatcher
 
-    ' DOMINIO - Crear managers (ellos crean sus estados internamente)
     Set mFileMgr = New clsFileManager
+    mFileMgr.Init mCtx.Application.Workbooks
+
+    ' DOMINIO - Crear managers (ellos crean sus estados internamente)
     Set mOpportunities = New clsOpportunitiesMgr
+    ' Inyectar dependencia de FileManager
     Set mOpportunities.FileManager = mFileMgr
-
-    ' INTERFAZ - Crear Ribbon (crea RibbonState internamente)
-    Set mRibbon = New clsRibbon
-
-    ' ESTADO CENTRALIZADO - Inyectar referencias a subestados (Dependency Injection)
-    Set mApplicationState = New clsApplicationState
-    mApplicationState.Initialize ribbonState:=mRibbon.State, _
-                                 opportunityState:=mOpportunities.State, _
-                                 fileState:=mFileMgr.State, _
-                                 chartState:=mChartManager.State
-    mApplicationState.SetRibbon mRibbon
-
-    ' GESTOR DE EVENTOS DE INFRAESTRUCTURA
-    Set mEvMgrInfrastructure = New clsEventsMgrInfrastructure
-    Call mEvMgrInfrastructure.Initialize(mRibbon, mChartManager)
 
     ' SERVICIOS DE MONITOREO
     Set mFSMonitoringCoord = New clsFSMonitoringCoord
     mFSMonitoringCoord.IniciarMonitoreo mOpportunities.Conf.oDicFoldersToWatch
 
+    ' INTERFAZ - Crear Ribbon (crea RibbonState internamente)
+    Set mRibbon = New clsRibbon
+    
+    ' ESTADO CENTRALIZADO - Inyectar referencias a subestados (Dependency Injection)
+    Set mApplicationState = New clsApplicationState
+    mApplicationState.Initialize RibbonState:=mRibbon.State, _
+                                 OpportunityState:=mOpportunities.State, _
+                                 FileState:=mFileMgr.State, _
+                                 ChartState:=mChartManager.State
+    mApplicationState.SetRibbon mRibbon
+
+    ' GESTOR DE EVENTOS DE INFRAESTRUCTURA
+    Set mEvMgrInfrastructure = New clsEventsMgrInfrastructure
+    Call mEvMgrInfrastructure.Initialize(mRibbon, mFileMgr, mChartManager, mCtx)
+
     ' MEDIADOR DE EVENTOS DE DOMINIO - Inyectar ApplicationState
     Set mEvMediatorDomain = New clsEventsMediatorDomain
-    Call mEvMediatorDomain.Initialize(mFSMonitoringCoord, _
-                                      mOpportunities, _
-                                      mRibbon, _
-                                      mFileMgr, _
-                                      mApplicationState)
+    Call mEvMediatorDomain.Initialize(mCtx, _
+                                    mFSMonitoringCoord, _
+                                    mOpportunities, _
+                                    mRibbon, _
+                                    mFileMgr, _
+                                    mApplicationState)
 
-    LogInfo MODULE_NAME, "[Class_Initialize] - inicializacion completada"
+    LogInfo MODULE_NAME, "[Class_Initialize] - inicialización completada"
     
     Exit Sub
 ErrHandler:
     LogCurrentError MODULE_NAME, "[Class_Initialize]"
     Err.Raise Err.Number, MODULE_NAME & "[Class_Initialize]", _
-              "Error inicializando aplicaci?n: " & Err.Description
+              "Error inicializando aplicación: " & Err.Description
 End Sub
 
 ' -------------------------------------------------------------
@@ -124,7 +133,7 @@ End Sub
 Private Sub Class_Terminate()
     LogInfo MODULE_NAME, "[Terminate] - Iniciando limpieza de la aplicacion"
 
-    On Error Resume Next  ' Asegurar que la limpieza contin?a aunque haya errores
+    On Error Resume Next  ' Asegurar que la limpieza continúa aunque haya errores
     
     ' 2. Liberar Ribbon events
     If Not mRibbon Is Nothing Then
@@ -144,7 +153,7 @@ Private Sub Class_Terminate()
     Set mEvMgrInfrastructure = Nothing
 
     Set mEventDispatcher = Nothing
-
+    
     Set mChartManager = Nothing
 
     ' Liberar estado centralizado
@@ -152,4 +161,5 @@ Private Sub Class_Terminate()
 
     LogInfo MODULE_NAME, "[Terminate] - Limpieza completada"
 End Sub
+
 

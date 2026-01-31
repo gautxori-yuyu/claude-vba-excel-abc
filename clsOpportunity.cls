@@ -21,10 +21,10 @@ Private mLabel As String        ' Nombre completo de la oportunidad (ej: "412601
 Private mName As String         ' Nombre corto (ej: "412601015")
 Private mPath As String         ' Ruta completa a la carpeta
 Private mCustomer As String     ' Nombre del cliente
-Private mQuoteNumber As String  ' N煤mero de cotizaci贸n
-Private mCreatedDate As Date    ' Fecha de creaci贸n
+Private mQuoteNumber As String  ' N鷐ero de cotizaci髇
+Private mCreatedDate As Date    ' Fecha de creaci髇
 
-' Componentes futuros (no implementados a煤n):
+' Componentes futuros (no implementados a鷑):
 'Private mFiles As clsOpportunityFileCollection
 'Private mCompressors As clsCompressorCollection
 'Private mOffers As clsOfferCollection
@@ -32,7 +32,7 @@ Private mCreatedDate As Date    ' Fecha de creaci贸n
 'Private mStatus As OpportunityStatus
 
 ' ==========================================
-' INICIALIZACI脫N
+' INICIALIZACI覰
 ' ==========================================
 
 Private Sub Class_Initialize()
@@ -49,7 +49,7 @@ Private Sub Class_Terminate()
 End Sub
 
 ' ==========================================
-' PROPIEDADES P脷BLICAS
+' PROPIEDADES P贐LICAS
 ' ==========================================
 
 '@Description: Obtiene o establece el label completo de la oportunidad
@@ -88,7 +88,7 @@ Public Property Let Customer(value As String)
     mCustomer = value
 End Property
 
-'@Description: Obtiene o establece el n煤mero de cotizaci贸n
+'@Description: Obtiene o establece el n鷐ero de cotizaci髇
 Public Property Get QuoteNumber() As String
     QuoteNumber = mQuoteNumber
 End Property
@@ -97,7 +97,7 @@ Public Property Let QuoteNumber(value As String)
     mQuoteNumber = value
 End Property
 
-'@Description: Obtiene o establece la fecha de creaci贸n
+'@Description: Obtiene o establece la fecha de creaci髇
 Public Property Get CreatedDate() As Date
     CreatedDate = mCreatedDate
 End Property
@@ -107,26 +107,30 @@ Public Property Let CreatedDate(value As Date)
 End Property
 
 ' ==========================================
-' M脡TODOS P脷BLICOS
+' M蒚ODOS P贐LICOS
 ' ==========================================
+Public Function Equals(op As clsOpportunity) As Boolean
+    Equals = (ObjPtr(Me) = ObjPtr(op))
+End Function
 
-'@Description: Valida si la oportunidad tiene datos m铆nimos requeridos
+'@Description: Valida si la oportunidad tiene datos m韓imos requeridos
 Public Function IsValid() As Boolean
     IsValid = Len(mLabel) > 0 And Len(mPath) > 0
 End Function
 
-'@Description: Genera la estructura de carpetas para la oportunidad (pendiente implementaci贸n)
+'@Description: Genera la estructura de carpetas para la oportunidad (pendiente implementaci髇)
 Public Sub GenerateFolderStructure()
-    ' TODO: Implementar creaci贸n de estructura de carpetas
+    ' TODO: Implementar creaci髇 de estructura de carpetas
 End Sub
 
-'@Description: Obtiene la plantilla de presupuesto (pendiente implementaci贸n)
+'@Description: Obtiene la plantilla de presupuesto (pendiente implementaci髇)
 Public Function GetBudgetTemplate() As clsFileXLS
-    ' TODO: Implementar obtenci贸n de plantilla
+    ' TODO: Implementar obtenci髇 de plantilla
     Set GetBudgetTemplate = Nothing
 End Function
 
-'@Description: Sincroniza con el repositorio (pendiente implementaci贸n)
+'@Description: Sincroniza con el repositorio (pendiente implementaci髇)
 Public Sub SyncWithRepository()
-    ' TODO: Implementar sincronizaci贸n
+    ' TODO: Implementar sincronizaci髇
 End Sub
+

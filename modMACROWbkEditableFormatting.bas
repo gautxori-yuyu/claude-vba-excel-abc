@@ -118,7 +118,7 @@ Private Function EsMarcador(c As Range) As Boolean
         Case "2._SALES_TERMS"
             If c.Row > 1 Then
                 esVerde = (c.Offset(-1, 0).Interior.Color = RGB(141, 184, 34))
-                EsMarcador = InStr(c.Offset(-1, 0).Value, "Quotation valid for ") > 0
+                EsMarcador = InStr(c.Offset(-1, 0).value, "Quotation valid for ") > 0
             End If
         Case Else
     End Select
@@ -128,7 +128,7 @@ End Function
 Private Function ObtenerIncremento(c As Range) As Double
     Select Case c.Parent.Name
         Case "3._TECHNICAL_DESCRIPTION", "1._SCOPE_OF_SUPPLY"
-            If Trim(c.EntireRow.Cells(1, 1).Value) <> "" And _
+            If Trim(c.EntireRow.Cells(1, 1).value) <> "" And _
                     c.Font.Name = "Calibri" And c.Font.SIZE = 10 Then ObtenerIncremento = 12
     End Select
 End Function
@@ -180,9 +180,9 @@ Attribute AjustarSelWSheetsParaImpresionPDF.VB_ProcData.VB_Invoke_Func = " \n0"
     Dim aw As Window
     Set aw = ActiveWindow
         
-    Dim Wb As Workbook
-    Set Wb = aw.Parent
-    If Wb Is Nothing Then
+    Dim wb As Workbook
+    Set wb = aw.Parent
+    If wb Is Nothing Then
         MsgBox "[ERR] No hay libro activo.", vbCritical
         Exit Sub
     End If
@@ -191,35 +191,35 @@ Attribute AjustarSelWSheetsParaImpresionPDF.VB_ProcData.VB_Invoke_Func = " \n0"
     Set selSheets = aw.SelectedSheets
     
     If selSheets.Count = 0 Then
-        MsgBox "[WARN] No hay hojas seleccionadas en el libro '" & Wb.Name & "'.", vbExclamation
+        MsgBox "[WARN] No hay hojas seleccionadas en el libro '" & wb.Name & "'.", vbExclamation
         Exit Sub
     End If
     
-    Debug.Print "=== AjustarSelWSheetsParaImpresionPDF: " & selSheets.Count & " hoja(s) en '" & Wb.Name & "' ==="
+    Debug.Print "=== AjustarSelWSheetsParaImpresionPDF: " & selSheets.Count & " hoja(s) en '" & wb.Name & "' ==="
     
-    Dim Sh As Object
+    Dim sh As Object
     Dim hojasProcesadas As Long, hojasFallidas As Long
     Dim estados() As CompactacionEstado
     ReDim estados(1 To selSheets.Count)
     
     Dim i As Long: i = 0
     
-    For Each Sh In selSheets
+    For Each sh In selSheets
         i = i + 1
-        If TypeName(Sh) = "Worksheet" Then
+        If TypeName(sh) = "Worksheet" Then
             On Error Resume Next
-            estados(i) = AjustarWSParaPDF_ImpresionMaestra(Sh)
+            estados(i) = AjustarWSParaPDF_ImpresionMaestra(sh)
             If Err.Number = 0 Then
                 hojasProcesadas = hojasProcesadas + 1
             Else
-                Debug.Print "[ERR] Falló en '" & Sh.Name & "': " & Err.Description
+                Debug.Print "[ERR] Falló en '" & sh.Name & "': " & Err.Description
                 hojasFallidas = hojasFallidas + 1
             End If
             On Error GoTo 0
         Else
-            Debug.Print "[INFO] Saltada hoja no Worksheet: '" & Sh.Name & "' (tipo: " & TypeName(Sh) & ")"
+            Debug.Print "[INFO] Saltada hoja no Worksheet: '" & sh.Name & "' (tipo: " & TypeName(sh) & ")"
         End If
-    Next Sh
+    Next sh
     
     Debug.Print "[OK] Proceso finalizado: " & hojasProcesadas & " hojas ajustadas, " & hojasFallidas & " con error."
     
@@ -240,8 +240,8 @@ Attribute AjustarSelWSheetsParaImpresionPDF.VB_ProcData.VB_Invoke_Func = " \n0"
         ' grabar el documento como PDF
         ' Exportar la hoja "Graficos" a PDF
         On Error Resume Next
-        Wb.ExportAsFixedFormat Type:=xlTypePDF, _
-                fileName:=Wb.Path & "\" & Left(Wb.Name, InStrRev(Wb.Name, ".") - 1) & ".pdf", _
+        wb.ExportAsFixedFormat Type:=xlTypePDF, _
+                fileName:=wb.Path & "\" & Left(wb.Name, InStrRev(wb.Name, ".") - 1) & ".pdf", _
                 Quality:=xlQualityStandard, _
                 OpenAfterPublish:=True
         On Error GoTo 0
@@ -258,22 +258,22 @@ CleanUp:
     hojasProcesadas = 0
     hojasFallidas = 0
     i = 0
-    For Each Sh In selSheets
+    For Each sh In selSheets
         i = i + 1
-        If TypeName(Sh) = "Worksheet" Then
+        If TypeName(sh) = "Worksheet" Then
             On Error Resume Next
-            RestaurarAreaDeImpresion Sh, estados(i)
+            RestaurarAreaDeImpresion sh, estados(i)
             If Err.Number = 0 Then
                 hojasProcesadas = hojasProcesadas + 1
             Else
-                Debug.Print "[ERR] Falló en '" & Sh.Name & "': " & Err.Description
+                Debug.Print "[ERR] Falló en '" & sh.Name & "': " & Err.Description
                 hojasFallidas = hojasFallidas + 1
             End If
             On Error GoTo 0
         Else
-            Debug.Print "[INFO] Saltada hoja no Worksheet: '" & Sh.Name & "' (tipo: " & TypeName(Sh) & ")"
+            Debug.Print "[INFO] Saltada hoja no Worksheet: '" & sh.Name & "' (tipo: " & TypeName(sh) & ")"
         End If
-    Next Sh
+    Next sh
     
     Debug.Print "[OK] Proceso finalizado: " & hojasProcesadas & " hojas ajustadas, " & hojasFallidas & " con error."
     
@@ -362,7 +362,7 @@ Private Sub AjustarAlturaFilasSegunTexto(ws As Worksheet, ultimaFila As Long, ul
         altoMaximoFila = 0
         Dim celda As Range
         For Each celda In ws.Range(ws.Cells(i, 1), ws.Cells(i, ultimaColumna))
-            If Trim(celda.Value) <> "" Then
+            If Trim(celda.value) <> "" Then
                 Dim altoActual As Double
                 altoActual = GetPrintHeightMultiLine(celda) * ObtenerFactorCorreccion(celda) + ObtenerIncremento(celda)
                 If altoActual > altoMaximoFila Then altoMaximoFila = altoActual
@@ -466,7 +466,7 @@ Attribute GetPrintHeightMultiLine.VB_ProcData.VB_Invoke_Func = " \n21"
     Dim printerName As String
     Dim angulo As Long, bVert As Boolean
     
-    If IsError(c.Value) Then Stop: Exit Function
+    If IsError(c.value) Then Stop: Exit Function
     
     ' Obtener nombre limpio para la API
     printerName = GetCleanPrinterName()
@@ -502,12 +502,12 @@ Attribute GetPrintHeightMultiLine.VB_ProcData.VB_Invoke_Func = " \n21"
     hOldFont = SelectObject(hdc, hFont)
     
     If c.WrapText = False And Abs(angulo) <> 900 Then
-        GetTextExtentPoint32 hdc, c.Cells(1, 1).Value, Len(c.Cells(1, 1).Value), sz
+        GetTextExtentPoint32 hdc, c.Cells(1, 1).value, Len(c.Cells(1, 1).value), sz
         GetPrintHeightMultiLine = (sz.cy * 72) / dpiY ' Altura de una sola línea
     ElseIf bVert Then
         ' Si es puramente vertical, medimos la extensión de una sola línea pero
         ' el valor de 'ancho' de esa línea será el 'alto' de nuestra fila.
-        GetTextExtentPoint32 hdc, c.Cells(1, 1).Value, Len(c.Cells(1, 1).Value), sz
+        GetTextExtentPoint32 hdc, c.Cells(1, 1).value, Len(c.Cells(1, 1).value), sz
         ' En vertical, el ancho del texto (sz.cx) se convierte en la altura de la fila
         GetPrintHeightMultiLine = (sz.cx * 72) / dpiY
     Else
@@ -519,7 +519,7 @@ Attribute GetPrintHeightMultiLine.VB_ProcData.VB_Invoke_Func = " \n21"
         
         ' 5. Ejecutar DrawText con DT_CALCRECT para que calcule el alto (r.Bottom)
         ' DT_WORDBREAK permite el ajuste de línea como en Excel
-        DrawText hdc, c.Cells(1, 1).Value, Len(c.Cells(1, 1).Value), r, DT_CALCRECT Or DT_WORDBREAK Or DT_EDITCONTROL
+        DrawText hdc, c.Cells(1, 1).value, Len(c.Cells(1, 1).value), r, DT_CALCRECT Or DT_WORDBREAK Or DT_EDITCONTROL
         
         ' 6. Convertir el alto calculado de píxeles a Puntos de Excel
         GetPrintHeightMultiLine = (r.Bottom * 72) / dpiY

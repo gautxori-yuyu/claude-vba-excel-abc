@@ -1,4 +1,5 @@
 Attribute VB_Name = "modMACROAppLifecycle"
+Option Private Module
 ' ==========================================
 ' CICLO DE VIDA DE LA APLICACION
 ' ==========================================
@@ -49,7 +50,7 @@ Attribute ReiniciarAplicacion.VB_ProcData.VB_Invoke_Func = " \n0"
     ' Verificar estado
     If IsRibbonAvailable() Then
         MsgBox "Aplicación reiniciada correctamente." & vbCrLf & vbCrLf & _
-               App.Ribbon.GetQuickDiagnostics(), vbInformation, "Reinicio Exitoso"
+               App.ribbon.GetQuickDiagnostics(), vbInformation, "Reinicio Exitoso"
     Else
         MsgBox "Aplicación reiniciada, pero el Ribbon puede requerir atención adicional." & vbCrLf & _
                "Ejecute 'RecuperarRibbon' si es necesario.", _
@@ -106,7 +107,7 @@ Public Sub ToggleRibbonTab()
 Attribute ToggleRibbonTab.VB_ProcData.VB_Invoke_Func = " \n0"
     On Error GoTo ErrHandler
 
-    App.Ribbon.ToggleModo
+    App.ribbon.ToggleModo
 
     Exit Sub
 ErrHandler:
@@ -143,7 +144,7 @@ Attribute RecuperarRibbon.VB_ProcData.VB_Invoke_Func = " \n0"
     ' Intentar recuperacion
     If TryRecoverRibbon() Then
         MsgBox "Ribbon recuperado exitosamente." & vbCrLf & vbCrLf & _
-               App.Ribbon.GetQuickDiagnostics(), vbInformation, "Recuperacion Exitosa"
+               App.ribbon.GetQuickDiagnostics(), vbInformation, "Recuperacion Exitosa"
     Else
         MsgBox "No se pudo recuperar el Ribbon automaticamente." & vbCrLf & vbCrLf & _
                "Recomendaciones:" & vbCrLf & _
@@ -189,31 +190,31 @@ Attribute GetRibbonDiagnostics.VB_ProcData.VB_Invoke_Func = " \n21"
     End If
 
     ' Estado de Ribbon (clsRibbon)
-    If mApp.Ribbon Is Nothing Then
+    If mApp.ribbon Is Nothing Then
         info = info & "[X] App.Ribbon: Nothing (ERROR)" & vbCrLf
     Else
         info = info & "[OK] App.Ribbon: Disponible" & vbCrLf
 
         ' Diagnostico detallado
-        info = info & "    -> " & mApp.Ribbon.GetQuickDiagnostics() & vbCrLf
+        info = info & "    -> " & mApp.ribbon.GetQuickDiagnostics() & vbCrLf
 
         ' Estado de ribbonUI (IRibbonUI)
         On Error Resume Next
-        If mApp.Ribbon.ribbonUI Is Nothing Then
+        If mApp.ribbon.ribbonUI Is Nothing Then
             info = info & "[X] ribbonUI: Nothing (PERDIDO)" & vbCrLf
             info = info & "    -> El Ribbon necesita recuperacion" & vbCrLf
         Else
             info = info & "[OK] ribbonUI: Conectado" & vbCrLf
-            info = info & "    -> Tipo: " & TypeName(App.Ribbon.ribbonUI) & vbCrLf
+            info = info & "    -> Tipo: " & TypeName(App.ribbon.ribbonUI) & vbCrLf
         End If
         On Error GoTo 0
     End If
 
     ' Estado de Ribbon.State
-    If mApp.Ribbon.State Is Nothing Then
+    If mApp.ribbon.State Is Nothing Then
         info = info & "[X] Ribbon State: Nothing" & vbCrLf
     Else
-        info = info & "[OK] Ribbon State: " & mApp.Ribbon.State.Description & vbCrLf
+        info = info & "[OK] Ribbon State: " & mApp.ribbon.State.Description & vbCrLf
     End If
 
     GetRibbonDiagnostics = info
@@ -236,14 +237,14 @@ Attribute IsRibbonAvailable.VB_ProcData.VB_Invoke_Func = " \n21"
     End If
 
     ' Verificar que Ribbon existe
-    If mApp.Ribbon Is Nothing Then
+    If mApp.ribbon Is Nothing Then
         LogDebug MODULE_NAME, "IsRibbonAvailable: App.Ribbon Is Nothing"
         IsRibbonAvailable = False
         Exit Function
     End If
 
     ' Verificar que ribbonUI existe
-    If mApp.Ribbon.ribbonUI Is Nothing Then
+    If mApp.ribbon.ribbonUI Is Nothing Then
         LogDebug MODULE_NAME, "IsRibbonAvailable: ribbonUI Is Nothing"
         IsRibbonAvailable = False
         Exit Function
@@ -251,7 +252,7 @@ Attribute IsRibbonAvailable.VB_ProcData.VB_Invoke_Func = " \n21"
 
     ' Intentar una operacion simple para verificar que funciona
     Dim testResult As Boolean
-    testResult = Not (TypeName(mApp.Ribbon.ribbonUI) = "Nothing")
+    testResult = Not (TypeName(mApp.ribbon.ribbonUI) = "Nothing")
 
     If Err.Number <> 0 Then
         LogWarning MODULE_NAME, "IsRibbonAvailable: Error al verificar - " & Err.Description

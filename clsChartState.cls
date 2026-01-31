@@ -7,7 +7,7 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
-'@Description: Estado relacionado con el grÃ¡fico (Chart) activo
+'@Description: Estado relacionado con el gráfico (Chart) activo
 '@Category: State
 '@Folder "5-Aplicac (Coord).Estado"
 Option Explicit
@@ -20,7 +20,7 @@ Private Const MODULE_NAME As String = "clsChartState"
 Private mCurrentChart As Chart
 
 ' ==========================================
-' INICIALIZACIÃ“N
+' INICIALIZACIÓN
 ' ==========================================
 
 Private Sub Class_Initialize()
@@ -28,7 +28,7 @@ Private Sub Class_Initialize()
 End Sub
 
 ' ==========================================
-' PROPIEDADES PÃšBLICAS
+' PROPIEDADES PÚBLICAS
 ' ==========================================
 
 '@Description: Obtiene o establece el Chart activo actual
@@ -36,15 +36,15 @@ Public Property Get CurrentChart() As Chart
     Set CurrentChart = mCurrentChart
 End Property
 
-Friend Property Set CurrentChart(ch As Chart)
-    Set mCurrentChart = ch
+Friend Property Set CurrentChart(Ch As Chart)
+    Set mCurrentChart = Ch
 End Property
 
 ' ==========================================
 ' CONSULTAS DE ESTADO
 ' ==========================================
 
-'@Description: Indica si hay un grÃ¡fico actualmente activo/seleccionado
+'@Description: Indica si hay un gráfico actualmente activo/seleccionado
 Public Function HasCurrentChart() As Boolean
     HasCurrentChart = Not (mCurrentChart Is Nothing)
 End Function

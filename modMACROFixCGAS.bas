@@ -87,8 +87,8 @@ Attribute FixCGASING.VB_ProcData.VB_Invoke_Func = " \n0"
     Set cell = ws.Cells.Find("CH4O       : ", After:=ActiveCell, LookIn:=xlValues, _
                              LookAt:=xlPart, SearchOrder:=xlByRows, SearchDirection:=xlNext, MatchCase:=True)
     If Not cell Is Nothing Then
-        If cell.Offset(0, 2).Value <> "Methanol" Then
-            cell.Offset(0, 2).Value = "Methanol"
+        If cell.Offset(0, 2).value <> "Methanol" Then
+            cell.Offset(0, 2).value = "Methanol"
             bSave = True
         End If
     End If
@@ -102,22 +102,22 @@ Attribute FixCGASING.VB_ProcData.VB_Invoke_Func = " \n0"
     If Not cell Is Nothing Then
         Dim result
         regEx.Pattern = "([\d,]+) HP"
-        If regEx.Test(cell.Offset(0, 1).Value) Then
-            Set result = regEx.Execute(cell.Offset(0, 1).Value)
+        If regEx.Test(cell.Offset(0, 1).value) Then
+            Set result = regEx.Execute(cell.Offset(0, 1).value)
             If result.Count > 0 Then
                 c = CDbl(result(0).SubMatches(0)) ' manejo de coma decimal
-                cell.Offset(0, 1).Value = c & " / " & Format(c * 0.7457, "0.00") & " HP/kW"
+                cell.Offset(0, 1).value = c & " / " & Format(c * 0.7457, "0.00") & " HP/kW"
                 bSave = True
             End If
         End If
     End If
     regEx.Pattern = "\s*:\s*"
     For Each cell In ws.Range("F19:F29")
-        cell.Value = regEx.Replace(cell.Value, "")
+        cell.value = regEx.Replace(cell.value, "")
     Next
     
     ' mostrar celdas ocultas, para eliminarlas
-    If ws.Range("A60:A60").Value <> "" Then
+    If ws.Range("A60:A60").value <> "" Then
         'stop
         ws.Rows("1:100").Select
         Application.Selection.EntireRow.Hidden = False
@@ -135,16 +135,16 @@ Attribute FixCGASING.VB_ProcData.VB_Invoke_Func = " \n0"
         bSave = True
     End If
     
-    If ws.Range("E45:E45").Value <> "" Then
+    If ws.Range("E45:E45").value <> "" Then
         ' EL FLOW DRY / WET
         ' xlDown, -4121 (inserta desplazando filas hacia abajo); xlFormatFromLeftOrAbove = 0 (el formato de las celdas insertadas es el de las de encima)
         ws.Rows("46:46").Insert -4121, 1
         ws.Range("E45:F45").Cut ws.Range("B46")
-        ws.Range("A45").Value = "Actual flow :"
-        If InStr(ws.Range("B46").Value, "kg") > 0 Then
-            ws.Range("A46").Value = "Mass flow (dry / wet):"
+        ws.Range("A45").value = "Actual flow :"
+        If InStr(ws.Range("B46").value, "kg") > 0 Then
+            ws.Range("A46").value = "Mass flow (dry / wet):"
         Else
-            ws.Range("A46").Value = "Normal flow (dry / wet):"
+            ws.Range("A46").value = "Normal flow (dry / wet):"
         End If
         ws.Range("C45:D45").Copy
         ws.Range("C46").PasteSpecial -4122, -4142, False, False
@@ -155,7 +155,7 @@ Attribute FixCGASING.VB_ProcData.VB_Invoke_Func = " \n0"
     End If
     
     
-    If ws.Range("G30").Value <> "Suction pressure :" And ws.Range("F30").Value <> "Specific weight in normal conditions:" Then
+    If ws.Range("G30").value <> "Suction pressure :" And ws.Range("F30").value <> "Specific weight in normal conditions:" Then
         ' dimensiona la lista de gases, PARA QUE TODAS LAS CELDAS TENGAN EL FORMATO CORRECTO
         regEx.Pattern = "([\d,]+)\%"             '13,99%
         ' For Each Cell In ws.Range("G19:G27")
@@ -174,48 +174,48 @@ Attribute FixCGASING.VB_ProcData.VB_Invoke_Func = " \n0"
         Do
             Set cell = ws.Range("G" & c & ":G" & c)
             
-            If regEx.Test(cell.Value) Then cell.Value = regEx.Execute(cell.Value).Item(0).SubMatches(0) * 1 & "%"
+            If regEx.Test(cell.value) Then cell.value = regEx.Execute(cell.value).Item(0).SubMatches(0) * 1 & "%"
             cell.NumberFormat = "General"
-            cell.Value = Replace(Trim(Replace(cell.Value, "'", "")), "%", "") / 100
+            cell.value = Replace(Trim(Replace(cell.value, "'", "")), "%", "") / 100
             cell.NumberFormat = "0.00%"
             
             d = 19 - c
             Do
-                If cell.Value > cell.Offset(d, 0).Value Then
+                If cell.value > cell.Offset(d, 0).value Then
                     'Stop
-                    vTmp = cell.Offset(d, 0).Value: cell.Offset(d, 0).Value = cell.Value: cell.Value = vTmp
-                    vTmp = cell.Offset(d, -1).Value: cell.Offset(d, -1).Value = cell.Offset(0, -1).Value: cell.Offset(0, -1).Value = vTmp
-                    vTmp = cell.Offset(d, 1).Value: cell.Offset(d, 1).Value = cell.Offset(0, 1).Value: cell.Offset(0, 1).Value = vTmp
+                    vTmp = cell.Offset(d, 0).value: cell.Offset(d, 0).value = cell.value: cell.value = vTmp
+                    vTmp = cell.Offset(d, -1).value: cell.Offset(d, -1).value = cell.Offset(0, -1).value: cell.Offset(0, -1).value = vTmp
+                    vTmp = cell.Offset(d, 1).value: cell.Offset(d, 1).value = cell.Offset(0, 1).value: cell.Offset(0, 1).value = vTmp
                 End If
                 d = d + 1
             Loop While d <= 0
             c = c + 1
-        Loop While ws.Range("F" & c & ":F" & c).Value <> ""
+        Loop While ws.Range("F" & c & ":F" & c).value <> ""
         
         
-        ws.Range("F28").Value = "Other     : "
+        ws.Range("F28").value = "Other     : "
         ws.Range("G28").FormulaR1C1 = "=1-SUM(R[-9]C:R[-1]C)"
         ws.Range("H28").ClearContents
         
         '  corregir las celdas de gases:
         c = 29
-        Do While ws.Range("F" & c).Value <> ""
+        Do While ws.Range("F" & c).value <> ""
             c = c + 1
         Loop
         ws.Range("F29:H" & c - 1).Clear
-        ws.Range("G30").Value = "Suction pressure :"
-        ws.Range("G31").Value = "Atmospheric pressure :"
-        ws.Range("G32").Value = "Suction temperature :"
-        ws.Range("G33").Value = "Ambient temperature :"
-        ws.Range("G34").Value = "Relative humidity :"
-        ws.Range("G35").Value = "Water temperature :"
+        ws.Range("G30").value = "Suction pressure :"
+        ws.Range("G31").value = "Atmospheric pressure :"
+        ws.Range("G32").value = "Suction temperature :"
+        ws.Range("G33").value = "Ambient temperature :"
+        ws.Range("G34").value = "Relative humidity :"
+        ws.Range("G35").value = "Water temperature :"
         bSave = True
         Debug.Print "Redimensionada la lista de gases en C-GAS-ING"
     End If
     
     ' recoloca primera y segunda columnas de INPUT DATA
-    If ws.Range("F29").Value = "" And ws.Range("A24").Value = "Specific weight in normal conditions:" _
-       And ws.Range("A30").Value = "Compressor series: " And ws.Range("G30").Value = "Suction pressure :" Then
+    If ws.Range("F29").value = "" And ws.Range("A24").value = "Specific weight in normal conditions:" _
+       And ws.Range("A30").value = "Compressor series: " And ws.Range("G30").value = "Suction pressure :" Then
         ' SI NO SE CUMPLE ws.range ("F29").value = ""... LAS CELDAS A MOVER SE HABRIAN REEMPLAZADO POR NOMBRES DE GASES!!!
         '       me aseguro además de que el resto de la hoja no se haya modificado, que sea "la original"; por si acaso
         ' PRESENTACION ALTERNATIVA: RECOLOCA LAS FILAS ORDENANDO MEJOR LOS CONCEPTOS DE ENTRADA.. OJO!!, ESTO AFECTA A LAS OFERTAS GENERADAS
@@ -228,10 +228,10 @@ Attribute FixCGASING.VB_ProcData.VB_Invoke_Func = " \n0"
         ws.Range("A31:D31").Cut ws.Range("A20")
         ws.Range("A35:D36").Cut ws.Range("A21")
         
-        If ws.Range("F34").Value = "" Then
+        If ws.Range("F34").value = "" Then
             ws.Range("G34").Cut ws.Range("A23")
         Else
-            ws.Range("A23").Value = "Relative humidity : "
+            ws.Range("A23").value = "Relative humidity : "
             ws.Range("A17").Copy
             ws.Range("A23").PasteSpecial -4122, -4142, False, False ' PEGA EL FORMATO
             Application.CutCopyMode = False
@@ -241,10 +241,10 @@ Attribute FixCGASING.VB_ProcData.VB_Invoke_Func = " \n0"
         ws.Range("C23").PasteSpecial -4122, -4142, False, False
         Application.CutCopyMode = False
         
-        If ws.Range("F30").Value = "" Then
+        If ws.Range("F30").value = "" Then
             ws.Range("G30").Cut ws.Range("A24")
         Else
-            ws.Range("A24").Value = "Suction pressure :"
+            ws.Range("A24").value = "Suction pressure :"
             ws.Range("A17").Copy
             ws.Range("A24").PasteSpecial -4122, -4142, False, False ' PEGA EL FORMATO
             Application.CutCopyMode = False
@@ -254,10 +254,10 @@ Attribute FixCGASING.VB_ProcData.VB_Invoke_Func = " \n0"
         ws.Range("C24").PasteSpecial -4122, -4142, False, False
         Application.CutCopyMode = False
         
-        If ws.Range("F32").Value = "" Then
+        If ws.Range("F32").value = "" Then
             ws.Range("G32").Cut ws.Range("A25")
         Else
-            ws.Range("A25").Value = "Suction temperature : "
+            ws.Range("A25").value = "Suction temperature : "
             ws.Range("A17").Copy
             ws.Range("A25").PasteSpecial -4122, -4142, False, False ' PEGA EL FORMATO
             Application.CutCopyMode = False
@@ -267,10 +267,10 @@ Attribute FixCGASING.VB_ProcData.VB_Invoke_Func = " \n0"
         ws.Range("C25").PasteSpecial -4122, -4142, False, False
         Application.CutCopyMode = False
         
-        If ws.Range("F33").Value = "" Then
+        If ws.Range("F33").value = "" Then
             ws.Range("G33").Cut ws.Range("A26")
         Else
-            ws.Range("A26").Value = "Ambient temperature : "
+            ws.Range("A26").value = "Ambient temperature : "
             ws.Range("A17").Copy
             ws.Range("A26").PasteSpecial -4122, -4142, False, False ' PEGA EL FORMATO
             Application.CutCopyMode = False
@@ -280,10 +280,10 @@ Attribute FixCGASING.VB_ProcData.VB_Invoke_Func = " \n0"
         ws.Range("C26").PasteSpecial -4122, -4142, False, False
         Application.CutCopyMode = False
         
-        If ws.Range("F31").Value = "" Then
+        If ws.Range("F31").value = "" Then
             ws.Range("G31").Cut ws.Range("A27")
         Else
-            ws.Range("A27").Value = "Atmospheric pressure :"
+            ws.Range("A27").value = "Atmospheric pressure :"
             ws.Range("A17").Copy
             ws.Range("A27").PasteSpecial -4122, -4142, False, False ' PEGA EL FORMATO
             Application.CutCopyMode = False
@@ -297,10 +297,10 @@ Attribute FixCGASING.VB_ProcData.VB_Invoke_Func = " \n0"
         
         ws.Range("A32:D32").Cut ws.Range("A29")
         
-        If ws.Range("F35").Value = "" Then
+        If ws.Range("F35").value = "" Then
             ws.Range("G35").Cut ws.Range("A30")
         Else
-            ws.Range("A30").Value = "Water temperature : "
+            ws.Range("A30").value = "Water temperature : "
             ws.Range("A17").Copy
             ws.Range("A30").PasteSpecial -4122, -4142, False, False ' PEGA EL FORMATO
             Application.CutCopyMode = False
@@ -312,7 +312,7 @@ Attribute FixCGASING.VB_ProcData.VB_Invoke_Func = " \n0"
         
         ws.Range("A38:D40").Cut ws.Range("A31")
         
-        If ws.Range("F29").Value = "" Then
+        If ws.Range("F29").value = "" Then
             ws.Range("F37:F39").Cut ws.Range("F30")
         Else
             ' si no son blancos... primero reajustar la lista de gases, luego se actualizaría estas celdas
@@ -340,25 +340,25 @@ Attribute FixCGASING.VB_ProcData.VB_Invoke_Func = " \n0"
                              LookAt:=xlPart, SearchOrder:=xlByRows, SearchDirection:=xlNext, MatchCase:=True)
     regEx.Pattern = MODEL_PATTERN
     If Not cell Is Nothing Then
-        cell.Offset(0, 1).Value = regEx.Execute(strModelName()).Item(0).Value
+        cell.Offset(0, 1).value = regEx.Execute(strModelName()).Item(0).value
     End If
     
     ' Añado unas conversiones de unidades...
-    If InStr(ws.Range("B25:B25").Value, "ºF") > 0 Then
-        ws.Range("A53:A53").Value = Replace(ws.Range("A53:A53").Value, "ºC", "ºF")
-        ws.Range("A54:A54").Value = Replace(ws.Range("A54:A54").Value, "ºC", "ºF")
+    If InStr(ws.Range("B25:B25").value, "ºF") > 0 Then
+        ws.Range("A53:A53").value = Replace(ws.Range("A53:A53").value, "ºC", "ºF")
+        ws.Range("A54:A54").value = Replace(ws.Range("A54:A54").value, "ºC", "ºF")
         For c = Asc("B") To Asc("G")
-            If ws.Range(Chr(c) & "53:" & Chr(c) & "53").Value <> "" Then
-                ws.Range(Chr(c) & "53:" & Chr(c) & "53").Value = ws.Range(Chr(c) & "53:" & Chr(c) & "53").Value * 9 / 5 + 32
+            If ws.Range(Chr(c) & "53:" & Chr(c) & "53").value <> "" Then
+                ws.Range(Chr(c) & "53:" & Chr(c) & "53").value = ws.Range(Chr(c) & "53:" & Chr(c) & "53").value * 9 / 5 + 32
             End If
-            If ws.Range(Chr(c) & "54:" & Chr(c) & "54").Value <> "" Then
-                ws.Range(Chr(c) & "54:" & Chr(c) & "54").Value = ws.Range(Chr(c) & "54:" & Chr(c) & "54").Value * 9 / 5 + 32
+            If ws.Range(Chr(c) & "54:" & Chr(c) & "54").value <> "" Then
+                ws.Range(Chr(c) & "54:" & Chr(c) & "54").value = ws.Range(Chr(c) & "54:" & Chr(c) & "54").value * 9 / 5 + 32
             End If
         Next
     End If
     ' Eliminar RPM en los datos de entrada, si se ha puesto caudal > 0
     regEx.Pattern = "^\d+\s*(\(\s*RPM Limit = \d+\s*\))?"
-    If ws.Range("B21") <> "-" Then If regEx.Test(ws.Range("B31")) Then ws.Range("B31").Value = regEx.Replace(ws.Range("B31").Value, "--$1")
+    If ws.Range("B21") <> "-" Then If regEx.Test(ws.Range("B31")) Then ws.Range("B31").value = regEx.Replace(ws.Range("B31").value, "--$1")
     
     ' (Opcional) Formatear encabezados principales en negrita
     With ws

@@ -33,17 +33,17 @@ Attribute ExportarComponentesVBA.VB_ProcData.VB_Invoke_Func = " \n0"
     Dim vbComp As Object
     Dim rutaExportacion As String
     Dim nombreArchivo As String
-    Dim Wb As Workbook
+    Dim wb As Workbook
     
     Dim frm As New frmImportExportMacros
     frm.Show vbModal
     If frm.WorkbookSeleccionado Is Nothing Then Exit Sub
-    Set Wb = frm.WorkbookSeleccionado
+    Set wb = frm.WorkbookSeleccionado
     Unload frm
-    If Wb Is Nothing Then Exit Sub               ' Cancelado o error
+    If wb Is Nothing Then Exit Sub               ' Cancelado o error
     
     ' Carpeta donde se guardarán los archivos exportados
-    rutaExportacion = Wb.Path
+    rutaExportacion = wb.Path
     
     ' Crear carpeta si no existe
     If Dir(rutaExportacion, vbDirectory) = "" Then
@@ -51,7 +51,7 @@ Attribute ExportarComponentesVBA.VB_ProcData.VB_Invoke_Func = " \n0"
     End If
     
     ' Recorrer todos los componentes del proyecto VBA
-    For Each vbComp In Wb.VBProject.VBComponents
+    For Each vbComp In wb.VBProject.VBComponents
         Select Case vbComp.Type
         Case 1: nombreArchivo = vbComp.Name & ".bas" ' Módulo estándar
         Case 2, 100: nombreArchivo = vbComp.Name & ".cls" ' Clase
@@ -72,7 +72,7 @@ End Sub
 '@Description: Exporta componentes VBA sin mostrar mensajes al usuario
 '@Scope: Privado
 '@ArgumentDescriptions: wb: Workbook de origen | rutaDestino: Carpeta donde exportar
-Sub ExportarComponentesVBASilencioso(Wb As Workbook, rutaDestino As String)
+Sub ExportarComponentesVBASilencioso(wb As Workbook, rutaDestino As String)
 Attribute ExportarComponentesVBASilencioso.VB_ProcData.VB_Invoke_Func = " \n0"
     Dim vbComp As Object
     Dim nombreArchivo As String
@@ -88,7 +88,7 @@ Attribute ExportarComponentesVBASilencioso.VB_ProcData.VB_Invoke_Func = " \n0"
     End If
     
     ' Recorrer todos los componentes del proyecto VBA
-    For Each vbComp In Wb.VBProject.VBComponents
+    For Each vbComp In wb.VBProject.VBComponents
         Select Case vbComp.Type
             Case 1: nombreArchivo = vbComp.Name & ".bas"  ' Módulo estándar
             Case 2, 100: nombreArchivo = vbComp.Name & ".cls"  ' Clase o documento
@@ -121,17 +121,17 @@ Attribute ImportarComponentesVBA.VB_ProcData.VB_Invoke_Func = " \n0"
     Dim fso As Object, carpeta As Object, archivo As Object
     Dim rutaImportacion As String
     Dim extension As String
-    Dim Wb As Workbook
+    Dim wb As Workbook
     
     Dim frm As New frmImportExportMacros
     frm.Show vbModal
     If frm.WorkbookSeleccionado Is Nothing Then Exit Sub
-    Set Wb = frm.WorkbookSeleccionado
+    Set wb = frm.WorkbookSeleccionado
     Unload frm
-    If Wb Is Nothing Then Exit Sub               ' Cancelado o error
+    If wb Is Nothing Then Exit Sub               ' Cancelado o error
     
     ' Carpeta desde donde se importarán los archivos
-    rutaImportacion = Wb.Path
+    rutaImportacion = wb.Path
     
     If Dir(rutaImportacion, vbDirectory) = "" Then
         MsgBox "La carpeta de importación no existe: " & rutaImportacion, vbExclamation
@@ -144,7 +144,7 @@ Attribute ImportarComponentesVBA.VB_ProcData.VB_Invoke_Func = " \n0"
     For Each archivo In carpeta.Files
         extension = LCase(fso.GetExtensionName(archivo.Name))
         If extension = "bas" Or extension = "cls" Or extension = "frm" Then
-            Wb.VBProject.VBComponents.Import archivo.Path
+            wb.VBProject.VBComponents.Import archivo.Path
         End If
     Next archivo
     

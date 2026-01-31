@@ -21,10 +21,10 @@ Attribute RibbonOnLoad.VB_ProcData.VB_Invoke_Func = " \n0"
     ' inicializamos la referencia al ribbon en la aplicación
     Dim mApp As clsApplication
     Set mApp = App
-    mApp.Ribbon.Init xlRibbon
+    mApp.ribbon.Init xlRibbon
     
     LogInfo MODULE_NAME, "[callback: RibbonOnLoad] - ribbon cargado en la interfaz de excel"
-    mApp.Ribbon.InvalidarRibbon
+    mApp.ribbon.InvalidarRibbon
     
     Exit Sub
 ErrorHandler:
@@ -177,8 +177,8 @@ End Sub
 ' @Category: Información de archivo
 ' @ArgumentDescriptions: control: control del Ribbon|index: índice (base 0)|label: texto mostrado
 '--------------------------------------------------------------
-Sub GetOportunidadesLabel(control As IRibbonControl, Index As Integer, ByRef label)
-    label = App.Dispatcher.GetRibbonItemLabel(control.id, Index)
+Sub GetOportunidadesLabel(control As IRibbonControl, Index As Integer, ByRef Label)
+    Label = App.Dispatcher.GetRibbonItemLabel(control.id, Index)
 End Sub
 
 '--------------------------------------------------------------
@@ -293,7 +293,7 @@ End Sub
 
 Public Sub GetLabelGrpConfiguracion(control As IRibbonControl, ByRef returnedVal)
 Attribute GetLabelGrpConfiguracion.VB_ProcData.VB_Invoke_Func = " \n0"
-    returnedVal = App.Ribbon.State.Description
+    returnedVal = App.ribbon.State.Description
 End Sub
 
 ' ==========================================
@@ -303,7 +303,7 @@ End Sub
 Public Sub GetTabABCVisible(control As IRibbonControl, ByRef Visible)
 Attribute GetTabABCVisible.VB_ProcData.VB_Invoke_Func = " \n0"
     On Error GoTo ErrHandler
-    Visible = App.Ribbon.State.IsRibbonTabVisible
+    Visible = App.ribbon.State.IsRibbonTabVisible
     Exit Sub
 
 ErrHandler:
@@ -313,7 +313,7 @@ End Sub
 Public Sub GetGrpDeveloperAdminVisible(control As IRibbonControl, ByRef Visible)
 Attribute GetGrpDeveloperAdminVisible.VB_ProcData.VB_Invoke_Func = " \n0"
     On Error GoTo ErrHandler
-    Visible = App.Ribbon.State.IsAdminGroupVisible
+    Visible = App.ribbon.State.IsAdminGroupVisible
     Exit Sub
 
 ErrHandler:

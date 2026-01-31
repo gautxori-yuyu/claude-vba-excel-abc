@@ -7,17 +7,16 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
-
 '==============================================================
 ' Clase: clsOpportunitiesMgr
 '--------------------------------------------------------------
 ' Gestiona la lista de "Oportunidades" (subcarpetas) de un
-' directorio base configurado en el sistema. Expone m?todos
-' para refrescar, enumerar y cambiar oportunidad actual, as?
+' directorio base configurado en el sistema. Expone métodos
+' para refrescar, enumerar y cambiar oportunidad actual, así
 ' como un evento para notificar cambio de oportunidad actual.
 '==============================================================
-'TODO Implementar filtrado de oportunidades por a?o
-'TODO Anadir b?squeda incremental en dropdown
+'TODO Implementar filtrado de oportunidades por año
+'TODO Anadir búsqueda incremental en dropdown
 'TODO Cachear resultado de actualizarColeccionOportunidades (5 min)
 
 '@Exposed
@@ -44,12 +43,9 @@ Public Event OpportunityCollectionUpdate(ByVal cambios As String)
 '--------------------------------------------------------------
 Private mConfiguration As clsConfiguration
 Private mFileManager As clsFileManager            ' Gestor de sistema de archivos (inyectado)
-Private mOpportunityState As clsOpportunityState ' Estado de oportunidad (composiciÃ³n)
+Private mOpportunityState As clsOpportunityState ' Estado de oportunidad (composición)
 Private p_ColOpportunities As Collection         ' Lista de subcarpetas encontradas
-Private p_CurrOpportunity As Long                 ' Ãndice en p_ColOpportunities de la carpeta actual
-
-Private WithEvents mXlApp As Application
-Attribute mXlApp.VB_VarHelpID = -1
+Private p_CurrOpportunity As Long                 ' Índice en p_ColOpportunities de la carpeta actual
 
 '--------------------------------------------------------------
 ' @Description: Inicializa la clase y carga la ruta base de
@@ -59,18 +55,15 @@ Attribute mXlApp.VB_VarHelpID = -1
 Private Sub Class_Initialize()
     LogInfo MODULE_NAME, "[Class_Initialize]"
 
-    ' Crear estado de oportunidad (composiciÃ³n - Manager posee el estado)
+    ' Crear estado de oportunidad (composición - Manager posee el estado)
     Set mOpportunityState = New clsOpportunityState
 
     Set p_ColOpportunities = New Collection
     p_CurrOpportunity = -1
-
+    
     ' cargar configuracion y rutas
     Set mConfiguration = New clsConfiguration
     actualizarColeccionOportunidades
-
-    ' gestion de eventos
-    Set mXlApp = Application
 End Sub
 
 Private Sub Class_Terminate()
@@ -80,7 +73,7 @@ Private Sub Class_Terminate()
     Set mOpportunityState = Nothing
 End Sub
 
-'@Description: Expone el estado de oportunidad (para inyecciÃ³n en ApplicationState)
+'@Description: Expone el estado de oportunidad (para inyección en ApplicationState)
 Public Property Get State() As clsOpportunityState
     Set State = mOpportunityState
 End Property
@@ -101,14 +94,14 @@ Public Property Get BaseFolder() As String
 End Property
 
 '--------------------------------------------------------------
-' @Description: Actualiza la colecci?n p_ColOpportunities con
+' @Description: Actualiza la colección p_ColOpportunities con
 ' las subcarpetas existentes en la ruta base configurada.
-' El listado resultante se ordena en orden num?rico inverso
-' (de mayor a menor) seg?n el n?mero detectado en el nombre
-' de cada carpeta. Si no se detectan n?meros, se ordena en
-' orden alfab?tico descendente.
+' El listado resultante se ordena en orden numérico inverso
+' (de mayor a menor) según el número detectado en el nombre
+' de cada carpeta. Si no se detectan números, se ordena en
+' orden alfabético descendente.
 '--------------------------------------------------------------
-' @Category: Informaci?n de archivo
+' @Category: Información de archivo
 ' @ArgumentDescriptions: (sin argumentos)
 '--------------------------------------------------------------
 Public Function actualizarColeccionOportunidades()
@@ -154,7 +147,7 @@ Public Function actualizarColeccionOportunidades()
         End If
     Next nombreCarpeta
 
-    ' Orden numerico inverso (logica de dominio)
+    ' Orden numérico inverso
     If i > 0 Then
         ReDim Preserve arr(i - 1)
         arr = OrdenarCarpetasDesc(arr)
@@ -179,7 +172,7 @@ Public Sub ProcesarCambiosEnOportunidades(ByVal subfolderName As String)
     Dim bCambiosEnOportunidades As Boolean
     
     LogInfo MODULE_NAME, "[ProcesarCambiosEnOportunidades] - identificando si los cambios introducidos por el watcher son oportunidades"
-    ' Verificar si los cambios afectan a oportunidades v?lidas
+    ' Verificar si los cambios afectan a oportunidades válidas
     regEx.Pattern = FILEORFOLDERNAME_QUOTE_CUSTOMER_OTHER_MODEL_PATTERN
     bCambiosEnOportunidades = regEx.Test(subfolderName)
     
@@ -190,7 +183,7 @@ Public Sub ProcesarCambiosEnOportunidades(ByVal subfolderName As String)
         ' NO actualizar ribbon directamente - delegar al evento
         ' La clase NO debe conocer el ribbon
         ' Disparar evento para que otros componentes reaccionen
-        LogInfo MODULE_NAME, "[ProcesarCambiosEnOportunidades] - promoviendo evento OpportunityCollectionUpdate para poner al corriente a otros m?dulos"
+        LogInfo MODULE_NAME, "[ProcesarCambiosEnOportunidades] - promoviendo evento OpportunityCollectionUpdate para poner al corriente a otros módulos"
         RaiseEvent OpportunityCollectionUpdate(subfolderName)
     End If
 End Sub
@@ -202,9 +195,9 @@ Public Sub ProcesarCambiosEnItemsOportunidad(ByVal cambios As String)
 End Sub
 
 '--------------------------------------------------------------
-' @Description: Devuelve el n?mero de oportunidades cargadas.
+' @Description: Devuelve el número de oportunidades cargadas.
 '--------------------------------------------------------------
-' @Category: Informaci?n de archivo
+' @Category: Información de archivo
 ' @ArgumentDescriptions: (sin argumentos)
 '--------------------------------------------------------------
 Public Function numOpportunities() As Variant
@@ -213,10 +206,10 @@ End Function
 
 '--------------------------------------------------------------
 ' @Description: Devuelve una oportunidad
-' seg?n el ?ndice indicado.
+' según el índice indicado.
 '--------------------------------------------------------------
-' @Category: Informaci?n de archivo
-' @ArgumentDescriptions: index: ?ndice (base 0) de la oportunidad
+' @Category: Información de archivo
+' @ArgumentDescriptions: index: índice (base 0) de la oportunidad
 '--------------------------------------------------------------
 Public Property Get OportunityLabel(Index As Integer) As String
     If Index >= 0 And Index < p_ColOpportunities.Count Then
@@ -228,10 +221,10 @@ End Property
 
 '--------------------------------------------------------------
 ' @Description: Devuelve la ruta completa de una oportunidad
-' seg?n el ?ndice indicado.
+' según el índice indicado.
 '--------------------------------------------------------------
-' @Category: Informaci?n de archivo
-' @ArgumentDescriptions: index: ?ndice (base 0) de la oportunidad
+' @Category: Información de archivo
+' @ArgumentDescriptions: index: índice (base 0) de la oportunidad
 '--------------------------------------------------------------
 Public Property Get OportunityPath(Index As Long) As String
     If Index >= 0 And Index < p_ColOpportunities.Count Then
@@ -243,15 +236,14 @@ End Property
 ' @Description: Actualiza la oportunidad actual y dispara
 ' el evento currOpportunityChanged.
 '--------------------------------------------------------------
-' @Category: Informaci?n de archivo
-' @ArgumentDescriptions: index: ?ndice (base 0) de la oportunidad
+' @Category: Información de archivo
+' @ArgumentDescriptions: index: índice (base 0) de la oportunidad
 '--------------------------------------------------------------
-
 Public Property Let CurrOpportunity(Index As Long)
     If Index >= 0 And Index < p_ColOpportunities.Count Then
         p_CurrOpportunity = Index
 
-        ' Crear objeto clsOpportunity desde Ã­ndice
+        ' Crear objeto clsOpportunity desde índice
         Dim op As clsOpportunity
         Set op = CreateOpportunityFromIndex(Index)
 
@@ -259,28 +251,19 @@ Public Property Let CurrOpportunity(Index As Long)
         Set mOpportunityState.CurrentOpportunity = op
         mOpportunityState.CurrentIndex = Index
 
-        LogInfo MODULE_NAME, "[CurrOpportunity] - cambio de oportunidad actual: " & op.Label
-
-        ' MANTENER evento viejo temporalmente para compatibilidad durante migraciÃ³n
+        LogInfo MODULE_NAME, "[CurrOpportunity] - cambio de oportunidad actual -> promoviendo evento OpportunityChanged para poner al corriente a otros módulos"
         RaiseEvent currOpportunityChanged(Index, p_ColOpportunities(Index + 1))
     End If
 End Property
-
-
-
-
-
-
-
 
 Public Property Get CurrOpportunity() As Long
     CurrOpportunity = p_CurrOpportunity
 End Property
 
 '--------------------------------------------------------------
-' @Description: Ordena un array de rutas en orden num?rico
-' inverso, detectando el ?ltimo n?mero en el nombre de cada
-' carpeta. Si no hay n?mero, orden alfab?tico descendente.
+' @Description: Ordena un array de rutas en orden numérico
+' inverso, detectando el último número en el nombre de cada
+' carpeta. Si no hay número, orden alfabético descendente.
 '--------------------------------------------------------------
 Private Function OrdenarCarpetasDesc(arr() As String) As String()
     Dim i As Long, j As Long, tmp As String
@@ -302,8 +285,8 @@ Private Function OrdenarCarpetasDesc(arr() As String) As String()
 End Function
 
 '--------------------------------------------------------------
-' @Description: Extrae el ?ltimo n?mero del nombre de la carpeta.
-' Si no hay n?mero, devuelve -1E+99 para forzar orden al final.
+' @Description: Extrae el último número del nombre de la carpeta.
+' Si no hay número, devuelve -1E+99 para forzar orden al final.
 '--------------------------------------------------------------
 Private Function ExtraerClaveNumerica(ruta As String) As Double
     Dim re As Object, matches As Object, s As String
@@ -315,7 +298,7 @@ Private Function ExtraerClaveNumerica(ruta As String) As Double
     re.Global = True
     If re.Test(nombre) Then
         Set matches = re.Execute(nombre)
-        s = matches(matches.Count - 1).Value
+        s = matches(matches.Count - 1).value
         ExtraerClaveNumerica = CDbl(s)
         Exit Function
     End If
@@ -324,23 +307,23 @@ ErrHandler:
 End Function
 
 '--------------------------------------------------------------
-' @Description: Crea un objeto clsOpportunity desde un Ã­ndice de la colecciÃ³n
+' @Description: Crea un objeto clsOpportunity desde un índice de la colección
 '--------------------------------------------------------------
 Private Function CreateOpportunityFromIndex(Index As Long) As clsOpportunity
     Dim op As clsOpportunity
     Set op = New clsOpportunity
 
     If Index >= 0 And Index < p_ColOpportunities.Count Then
-        ' Extraer informaciÃ³n del nombre de la carpeta
+        ' Extraer información del nombre de la carpeta
         Dim folderName As String
         folderName = p_ColOpportunities(Index + 1)
 
-        ' Asignar propiedades bÃ¡sicas
+        ' Asignar propiedades básicas
         op.Label = folderName
         op.Path = BaseFolder & "\" & folderName
 
-        ' Intentar extraer informaciÃ³n adicional del nombre
-        ' Formato tÃ­pico: "412601015 - Cliente - Proyecto"
+        ' Intentar extraer información adicional del nombre
+        ' Formato típico: "412601015 - Cliente - Proyecto"
         On Error Resume Next
         Dim parts() As String
         parts = Split(folderName, " - ")
@@ -356,16 +339,39 @@ Private Function CreateOpportunityFromIndex(Index As Long) As clsOpportunity
     Set CreateOpportunityFromIndex = op
 End Function
 
+Private Function getNextOpportunityCode()
+    Dim arrOps() As String, i, dblLastOpSeq As Double, strOpName As String
+    arrOps = actualizarColeccionOportunidades
+    dblLastOpSeq = 0
+    For i = 0 To UBound(arrOps)
+        arrOps(i) = Left(arrOps(i), 9)
+    Next
+    If UBound(arrOps) >= 0 Then dblLastOpSeq = CDbl(Mid(arrOps(0), 7))
+    Do
+        dblLastOpSeq = dblLastOpSeq + 1
+        strOpName = mConfiguration.SAM & Mid(Year(Now), 3) & String(2 - Len(Month(Now)), "0") & Month(Now) & String(3 - Len(CStr(dblLastOpSeq)), "0") & dblLastOpSeq
+    Loop While UBound(Filter(arrOps, strOpName)) >= 0
+    getNextOpportunityCode = strOpName
+End Function
+Private Function getCustomerNameInputBox(strOpName As String)
+    Dim strCustomer As String
+    
+    Dim regEx As Object, strMsg
+    Set regEx = CreateObject("VBScript.RegExp")
+    regEx.Pattern = FILEORFOLDERNAME_QUOTE_CUSTOMER_OTHER_MODEL_PATTERN
+    Do
+        strCustomer = InputBox(strMsg & "Introduce el nombre del cliente, o cliente - proyecto:", "Cliente - Proyecto", strCustomer)
+        strMsg = "NOMBRE NO VALIDO. "
+    Loop While strCustomer <> "" And Not regEx.Test(strOpName & " - " & strCustomer & " - XXX")
+    
+    getCustomerNameInputBox = strCustomer
+End Function
 '--------------------------------------------------------------
 ' @Description: Crea una nueva carpeta de oportunidad, a partir de la estructura de plantilla
 '--------------------------------------------------------------
-'@Description: Crea una nueva carpeta de oportunidad a partir de la estructura de plantilla
-'@Note: Solicita el nombre del cliente mediante InputBox y valida el formato
-'@Category: Oportunidades
 Public Sub CreaOportunidad()
     On Error GoTo ErrHandler
 
-    Dim arrOps() As String, i, strSAM As String, strCustomer As String, strOpName As String, dblLastOpSeq As Double
 
     ' Verificar que FileManager esta disponible
     If mFileManager Is Nothing Then
@@ -380,30 +386,12 @@ Public Sub CreaOportunidad()
         Exit Sub
     End If
 
-    ' Actualizar lista de oportunidades y calcular siguiente secuencia
-    arrOps = actualizarColeccionOportunidades
-    dblLastOpSeq = 0
-    For i = 0 To UBound(arrOps)
-        arrOps(i) = Left(arrOps(i), 9)
-    Next
-    If UBound(arrOps) >= 0 Then dblLastOpSeq = CDbl(Mid(arrOps(0), 7))
-
-    ' Generar nombre de oportunidad (logica de dominio)
-    strSAM = App.OpportunitiesMgr.Conf.SAM
-    Do
-        dblLastOpSeq = dblLastOpSeq + 1
-        strOpName = strSAM & Mid(Year(Now), 3) & String(2 - Len(Month(Now)), "0") & Month(Now) & String(3 - Len(CStr(dblLastOpSeq)), "0") & dblLastOpSeq
-    Loop While UBound(Filter(arrOps, strOpName)) >= 0
-
-    ' Solicitar y validar nombre de cliente
-    Dim regEx As Object, strMsg
-    Set regEx = CreateObject("VBScript.RegExp")
-    regEx.Pattern = FILEORFOLDERNAME_QUOTE_CUSTOMER_OTHER_MODEL_PATTERN
-    Do
-        strCustomer = InputBox(strMsg & "Introduce el nombre del cliente, o cliente - proyecto:", "Cliente - Proyecto", strCustomer)
-        strMsg = "NOMBRE NO VALIDO. "
-    Loop While strCustomer <> "" And Not regEx.Test(strOpName & " - " & strCustomer & " - XXX")
-
+    Dim strOpName As String, strCustomer As String
+    
+    strOpName = getNextOpportunityCode
+    
+    strCustomer = getCustomerNameInputBox(strOpName)
+    
     If strCustomer <> "" Then
         ' Construir rutas usando FileManager
         Dim rutaOrigen As String
@@ -424,23 +412,14 @@ Public Sub CreaOportunidad()
             LogError MODULE_NAME, "[CreaOportunidad] - Fallo al copiar carpeta de plantilla"
             MsgBox "Error al crear la oportunidad. Revise el log para mas detalles.", vbExclamation
         End If
-    End If
 
-    ' Actualizar coleccion de oportunidades
-    arrOps = actualizarColeccionOportunidades
+        ' Actualizar coleccion de oportunidades
+        actualizarColeccionOportunidades
+    End If
+    
     Exit Sub
 
 ErrHandler:
     LogCurrentError MODULE_NAME, "[CreaOportunidad]"
     MsgBox "No se pudo crear la oportunidad: " & Err.Description, vbExclamation
 End Sub
-
-' ==================================================================
-' IMPLEMENTACION DE EVENTOS: CALLBACKS
-' ==================================================================
-
-Private Sub mXlApp_WorkbookActivate(ByVal Wb As Workbook)
-    ' Verificar si el workbook est? en una oportunidad
-    ' Actualizar p_CurrOpportunity si corresponde
-End Sub
-

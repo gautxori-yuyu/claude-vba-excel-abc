@@ -18,8 +18,8 @@ Private Const MODULE_NAME As String = "clsOpportunityState"
 ' EVENTOS (para Mediadores)
 ' ==========================================
 
-'@Description: Se dispara cuando cambia la oportunidad actual (solicitud de coordinaciÃ³n)
-Public Event CurrentOpportunityChanged(op As clsOpportunity, index As Long)
+'@Description: Se dispara cuando cambia la oportunidad actual (solicitud de coordinación)
+Public Event CurrentOpportunityChanged(op As clsOpportunity, Index As Long)
 
 ' ==========================================
 ' ESTADO DE OPORTUNIDAD
@@ -28,7 +28,7 @@ Private mCurrentOpportunity As clsOpportunity
 Private mCurrentIndex As Long
 
 ' ==========================================
-' INICIALIZACIÃ“N
+' INICIALIZACIÓN
 ' ==========================================
 
 Private Sub Class_Initialize()
@@ -41,7 +41,7 @@ Private Sub Class_Terminate()
 End Sub
 
 ' ==========================================
-' PROPIEDADES PÃšBLICAS CON FLAGS NATURALES
+' PROPIEDADES PÚBLICAS
 ' ==========================================
 
 '@Description: Obtiene o establece la oportunidad actual
@@ -50,24 +50,24 @@ Public Property Get CurrentOpportunity() As clsOpportunity
 End Property
 
 Friend Property Set CurrentOpportunity(op As clsOpportunity)
-    ' FLAG NATURAL: solo cambia si es diferente
-    If AreSameOpportunity(mCurrentOpportunity, op) Then Exit Property
+    Stop
+    If op.Equals(mCurrentOpportunity) Then Exit Property
 
     Set mCurrentOpportunity = op
 
     LogDebug MODULE_NAME, "[CurrentOpportunity] Changed to: " & GetCurrentOpportunityLabel()
 
-    ' Generar evento para MEDIADORES (solicitud de coordinaciÃ³n)
+    ' Generar evento para MEDIADORES (solicitud de coordinación)
     RaiseEvent CurrentOpportunityChanged(op, mCurrentIndex)
 End Property
 
-'@Description: Obtiene o establece el Ã­ndice de la oportunidad actual en la colecciÃ³n
+'@Description: Obtiene o establece el índice de la oportunidad actual en la colección
 Public Property Get CurrentIndex() As Long
     CurrentIndex = mCurrentIndex
 End Property
 
 Friend Property Let CurrentIndex(value As Long)
-    ' FLAG NATURAL: solo cambia si es diferente
+    Stop
     If mCurrentIndex = value Then Exit Property
 
     mCurrentIndex = value
@@ -94,21 +94,5 @@ Public Function GetCurrentOpportunityLabel() As String
         GetCurrentOpportunityLabel = mCurrentOpportunity.Label
         If Err.Number <> 0 Then GetCurrentOpportunityLabel = "(error)"
         On Error GoTo 0
-    End If
-End Function
-
-' ==========================================
-' FUNCIONES AUXILIARES DE COMPARACIÃ“N
-' ==========================================
-
-'@Description: Compara dos oportunidades para ver si son la misma
-Private Function AreSameOpportunity(op1 As clsOpportunity, op2 As clsOpportunity) As Boolean
-    If op1 Is Nothing And op2 Is Nothing Then
-        AreSameOpportunity = True
-    ElseIf op1 Is Nothing Or op2 Is Nothing Then
-        AreSameOpportunity = False
-    Else
-        ' Comparar por puntero de objeto
-        AreSameOpportunity = (ObjPtr(op1) = ObjPtr(op2))
     End If
 End Function

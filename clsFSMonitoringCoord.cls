@@ -453,7 +453,7 @@ Public Sub VerHistorialMonitoreo(Optional ByVal lastMinutes As Long = 60)
     
     ' Encabezados
     With ws
-        .Range("A1:E1").Value = Array("Timestamp", "Evento", "Carpeta", "Archivo", "Tamaño (bytes)")
+        .Range("A1:E1").value = Array("Timestamp", "Evento", "Carpeta", "Archivo", "Tamaño (bytes)")
         .Range("A1:E1").Font.Bold = True
         .Range("A1:E1").Interior.Color = RGB(68, 114, 196)
         .Range("A1:E1").Font.Color = RGB(255, 255, 255)
@@ -461,7 +461,7 @@ Public Sub VerHistorialMonitoreo(Optional ByVal lastMinutes As Long = 60)
         ' Datos
         Dim rowCount As Long
         rowCount = UBound(history, 1) - LBound(history, 1) + 1
-        .Range("A2").Resize(rowCount, 5).Value = history
+        .Range("A2").Resize(rowCount, 5).value = history
         
         ' Formato
         .Columns("A:A").NumberFormat = "dd/mm/yyyy hh:mm:ss"

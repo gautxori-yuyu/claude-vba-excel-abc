@@ -1,6 +1,6 @@
 Attribute VB_Name = "modMACROWbkEditableCleaning"
 ' ------------------------------------------
-' LIMPIEZA Y PREPARACIï¿½N DE LIBROS / HOJAS
+' LIMPIEZA Y PREPARACIÓN DE LIBROS / HOJAS
 ' Convertir un libro de Excel de oferta en
 ' "editable para enviar a agente comercial"
 ' ------------------------------------------
@@ -24,8 +24,7 @@ End Sub
 '@ArgumentDescriptions: wb: libro objetivo | hojas: array de Worksheet
 '@Returns: Nothing
 '@Category: Limpieza de datos
-Public Sub LimpiarLibroYHojas(Optional ByVal Wb As Workbook = Nothing, Optional ByVal hojas As Variant = Empty)
-Attribute LimpiarLibroYHojas.VB_ProcData.VB_Invoke_Func = " \n0"
+Public Sub LimpiarLibroYHojas(Optional ByVal wb As Workbook = Nothing, Optional ByVal hojas As Variant = Empty)
     On Error GoTo ErrHandler
 
     Dim ws As Worksheet
@@ -33,15 +32,15 @@ Attribute LimpiarLibroYHojas.VB_ProcData.VB_Invoke_Func = " \n0"
     Dim nErroresWs As Long
 
     ' Validaciones iniciales (ANTES de modificar estado)
-    If Wb Is Nothing And IsEmpty(hojas) Then Exit Sub
+    If wb Is Nothing And IsEmpty(hojas) Then Exit Sub
     If IsEmpty(hojas) Then
-        Set hojas = Wb.Worksheets
+        Set hojas = wb.Worksheets 'Application.Transpose(Application.Transpose(wb.Worksheets))
     End If
-    If Wb Is Nothing Then
+    If wb Is Nothing Then
         For Each ws In hojas
-            If Wb Is Nothing Then
-                Set Wb = ws.Parent
-            ElseIf Not Wb Is ws.Parent Then
+            If wb Is Nothing Then
+                Set wb = ws.Parent
+            ElseIf Not wb Is ws.Parent Then
                 MsgBox "Todas las hojas deben pertenecer al mismo libro de Excel", vbExclamation
                 Exit Sub
             End If
@@ -60,17 +59,17 @@ Attribute LimpiarLibroYHojas.VB_ProcData.VB_Invoke_Func = " \n0"
     Application.ScreenUpdating = False
     Application.EnableEvents = False
 
-    ' Forzar recÃ¡lculo completo de *todo el libro*
+    ' Forzar recálculo completo de *todo el libro*
     FullRecalc
 
-    EjecutarInspectorDeDocumentoVBA Wb
+    EjecutarInspectorDeDocumentoVBA wb
 
     For Each ws In hojas
         If Not ws Is Nothing Then
             nErroresWs = ContarYListarErroresEnHoja(ws)
             If nErroresWs > 0 Then
-                If 6 = MsgBox("La hoja """ & ws.Name & """ contiene " & nErroresWs & " celda(s) con error(es) de cÃ¡lculo." & vbCrLf & _
-                       "Ver detalles en la Ventana Inmediato (Ctrl+G)." & vbCrLf & "Â¿DESEAS ELIMINAR TODAS LAS FORMULAS DE LA HOJA?", _
+                If 6 = MsgBox("La hoja """ & ws.Name & """ contiene " & nErroresWs & " celda(s) con error(es) de cálculo." & vbCrLf & _
+                       "Ver detalles en la Ventana Inmediato (Ctrl+G)." & vbCrLf & "¿DESEAS ELIMINAR TODAS LAS FORMULAS DE LA HOJA?", _
                        vbExclamation + vbYesNo + vbDefaultButton2) Then
                        ' el usuario consiente borrar formulas con errores
                        nErroresWs = 0
@@ -78,7 +77,7 @@ Attribute LimpiarLibroYHojas.VB_ProcData.VB_Invoke_Func = " \n0"
             End If
             If nErroresWs = 0 Then Call FormulasToValuesSheet(ws)
             EliminarFilasColumnasOcultasSheet ws
-            ' La siguiente operaciÃ³n requiere que el libro / la hoja de excel estÃ© activo:
+            ' La siguiente operación requiere que el libro / la hoja de excel esté activo:
             ResetearZoomSheet ws
         End If
     Next
@@ -87,11 +86,11 @@ Attribute LimpiarLibroYHojas.VB_ProcData.VB_Invoke_Func = " \n0"
 
     ' El siguiente paso requiere ScreenUpdating = True temporalmente para activar ventana
     Application.ScreenUpdating = True
-    Wb.Activate
+    wb.Activate
 
     If ActiveWindow.SelectedSheets.Count > 0 Then
-        If MsgBox("Â¿Deseas eliminar todas las hojas del libro no seleccionadas?", vbYesNo + vbDefaultButton2) = vbYes Then
-            Call EliminarHojasNOSeleccionadas(Wb)
+        If MsgBox("¿Deseas eliminar todas las hojas del libro no seleccionadas?", vbYesNo + vbDefaultButton2) = vbYes Then
+            Call EliminarHojasNOSeleccionadas(wb)
         End If
     End If
 
@@ -109,22 +108,22 @@ ErrHandler:
     Resume CleanUp
 End Sub
 ' =========================================================
-' Funciï¿½n: ContarYListarErroresEnHoja
-' Propï¿½sito: Recalcula la hoja con mï¿½xima garantï¿½a y lista
-'            todos los errores de fï¿½rmula en Debug.Print.
-' Parï¿½metro:
+' Función: ContarYListarErroresEnHoja
+' Propósito: Recalcula la hoja con máxima garantía y lista
+'            todos los errores de fórmula en Debug.Print.
+' Parámetro:
 '   ws (Worksheet) - hoja a verificar
 ' Retorna:
-'   Long - nï¿½mero de celdas con error de fï¿½rmula
+'   Long - número de celdas con error de fórmula
 ' =========================================================
 Public Function ContarYListarErroresEnHoja(ws As Worksheet) As Long
-Attribute ContarYListarErroresEnHoja.VB_Description = "[modMACROWbkEditableCleaning] Funciï¿½n: ContarYListarErroresEnHoja. Propï¿½sito: Recalcula la hoja con mï¿½xima garantï¿½a y lista. todos los errores de fï¿½rmula en Debug.Print. Parï¿½metro:. ws (Worksheet) - hoja a verificar. Retorna:. Long - nï¿½mero de celdas con "
+Attribute ContarYListarErroresEnHoja.VB_Description = "[modMACROWbkEditableCleaning] Función: ContarYListarErroresEnHoja. Propósito: Recalcula la hoja con máxima garantía y lista. todos los errores de fórmula en Debug.Print. Parámetro:. ws (Worksheet) - hoja a verificar. Retorna:. Long - número de celdas con "
 Attribute ContarYListarErroresEnHoja.VB_ProcData.VB_Invoke_Func = " \n21"
     Dim rngErrores As Range
     Dim cell As Range
     Dim nErrores As Long
     
-    ' Guardar estado actual ï¿½ seguro incluso si EnableEvents = False
+    ' Guardar estado actual — seguro incluso si EnableEvents = False
     Dim prevCalcMode As XlCalculation
     Dim prevEnableEvents As Boolean
     Dim prevScreenUpdating As Boolean
@@ -136,15 +135,15 @@ Attribute ContarYListarErroresEnHoja.VB_ProcData.VB_Invoke_Func = " \n21"
     prevEnableEvents = Application.EnableEvents
     prevScreenUpdating = Application.ScreenUpdating
     
-    ' === 1. Configurar entorno para recï¿½lculo fiable ===
+    ' === 1. Configurar entorno para recálculo fiable ===
     Application.Calculation = xlCalculationAutomatic
     Application.EnableEvents = True
     Application.ScreenUpdating = False
     
-    ' === 2. Recï¿½lculo TOTAL con reconstrucciï¿½n de dependencias ===
+    ' === 2. Recálculo TOTAL con reconstrucción de dependencias ===
     ws.Calculate
     
-    ' === 3. Buscar celdas con fï¿½rmulas que contengan errores ===
+    ' === 3. Buscar celdas con fórmulas que contengan errores ===
     On Error Resume Next
     Set rngErrores = ws.UsedRange.SpecialCells(xlCellTypeFormulas, xlErrors)
     On Error GoTo 0
@@ -160,22 +159,22 @@ Attribute ContarYListarErroresEnHoja.VB_ProcData.VB_Invoke_Func = " \n21"
         
         For Each cell In rngErrores
             Dim v As Variant
-            v = cell.Value2   ' USO Value2: mï¿½s seguro y rï¿½pido
+            v = cell.Value2   ' USO Value2: más seguro y rápido
             
             Dim errStr As String
             If IsError(v) Then
                 Select Case CLng(CVErr(v))
-                    Case xlErrDiv0:   errStr = "#ï¿½DIV/0!"
+                    Case xlErrDiv0:   errStr = "#¡DIV/0!"
                     Case xlErrNA:     errStr = "#N/A"
-                    Case xlErrName:   errStr = "#ï¿½NOMBRE?"
-                    Case xlErrNull:   errStr = "#ï¿½NULO!"
-                    Case xlErrNum:    errStr = "#ï¿½NUM!"
-                    Case xlErrRef:    errStr = "#ï¿½REF!"
-                    Case xlErrValue:  errStr = "#ï¿½VALOR!"
+                    Case xlErrName:   errStr = "#¿NOMBRE?"
+                    Case xlErrNull:   errStr = "#¡NULO!"
+                    Case xlErrNum:    errStr = "#¡NUM!"
+                    Case xlErrRef:    errStr = "#¡REF!"
+                    Case xlErrValue:  errStr = "#¡VALOR!"
                     Case Else:        errStr = "#" & CStr(v)
                 End Select
             Else
-                errStr = "(no error, pero SpecialCells lo incluyï¿½: valor=" & CStr(v) & ")"
+                errStr = "(no error, pero SpecialCells lo incluyó: valor=" & CStr(v) & ")"
             End If
             
             addr = cell.Address(ReferenceStyle:=xlA1)
@@ -183,7 +182,7 @@ Attribute ContarYListarErroresEnHoja.VB_ProcData.VB_Invoke_Func = " \n21"
         Next cell
         Debug.Print String(35, "=")
     Else
-        Debug.Print "[OK] Hoja """ & ws.Name & """ -> Sin errores de fï¿½rmula."
+        Debug.Print "[OK] Hoja """ & ws.Name & """ -> Sin errores de fórmula."
     End If
     
     ' === 5. Restaurar estado original ===
@@ -196,10 +195,10 @@ Finish:
     Exit Function
 
 ErrorHandler:
-    Debug.Print "[ERR] Excepciï¿½n en ContarYListarErroresEnHoja: " & Err.Description
+    Debug.Print "[ERR] Excepción en ContarYListarErroresEnHoja: " & Err.Description
     Resume Finish
 End Function
-'@Description: Convierte todas las fï¿½rmulas de una hoja en valores
+'@Description: Convierte todas las fórmulas de una hoja en valores
 '@Scope: hoja individual
 '@ArgumentDescriptions: ws: hoja a procesar
 '@Returns: Nothing
@@ -207,12 +206,12 @@ End Function
 Public Sub FormulasToValuesSheet(ByVal ws As Worksheet)
 Attribute FormulasToValuesSheet.VB_ProcData.VB_Invoke_Func = " \n0"
     If ws Is Nothing Then Exit Sub
-    ws.UsedRange.Value = ws.UsedRange.Value
+    ws.UsedRange.value = ws.UsedRange.value
     Debug.Print "[modAPPBudgetQuotesUtilids FormulasToValuesAllSheets] - aplicada a: " & ws.Name
 End Sub
 
 '@Description: Resetea el zoom y posiciona el cursor en A1
-'@Scope: hoja individual (requiere activaciï¿½n)
+'@Scope: hoja individual (requiere activación)
 '@ArgumentDescriptions: ws: hoja a procesar
 '@Returns: Nothing
 '@Category: Ajuste visual
@@ -244,7 +243,7 @@ Attribute EliminarFilasColumnasOcultasSheet.VB_ProcData.VB_Invoke_Func = " \n0"
     prevEnableEvents = Application.EnableEvents
     prevScreenUpdating = Application.ScreenUpdating
     
-    ' === 1. Configurar entorno para recï¿½lculo fiable ===
+    ' === 1. Configurar entorno para recálculo fiable ===
     Application.EnableEvents = False
     Application.ScreenUpdating = False
     
@@ -271,7 +270,7 @@ Finish:
     Exit Sub
 
 ErrorHandler:
-    Debug.Print "[ERR] Excepciï¿½n en EliminarFilasColumnasOcultas: " & Err.Description
+    Debug.Print "[ERR] Excepción en EliminarFilasColumnasOcultas: " & Err.Description
     Resume Finish
 End Sub
 
@@ -280,32 +279,32 @@ End Sub
 '@ArgumentDescriptions: wb: libro a procesar
 '@Returns: Nothing
 '@Category: Seguridad / Privacidad
-Public Sub EjecutarInspectorDeDocumentoVBA(ByVal Wb As Workbook)
+Public Sub EjecutarInspectorDeDocumentoVBA(ByVal wb As Workbook)
 Attribute EjecutarInspectorDeDocumentoVBA.VB_ProcData.VB_Invoke_Func = " \n0"
-    If Wb Is Nothing Then Exit Sub
+    If wb Is Nothing Then Exit Sub
     
-    ' 1. Eliminar propiedades del documento e informaciï¿½n personal
-    ' Equivale a la opciï¿½n "Propiedades del documento e informaciï¿½n personal"
-    Wb.RemoveDocumentInformation (xlRDIDocumentProperties)
-    Wb.RemoveDocumentInformation (xlRDIRemovePersonalInformation)
+    ' 1. Eliminar propiedades del documento e información personal
+    ' Equivale a la opción "Propiedades del documento e información personal"
+    wb.RemoveDocumentInformation (xlRDIDocumentProperties)
+    wb.RemoveDocumentInformation (xlRDIRemovePersonalInformation)
     
     ' 2. Eliminar comentarios y notas
     ' wb.RemoveDocumentInformation (xlRDIInkAnnotations)
     ' wb.RemoveDocumentInformation (xlRDIComments)
     ' wb.RemoveDocumentInformation (xlRDIDefinedNameComments)
     
-    ' 3. Eliminar nombres definidos y rutas de publicaciï¿½n (si existen)
-    Wb.RemoveDocumentInformation (xlRDIInlineWebExtensions)
-    Wb.RemoveDocumentInformation (xlRDIDocumentManagementPolicy)
-    Wb.RemoveDocumentInformation (xlRDIExcelDataModel)
-    Wb.RemoveDocumentInformation (xlRDIPublishInfo)
+    ' 3. Eliminar nombres definidos y rutas de publicación (si existen)
+    wb.RemoveDocumentInformation (xlRDIInlineWebExtensions)
+    wb.RemoveDocumentInformation (xlRDIDocumentManagementPolicy)
+    wb.RemoveDocumentInformation (xlRDIExcelDataModel)
+    wb.RemoveDocumentInformation (xlRDIPublishInfo)
     
     Debug.Print "[modAPPBudgetQuotesUtilids EjecutarInspectorDeDocumentoVBA] - Metadatos y datos ocultos eliminados correctamente."
 End Sub
-Public Sub EliminarHojasNOSeleccionadas(ByVal Wb As Workbook)
+Public Sub EliminarHojasNOSeleccionadas(ByVal wb As Workbook)
 Attribute EliminarHojasNOSeleccionadas.VB_ProcData.VB_Invoke_Func = " \n0"
     Dim ws As Worksheet
-    For Each ws In Wb.Sheets
+    For Each ws In wb.Sheets
         If ws Is Nothing Then
         ElseIf Not HojaEstaSeleccionada(ws.Name) Then
             ws.Delete

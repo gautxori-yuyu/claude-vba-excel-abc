@@ -18,7 +18,7 @@ Private Const MODULE_NAME As String = "clsFileState"
 ' EVENTOS (para Mediadores)
 ' ==========================================
 
-'@Description: Se dispara cuando cambia el archivo activo (solicitud de coordinación)
+'@Description: Se dispara cuando cambia el archivo activo (solicitud de coordinaci�n)
 Public Event CurrentFileChanged(f As clsFileXLS, isOpportunityFile As Boolean)
 
 ' ==========================================
@@ -28,7 +28,7 @@ Private mCurrentFile As clsFileXLS
 Private mIsOpportunityFile As Boolean
 
 ' ==========================================
-' INICIALIZACIÓN
+' INICIALIZACI�N
 ' ==========================================
 
 Private Sub Class_Initialize()
@@ -41,7 +41,7 @@ Private Sub Class_Terminate()
 End Sub
 
 ' ==========================================
-' PROPIEDADES PÚBLICAS CON FLAGS NATURALES
+' PROPIEDADES P�BLICAS
 ' ==========================================
 
 '@Description: Obtiene o establece el archivo Excel activo actual
@@ -50,8 +50,8 @@ Public Property Get CurrentFile() As clsFileXLS
 End Property
 
 Friend Property Set CurrentFile(f As clsFileXLS)
-    ' FLAG NATURAL: solo cambia si es diferente
-    If AreSameFile(mCurrentFile, f) Then Exit Property
+    Stop
+    If f.Equals(mCurrentFile) Then Exit Property
 
     Set mCurrentFile = f
 
@@ -61,21 +61,22 @@ Friend Property Set CurrentFile(f As clsFileXLS)
     LogDebug MODULE_NAME, "[CurrentFile] Changed to: " & GetCurrentFileName() & _
                          ", IsOpportunity=" & mIsOpportunityFile
 
-    ' Generar evento para MEDIADORES (solicitud de coordinación)
+    ' Generar evento para MEDIADORES (solicitud de coordinaci�n)
     RaiseEvent CurrentFileChanged(f, mIsOpportunityFile)
 End Property
 
 '@Description: Indica si el archivo actual es un archivo de oportunidad
-Public Property Get IsOpportunityFile() As Boolean
-    IsOpportunityFile = mIsOpportunityFile
+Public Property Get isOpportunityFile() As Boolean
+    isOpportunityFile = mIsOpportunityFile
 End Property
 
 ' ==========================================
-' LÓGICA INTERNA
+' L�GICA INTERNA
 ' ==========================================
 
-'@Description: Actualiza el flag IsOpportunityFile basándose en el archivo actual
+'@Description: Actualiza el flag IsOpportunityFile bas�ndose en el archivo actual
 Private Sub UpdateIsOpportunityFile(f As clsFileXLS)
+    Stop
     If f Is Nothing Then
         mIsOpportunityFile = False
     Else
@@ -113,7 +114,7 @@ Public Function GetCurrentFileName() As String
 End Function
 
 '@Description: Obtiene el path completo del archivo actual
-'@Returns: String con el path o cadena vacía
+'@Returns: String con el path o cadena vac�a
 Public Function GetCurrentFilePath() As String
     If mCurrentFile Is Nothing Then
         GetCurrentFilePath = ""
@@ -127,23 +128,4 @@ Public Function GetCurrentFilePath() As String
     End If
 End Function
 
-' ==========================================
-' FUNCIONES AUXILIARES DE COMPARACIÓN
-' ==========================================
 
-'@Description: Compara dos archivos para ver si son el mismo
-Private Function AreSameFile(f1 As clsFileXLS, f2 As clsFileXLS) As Boolean
-    On Error Resume Next
-    If f1 Is Nothing And f2 Is Nothing Then
-        AreSameFile = True
-    ElseIf f1 Is Nothing Or f2 Is Nothing Then
-        AreSameFile = False
-    Else
-        ' Comparar por ObjectKey (más confiable que ObjPtr)
-        AreSameFile = (f1.ObjectKey = f2.ObjectKey)
-        If Err.Number <> 0 Then
-            AreSameFile = False
-        End If
-    End If
-    On Error GoTo 0
-End Function

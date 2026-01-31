@@ -101,7 +101,7 @@ Attribute InstalarValidacionesLocalesUnidades.VB_ProcData.VB_Invoke_Func = " \n0
     
     ' Generar listas en el libro destino
     For i = LBound(tipos) To UBound(tipos)
-        wsDestino.Cells(1, i + 1).Value = tipos(i)
+        wsDestino.Cells(1, i + 1).value = tipos(i)
         wsDestino.Cells(1, i + 1).Font.Bold = True
         
         listaUnidades = UdsPorTipo(tipos(i))
@@ -109,7 +109,7 @@ Attribute InstalarValidacionesLocalesUnidades.VB_ProcData.VB_Invoke_Func = " \n0
         If Not IsError(listaUnidades) Then
             If IsArray(listaUnidades) Then
                 numElementos = UBound(listaUnidades, 1) - LBound(listaUnidades, 1) + 1
-                wsDestino.Cells(2, i + 1).Resize(numElementos, 1).Value = listaUnidades
+                wsDestino.Cells(2, i + 1).Resize(numElementos, 1).value = listaUnidades
             End If
         End If
     Next i
@@ -173,14 +173,14 @@ Attribute GenerarListasUnidades.VB_ProcData.VB_Invoke_Func = " \n0"
     tipos = Array("Presión", "Temp", "Masa", "Peso molecular", "Potencia", "Caudal", "Distancia")
     
     For i = LBound(tipos) To UBound(tipos)
-        wsListas.Cells(1, i + 1).Value = tipos(i)
+        wsListas.Cells(1, i + 1).value = tipos(i)
         wsListas.Cells(1, i + 1).Font.Bold = True
         
         listaUnidades = UdsPorTipo(tipos(i))
         
         If Not IsError(listaUnidades) Then
             If IsArray(listaUnidades) Then
-                wsListas.Cells(2, i + 1).Resize(UBound(listaUnidades), 1).Value = listaUnidades
+                wsListas.Cells(2, i + 1).Resize(UBound(listaUnidades), 1).value = listaUnidades
             End If
         End If
     Next i
