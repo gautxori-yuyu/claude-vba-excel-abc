@@ -97,7 +97,7 @@ Attribute ListarProyectosVBAIncluyendoXLAM.VB_ProcData.VB_Invoke_Func = " \n0"
         Debug.Print "   Tipo: " & tipoProyecto
         Debug.Print "   Archivo: " & vbProj.fileName
         Debug.Print "   HelpFile: " & vbProj.HelpFile
-        Debug.Print "   Mode: " & vbProj.Mode
+        Debug.Print "   Mode: " & vbProj.mode
         Debug.Print "----------------------------------"
     Next vbProj
     

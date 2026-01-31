@@ -98,9 +98,9 @@ End Sub
 '@Scope: Privado
 '@ArgumentDescriptions: wb: Workbook donde crear | sheetName: Nombre de la hoja
 '@Returns: Worksheet | Referencia a la hoja creada
-Private Function CrearHojaProcedimientos(Wb As Workbook, ByVal sheetName As String) As Worksheet
+Private Function CrearHojaProcedimientos(wb As Workbook, ByVal sheetName As String) As Worksheet
     Dim ws As Worksheet
-    Set ws = Wb.Worksheets.Add
+    Set ws = wb.Worksheets.Add
     ws.Name = sheetName
     
     Call CrearEncabezadosHoja(ws)
@@ -113,13 +113,13 @@ End Function
 '@ArgumentDescriptions: ws: Worksheet donde crear encabezados
 Private Sub CrearEncabezadosHoja(ws As Worksheet)
     With ws
-        .Cells(1, 1).Value = "Módulo"
-        .Cells(1, 2).Value = "Firma del procedimiento"
-        .Cells(1, 3).Value = "Description"
-        .Cells(1, 4).Value = "Category"
-        .Cells(1, 5).Value = "Scope"
-        .Cells(1, 6).Value = "ArgumentDescriptions"
-        .Cells(1, 7).Value = "Returns"
+        .Cells(1, 1).value = "Módulo"
+        .Cells(1, 2).value = "Firma del procedimiento"
+        .Cells(1, 3).value = "Description"
+        .Cells(1, 4).value = "Category"
+        .Cells(1, 5).value = "Scope"
+        .Cells(1, 6).value = "ArgumentDescriptions"
+        .Cells(1, 7).value = "Returns"
         
         ' Formato de encabezados
         With .Range("A1:G1")
@@ -160,13 +160,13 @@ Private Sub VolcarProcedimientosAHoja(ws As Worksheet, funciones As Object)
         Set proc = funciones(i)
         
         With ws
-            .Cells(fila, 1).Value = proc.Module
-            .Cells(fila, 2).Value = proc.NormalizedSignature
-            .Cells(fila, 3).Value = proc.Description
-            .Cells(fila, 4).Value = IIf(proc.Category = DEFAULT_CATEGORY, "", proc.Category)
-            .Cells(fila, 5).Value = proc.Scope
-            .Cells(fila, 6).Value = IIf(proc.ArgumentDescriptions = DEFAULT_NOPARAMS, "", proc.ArgumentDescriptions)
-            .Cells(fila, 7).Value = proc.Returns
+            .Cells(fila, 1).value = proc.Module
+            .Cells(fila, 2).value = proc.NormalizedSignature
+            .Cells(fila, 3).value = proc.Description
+            .Cells(fila, 4).value = IIf(proc.Category = DEFAULT_CATEGORY, "", proc.Category)
+            .Cells(fila, 5).value = proc.Scope
+            .Cells(fila, 6).value = IIf(proc.ArgumentDescriptions = DEFAULT_NOPARAMS, "", proc.ArgumentDescriptions)
+            .Cells(fila, 7).value = proc.Returns
             
             ' Formato condicional para mejor lectura
             If i Mod 2 = 0 Then
@@ -177,7 +177,7 @@ Private Sub VolcarProcedimientosAHoja(ws As Worksheet, funciones As Object)
             
             ' enfatiza celdas que tengan diferencias en valores deducidos vs metadatos procesados del proyecto
             For col = 3 To 7
-                If InStr(.Cells(fila, col).Value, "M.D.:") > 0 Then
+                If InStr(.Cells(fila, col).value, "M.D.:") > 0 Then
                     If i Mod 2 = 0 Then
                         .Cells(fila, col).Interior.Color = RGB(240, 210, 120)
                     Else
@@ -363,16 +363,16 @@ Private Function LeerMetadatosDeHoja(ws As Worksheet) As Object
     
     fila = 2 ' Primera fila de datos
     
-    Do While ws.Cells(fila, 1).Value <> ""
-        modulo = ws.Cells(fila, 1).Value
-        firma = ws.Cells(fila, 2).Value
+    Do While ws.Cells(fila, 1).value <> ""
+        modulo = ws.Cells(fila, 1).value
+        firma = ws.Cells(fila, 2).value
         claveCompuesta = modulo & "|" & firma
         
-        metadatos(1) = ws.Cells(fila, 3).Value ' Description
-        metadatos(2) = ws.Cells(fila, 4).Value ' Category
-        metadatos(3) = ws.Cells(fila, 5).Value ' Scope
-        metadatos(4) = ws.Cells(fila, 6).Value ' ArgumentDescriptions
-        metadatos(5) = ws.Cells(fila, 7).Value ' Returns
+        metadatos(1) = ws.Cells(fila, 3).value ' Description
+        metadatos(2) = ws.Cells(fila, 4).value ' Category
+        metadatos(3) = ws.Cells(fila, 5).value ' Scope
+        metadatos(4) = ws.Cells(fila, 6).value ' ArgumentDescriptions
+        metadatos(5) = ws.Cells(fila, 7).value ' Returns
         
         If Not dict.Exists(claveCompuesta) Then
             dict.Add claveCompuesta, metadatos

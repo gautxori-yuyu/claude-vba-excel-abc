@@ -218,7 +218,7 @@ Private Function ConvertirAStringFormula(ByVal valor As Variant) As String
         Case vbObject
             ' Si la UDF devolvió un objeto Range, tomamos su valor
             If TypeOf valor Is Range Then
-                ConvertirAStringFormula = ConvertirAStringFormula(valor.Value)
+                ConvertirAStringFormula = ConvertirAStringFormula(valor.value)
             Else
                 ConvertirAStringFormula = """#OBJETO!"""
             End If
@@ -286,7 +286,7 @@ Private Function ResolverIndirecciones(ByVal textoUDF As String, ByVal rContexto
     For i = matches.Count - 1 To 0 Step -1
         Set m = matches(i)
         ' Extraemos lo que hay dentro de los paréntesis de INDIRECT
-        interiorIndireccion = Mid(m.Value, 10, Len(m.Value) - 10)
+        interiorIndireccion = Mid(m.value, 10, Len(m.value) - 10)
         
         ' Evaluamos solo el interior para obtener la cadena de texto de la dirección
         direccionResuelta = rContexto.Parent.Evaluate(interiorIndireccion)

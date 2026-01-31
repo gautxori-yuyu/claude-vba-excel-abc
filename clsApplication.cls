@@ -14,19 +14,15 @@ Option Explicit
 Private Const MODULE_NAME As String = "clsApplication"
 
 Private mChartManager As clsChartMgr
-Attribute mChartManager.VB_VarHelpID = -1
+Private mCtx As clsExecutionContext
+Attribute mCtx.VB_VarHelpID = -1
 
 Private mEventDispatcher As clsEventDispatcher
-
 Private mEvMgrInfrastructure As clsEventsMgrInfrastructure
 
 Private mFileMgr As clsFileManager
-
 Private mOpportunities As clsOpportunitiesMgr
-Attribute mOpportunities.VB_VarHelpID = -1
-
 Private mFSMonitoringCoord As clsFSMonitoringCoord
-Attribute mFSMonitoringCoord.VB_VarHelpID = -1
                 '
 Private mEvMediatorDomain As clsEventsMediatorDomain
 
@@ -37,6 +33,10 @@ Private mApplicationState As clsApplicationState
 
 Public Property Get ChartManager() As clsChartMgr
     Set ChartManager = mChartManager
+End Property
+
+Public Property Get executionContext() As clsExecutionContext
+    Set executionContext = mCtx
 End Property
 
 Public Static Property Get ribbon() As clsRibbon
@@ -73,36 +73,50 @@ Private Sub Class_Initialize()
 
     LogInfo MODULE_NAME, "[Class_Initialize] - Iniciando aplicacion"
 
-    ' ESTADO CENTRALIZADO (crear primero para inyectar en otros componentes)
-    Set mApplicationState = New clsApplicationState
-    
     ' INFRAESTRUCTURA
+    Set mCtx = New clsExecutionContext
+    mCtx.Initialize
+    ' TODO: creo que es mejor UNIFICARLO, o HACER COMPOSICION, de clsChartMgr, dentro de clsExecutionContext (ChartMgr PERTENECE al exec context,
+    ' mas que depender de él; actualmente parece que la relación está invertida, está asi para minimizar los cambios al resto del codigo...)
     Set mChartManager = New clsChartMgr
-    
+    mChartManager.Initialize mCtx
     Set mEventDispatcher = New clsEventDispatcher
-    
-    Set mEvMgrInfrastructure = New clsEventsMgrInfrastructure
-    Call mEvMgrInfrastructure.Initialize(mRibbon, mChartManager)
-    
-    ' DOMINIO
-    Set mFileMgr = New clsFileManager
 
+    Set mFileMgr = New clsFileManager
+    mFileMgr.Init mCtx.Application.Workbooks
+
+    ' DOMINIO - Crear managers (ellos crean sus estados internamente)
     Set mOpportunities = New clsOpportunitiesMgr
     ' Inyectar dependencia de FileManager
     Set mOpportunities.FileManager = mFileMgr
 
-    ' SERVICIOS DE NIVEL DE DOMINIO (crean eventos y generan logica "de negocio")
+    ' SERVICIOS DE MONITOREO
     Set mFSMonitoringCoord = New clsFSMonitoringCoord
     mFSMonitoringCoord.IniciarMonitoreo mOpportunities.Conf.oDicFoldersToWatch
-    
-    Set mEvMediatorDomain = New clsEventsMediatorDomain
-    Call mEvMediatorDomain.Initialize(mFSMonitoringCoord, mOpportunities, mRibbon, mFileMgr)
-    
-    ' INTERFAZ
-    Set mRibbon = New clsRibbon
 
-    ' Conectar ApplicationState con Ribbon para invalidación de controles
+    ' INTERFAZ - Crear Ribbon (crea RibbonState internamente)
+    Set mRibbon = New clsRibbon
+    
+    ' ESTADO CENTRALIZADO - Inyectar referencias a subestados (Dependency Injection)
+    Set mApplicationState = New clsApplicationState
+    mApplicationState.Initialize RibbonState:=mRibbon.State, _
+                                 OpportunityState:=mOpportunities.State, _
+                                 FileState:=mFileMgr.State, _
+                                 ChartState:=mChartManager.State
     mApplicationState.SetRibbon mRibbon
+
+    ' GESTOR DE EVENTOS DE INFRAESTRUCTURA
+    Set mEvMgrInfrastructure = New clsEventsMgrInfrastructure
+    Call mEvMgrInfrastructure.Initialize(mRibbon, mFileMgr, mChartManager, mCtx)
+
+    ' MEDIADOR DE EVENTOS DE DOMINIO - Inyectar ApplicationState
+    Set mEvMediatorDomain = New clsEventsMediatorDomain
+    Call mEvMediatorDomain.Initialize(mCtx, _
+                                    mFSMonitoringCoord, _
+                                    mOpportunities, _
+                                    mRibbon, _
+                                    mFileMgr, _
+                                    mApplicationState)
 
     LogInfo MODULE_NAME, "[Class_Initialize] - inicialización completada"
     
@@ -147,4 +161,5 @@ Private Sub Class_Terminate()
 
     LogInfo MODULE_NAME, "[Terminate] - Limpieza completada"
 End Sub
+
 

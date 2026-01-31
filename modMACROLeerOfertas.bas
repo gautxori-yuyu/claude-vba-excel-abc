@@ -52,17 +52,17 @@ Attribute Test_LeerOfertas.VB_ProcData.VB_Invoke_Func = " \n0"
     dg = of.DatosGenerales
 
     ' Cabeceras
-    ws.Range("A1:F1").Value = Array( _
+    ws.Range("A1:F1").value = Array( _
         "OFER_ID", "OFER_NUM_OFERTA", "OFER_FECHA", _
         "OFER_CLIENTE", "GASE_ID", "OFER_OBSERVACIONES")
 
     ' Datos
-    ws.Range("A2").Value = dg.OFER_ID
-    ws.Range("B2").Value = dg.OFER_NUM_OFERTA
-    ws.Range("C2").Value = dg.OFER_FECHA
-    ws.Range("D2").Value = dg.OFER_CLIENTE
-    ws.Range("E2").Value = dg.GASE_ID
-    ws.Range("F2").Value = dg.OFER_OBSERVACIONES
+    ws.Range("A2").value = dg.OFER_ID
+    ws.Range("B2").value = dg.OFER_NUM_OFERTA
+    ws.Range("C2").value = dg.OFER_FECHA
+    ws.Range("D2").value = dg.OFER_CLIENTE
+    ws.Range("E2").value = dg.GASE_ID
+    ws.Range("F2").value = dg.OFER_OBSERVACIONES
 
     ctx.Desconectar
 
@@ -101,15 +101,15 @@ Attribute Test_LeerOfertaConOtros.VB_ProcData.VB_Invoke_Func = " \n0"
     Set of = repo.LeerPorOferID(OFER_ID)
 
     ' Cabeceras
-    ws.Range("A1:C1").Value = Array( _
+    ws.Range("A1:C1").value = Array( _
         "OFOT_LINEA", "OFOT_DESCRIPCION", "OFOT_PRE_COSTE")
 
     ' Datos
     For i = 1 To of.Otros.Count
         Set it = of.Otros(i)
-        ws.Cells(i + 1, 1).Value = it.OFOT_LINEA
-        ws.Cells(i + 1, 2).Value = it.OFOT_DESCRIPCION
-        ws.Cells(i + 1, 3).Value = it.OFOT_PRE_COSTE
+        ws.Cells(i + 1, 1).value = it.OFOT_LINEA
+        ws.Cells(i + 1, 2).value = it.OFOT_DESCRIPCION
+        ws.Cells(i + 1, 3).value = it.OFOT_PRE_COSTE
     Next i
 
     ctx.Desconectar
@@ -141,7 +141,7 @@ Attribute Test_VolcarTodasLasOfertasAExcel.VB_ProcData.VB_Invoke_Func = " \n0"
     Set ws = ActiveWorkbook.Worksheets("Ofertas")
     ws.Cells.Clear
 
-    ws.Range("A1:F1").Value = Array( _
+    ws.Range("A1:F1").value = Array( _
         "OFER_ID", _
         "OFER_NUM_OFERTA", _
         "OFER_FECHA", _
@@ -171,12 +171,12 @@ Attribute Test_VolcarTodasLasOfertasAExcel.VB_ProcData.VB_Invoke_Func = " \n0"
     For Each of In ofertas
         dg = of.DatosGenerales
 
-        ws.Cells(fila, 1).Value = dg.OFER_ID
-        ws.Cells(fila, 2).Value = dg.OFER_NUM_OFERTA
-        ws.Cells(fila, 3).Value = dg.OFER_FECHA
-        ws.Cells(fila, 4).Value = dg.OFER_CLIENTE
-        ws.Cells(fila, 5).Value = dg.GASE_ID
-        ws.Cells(fila, 6).Value = dg.OFER_OBSERVACIONES
+        ws.Cells(fila, 1).value = dg.OFER_ID
+        ws.Cells(fila, 2).value = dg.OFER_NUM_OFERTA
+        ws.Cells(fila, 3).value = dg.OFER_FECHA
+        ws.Cells(fila, 4).value = dg.OFER_CLIENTE
+        ws.Cells(fila, 5).value = dg.GASE_ID
+        ws.Cells(fila, 6).value = dg.OFER_OBSERVACIONES
 
         fila = fila + 1
     Next of

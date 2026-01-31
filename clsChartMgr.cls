@@ -30,30 +30,56 @@ Public Event ChartDeactivated(Chart As Chart)
 ' Variables privadas
 '--------------------------------------------------------------
 Private mChartsInActiveSheet As Collection              ' Colección de instancias de clsChartEvents activas
+Private mChartState As clsChartState              ' Estado de Chart activo (composición)
+Private mCtx As clsExecutionContext
 
 '--------------------------------------------------------------
 ' Inicialización
 '--------------------------------------------------------------
 Private Sub Class_Initialize()
     Set mChartsInActiveSheet = New Collection
+
+    ' Crear estado de Chart (composición - Manager posee el estado)
+    Set mChartState = New clsChartState
+
     LogInfo MODULE_NAME, "[Class_Initialize]"
 End Sub
 
 Private Sub Class_Terminate()
     Call StopWatching
+
+    ' Liberar estado
+    Set mChartState = Nothing
+
     LogInfo MODULE_NAME, "[Class_Terminate]"
+End Sub
+
+'@Description: Expone el estado de Chart (para inyección en ApplicationState)
+Public Property Get State() As clsChartState
+    Set State = mChartState
+End Property
+
+Public Sub Initialize(oCtx As clsExecutionContext)
+    Set mCtx = oCtx
+    ' No cacheamos nada aquí ? lazy evaluation segura
+    LogInfo MODULE_NAME, "[Initialize] - Suscrito a eventos de Application"
 End Sub
 
 '--------------------------------------------------------------
 ' @Description: Comprueba si el gráfico activo es válido para invertir ejes
 '--------------------------------------------------------------
+' TODO: unificar esta funcion con lo de clsExecutioContext: alli la funcion Chart DEVUELVE CASI TODO LO QUE HACE ESTA FUNCION,
+' queda cambiar el Select Case TypeName(mCtx.Selection) usando la informacion cacheada alli (m_cachedChartInfo) (y sigo pensando que
+' clsExecutionContext "ESTA DE SOBRA", lo unico que aporta es el "Cacheado"... y pendiente de incoporarle funcionalidad para,
+' cuando se pierde el contexto, **reenganchar eventos, **reconstruir estado derivado, y **aislar el daño del reset)
+
 Public Function EsValidoInvertirEjes() As Boolean
     On Error GoTo SafeExit
     
     ' 1. Validación segura de contexto mínimo
-    If Application.ActiveWorkbook Is Nothing Then Exit Function
-    If Application.Selection Is Nothing Then Exit Function
-    If ActiveChart Is Nothing Then Exit Function
+    If mCtx.Workbook Is Nothing Then Exit Function
+    If mCtx.Selection Is Nothing Then Exit Function
+    If mCtx.Chart Is Nothing Then Exit Function
     
     ' 3. Caso de hoja de gráfico activa (ChartSheet)
     If TypeName(Application.ActiveSheet) = "Chart" Then
@@ -62,7 +88,7 @@ Public Function EsValidoInvertirEjes() As Boolean
     End If
     
     ' 4. Caso de gráfico incrustado en hoja de cálculo (ChartObject)
-    Select Case TypeName(Application.Selection)
+    Select Case TypeName(mCtx.Selection)
         Case "ChartObject", "ChartArea"
             ' No tengo nada claro que en este tipo de objetos se puedan invertir los ejes; en todo caso, NO son los que yo creo
             EsValidoInvertirEjes = True
@@ -75,7 +101,7 @@ Public Function EsValidoInvertirEjes() As Boolean
             EsValidoInvertirEjes = False
             Exit Function
     End Select
-    
+    ' HASTA AQUI SE REEMPLAZARIA CON EL Chart de clsExecutionContext; A PARTIR DE AQUI "EMPIEZA" EsValidoInvertirEjes
 CheckSeries:
     ' 5. Comprobar al menos una serie en cada eje (tu lógica exacta)
     Dim tienePrimario As Boolean, tieneSecundario As Boolean
@@ -103,29 +129,29 @@ End Function
 '@Category: Gráficos
 '@Scope: argumentos
 '@ArgumentDescriptions: sh As Object
-Public Sub WatchSheet(Sh As Object)
+Public Sub WatchSheet(sh As Object)
     Dim oChartEvents As clsChartEvents
     
     On Error GoTo ErrHandler
     
-    LogInfo MODULE_NAME, "[WatchSheet] - Empezando a observar hoja: " & Sh.Name
+    LogInfo MODULE_NAME, "[WatchSheet] - Empezando a observar hoja: " & sh.Name
     
     ' Detener observación anterior (libera eventos)
     ' Call StopWatching
     
     ' Caso 1: Hoja de gráfico (Chart Sheet)
-    If TypeName(Sh) = "Chart" Then
+    If TypeName(sh) = "Chart" Then
         Set oChartEvents = New clsChartEvents
-        Set oChartEvents.Chart = Sh
+        Set oChartEvents.Chart = sh
         Set oChartEvents.ParentManager = Me
-        mChartsInActiveSheet.Add oChartEvents, CStr(ObjPtr(Sh))
+        mChartsInActiveSheet.Add oChartEvents, CStr(ObjPtr(sh))
         Exit Sub
     End If
     
     ' Caso 2: Hoja con gráficos embebidos
-    If Sh.ChartObjects.Count > 0 Then
+    If sh.ChartObjects.Count > 0 Then
         Dim chtObj As ChartObject
-        For Each chtObj In Sh.ChartObjects
+        For Each chtObj In sh.ChartObjects
             Set oChartEvents = New clsChartEvents
             Set oChartEvents.Chart = chtObj.Chart
             Set oChartEvents.ParentManager = Me

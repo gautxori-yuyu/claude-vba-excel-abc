@@ -15,6 +15,13 @@ Option Explicit
 Private Const MODULE_NAME As String = "clsOpportunityState"
 
 ' ==========================================
+' EVENTOS (para Mediadores)
+' ==========================================
+
+'@Description: Se dispara cuando cambia la oportunidad actual (solicitud de coordinación)
+Public Event CurrentOpportunityChanged(op As clsOpportunity, Index As Long)
+
+' ==========================================
 ' ESTADO DE OPORTUNIDAD
 ' ==========================================
 Private mCurrentOpportunity As clsOpportunity
@@ -29,6 +36,10 @@ Private Sub Class_Initialize()
     mCurrentIndex = -1
 End Sub
 
+Private Sub Class_Terminate()
+    Set mCurrentOpportunity = Nothing
+End Sub
+
 ' ==========================================
 ' PROPIEDADES PÚBLICAS
 ' ==========================================
@@ -39,7 +50,15 @@ Public Property Get CurrentOpportunity() As clsOpportunity
 End Property
 
 Friend Property Set CurrentOpportunity(op As clsOpportunity)
+    Stop
+    If op.Equals(mCurrentOpportunity) Then Exit Property
+
     Set mCurrentOpportunity = op
+
+    LogDebug MODULE_NAME, "[CurrentOpportunity] Changed to: " & GetCurrentOpportunityLabel()
+
+    ' Generar evento para MEDIADORES (solicitud de coordinación)
+    RaiseEvent CurrentOpportunityChanged(op, mCurrentIndex)
 End Property
 
 '@Description: Obtiene o establece el índice de la oportunidad actual en la colección
@@ -48,7 +67,12 @@ Public Property Get CurrentIndex() As Long
 End Property
 
 Friend Property Let CurrentIndex(value As Long)
+    Stop
+    If mCurrentIndex = value Then Exit Property
+
     mCurrentIndex = value
+
+    LogDebug MODULE_NAME, "[CurrentIndex] Changed to: " & value
 End Property
 
 ' ==========================================
@@ -66,7 +90,9 @@ Public Function GetCurrentOpportunityLabel() As String
     If mCurrentOpportunity Is Nothing Then
         GetCurrentOpportunityLabel = "(ninguna)"
     Else
-        GetCurrentOpportunityLabel = mCurrentOpportunity.label
+        On Error Resume Next
+        GetCurrentOpportunityLabel = mCurrentOpportunity.Label
+        If Err.Number <> 0 Then GetCurrentOpportunityLabel = "(error)"
+        On Error GoTo 0
     End If
 End Function
-

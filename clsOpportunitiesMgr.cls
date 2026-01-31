@@ -7,7 +7,6 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
-
 '==============================================================
 ' Clase: clsOpportunitiesMgr
 '--------------------------------------------------------------
@@ -44,11 +43,9 @@ Public Event OpportunityCollectionUpdate(ByVal cambios As String)
 '--------------------------------------------------------------
 Private mConfiguration As clsConfiguration
 Private mFileManager As clsFileManager            ' Gestor de sistema de archivos (inyectado)
+Private mOpportunityState As clsOpportunityState ' Estado de oportunidad (composición)
 Private p_ColOpportunities As Collection         ' Lista de subcarpetas encontradas
 Private p_CurrOpportunity As Long                 ' Índice en p_ColOpportunities de la carpeta actual
-
-Private WithEvents mXlApp As Application
-Attribute mXlApp.VB_VarHelpID = -1
 
 '--------------------------------------------------------------
 ' @Description: Inicializa la clase y carga la ruta base de
@@ -57,21 +54,29 @@ Attribute mXlApp.VB_VarHelpID = -1
 '--------------------------------------------------------------
 Private Sub Class_Initialize()
     LogInfo MODULE_NAME, "[Class_Initialize]"
-    
+
+    ' Crear estado de oportunidad (composición - Manager posee el estado)
+    Set mOpportunityState = New clsOpportunityState
+
     Set p_ColOpportunities = New Collection
     p_CurrOpportunity = -1
     
     ' cargar configuracion y rutas
     Set mConfiguration = New clsConfiguration
     actualizarColeccionOportunidades
-    
-    ' gestion de eventos
-    Set mXlApp = Application
 End Sub
 
 Private Sub Class_Terminate()
     LogInfo MODULE_NAME, "[Class_Terminate]"
+
+    ' Liberar estado
+    Set mOpportunityState = Nothing
 End Sub
+
+'@Description: Expone el estado de oportunidad (para inyección en ApplicationState)
+Public Property Get State() As clsOpportunityState
+    Set State = mOpportunityState
+End Property
 
 Public Property Get Conf() As clsConfiguration
     Set Conf = mConfiguration
@@ -237,7 +242,15 @@ End Property
 Public Property Let CurrOpportunity(Index As Long)
     If Index >= 0 And Index < p_ColOpportunities.Count Then
         p_CurrOpportunity = Index
-        
+
+        ' Crear objeto clsOpportunity desde índice
+        Dim op As clsOpportunity
+        Set op = CreateOpportunityFromIndex(Index)
+
+        ' Actualizar estado (esto genera evento para mediadores)
+        Set mOpportunityState.CurrentOpportunity = op
+        mOpportunityState.CurrentIndex = Index
+
         LogInfo MODULE_NAME, "[CurrOpportunity] - cambio de oportunidad actual -> promoviendo evento OpportunityChanged para poner al corriente a otros módulos"
         RaiseEvent currOpportunityChanged(Index, p_ColOpportunities(Index + 1))
     End If
@@ -292,6 +305,40 @@ Private Function ExtraerClaveNumerica(ruta As String) As Double
 ErrHandler:
     ExtraerClaveNumerica = -1E+99
 End Function
+
+'--------------------------------------------------------------
+' @Description: Crea un objeto clsOpportunity desde un índice de la colección
+'--------------------------------------------------------------
+Private Function CreateOpportunityFromIndex(Index As Long) As clsOpportunity
+    Dim op As clsOpportunity
+    Set op = New clsOpportunity
+
+    If Index >= 0 And Index < p_ColOpportunities.Count Then
+        ' Extraer información del nombre de la carpeta
+        Dim folderName As String
+        folderName = p_ColOpportunities(Index + 1)
+
+        ' Asignar propiedades básicas
+        op.Label = folderName
+        op.Path = BaseFolder & "\" & folderName
+
+        ' Intentar extraer información adicional del nombre
+        ' Formato típico: "412601015 - Cliente - Proyecto"
+        On Error Resume Next
+        Dim parts() As String
+        parts = Split(folderName, " - ")
+        If UBound(parts) >= 0 Then
+            op.Name = Trim(parts(0))  ' "412601015"
+        End If
+        If UBound(parts) >= 1 Then
+            op.Customer = Trim(parts(1))  ' "Cliente"
+        End If
+        On Error GoTo 0
+    End If
+
+    Set CreateOpportunityFromIndex = op
+End Function
+
 Private Function getNextOpportunityCode()
     Dim arrOps() As String, i, dblLastOpSeq As Double, strOpName As String
     arrOps = actualizarColeccionOportunidades
@@ -376,13 +423,3 @@ ErrHandler:
     LogCurrentError MODULE_NAME, "[CreaOportunidad]"
     MsgBox "No se pudo crear la oportunidad: " & Err.Description, vbExclamation
 End Sub
-
-' ==================================================================
-' IMPLEMENTACION DE EVENTOS: CALLBACKS
-' ==================================================================
-
-Private Sub mXlApp_WorkbookActivate(ByVal Wb As Workbook)
-    ' Verificar si el workbook está en una oportunidad
-    ' Actualizar p_CurrOpportunity si corresponde
-End Sub
-

@@ -78,7 +78,7 @@ Attribute InsertarCheckbox.VB_ProcData.VB_Invoke_Func = " \n0"
             End With
             checkboxSheet.Activate
             ' Crear encabezado en la primera fila
-            Worksheets(HojaDestino).Range(ColumnaVinculo & "1").Value = "Checkbox_States"
+            Worksheets(HojaDestino).Range(ColumnaVinculo & "1").value = "Checkbox_States"
         Else
             MsgBox "No se puede continuar sin la hoja de destino.", vbExclamation, "Operación cancelada"
             Exit Sub
@@ -134,20 +134,20 @@ Attribute InsertarCheckbox.VB_ProcData.VB_Invoke_Func = " \n0"
             Dim ColumnaOriginal As Long
             ColumnaOriginal = CeldaTexto.Column
             
-            Do While CeldaTexto.Value = "" And CeldaTexto.Column > 1
+            Do While CeldaTexto.value = "" And CeldaTexto.Column > 1
                 Set CeldaTexto = CeldaTexto.Offset(0, -1)
             Loop
             
             ' Si no se encontró texto después de buscar, usar texto genérico
-            If CeldaTexto.Value = "" Then
+            If CeldaTexto.value = "" Then
                 TextoCheckbox = "Checkbox_" & FilaSiguiente
             Else
-                TextoCheckbox = CStr(CeldaTexto.Value)
+                TextoCheckbox = CStr(CeldaTexto.value)
             End If
         Else
             ' Usar el texto de la celda actual
-            If CeldaTexto.Value <> "" Then
-                TextoCheckbox = CStr(CeldaTexto.Value)
+            If CeldaTexto.value <> "" Then
+                TextoCheckbox = CStr(CeldaTexto.value)
             Else
                 TextoCheckbox = "Checkbox_" & FilaSiguiente
             End If
@@ -176,15 +176,15 @@ Attribute InsertarCheckbox.VB_ProcData.VB_Invoke_Func = " \n0"
             .Caption = ""
         End If
         .LinkedCell = HojaDestino & "!" & ColumnaVinculo & FilaSiguiente
-        .Value = ValorInicial
+        .value = ValorInicial
         .Display3DShading = False
         .Name = "CheckBox_" & HojaDestino & "_" & FilaSiguiente ' Nombre único
         .Placement = xlMoveAndSize               ' Se mueve y redimensiona con las celdas
     End With
     
     '--- INICIALIZAR VALOR EN HOJA DE DATOS ---
-    Worksheets(HojaDestino).Range(ColumnaVinculo & FilaSiguiente).Value = (ValorInicial = True)
-    Worksheets(HojaDestino).Range(ColumnaVinculo & FilaSiguiente).Offset(0, -1).Value = TextoCheckbox
+    Worksheets(HojaDestino).Range(ColumnaVinculo & FilaSiguiente).value = (ValorInicial = True)
+    Worksheets(HojaDestino).Range(ColumnaVinculo & FilaSiguiente).Offset(0, -1).value = TextoCheckbox
     
     '--- CONFIRMACIÓN DE ÉXITO ---
     Dim MensajeExito As String

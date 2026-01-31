@@ -147,7 +147,7 @@ Private Function getProcCode(CodeModule As Object, procName As String, PKind As 
         
         ' ... y hay que corregir el final, tampoco termina bien los bloques de función
         re.Pattern = "\bFunction|Sub|Property\b"
-        re.Pattern = "^\s*End\s+" & re.Execute(CodeModule.Lines(.procSignatureLine, 1)).Item(0).Value
+        re.Pattern = "^\s*End\s+" & re.Execute(CodeModule.Lines(.procSignatureLine, 1)).Item(0).value
         i = .procStartLine
         .strCode = CodeModule.Lines(i, 1)
         Do

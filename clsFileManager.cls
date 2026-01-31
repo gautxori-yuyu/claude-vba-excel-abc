@@ -27,6 +27,7 @@ Option Explicit
 Private Const MODULE_NAME As String = "clsFileManager"
 
 Private mTrackedFiles As Object                 ' Diccionario de TODOS los ficheros de excel, en TODAS las oportunidades procesadas
+Private mFileState As clsFileState              ' Estado de archivo activo (composición)
 
 ' ==========================================
 ' SUSCRIPCION A EVENTOS DE APPLICATION
@@ -40,40 +41,49 @@ Attribute mXlApp.VB_VarHelpID = -1
 
 Private Sub Class_Initialize()
     LogInfo MODULE_NAME, "[Class_Initialize]"
-    Set mXlApp = Application
+
+    ' Crear estado de archivo (composición - Manager posee el estado)
+    Set mFileState = New clsFileState
+
     Set mTrackedFiles = CreateObject("Scripting.Dictionary")
-    InitFileManager
 End Sub
 
 Private Sub Class_Terminate()
     LogInfo MODULE_NAME, "[Class_Terminate]"
-    
+
+    ' Liberar estado
+    Set mFileState = Nothing
+
     ' Limpiar todas las referencias
     mTrackedFiles.RemoveAll
     Set mTrackedFiles = Nothing
-'    Set p_currExcelFile = Nothing
 End Sub
+
+'@Description: Expone el estado de archivo (para inyección en ApplicationState)
+Public Property Get State() As clsFileState
+    Set State = mFileState
+End Property
 ' -------------------------------------------------------------
-' InitFileManager: GESTIONA LA COLECCIÓN DE WORKBOOKS
+' Init: GESTIONA LA COLECCIÓN DE WORKBOOKS
 ' (Es responsabilidad de clsApplication, NO de clsFileManager)
 ' -------------------------------------------------------------
-Private Sub InitFileManager()
-    LogInfo MODULE_NAME, "[InitFileManager]"
+Public Sub Init(oCurrWbks As Workbooks)
+    LogInfo MODULE_NAME, "[Init]"
     
     On Error GoTo ErrHandler
     
     ' Trackear todos los workbooks abiertos
     Dim oWorkBook As Workbook
-    For Each oWorkBook In mXlApp.Workbooks
+    For Each oWorkBook In oCurrWbks
         GetOrTrackWorkbook oWorkBook
     Next oWorkBook
 
-    LogInfo MODULE_NAME, "[InitFileManager] Workbooks tracked: " & mTrackedFiles.Count
+    LogInfo MODULE_NAME, "[Init] Workbooks tracked: " & mTrackedFiles.Count
     
     Exit Sub
 ErrHandler:
-    LogError MODULE_NAME, "[InitFileManager] Error inicializando tracking de workbooks", , Err.Description
-    Err.Raise Err.Number, "clsApplication.InitFileManager", _
+    LogError MODULE_NAME, "[Init] Error inicializando tracking de workbooks", , Err.Description
+    Err.Raise Err.Number, MODULE_NAME & "[Init]", _
               "Error inicializando tracking de workbooks: " & Err.Description
 End Sub
 
@@ -83,9 +93,9 @@ End Sub
 
 '@Description: Obtiene el archivo Excel activo
 '@Note: Devuelve clsFileXLS o Nothing si no hay archivo activo o no es Excel
-Public Property Get ActiveExcelFile() As clsFileXLS
-    Set ActiveExcelFile = GetOrTrackWorkbook(mXlApp.ActiveWorkbook)
-End Property
+'Public Property Get ActiveExcelFile() As clsFileXLS
+'    Set ActiveExcelFile = GetOrTrackWorkbook(mXlApp.ActiveWorkbook)
+'End Property
 
 ' ==================================================================
 ' MÉTODOS PÚBLICOS - TRACKING
@@ -93,22 +103,22 @@ End Property
 
 '@Description: Obtiene o crea el tracker para un Workbook
 '@Returns: clsFileXLS asociado al Workbook
-Public Function GetOrTrackWorkbook(Wb As Workbook) As clsFileXLS
-    If Wb Is Nothing Then Exit Function
+Public Function GetOrTrackWorkbook(wb As Workbook) As clsFileXLS
+    If wb Is Nothing Then Exit Function
     
     On Error GoTo ErrHandler
     
     ' Crear instancia temporal para obtener su clave
     Dim f As clsFileXLS
     Set f = New clsFileXLS
-    f.BindTo Wb
+    f.BindTo wb
     
     Dim key As Double
     key = GetFileKey(f)
     
     ' Validar que la clave es válida
     If key = 0 Then
-        LogError MODULE_NAME, "[GetOrTrackWorkbook] - ObjectKey inválido para " & Wb.Name
+        LogError MODULE_NAME, "[GetOrTrackWorkbook] - ObjectKey inválido para " & wb.Name
         Exit Function
     End If
     
@@ -131,12 +141,12 @@ ErrHandler:
 End Function
 
 '@Description: Remueve un Workbook del tracking (interfaz específica Excel)
-Public Sub UntrackWorkbook(Wb As Workbook)
-    If Wb Is Nothing Then Exit Sub
+Public Sub UntrackWorkbook(wb As Workbook)
+    If wb Is Nothing Then Exit Sub
     
     ' Buscar el archivo tracked correspondiente
     Dim f As clsFileXLS
-    Set f = FindTrackedWorkbook(Wb)
+    Set f = FindTrackedWorkbook(wb)
     
     If Not f Is Nothing Then
         UntrackFile f
@@ -217,30 +227,30 @@ End Function
 
 '@Description: Analiza el workbook activo actual
 '@Returns: T_InfoArchivo del workbook activo, o estructura vacía si no hay activo
-Public Function AnalizarArchivoActivo() As mod_ConstantsGlobals.T_InfoArchivo
-    AnalizarArchivoActivo = AnalizarArchivo(mXlApp.ActiveWorkbook)
-End Function
+'Public Function AnalizarArchivoActivo() As mod_ConstantsGlobals.T_InfoArchivo
+'    AnalizarArchivoActivo = AnalizarArchivo(mXlApp.ActiveWorkbook)
+'End Function
 
 ' ==================================================================
 ' MÉTODOS DE UTILIDAD
 ' ==================================================================
 
 '@Description: Verifica si un workbook está siendo tracked
-Public Function IsTracked(Wb As Workbook) As Boolean
-    If Wb Is Nothing Then Exit Function
-    IsTracked = Not (FindTrackedWorkbook(Wb) Is Nothing)
+Public Function IsTracked(wb As Workbook) As Boolean
+    If wb Is Nothing Then Exit Function
+    IsTracked = Not (FindTrackedWorkbook(wb) Is Nothing)
 End Function
 
 '@Description: Busca el clsFileXLS correspondiente a un Workbook
 '@Returns: clsFileXLS si está tracked, Nothing si no
-Private Function FindTrackedWorkbook(Wb As Workbook) As clsFileXLS
-    If Wb Is Nothing Then Exit Function
+Private Function FindTrackedWorkbook(wb As Workbook) As clsFileXLS
+    If wb Is Nothing Then Exit Function
     
     ' Crear instancia temporal solo para obtener la clave
     Dim fTemp As clsFileXLS
     Set fTemp = New clsFileXLS
     Dim key As Double
-    key = fTemp.CreateFromWorkbook(Wb).ObjectKey
+    key = fTemp.CreateFromWorkbook(wb).ObjectKey
     
     If mTrackedFiles.Exists(key) Then
         Set FindTrackedWorkbook = mTrackedFiles(key)
@@ -301,11 +311,11 @@ Public Function GetTrackedFilesInfo() As String
         info = info & "  - [" & TypeName(f) & "] " & GetFilePath(f) & vbCrLf
     Next
     
-    If Not ActiveExcelFile Is Nothing Then
-        info = info & vbCrLf & "Archivo activo: " & GetFilePath(ActiveExcelFile)
-    Else
-        info = info & vbCrLf & "Archivo activo: (ninguno)"
-    End If
+'    If Not ActiveExcelFile Is Nothing Then
+'        info = info & vbCrLf & "Archivo activo: " & GetFilePath(ActiveExcelFile)
+'    Else
+'        info = info & vbCrLf & "Archivo activo: (ninguno)"
+'    End If
     
     GetTrackedFilesInfo = info
 End Function
@@ -460,20 +470,4 @@ ErrHandler:
     LogError MODULE_NAME, "[ObtenerCarpeta] Error obteniendo carpeta", Err.Number, Err.Description
     Set ObtenerCarpeta = Nothing
 End Function
-
-' ==================================================================
-' IMPLEMENTACION DE EVENTOS: CALLBACKS
-' ==================================================================
-
-'@Description: Callback cuando se abre un workbook
-Private Sub mXlApp_WorkbookOpen(ByVal Wb As Workbook)
-    LogDebug MODULE_NAME, "[mXlApp_WorkbookOpen] " & Wb.Name
-    GetOrTrackWorkbook Wb
-End Sub
-
-'@Description: Callback cuando se cierra un workbook
-Private Sub mXlApp_WorkbookBeforeClose(ByVal Wb As Workbook, Cancel As Boolean)
-    LogDebug MODULE_NAME, "[mXlApp_WorkbookBeforeClose] " & Wb.Name
-    UntrackWorkbook Wb
-End Sub
 

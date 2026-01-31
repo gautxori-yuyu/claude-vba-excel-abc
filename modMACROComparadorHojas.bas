@@ -93,8 +93,8 @@ Attribute CompararRangos.VB_ProcData.VB_Invoke_Func = " \n0"
             Set celda2 = rango2.Cells(fila, col)
             
             ' Obtener valores
-            valor1 = celda1.Value
-            valor2 = celda2.Value
+            valor1 = celda1.value
+            valor2 = celda2.value
             
             ' Si son diferentes
             If valor1 <> valor2 Then
@@ -146,7 +146,7 @@ Attribute VerHojasEnParalelo.VB_ProcData.VB_Invoke_Func = " \n0"
     ' Activar primera hoja y crear/obtener su ventana
     Hoja1.Activate
     rango1.Cells(1, 1).Select                    ' Seleccionar primera celda del rango
-    Application.Goto rango1.Cells(1, 1), True    ' Asegurar que está visible
+    Application.GoTo rango1.Cells(1, 1), True    ' Asegurar que está visible
     Set win1 = ActiveWindow
     
     ' Si son del mismo libro, crear segunda ventana
@@ -155,7 +155,7 @@ Attribute VerHojasEnParalelo.VB_ProcData.VB_Invoke_Func = " \n0"
     End If
     Hoja2.Activate
     rango2.Cells(1, 1).Select                    ' Seleccionar primera celda del rango
-    Application.Goto rango2.Cells(1, 1), True    ' Asegurar que está visible
+    Application.GoTo rango2.Cells(1, 1), True    ' Asegurar que está visible
     Set win2 = ActiveWindow
     
     ' Asegurarse de que hay ventanas disponibles

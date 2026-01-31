@@ -48,14 +48,14 @@ Attribute recalcNames.VB_ProcData.VB_Invoke_Func = " \n0"
     Set rCell = rRange.Cells(1, 1)               ' Take the first cell in the range
     
     Do
-        If rCell.Value <> "" Then
+        If rCell.value <> "" Then
             If Not IsEmpty(begin) Then
                 Debug.Print rangename & "==" & "=$" & rangeCol & "$" & begin & ":$" & rangeCol & "$" & rCell.Row - 1
                 ActiveWorkbook.Names.Add Name:=rangename, _
                     RefersTo:="=$" & rangeCol & "$" & begin & ":$" & rangeCol & "$" & rCell.Row - 1
             End If
             begin = rCell.Row
-            rangename = Replace(Replace(Replace(rCell.Value, "-", ""), " / ", " "), " ", "_")
+            rangename = Replace(Replace(Replace(rCell.value, "-", ""), " / ", " "), " ", "_")
         End If
         Set rCell = rCell.Offset(1, 0)           ' Jump 1 row down to the next cell
     Loop Until (rCell.Row > (rRange.Row + rRange.Rows.Count - 1))
@@ -273,7 +273,7 @@ Attribute MostrarReporteEnHoja.VB_ProcData.VB_Invoke_Func = " \n0"
     ' Dividir reporte en líneas y escribir en hoja
     lineas = Split(reporte, vbCrLf)
     For i = 0 To UBound(lineas)
-        wsReporte.Cells(i + 1, 1).Value = lineas(i)
+        wsReporte.Cells(i + 1, 1).value = lineas(i)
     Next i
     
     wsReporte.Columns("A").AutoFit

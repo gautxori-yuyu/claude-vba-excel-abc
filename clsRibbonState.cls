@@ -24,12 +24,12 @@ Public Property Get Modo() As eRibbonMode
     Modo = mModoRibbon
 End Property
 
-Public Property Let Modo(Value As eRibbonMode)
+Public Property Let Modo(value As eRibbonMode)
     If mModoRibbon = Ribbon_Undefined Then
         ' se considera una INICIALIZACION, no un cambio de estado
-        mModoRibbon = Value
-    ElseIf mModoRibbon <> Value Then
-        mModoRibbon = Value
+        mModoRibbon = value
+    ElseIf mModoRibbon <> value Then
+        mModoRibbon = value
         RaiseEvent StateChanged
     End If
 End Property
@@ -69,9 +69,9 @@ Public Property Get Visible() As Boolean
     Visible = mVisible
 End Property
 
-Public Property Let Visible(Value As Boolean)
-    If mVisible <> Value Then
-        mVisible = Value
+Public Property Let Visible(value As Boolean)
+    If mVisible <> value Then
+        mVisible = value
         RaiseEvent StateChanged
     End If
 End Property

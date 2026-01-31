@@ -15,6 +15,13 @@ Option Explicit
 Private Const MODULE_NAME As String = "clsFileState"
 
 ' ==========================================
+' EVENTOS (para Mediadores)
+' ==========================================
+
+'@Description: Se dispara cuando cambia el archivo activo (solicitud de coordinación)
+Public Event CurrentFileChanged(f As clsFileXLS, isOpportunityFile As Boolean)
+
+' ==========================================
 ' ESTADO DE ARCHIVO
 ' ==========================================
 Private mCurrentFile As clsFileXLS
@@ -29,6 +36,10 @@ Private Sub Class_Initialize()
     mIsOpportunityFile = False
 End Sub
 
+Private Sub Class_Terminate()
+    Set mCurrentFile = Nothing
+End Sub
+
 ' ==========================================
 ' PROPIEDADES PÚBLICAS
 ' ==========================================
@@ -39,9 +50,33 @@ Public Property Get CurrentFile() As clsFileXLS
 End Property
 
 Friend Property Set CurrentFile(f As clsFileXLS)
+    Stop
+    If f.Equals(mCurrentFile) Then Exit Property
+
     Set mCurrentFile = f
 
     ' Actualizar flag de archivo de oportunidad
+    UpdateIsOpportunityFile f
+
+    LogDebug MODULE_NAME, "[CurrentFile] Changed to: " & GetCurrentFileName() & _
+                         ", IsOpportunity=" & mIsOpportunityFile
+
+    ' Generar evento para MEDIADORES (solicitud de coordinación)
+    RaiseEvent CurrentFileChanged(f, mIsOpportunityFile)
+End Property
+
+'@Description: Indica si el archivo actual es un archivo de oportunidad
+Public Property Get isOpportunityFile() As Boolean
+    isOpportunityFile = mIsOpportunityFile
+End Property
+
+' ==========================================
+' LÓGICA INTERNA
+' ==========================================
+
+'@Description: Actualiza el flag IsOpportunityFile basándose en el archivo actual
+Private Sub UpdateIsOpportunityFile(f As clsFileXLS)
+    Stop
     If f Is Nothing Then
         mIsOpportunityFile = False
     Else
@@ -52,12 +87,7 @@ Friend Property Set CurrentFile(f As clsFileXLS)
         End If
         On Error GoTo 0
     End If
-End Property
-
-'@Description: Indica si el archivo actual es un archivo de oportunidad
-Public Property Get IsOpportunityFile() As Boolean
-    IsOpportunityFile = mIsOpportunityFile
-End Property
+End Sub
 
 ' ==========================================
 ' CONSULTAS DE ESTADO
@@ -77,7 +107,7 @@ Public Function GetCurrentFileName() As String
         On Error Resume Next
         GetCurrentFileName = mCurrentFile.Name
         If Err.Number <> 0 Then
-            GetCurrentFileName = "(error al obtener nombre)"
+            GetCurrentFileName = "(error)"
         End If
         On Error GoTo 0
     End If
@@ -97,4 +127,5 @@ Public Function GetCurrentFilePath() As String
         On Error GoTo 0
     End If
 End Function
+
 

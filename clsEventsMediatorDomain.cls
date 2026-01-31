@@ -19,8 +19,17 @@ Attribute mFSMonitoringCoord.VB_VarHelpID = -1
 Private WithEvents mOpportunities As clsOpportunitiesMgr
 Attribute mOpportunities.VB_VarHelpID = -1
 
+' NUEVO: Escuchar eventos de subestados
+Private WithEvents mOpportunityState As clsOpportunityState
+Attribute mOpportunityState.VB_VarHelpID = -1
+
+Private WithEvents mFileState As clsFileState
+Attribute mFileState.VB_VarHelpID = -1
+
+Private mCtx As clsExecutionContext
 Private mRibbon As clsRibbon
 Private mFileMgr As clsFileManager
+Private mApplicationState As clsApplicationState
 
 '--------------------------------------------------------------
 ' Inicialización
@@ -35,11 +44,15 @@ Private Sub Class_Terminate()
 End Sub
 
 'TODO: faltaria crear clases para otras funciones que estan en macros, y pasarlas como parametros...
-Public Sub Initialize(oFSMonitoringCoord As clsFSMonitoringCoord, _
+Public Sub Initialize(oCtx As clsExecutionContext, _
+                oFSMonitoringCoord As clsFSMonitoringCoord, _
                 oOpportunities As clsOpportunitiesMgr, _
                 oRibbon As clsRibbon, _
-                oFileMgr As clsFileManager)
+                oFileMgr As clsFileManager, _
+                oApplicationState As clsApplicationState)
     On Error GoTo ErrHandler
+    
+    Set mCtx = oCtx
     
     Set mRibbon = oRibbon
     
@@ -48,7 +61,14 @@ Public Sub Initialize(oFSMonitoringCoord As clsFSMonitoringCoord, _
     Set mFSMonitoringCoord = oFSMonitoringCoord
     
     Set mOpportunities = oOpportunities
-    
+
+    ' NUEVO: Guardar referencia a ApplicationState y escuchar eventos de subestados
+    Set mApplicationState = oApplicationState
+    Set mOpportunityState = oOpportunities.State
+    Set mFileState = oFileMgr.State
+
+    LogInfo MODULE_NAME, "[Initialize] Mediador configurado con ApplicationState y subestados"
+
     Exit Sub
 ErrHandler:
     LogCurrentError MODULE_NAME, "[Initialize]"
@@ -57,12 +77,18 @@ End Sub
 
 Public Sub Terminate()
     On Error GoTo ErrHandler
-    
+
+    ' Liberar referencias WithEvents primero
+    Set mFileState = Nothing
+    Set mOpportunityState = Nothing
     Set mOpportunities = Nothing
     
     Set mFSMonitoringCoord = Nothing
-    
+
+    ' Luego referencias normales
+    Set mApplicationState = Nothing
     Set mFileMgr = Nothing
+    Set mCtx = Nothing
     
     Set mRibbon = Nothing
     
@@ -82,25 +108,68 @@ End Sub
 ' -------------------------------------------------------------
 Private Sub mOpportunities_OpportunityCollectionUpdate(ByVal cambios As String)
     LogInfo MODULE_NAME, "[callback: clsOpportunitiesMgr OpportunityCollectionUpdate] - cambios detectados: " & cambios
-    
+
+    ' Llamar a ApplicationState para coordinar estados
+    If Not mApplicationState Is Nothing Then
+        mApplicationState.OnOpportunityCollectionChanged cambios
+    End If
+
+    ' MANTENER invalidación directa temporalmente por compatibilidad
     If Not mRibbon Is Nothing Then
         'mRibbon.InvalidarRibbon
         mRibbon.InvalidarControl "ddlOportunidades"
         LogDebug MODULE_NAME, "[mOpportunities_OpportunityCollectionUpdate] - Ribbon invalidado"
     End If
 End Sub
-'TODO: Extraer la lógica de clsFileXLS A una función (En principio se mantendrá en Celesa aplicación pero es posible que se lleve a otra clase)
+'TODO: Extraer la lógica de clsFileXLS A una función
 Private Sub mOpportunities_currOpportunityChanged(ByVal Index As Long, ByVal Path As String)
     LogInfo MODULE_NAME, "[callback: clsOpportunitiesMgr currOpportunityChanged] - Oportunidad seleccionada: " & Path
     
     Dim f As clsFileXLS
-    Set f = mFileMgr.ActiveExcelFile
+    Set f = mFileMgr.GetOrTrackWorkbook(mCtx.Workbook)
     If Not f Is Nothing Then
         If f.DebeMoverseAOp(Path, mOpportunities.BaseFolder) Then
             f.MoverAOp Path, mOpportunities.BaseFolder
         End If
     End If
     ' (Aquí no tiene sentido invalidar el ribbon, esto no tiene nada que ver con ribbon, SOLO LÓGICA DE NEGOCIO)
+End Sub
+
+'--------------------------------------------------------------
+' NUEVO: Evento de cambio de oportunidad desde OpportunityState
+'--------------------------------------------------------------
+Private Sub mOpportunityState_CurrentOpportunityChanged(op As clsOpportunity, Index As Long)
+    LogInfo MODULE_NAME, "[callback: OpportunityState CurrentOpportunityChanged] - Index=" & Index
+
+    ' Llamar a ApplicationState para coordinar estados
+    If Not mApplicationState Is Nothing Then
+        mApplicationState.OnOpportunityChanged op, Index
+    End If
+
+    ' NOTA: La lógica de mover archivo se mantiene en handler viejo por compatibilidad
+End Sub
+
+'--------------------------------------------------------------
+' NUEVO: Evento de cambio de archivo desde FileState
+'--------------------------------------------------------------
+Private Sub mFileState_CurrentFileChanged(f As clsFileXLS, isOpportunityFile As Boolean)
+    Dim fileName As String
+    If f Is Nothing Then
+        fileName = "(ninguno)"
+    Else
+        On Error Resume Next
+        fileName = f.Name
+        If Err.Number <> 0 Then fileName = "(error)"
+        On Error GoTo 0
+    End If
+
+    LogInfo MODULE_NAME, "[callback: FileState CurrentFileChanged] - File=" & fileName & _
+                         ", IsOpportunity=" & isOpportunityFile
+
+    ' Llamar a ApplicationState para coordinar estados
+    If Not mApplicationState Is Nothing Then
+        mApplicationState.OnFileChanged f
+    End If
 End Sub
 
 ' -------------------------------------------------------------
@@ -179,4 +248,5 @@ Private Sub mFSMonitoringCoord_MonitoringFailed(ByVal folder As String, ByVal re
            "Es posible que la carpeta no este accesible o haya problemas de red.", _
            vbExclamation, "FolderWatcher - Reconexion Fallida"
 End Sub
+
 

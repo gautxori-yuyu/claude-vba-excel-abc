@@ -19,21 +19,21 @@ Private m_OFOT_PRE_COSTE As Double
 Public Property Get OFOT_LINEA() As Long
     OFOT_LINEA = m_OFOT_LINEA
 End Property
-Public Property Let OFOT_LINEA(ByVal Value As Long)
-    m_OFOT_LINEA = Value
+Public Property Let OFOT_LINEA(ByVal value As Long)
+    m_OFOT_LINEA = value
 End Property
 
 Public Property Get OFOT_DESCRIPCION() As String
     OFOT_DESCRIPCION = m_OFOT_DESCRIPCION
 End Property
-Public Property Let OFOT_DESCRIPCION(ByVal Value As String)
-    m_OFOT_DESCRIPCION = Value
+Public Property Let OFOT_DESCRIPCION(ByVal value As String)
+    m_OFOT_DESCRIPCION = value
 End Property
 
 Public Property Get OFOT_PRE_COSTE() As Double
     OFOT_PRE_COSTE = m_OFOT_PRE_COSTE
 End Property
-Public Property Let OFOT_PRE_COSTE(ByVal Value As Double)
-    m_OFOT_PRE_COSTE = Value
+Public Property Let OFOT_PRE_COSTE(ByVal value As Double)
+    m_OFOT_PRE_COSTE = value
 End Property
 

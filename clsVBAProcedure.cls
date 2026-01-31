@@ -298,7 +298,7 @@ Private Function ParsearMetadataCompleta(CodeText As String)
     Set regEx = CreateObject("VBScript.RegExp")
     regEx.IgnoreCase = True ' Ahora ignora mayusculas/minusculas
 
-    Dim tag As String, Value As String
+    Dim tag As String, value As String
     ' Procesar hacia delante
     For Each lineText In Split(CodeText, vbCrLf)
         If lineText <> "" Then
@@ -314,17 +314,17 @@ Private Function ParsearMetadataCompleta(CodeText As String)
             If matches(0).SubMatches(0) <> "" Then
                 tag = matches(0).SubMatches(0) ' La palabra clave (UDF, Description, etc.)
             End If
-            Value = Trim(matches(0).SubMatches(1)) ' El valor
+            value = Trim(matches(0).SubMatches(1)) ' El valor
 
             ' Extraer valor de formatos ("valor") o "valor"
             regEx.Pattern = "^\s*\(?\s*""(.*?)""\s*\)?\s*$"
-            If regEx.Test(Value) Then Value = regEx.Execute(Value).Item(0).SubMatches(0)
+            If regEx.Test(value) Then value = regEx.Execute(value).Item(0).SubMatches(0)
 
             ' Tambien soportar formato con comillas simples ('valor')
-            If Value = "" Then
+            If value = "" Then
                 regEx.Pattern = "^\s*\(?\s*'(.*?)'\s*\)?\s*$"
                 If regEx.Test(Trim(matches(0).SubMatches(1))) Then
-                    Value = regEx.Execute(Trim(matches(0).SubMatches(1))).Item(0).SubMatches(0)
+                    value = regEx.Execute(Trim(matches(0).SubMatches(1))).Item(0).SubMatches(0)
                 End If
             End If
 
@@ -333,37 +333,37 @@ Private Function ParsearMetadataCompleta(CodeText As String)
                 HasMetadata = True
             Case "DESCRIPTION", "NOTE", "NOTA"
                 If sDescription <> "" Then sDescription = sDescription & " "
-                sDescription = sDescription & Value
+                sDescription = sDescription & value
             Case "SCOPE"
                 If sScope <> "" Then sScope = sScope & " "
-                sScope = sScope & Value
+                sScope = sScope & value
             Case "RETURNS", "RETURN"
                 If sReturns <> "" Then sReturns = sReturns & " "
-                sReturns = sReturns & Value
+                sReturns = sReturns & value
             Case "CATEGORY"
                 If sCategory <> DEFAULT_CATEGORY And sCategory <> "" Then sCategory = sCategory & " "
                 If sCategory = DEFAULT_CATEGORY Then sCategory = ""
-                sCategory = sCategory & Value
+                sCategory = sCategory & value
                 Select Case LCase$(sCategory)
                 Case "hidden", "oculta", "ocultar", "-1"
                     sCategory = "-1"
                 End Select
             Case "ARGUMENTDESCRIPTIONS", "PARAM"
                 If sArgumentDescriptions <> "" Then sArgumentDescriptions = sArgumentDescriptions & "|"
-                sArgumentDescriptions = sArgumentDescriptions & Value
+                sArgumentDescriptions = sArgumentDescriptions & value
             Case "DEPENDENCIES"
                 If sDependencies <> "" Then sDependencies = sDependencies & "|"
-                sDependencies = sDependencies & Value
+                sDependencies = sDependencies & value
             Case "EXAMPLE"
                 If sExample <> "" Then sExample = sExample & vbCrLf
-                sExample = sExample & Value
+                sExample = sExample & value
             Case "RAISES", "THROWS"
                 If sRaises <> "" Then sRaises = sRaises & "|"
-                sRaises = sRaises & Value
+                sRaises = sRaises & value
             Case Else ' comentarios SIN TAG: se atribuyen a Description
-                If Value <> "" Then
+                If value <> "" Then
                     If sDescription <> "" Then sDescription = sDescription & ". "
-                    sDescription = sDescription & Value
+                    sDescription = sDescription & value
                 End If
             End Select
         End If
