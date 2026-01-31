@@ -21,6 +21,11 @@ Friend Function App() As clsApplication
     Set App = mApp
 End Function
 
+' MÃ©todo para que la aplicaciÃ³n pueda registrar el gestor de contexto
+Friend Sub SetExecutionContextMgr(executionContextMgr As clsExecutionContextMgr)
+    Set mExecutionContextMgr = executionContextMgr
+End Sub
+
 Public Sub TerminateApp()
     If Not mApp Is Nothing Then
         Set mApp = Nothing
@@ -33,13 +38,13 @@ Private Sub Workbook_Open()
     InitLogger LOG_DEBUG, True, ThisWorkbook.Path & "\ABC_Log_" & Format(Now, "yyyy-mm-dd_hh-nn") & ".txt"
     
     LogInfo MODULE_NAME, "[Open] - Abriendo Workbook " & ThisWorkbook.Name
-    ' Sistema de instalación existente
+    ' Sistema de instalaciï¿½n existente
     AutoInstalador
     AutoRegistrarTodasLasUDFs
     ' Ctrl + Shift + R
     Application.OnKey "^+R", "ToggleRibbonTab"
 
-    ' Iniciar aplicación (lazy init del singleton)
+    ' Iniciar aplicaciï¿½n (lazy init del singleton)
     App
 End Sub
 
@@ -76,7 +81,7 @@ ErrHandler:
 End Sub
 
 Private Sub Workbook_BeforeSave(ByVal SaveAsUI As Boolean, Cancel As Boolean)
-    ' Regenerar listas automáticamente antes de guardar
+    ' Regenerar listas automï¿½ticamente antes de guardar
     'Call GenerarListasUnidades
 End Sub
 
@@ -89,7 +94,7 @@ Private Sub Workbook_AddinUninstall()
     
     ' Mensaje de despedida (opcional)
     '    MsgBox "Complemento desinstalado correctamente." & vbCrLf & _
-    '           "Las funciones personalizadas han sido eliminadas.", vbInformation, "Desinstalación completada"
+    '           "Las funciones personalizadas han sido eliminadas.", vbInformation, "Desinstalaciï¿½n completada"
     
     On Error GoTo 0
 End Sub
@@ -97,17 +102,17 @@ End Sub
 Private Sub Workbook_AddinInstall()
     ' Este evento se dispara cuando:
     ' 1. El usuario marca la casilla en Archivo > Opciones > Complementos
-    ' 2. El script VBS completa la instalación y marca installed=True
+    ' 2. El script VBS completa la instalaciï¿½n y marca installed=True
     
     On Error Resume Next
     
     ' Mensaje de bienvenida (opcional, puedes comentarlo si es molesto)
-    '    MsgBox "Complemento 'ABC Ofertas Máquina Especial' instalado correctamente." & vbCrLf & _
-    '           "Las funciones personalizadas ya están disponibles.", vbInformation, "Instalación completada"
+    '    MsgBox "Complemento 'ABC Ofertas Mï¿½quina Especial' instalado correctamente." & vbCrLf & _
+    '           "Las funciones personalizadas ya estï¿½n disponibles.", vbInformation, "Instalaciï¿½n completada"
     
     On Error GoTo 0
 End Sub
-' Elimina los ficheros de log que tengan más de 3 días, si hay más de 3 ficheros de log
+' Elimina los ficheros de log que tengan mï¿½s de 3 dï¿½as, si hay mï¿½s de 3 ficheros de log
 Private Sub removeOldLogs()
     Dim fso As Object
     Dim folderPath As String
@@ -121,14 +126,14 @@ Private Sub removeOldLogs()
     folderPath = ThisWorkbook.Path & "\"
     fileNamePattern = "ABC_Log_????-??-??_??-??.txt"
     
-    ' 1. Coleccionamos los archivos que coinciden con el patrón
+    ' 1. Coleccionamos los archivos que coinciden con el patrï¿½n
     Set logFiles = New Collection
     
     If Not fso.FolderExists(folderPath) Then Exit Sub
     Set oFolder = fso.GetFolder(folderPath)
     
     For Each oFile In oFolder.Files
-        ' Verificamos si el nombre coincide con el patrón ABC_Log_...
+        ' Verificamos si el nombre coincide con el patrï¿½n ABC_Log_...
         If oFile.Name Like fileNamePattern Then
             If logFiles.Count = 0 Then
                 logFiles.Add oFile
@@ -140,26 +145,26 @@ Private Sub removeOldLogs()
         End If
     Next oFile
     
-    ' 2. Si hay más de 3 ficheros en total, evaluamos el borrado
+    ' 2. Si hay mï¿½s de 3 ficheros en total, evaluamos el borrado
     Do While logFiles.Count > 3
         logFiles.Item(1).Delete True
         logFiles.Remove 1
     Loop
     For Each oFile In logFiles
-        ' Calculamos la diferencia de días (DateDiff)
-        ' Usamos DateLastModified para mayor precisión, o DateCreated
+        ' Calculamos la diferencia de dï¿½as (DateDiff)
+        ' Usamos DateLastModified para mayor precisiï¿½n, o DateCreated
         fileDate = oFile.DateLastModified
         
-        ' Requisito: Más de 3 días de antigüedad
+        ' Requisito: Mï¿½s de 3 dï¿½as de antigï¿½edad
         If DateDiff("d", fileDate, Now) > 3 Then
             ' Re-verificamos el conteo antes de cada borrado para asegurar que siempre queden 3
             If logFiles.Count > 3 Then
-                On Error Resume Next ' Por si el archivo está abierto o bloqueado
+                On Error Resume Next ' Por si el archivo estï¿½ abierto o bloqueado
                 oFile.Delete True
                 If Err.Number = 0 Then
-                    ' Actualizar lógica si es necesario, aunque al ser una colección
+                    ' Actualizar lï¿½gica si es necesario, aunque al ser una colecciï¿½n
                     ' se recorre una foto fija. El "If logFiles.Count > 3"
-                    ' aquí dentro es preventivo.
+                    ' aquï¿½ dentro es preventivo.
                 End If
                 On Error GoTo 0
             End If
