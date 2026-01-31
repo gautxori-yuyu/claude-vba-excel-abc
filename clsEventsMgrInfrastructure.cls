@@ -18,7 +18,6 @@ Attribute mChartManager.VB_VarHelpID = -1
 Private WithEvents mCtx As clsExecutionContext
 Attribute mCtx.VB_VarHelpID = -1
 
-Private mRibbon As clsRibbon
 Private mFileMgr As clsFileManager
 
 '--------------------------------------------------------------
@@ -32,15 +31,12 @@ Private Sub Class_Terminate()
     Terminate
     LogInfo MODULE_NAME, "[Class_Terminate]"
 End Sub
-' TODO: INVERTIR LA DEPENDENCIA DEL RIBBON: ribbon es INTERFAZ, no infraestructura: NO debe conocerlo la infraestructura
-Public Sub Initialize(oRibbon As clsRibbon, oFileMgr As clsFileManager, oChartManager As clsChartMgr, oCtx As clsExecutionContext)
+Public Sub Initialize(oFileMgr As clsFileManager, oChartManager As clsChartMgr, oCtx As clsExecutionContext)
     On Error GoTo ErrHandler
     
     Set mChartManager = oChartManager
     
     Set mCtx = oCtx
-    
-    Set mRibbon = oRibbon
     
     Set mFileMgr = oFileMgr
     
@@ -95,8 +91,6 @@ Private Sub mCtx_SheetActivated(ByVal sh As Object)
 
     LogDebug MODULE_NAME, "[mCtx_SheetActivated] " & sh.Name & "'"
     mChartManager.WatchSheet sh
-    mRibbon.InvalidarControl "btnGenerarGraficos"
-    mRibbon.InvalidarControl "btnCGASING"
     Exit Sub
 ErrHandler:
     LogError MODULE_NAME, "[mCtx_SheetActivated] Error", , Err.Description
@@ -112,8 +106,6 @@ Private Sub mCtx_SheetDeactivated(ByVal sh As Object)
 
     LogDebug MODULE_NAME, "[mCtx_SheetDeactivated] '" & sh.Name & "'"
     mChartManager.StopWatching
-    mRibbon.InvalidarControl "btnGenerarGraficos"
-    mRibbon.InvalidarControl "btnCGASING"
     Exit Sub
 ErrHandler:
     LogError MODULE_NAME, "[mCtx_SheetDeactivated] Error", , Err.Description
@@ -141,14 +133,8 @@ End Sub
 
 Private Sub mChartManager_ChartActivated(cht As Chart)
     LogDebug MODULE_NAME, "[callback: clsChartMgr ChartActivated] - Gráfico activado: " & cht.Name
-    ' Aquí decides:
-    ' - ¿Invalidar ribbon?
-    ' - ¿Cargar datos del gráfico?
-    ' - ¿Actualizar estado de la oportunidad?
-    mRibbon.InvalidarControl "btnInvertirSeries"
 End Sub
 
 Private Sub mChartManager_ChartDeactivated(cht As Chart)
     LogDebug MODULE_NAME, "[callback: clsChartMgr ChartActivated] - Gráfico DESactivado: " & cht.Name
-    mRibbon.InvalidarControl "btnInvertirSeries"
 End Sub

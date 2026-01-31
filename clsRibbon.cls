@@ -35,6 +35,21 @@ Private mIsRecovering As Boolean              ' Flag para evitar recursion duran
 Private mWasEverInitialized As Boolean        ' Flag para distinguir "nunca inicializado" de "perdido"
 
 ' ==========================================
+' DEPENDENCIAS INYECTADAS (para escuchar eventos)
+' ==========================================
+Private WithEvents mOpportunities As clsOpportunitiesMgr
+Attribute mOpportunities.VB_VarHelpID = -1
+
+Private WithEvents mFileMgr As clsFileManager
+Attribute mFileMgr.VB_VarHelpID = -1
+
+Private WithEvents mChartMgr As clsChartMgr
+Attribute mChartMgr.VB_VarHelpID = -1
+
+Private WithEvents mCtx As clsExecutionContext
+Attribute mCtx.VB_VarHelpID = -1
+
+' ==========================================
 ' PROPERTY GET/SET PARA MIEMBROS
 ' ==========================================
 
@@ -79,9 +94,24 @@ Public Sub Init(ByRef ribbonObj As IRibbonUI)
     mWasEverInitialized = True
 End Sub
 
+'@Description: Inyecta dependencias para escuchar eventos de los Managers
+Public Sub Initialize(oOpportunities As clsOpportunitiesMgr, _
+                      oFileMgr As clsFileManager, _
+                      oChartMgr As clsChartMgr, _
+                      oCtx As clsExecutionContext)
+    Set mOpportunities = oOpportunities
+    Set mFileMgr = oFileMgr
+    Set mChartMgr = oChartMgr
+    Set mCtx = oCtx
+End Sub
+
 Public Sub StopEvents()
     LogDebug MODULE_NAME, "[StopEvents] - Liberando puntero"
     Set mribbonUI = Nothing
+    Set mOpportunities = Nothing
+    Set mFileMgr = Nothing
+    Set mChartMgr = Nothing
+    Set mCtx = Nothing
 End Sub
 
 
@@ -283,4 +313,47 @@ Public Function GetQuickDiagnostics() As String
     GetQuickDiagnostics = info
 End Function
 
+' ==========================================
+' HANDLERS DE EVENTOS (UI escucha a los Managers)
+' ==========================================
+
+Private Sub mOpportunities_OpportunityCollectionUpdate(ByVal cambios As String)
+    InvalidarControl "ddlOportunidades"
+End Sub
+
+Private Sub mOpportunities_currOpportunityChanged(ByVal Index As Long, ByVal Path As String)
+    ' En modo OpportunityOnly, mostrar ribbon cuando hay oportunidad
+    If mStateRibbon.Modo = Ribbon_OpportunityOnly Then
+        mStateRibbon.Visible = True
+    End If
+    InvalidarControl "btnGenerarGraficos"
+    InvalidarControl "dropdownOportunidades"
+    InvalidarControl "btnCreaOportunidad"
+    InvalidarControl "grpOportunidades"
+End Sub
+
+Private Sub mFileMgr_ActiveFileChanged(f As clsFileXLS)
+    InvalidarControl "btnGenerarGraficos"
+    InvalidarControl "btnExportarPDF"
+    InvalidarControl "btnLimpiarFormato"
+    InvalidarControl "btnAjustarFilas"
+End Sub
+
+Private Sub mChartMgr_ChartActivated(cht As Chart)
+    InvalidarControl "btnInvertirSeries"
+End Sub
+
+Private Sub mChartMgr_ChartDeactivated(cht As Chart)
+    InvalidarControl "btnInvertirSeries"
+End Sub
+
+Private Sub mCtx_SheetActivated(ByVal sh As Object)
+    InvalidarControl "btnGenerarGraficos"
+    InvalidarControl "btnCGASING"
+End Sub
+
+Private Sub mCtx_SheetDeactivated(ByVal sh As Object)
+    InvalidarControl "btnGenerarGraficos"
+    InvalidarControl "btnCGASING"
+End Sub
 

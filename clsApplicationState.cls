@@ -22,8 +22,6 @@ Private mOpportunityState As clsOpportunityState
 Private mChartState As clsChartState
 Private mFileState As clsFileState
 
-' Referencia al Ribbon para invalidación
-Private mRibbon As clsRibbon
 
 ' ==========================================
 ' EVENTOS
@@ -60,7 +58,6 @@ Private Sub Class_Terminate()
     Set mOpportunityState = Nothing
     Set mChartState = Nothing
     Set mFileState = Nothing
-    Set mRibbon = Nothing
 End Sub
 
 '@Description: Inicializa el coordinador con referencias a subestados (Dependency Injection)
@@ -90,16 +87,6 @@ Public Sub Initialize(Optional RibbonState As clsRibbonState = Nothing, _
     Exit Sub
 ErrHandler:
     LogCurrentError MODULE_NAME, "[Initialize]"
-End Sub
-
-' ==========================================
-' CONFIGURACIÓN
-' ==========================================
-
-'@Description: Inyecta la referencia al Ribbon para invalidación de controles
-'@Param ribbon: Instancia de clsRibbon
-Friend Sub SetRibbon(ribbon As clsRibbon)
-    Set mRibbon = ribbon
 End Sub
 
 ' ==========================================
@@ -271,76 +258,8 @@ Public Function GetContextDiagnostics() As String
 End Function
 
 ' ==========================================
-' INVALIDACIÓN DE CONTROLES DEL RIBBON
-' ==========================================
-
-'@Description: Invalida controles relacionados con oportunidades
-Private Sub InvalidateOpportunityControls()
-    If mRibbon Is Nothing Then Exit Sub
-
-    ' Controles que dependen de la oportunidad actual
-    mRibbon.InvalidarControl "btnGenerarGraficos"
-    mRibbon.InvalidarControl "dropdownOportunidades"
-    mRibbon.InvalidarControl "btnCreaOportunidad"
-    mRibbon.InvalidarControl "grpOportunidades"
-
-    LogDebug MODULE_NAME, "[InvalidateOpportunityControls] Controles de oportunidad invalidados"
-End Sub
-
-'@Description: Invalida controles relacionados con archivos
-Private Sub InvalidateFileControls()
-    If mRibbon Is Nothing Then Exit Sub
-
-    ' Controles que dependen del archivo activo
-    mRibbon.InvalidarControl "btnGenerarGraficos"
-    mRibbon.InvalidarControl "btnExportarPDF"
-    mRibbon.InvalidarControl "btnLimpiarFormato"
-    mRibbon.InvalidarControl "btnAjustarFilas"
-
-    LogDebug MODULE_NAME, "[InvalidateFileControls] Controles de archivo invalidados"
-End Sub
-
-'@Description: Invalida controles relacionados con charts
-Private Sub InvalidateChartControls()
-    If mRibbon Is Nothing Then Exit Sub
-
-    ' Controles que dependen del chart activo
-    mRibbon.InvalidarControl "btnInvertirSeries"
-    mRibbon.InvalidarControl "btnFormatearGrafico"
-
-    LogDebug MODULE_NAME, "[InvalidateChartControls] Controles de chart invalidados"
-End Sub
-
-'@Description: Invalida todo el Ribbon
-Private Sub InvalidateRibbonFull()
-    If mRibbon Is Nothing Then Exit Sub
-
-    mRibbon.InvalidarRibbon
-
-    LogDebug MODULE_NAME, "[InvalidateRibbonFull] Ribbon completo invalidado"
-End Sub
-
-'@Description: Invalida todo el contexto de la aplicación (método público para forzar invalidación completa)
-Public Sub InvalidateAll()
-    InvalidateRibbonFull
-    RaiseEvent ApplicationContextChanged
-End Sub
-
-' ==========================================
 ' SINCRONIZACIÓN ENTRE SUBCLASES (Coordinación privada)
 ' ==========================================
-
-'@Description: Sincroniza estado del Ribbon cuando cambia la oportunidad
-Private Sub SyncRibbonAfterOpportunityChange()
-    ' Si el modo es OpportunityOnly, actualizar visibilidad según si hay oportunidad
-    If mRibbonState.Modo = Ribbon_OpportunityOnly Then
-        If mOpportunityState.HasCurrentOpportunity() Then
-            mRibbonState.Visible = True
-        Else
-            mRibbonState.Visible = False
-        End If
-    End If
-End Sub
 
 '@Description: Sincroniza oportunidad actual desde el archivo activo (si corresponde)
 Private Sub SyncOpportunityFromFile(f As clsFileXLS)
@@ -395,12 +314,6 @@ Friend Sub OnOpportunityChanged(op As clsOpportunity, Index As Long)
         mOpportunityState.CurrentIndex = Index
     End If
 
-    ' Sincronizar ribbon si hace falta
-    SyncRibbonAfterOpportunityChange
-
-    ' Invalidar controles relacionados con oportunidades
-    InvalidateOpportunityControls
-
     On Error GoTo 0
 End Sub
 
@@ -422,9 +335,6 @@ Friend Sub OnFileChanged(f As clsFileXLS)
     ' Sincronizar oportunidad desde archivo si aplica
     SyncOpportunityFromFile f
 
-    ' Invalidar controles relacionados con archivos
-    InvalidateFileControls
-
     On Error GoTo 0
 End Sub
 
@@ -435,11 +345,6 @@ Friend Sub OnOpportunityCollectionChanged(changeType As String)
 
     LogDebug MODULE_NAME, "[OnOpportunityCollectionChanged] changeType=" & changeType
 
-    ' Cuando cambia la colección, invalidar el dropdown de oportunidades
-    If Not mRibbon Is Nothing Then
-        mRibbon.InvalidarControl "ddlOportunidades"
-        mRibbon.InvalidarControl "dropdownOportunidades"
-    End If
 
     On Error GoTo 0
 End Sub

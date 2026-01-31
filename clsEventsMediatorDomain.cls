@@ -23,7 +23,6 @@ Private WithEvents mFileMgr As clsFileManager
 Attribute mFileMgr.VB_VarHelpID = -1
 
 Private mCtx As clsExecutionContext
-Private mRibbon As clsRibbon
 Private mApplicationState As clsApplicationState
 
 '--------------------------------------------------------------
@@ -42,14 +41,11 @@ End Sub
 Public Sub Initialize(oCtx As clsExecutionContext, _
                 oFSMonitoringCoord As clsFSMonitoringCoord, _
                 oOpportunities As clsOpportunitiesMgr, _
-                oRibbon As clsRibbon, _
                 oFileMgr As clsFileManager, _
                 oApplicationState As clsApplicationState)
     On Error GoTo ErrHandler
     
     Set mCtx = oCtx
-    
-    Set mRibbon = oRibbon
     
     Set mFileMgr = oFileMgr
     
@@ -81,8 +77,6 @@ Public Sub Terminate()
     Set mFileMgr = Nothing
     Set mCtx = Nothing
     
-    Set mRibbon = Nothing
-    
     Exit Sub
 ErrHandler:
     LogCurrentError MODULE_NAME, "[Terminate]"
@@ -103,13 +97,6 @@ Private Sub mOpportunities_OpportunityCollectionUpdate(ByVal cambios As String)
     ' Llamar a ApplicationState para coordinar estados
     If Not mApplicationState Is Nothing Then
         mApplicationState.OnOpportunityCollectionChanged cambios
-    End If
-
-    ' MANTENER invalidación directa temporalmente por compatibilidad
-    If Not mRibbon Is Nothing Then
-        'mRibbon.InvalidarRibbon
-        mRibbon.InvalidarControl "ddlOportunidades"
-        LogDebug MODULE_NAME, "[mOpportunities_OpportunityCollectionUpdate] - Ribbon invalidado"
     End If
 End Sub
 'TODO: Extraer la lógica de clsFileXLS A una función

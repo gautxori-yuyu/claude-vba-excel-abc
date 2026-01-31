@@ -97,6 +97,7 @@ Private Sub Class_Initialize()
 
     ' INTERFAZ - Crear Ribbon (crea RibbonState internamente)
     Set mRibbon = New clsRibbon
+    mRibbon.Initialize mOpportunities, mFileMgr, mChartManager, mCtx
     
     ' ESTADO CENTRALIZADO - Inyectar referencias a subestados (Dependency Injection)
     Set mApplicationState = New clsApplicationState
@@ -104,18 +105,15 @@ Private Sub Class_Initialize()
                                  OpportunityState:=mOpportunities.State, _
                                  FileState:=mFileMgr.State, _
                                  ChartState:=mChartManager.State
-    mApplicationState.SetRibbon mRibbon
-
     ' GESTOR DE EVENTOS DE INFRAESTRUCTURA
     Set mEvMgrInfrastructure = New clsEventsMgrInfrastructure
-    Call mEvMgrInfrastructure.Initialize(mRibbon, mFileMgr, mChartManager, mCtx)
+    Call mEvMgrInfrastructure.Initialize(mFileMgr, mChartManager, mCtx)
 
     ' MEDIADOR DE EVENTOS DE DOMINIO - Inyectar ApplicationState
     Set mEvMediatorDomain = New clsEventsMediatorDomain
     Call mEvMediatorDomain.Initialize(mCtx, _
                                     mFSMonitoringCoord, _
                                     mOpportunities, _
-                                    mRibbon, _
                                     mFileMgr, _
                                     mApplicationState)
 
