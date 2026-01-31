@@ -28,7 +28,7 @@ Private Const MODULE_NAME As String = "clsRibbon"
 ' ==========================================
 Private mribbonUI As IRibbonUI
 
-Private WithEvents mStateRibbon As clsRibbonState
+Private mStateRibbon As clsRibbonState
 Attribute mStateRibbon.VB_VarHelpID = -1
 
 Private mIsRecovering As Boolean              ' Flag para evitar recursion durante recuperacion
@@ -84,20 +84,29 @@ Public Sub StopEvents()
     Set mribbonUI = Nothing
 End Sub
 
-' ==========================================
-' CAPTURA DE EVENTOS DE ESTADO
-' ==========================================
-Private Sub mStateRibbon_StateChanged()
-    InvalidarRibbon
-End Sub
 
 ' ==========================================
 '
 ' ==========================================
 Public Sub ToggleModo()
-    mStateRibbon.ToggleModo
-    On Error Resume Next
+    ' Logica de toggle movida desde clsRibbonState (el Mgr decide, no el State)
+    Select Case mStateRibbon.Modo
+    Case Ribbon_OpportunityOnly
+        mStateRibbon.Modo = Ribbon_User
+    Case Ribbon_User
+        mStateRibbon.Modo = Ribbon_Hidden
+    Case Ribbon_Hidden
+        mStateRibbon.Modo = Ribbon_Admin
+    Case Ribbon_Admin
+        mStateRibbon.Modo = Ribbon_OpportunityOnly
+    Case Else
+        mStateRibbon.Modo = Ribbon_OpportunityOnly
+    End Select
 
+    ' El Mgr invalida el ribbon despues de cambiar estado
+    InvalidarRibbon
+
+    On Error Resume Next
     If EsFicheroOportunidad() Then
         ActivarTab "tabOfertasEspecial"
     End If

@@ -19,10 +19,6 @@ Attribute mFSMonitoringCoord.VB_VarHelpID = -1
 Private WithEvents mOpportunities As clsOpportunitiesMgr
 Attribute mOpportunities.VB_VarHelpID = -1
 
-' NUEVO: Escuchar eventos de subestados
-Private WithEvents mOpportunityState As clsOpportunityState
-Attribute mOpportunityState.VB_VarHelpID = -1
-
 Private WithEvents mFileState As clsFileState
 Attribute mFileState.VB_VarHelpID = -1
 
@@ -64,7 +60,6 @@ Public Sub Initialize(oCtx As clsExecutionContext, _
 
     ' NUEVO: Guardar referencia a ApplicationState y escuchar eventos de subestados
     Set mApplicationState = oApplicationState
-    Set mOpportunityState = oOpportunities.State
     Set mFileState = oFileMgr.State
 
     LogInfo MODULE_NAME, "[Initialize] Mediador configurado con ApplicationState y subestados"
@@ -80,7 +75,6 @@ Public Sub Terminate()
 
     ' Liberar referencias WithEvents primero
     Set mFileState = Nothing
-    Set mOpportunityState = Nothing
     Set mOpportunities = Nothing
     
     Set mFSMonitoringCoord = Nothing
@@ -132,22 +126,14 @@ Private Sub mOpportunities_currOpportunityChanged(ByVal Index As Long, ByVal Pat
             f.MoverAOp Path, mOpportunities.BaseFolder
         End If
     End If
-    ' (Aquí no tiene sentido invalidar el ribbon, esto no tiene nada que ver con ribbon, SOLO LÓGICA DE NEGOCIO)
-End Sub
-
-'--------------------------------------------------------------
-' NUEVO: Evento de cambio de oportunidad desde OpportunityState
-'--------------------------------------------------------------
-Private Sub mOpportunityState_CurrentOpportunityChanged(op As clsOpportunity, Index As Long)
-    LogInfo MODULE_NAME, "[callback: OpportunityState CurrentOpportunityChanged] - Index=" & Index
-
-    ' Llamar a ApplicationState para coordinar estados
+    ' Coordinar estado en ApplicationState
     If Not mApplicationState Is Nothing Then
+        Dim op As clsOpportunity
+        Set op = mOpportunities.State.CurrentOpportunity
         mApplicationState.OnOpportunityChanged op, Index
     End If
-
-    ' NOTA: La lógica de mover archivo se mantiene en handler viejo por compatibilidad
 End Sub
+
 
 '--------------------------------------------------------------
 ' NUEVO: Evento de cambio de archivo desde FileState

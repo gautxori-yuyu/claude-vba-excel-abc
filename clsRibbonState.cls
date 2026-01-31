@@ -15,8 +15,6 @@ Option Explicit
 
 Private Const MODULE_NAME As String = "clsRibbonState"
 
-Public Event StateChanged()
-
 Private mModoRibbon As eRibbonMode
 Private mVisible As Boolean
 
@@ -30,25 +28,9 @@ Public Property Let Modo(value As eRibbonMode)
         mModoRibbon = value
     ElseIf mModoRibbon <> value Then
         mModoRibbon = value
-        RaiseEvent StateChanged
     End If
 End Property
 
-Public Sub ToggleModo()
-    Select Case mModoRibbon
-    Case Ribbon_OpportunityOnly
-        mModoRibbon = Ribbon_User
-    Case Ribbon_User
-        mModoRibbon = Ribbon_Hidden
-    Case Ribbon_Hidden
-        mModoRibbon = Ribbon_Admin
-    Case Ribbon_Admin
-        mModoRibbon = Ribbon_OpportunityOnly
-    Case Else
-        mModoRibbon = Ribbon_OpportunityOnly
-    End Select
-    RaiseEvent StateChanged
-End Sub
 
 Public Function Description() As String
     Select Case mModoRibbon
@@ -72,7 +54,6 @@ End Property
 Public Property Let Visible(value As Boolean)
     If mVisible <> value Then
         mVisible = value
-        RaiseEvent StateChanged
     End If
 End Property
 
