@@ -244,6 +244,7 @@ End Property
 ' @ArgumentDescriptions: index: índice (base 0) de la oportunidad
 '--------------------------------------------------------------
 Public Property Let CurrOpportunity(Index As Long)
+    If Index = p_CurrOpportunity Then Exit Property
     If Index >= 0 And Index < p_ColOpportunities.Count Then
         p_CurrOpportunity = Index
 
