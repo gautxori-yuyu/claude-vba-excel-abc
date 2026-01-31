@@ -24,25 +24,6 @@ Private mFileState As clsFileState
 
 
 ' ==========================================
-' EVENTOS
-' ==========================================
-
-'@Description: Se dispara cuando cambia la oportunidad actual
-Public Event CurrentOpportunityChanged(op As clsOpportunity)
-
-'@Description: Se dispara cuando cambia el archivo Excel activo
-Public Event CurrentFileChanged(f As clsFileXLS)
-
-'@Description: Se dispara cuando cambia el Chart activo
-Public Event CurrentChartChanged(Ch As Chart)
-
-'@Description: Se dispara cuando cambia el modo del Ribbon
-Public Event RibbonModeChanged(mode As eRibbonMode)
-
-'@Description: Se dispara cuando cambia el contexto general (invalida todo el Ribbon)
-Public Event ApplicationContextChanged()
-
-' ==========================================
 ' INICIALIZACIÓN
 ' ==========================================
 
@@ -122,47 +103,9 @@ Public Property Get CurrentOpportunity() As clsOpportunity
     Set CurrentOpportunity = mOpportunityState.CurrentOpportunity
 End Property
 
-Public Property Set CurrentOpportunity(op As clsOpportunity)
-    'TODO: Pendiente de depurar, no tengo la certeza de que la secuencia de activación de estado esté correcta
-    Stop ' De momento no se usa; tiene utilidad para sistemas externos a la aplicación
-    If Not op.Equals(mOpportunityState.CurrentOpportunity) Then
-        Set mOpportunityState.CurrentOpportunity = op
-
-        LogInfo MODULE_NAME, "[CurrentOpportunity] Cambiada a: " & mOpportunityState.GetCurrentOpportunityLabel()
-
-        ' Sincronizar otros estados si es necesario
-        SyncRibbonAfterOpportunityChange
-
-        ' Invalidar controles específicos relacionados con oportunidades
-        InvalidateOpportunityControls
-
-        ' Disparar eventos
-        RaiseEvent CurrentOpportunityChanged(op)
-    End If
-End Property
-
 '@Description: Archivo Excel activo actual (delegado a FileState)
 Public Property Get CurrentFile() As clsFileXLS
     Set CurrentFile = mFileState.CurrentFile
-End Property
-
-Public Property Set CurrentFile(f As clsFileXLS)
-    'TODO: Pendiente de depurar, no tengo la certeza de que la secuencia de activación de estado esté correcta
-    Stop ' De momento no se usa; tiene utilidad para sistemas externos a la aplicación
-    If Not f.Equals(mFileState.CurrentFile) Then
-        Set mFileState.CurrentFile = f
-
-        LogInfo MODULE_NAME, "[CurrentFile] Cambiado a: " & mFileState.GetCurrentFileName()
-
-        ' Sincronizar oportunidad desde archivo si aplica
-        SyncOpportunityFromFile f
-
-        ' Invalidar controles específicos relacionados con archivos
-        InvalidateFileControls
-
-        ' Disparar eventos
-        RaiseEvent CurrentFileChanged(f)
-    End If
 End Property
 
 '@Description: Chart activo actual (delegado a ChartState)
@@ -170,56 +113,14 @@ Public Property Get CurrentChart() As Chart
     Set CurrentChart = mChartState.CurrentChart
 End Property
 
-Public Property Set CurrentChart(Ch As Chart)
-    'TODO: Pendiente de depurar, no tengo la certeza de que la secuencia de activación de estado esté correcta
-    Stop ' De momento no se usa; tiene utilidad para sistemas externos a la aplicación
-    If Not AreSameChart(mChartState.CurrentChart, Ch) Then
-        Set mChartState.CurrentChart = Ch
-
-        LogInfo MODULE_NAME, "[CurrentChart] Cambiado a: " & mChartState.GetCurrentChartName()
-
-        ' Invalidar controles específicos relacionados con charts
-        InvalidateChartControls
-
-        ' Disparar eventos
-        RaiseEvent CurrentChartChanged(Ch)
-    End If
-End Property
-
 '@Description: Modo del Ribbon (delegado a RibbonState)
 Public Property Get RibbonMode() As eRibbonMode
     RibbonMode = mRibbonState.Modo
 End Property
 
-Public Property Let RibbonMode(mode As eRibbonMode)
-    'TODO: Pendiente de depurar, no tengo la certeza de que la secuencia de activación de estado esté correcta
-    Stop ' De momento no se usa; tiene utilidad para sistemas externos a la aplicación
-    If mRibbonState.Modo <> mode Then
-        mRibbonState.Modo = mode
-
-        LogInfo MODULE_NAME, "[RibbonMode] Cambiado a: " & mode
-
-        ' Cuando cambia el modo del Ribbon, invalidar todo
-        InvalidateRibbonFull
-
-        ' Disparar eventos
-        RaiseEvent RibbonModeChanged(mode)
-        RaiseEvent ApplicationContextChanged
-    End If
-End Property
-
 '@Description: Visibilidad del Ribbon (delegado a RibbonState)
 Public Property Get RibbonVisible() As Boolean
     RibbonVisible = mRibbonState.Visible
-End Property
-
-Public Property Let RibbonVisible(value As Boolean)
-    'TODO: Pendiente de depurar, no tengo la certeza de que la secuencia de activación de estado esté correcta
-    Stop ' De momento no se usa; tiene utilidad para sistemas externos a la aplicación
-    If mRibbonState.Visible <> value Then
-        mRibbonState.Visible = value
-        LogInfo MODULE_NAME, "[RibbonVisible] Cambiado a: " & value
-    End If
 End Property
 
 ' ==========================================
@@ -275,26 +176,6 @@ Private Sub SyncOpportunityFromFile(f As clsFileXLS)
         End If
     End If
 End Sub
-
-' ==========================================
-' FUNCIONES AUXILIARES DE COMPARACIÓN
-' ==========================================
-
-'@Description: Compara dos charts para ver si son el mismo
-Private Function AreSameChart(ch1 As Chart, ch2 As Chart) As Boolean
-    On Error Resume Next
-
-    If ch1 Is Nothing And ch2 Is Nothing Then
-        AreSameChart = True
-    ElseIf ch1 Is Nothing Or ch2 Is Nothing Then
-        AreSameChart = False
-    Else
-        ' Comparar por puntero de objeto
-        AreSameChart = (ObjPtr(ch1) = ObjPtr(ch2))
-    End If
-
-    On Error GoTo 0
-End Function
 
 ' ==========================================
 ' COORDINACIÓN DE EVENTOS (llamados por Mediadores)
