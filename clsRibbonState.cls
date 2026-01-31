@@ -23,12 +23,7 @@ Public Property Get Modo() As eRibbonMode
 End Property
 
 Public Property Let Modo(value As eRibbonMode)
-    If mModoRibbon = Ribbon_Undefined Then
-        ' se considera una INICIALIZACION, no un cambio de estado
-        mModoRibbon = value
-    ElseIf mModoRibbon <> value Then
-        mModoRibbon = value
-    End If
+    mModoRibbon = value
 End Property
 
 
@@ -52,9 +47,7 @@ Public Property Get Visible() As Boolean
 End Property
 
 Public Property Let Visible(value As Boolean)
-    If mVisible <> value Then
-        mVisible = value
-    End If
+    mVisible = value
 End Property
 
 Public Function IsAdminGroupVisible() As Boolean

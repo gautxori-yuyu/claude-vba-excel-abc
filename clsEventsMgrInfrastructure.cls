@@ -13,8 +13,7 @@ Option Explicit
 
 Private Const MODULE_NAME As String = "clsEventsMgrInfrastructure"
 
-Private WithEvents mChartManager As clsChartMgr
-Attribute mChartManager.VB_VarHelpID = -1
+Private mChartManager As clsChartMgr
 Private WithEvents mCtx As clsExecutionContext
 Attribute mCtx.VB_VarHelpID = -1
 
@@ -125,16 +124,4 @@ End Sub
 Private Sub mCtx_WorkbookBeforeClose(ByVal wb As Workbook, Cancel As Boolean)
     LogDebug MODULE_NAME, "[mCtx_WorkbookBeforeClose] " & wb.Name
     mFileMgr.UntrackWorkbook wb
-End Sub
-
-' -------------------------------------------------------------
-' Eventos de cambio de seleccion de charts (desde ChartManager)
-' -------------------------------------------------------------
-
-Private Sub mChartManager_ChartActivated(cht As Chart)
-    LogDebug MODULE_NAME, "[callback: clsChartMgr ChartActivated] - Gráfico activado: " & cht.Name
-End Sub
-
-Private Sub mChartManager_ChartDeactivated(cht As Chart)
-    LogDebug MODULE_NAME, "[callback: clsChartMgr ChartActivated] - Gráfico DESactivado: " & cht.Name
 End Sub

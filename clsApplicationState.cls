@@ -69,31 +69,6 @@ Public Sub Initialize(Optional RibbonState As clsRibbonState = Nothing, _
 ErrHandler:
     LogCurrentError MODULE_NAME, "[Initialize]"
 End Sub
-
-' ==========================================
-' ACCESO A SUBCLASES (para inyección en componentes)
-' ==========================================
-
-'@Description: Estado del Ribbon (para inyectar en clsRibbon)
-'Public Property Get RibbonState() As clsRibbonState
-'    Set RibbonState = mRibbonState
-'End Property
-'
-''@Description: Estado de oportunidades (para inyectar en clsOpportunitiesMgr u otros)
-'Public Property Get OpportunityState() As clsOpportunityState
-'    Set OpportunityState = mOpportunityState
-'End Property
-'
-''@Description: Estado de charts (para inyectar en clsChartMgr u otros)
-'Public Property Get ChartState() As clsChartState
-'    Set ChartState = mChartState
-'End Property
-'
-''@Description: Estado de archivo activo (para inyectar en clsFileManager u otros)
-'Public Property Get FileState() As clsFileState
-'    Set FileState = mFileState
-'End Property
-
 ' ==========================================
 ' PROPIEDADES FACADE - Acceso conveniente al estado
 ' ==========================================
@@ -135,13 +110,11 @@ End Function
 
 '@Description: Indica si hay un chart activo
 Public Function IsChartActive() As Boolean
-    Stop ' De momento no se usa; tiene utilidad ¿para gestores de eventos?/¿para sistemas externos a la aplicación?
     IsChartActive = mChartState.HasCurrentChart()
 End Function
 
 '@Description: Indica si hay un archivo activo
 Public Function IsFileActive() As Boolean
-    Stop ' De momento no se usa; tiene utilidad ¿para gestores de eventos?/¿para sistemas externos a la aplicación?
     IsFileActive = mFileState.HasCurrentFile()
 End Function
 
@@ -189,11 +162,6 @@ Friend Sub OnOpportunityChanged(op As clsOpportunity, Index As Long)
 
     LogDebug MODULE_NAME, "[OnOpportunityChanged] op=" & IIf(op Is Nothing, "(Nothing)", op.Label) & _
                          ", index=" & Index
-
-    ' Actualizar índice en OpportunityState si hace falta
-    If mOpportunityState.CurrentIndex <> Index Then
-        mOpportunityState.CurrentIndex = Index
-    End If
 
     On Error GoTo 0
 End Sub
