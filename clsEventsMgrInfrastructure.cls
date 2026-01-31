@@ -14,13 +14,13 @@ Option Explicit
 Private Const MODULE_NAME As String = "clsEventsMgrInfrastructure"
 
 Private mChartManager As clsChartMgr
-Private WithEvents mCtx As clsExecutionContext
-Attribute mCtx.VB_VarHelpID = -1
+Private WithEvents mCtxMgr As clsExecutionContextMgr
+Attribute mCtxMgr.VB_VarHelpID = -1
 
 Private mFileMgr As clsFileManager
 
 '--------------------------------------------------------------
-' Inicialización
+' Inicializaciï¿½n
 '--------------------------------------------------------------
 Private Sub Class_Initialize()
     LogInfo MODULE_NAME, "[Class_Initialize]"
@@ -43,7 +43,7 @@ Public Sub Initialize(oFileMgr As clsFileManager, oChartManager As clsChartMgr, 
 ErrHandler:
     LogCurrentError MODULE_NAME, "[Initialize]"
     Err.Raise Err.Number, MODULE_NAME & " [Initialize]", _
-              "Error inicializando aplicación: " & Err.Description
+              "Error inicializando aplicaciï¿½n: " & Err.Description
 End Sub
 
 Public Sub Terminate()
@@ -59,7 +59,7 @@ Public Sub Terminate()
 ErrHandler:
     LogCurrentError MODULE_NAME, "[Terminate]"
     Err.Raise Err.Number, MODULE_NAME & " [Terminate]", _
-              "Error finalizando aplicación: " & Err.Description
+              "Error finalizando aplicaciï¿½n: " & Err.Description
 End Sub
 
 ' ==================================================================
@@ -71,7 +71,7 @@ End Sub
 ' -------------------------------------------------------------
 
 '@Description: Se dispara cuando se activa un workbook
-'@Category: Gráficos
+'@Category: Grï¿½ficos
 '@Scope: Grafico seleccionado
 '@ArgumentDescriptions: wb As Workbook
 
@@ -81,7 +81,7 @@ Private Sub mCtx_WorkbookActivated(ByVal wb As Workbook)
 End Sub
 
 '@Description: Se dispara al activar una hoja; inicia vigilancia de graficos
-'@Category: Gráficos
+'@Category: Grï¿½ficos
 '@Scope: Grafico seleccionado
 '@ArgumentDescriptions: sh As Object
 
@@ -96,7 +96,7 @@ ErrHandler:
 End Sub
 
 '@Description: Se dispara al desactivar una hoja; detiene vigilancia de graficos
-'@Category: Gráficos
+'@Category: Grï¿½ficos
 '@Scope: Grafico seleccionado
 '@ArgumentDescriptions: sh As Object
 
