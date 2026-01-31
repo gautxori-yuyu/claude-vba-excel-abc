@@ -63,7 +63,6 @@ Private Sub Class_Initialize()
     
     ' cargar configuracion y rutas
     Set mConfiguration = New clsConfiguration
-    actualizarColeccionOportunidades
 End Sub
 
 Private Sub Class_Terminate()
@@ -71,6 +70,11 @@ Private Sub Class_Terminate()
 
     ' Liberar estado
     Set mOpportunityState = Nothing
+End Sub
+
+'@Description: Inicializa datos que requieren dependencias inyectadas (FileManager)
+Public Sub Initialize()
+    actualizarColeccionOportunidades
 End Sub
 
 '@Description: Expone el estado de oportunidad (para inyección en ApplicationState)

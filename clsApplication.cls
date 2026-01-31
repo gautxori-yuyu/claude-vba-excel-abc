@@ -87,8 +87,9 @@ Private Sub Class_Initialize()
 
     ' DOMINIO - Crear managers (ellos crean sus estados internamente)
     Set mOpportunities = New clsOpportunitiesMgr
-    ' Inyectar dependencia de FileManager
+    ' Inyectar dependencia de FileManager y arrancar
     Set mOpportunities.FileManager = mFileMgr
+    mOpportunities.Initialize
 
     ' SERVICIOS DE MONITOREO
     Set mFSMonitoringCoord = New clsFSMonitoringCoord

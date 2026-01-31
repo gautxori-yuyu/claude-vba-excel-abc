@@ -38,6 +38,9 @@ Private Sub Workbook_Open()
     AutoRegistrarTodasLasUDFs
     ' Ctrl + Shift + R
     Application.OnKey "^+R", "ToggleRibbonTab"
+
+    ' Iniciar aplicación (lazy init del singleton)
+    App
 End Sub
 
 Private Sub Workbook_BeforeClose(Cancel As Boolean)
