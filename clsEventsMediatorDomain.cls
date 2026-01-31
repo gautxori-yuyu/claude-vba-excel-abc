@@ -19,12 +19,11 @@ Attribute mFSMonitoringCoord.VB_VarHelpID = -1
 Private WithEvents mOpportunities As clsOpportunitiesMgr
 Attribute mOpportunities.VB_VarHelpID = -1
 
-Private WithEvents mFileState As clsFileState
-Attribute mFileState.VB_VarHelpID = -1
+Private WithEvents mFileMgr As clsFileManager
+Attribute mFileMgr.VB_VarHelpID = -1
 
 Private mCtx As clsExecutionContext
 Private mRibbon As clsRibbon
-Private mFileMgr As clsFileManager
 Private mApplicationState As clsApplicationState
 
 '--------------------------------------------------------------
@@ -58,9 +57,8 @@ Public Sub Initialize(oCtx As clsExecutionContext, _
     
     Set mOpportunities = oOpportunities
 
-    ' NUEVO: Guardar referencia a ApplicationState y escuchar eventos de subestados
+    ' Guardar referencia a ApplicationState
     Set mApplicationState = oApplicationState
-    Set mFileState = oFileMgr.State
 
     LogInfo MODULE_NAME, "[Initialize] Mediador configurado con ApplicationState y subestados"
 
@@ -74,7 +72,6 @@ Public Sub Terminate()
     On Error GoTo ErrHandler
 
     ' Liberar referencias WithEvents primero
-    Set mFileState = Nothing
     Set mOpportunities = Nothing
     
     Set mFSMonitoringCoord = Nothing
@@ -136,9 +133,9 @@ End Sub
 
 
 '--------------------------------------------------------------
-' NUEVO: Evento de cambio de archivo desde FileState
+' Evento de cambio de archivo activo (desde FileManager)
 '--------------------------------------------------------------
-Private Sub mFileState_CurrentFileChanged(f As clsFileXLS, isOpportunityFile As Boolean)
+Private Sub mFileMgr_ActiveFileChanged(f As clsFileXLS)
     Dim fileName As String
     If f Is Nothing Then
         fileName = "(ninguno)"
@@ -149,8 +146,8 @@ Private Sub mFileState_CurrentFileChanged(f As clsFileXLS, isOpportunityFile As 
         On Error GoTo 0
     End If
 
-    LogInfo MODULE_NAME, "[callback: FileState CurrentFileChanged] - File=" & fileName & _
-                         ", IsOpportunity=" & isOpportunityFile
+    LogInfo MODULE_NAME, "[callback: FileManager ActiveFileChanged] - File=" & fileName & _
+                         ", IsOpportunity=" & mFileMgr.State.isOpportunityFile
 
     ' Llamar a ApplicationState para coordinar estados
     If Not mApplicationState Is Nothing Then

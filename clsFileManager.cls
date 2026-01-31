@@ -26,6 +26,12 @@ Option Explicit
 
 Private Const MODULE_NAME As String = "clsFileManager"
 
+' ==========================================
+' EVENTOS
+' ==========================================
+
+Public Event ActiveFileChanged(f As clsFileXLS)
+
 Private mTrackedFiles As Object                 ' Diccionario de TODOS los ficheros de excel, en TODAS las oportunidades procesadas
 Private mFileState As clsFileState              ' Estado de archivo activo (composición)
 
@@ -63,6 +69,31 @@ End Sub
 Public Property Get State() As clsFileState
     Set State = mFileState
 End Property
+
+'@Description: Establece el archivo Excel activo y notifica el cambio
+Public Sub SetActiveFile(f As clsFileXLS)
+    ' Almacenar archivo en estado (memoria pura)
+    Set mFileState.CurrentFile = f
+
+    ' Calcular y almacenar IsOpportunityFile (decisión del Manager)
+    If f Is Nothing Then
+        mFileState.isOpportunityFile = False
+    Else
+        Dim isOpp As Boolean
+        isOpp = False
+        On Error Resume Next
+        isOpp = f.EsOportunidad
+        On Error GoTo 0
+        mFileState.isOpportunityFile = isOpp
+    End If
+
+    LogDebug MODULE_NAME, "[SetActiveFile] " & mFileState.GetCurrentFileName() & _
+                          ", IsOpportunity=" & mFileState.isOpportunityFile
+
+    ' Notificar cambio (evento del Manager)
+    RaiseEvent ActiveFileChanged(f)
+End Sub
+
 ' -------------------------------------------------------------
 ' Init: GESTIONA LA COLECCIÓN DE WORKBOOKS
 ' (Es responsabilidad de clsApplication, NO de clsFileManager)

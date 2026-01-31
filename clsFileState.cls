@@ -15,13 +15,6 @@ Option Explicit
 Private Const MODULE_NAME As String = "clsFileState"
 
 ' ==========================================
-' EVENTOS (para Mediadores)
-' ==========================================
-
-'@Description: Se dispara cuando cambia el archivo activo (solicitud de coordinación)
-Public Event CurrentFileChanged(f As clsFileXLS, isOpportunityFile As Boolean)
-
-' ==========================================
 ' ESTADO DE ARCHIVO
 ' ==========================================
 Private mCurrentFile As clsFileXLS
@@ -50,19 +43,8 @@ Public Property Get CurrentFile() As clsFileXLS
 End Property
 
 Friend Property Set CurrentFile(f As clsFileXLS)
-    Stop
-    If f.Equals(mCurrentFile) Then Exit Property
-
     Set mCurrentFile = f
-
-    ' Actualizar flag de archivo de oportunidad
-    UpdateIsOpportunityFile f
-
-    LogDebug MODULE_NAME, "[CurrentFile] Changed to: " & GetCurrentFileName() & _
-                         ", IsOpportunity=" & mIsOpportunityFile
-
-    ' Generar evento para MEDIADORES (solicitud de coordinación)
-    RaiseEvent CurrentFileChanged(f, mIsOpportunityFile)
+    LogDebug MODULE_NAME, "[CurrentFile] Changed to: " & GetCurrentFileName()
 End Property
 
 '@Description: Indica si el archivo actual es un archivo de oportunidad
@@ -70,24 +52,9 @@ Public Property Get isOpportunityFile() As Boolean
     isOpportunityFile = mIsOpportunityFile
 End Property
 
-' ==========================================
-' LÓGICA INTERNA
-' ==========================================
-
-'@Description: Actualiza el flag IsOpportunityFile basándose en el archivo actual
-Private Sub UpdateIsOpportunityFile(f As clsFileXLS)
-    Stop
-    If f Is Nothing Then
-        mIsOpportunityFile = False
-    Else
-        On Error Resume Next
-        mIsOpportunityFile = f.EsOportunidad
-        If Err.Number <> 0 Then
-            mIsOpportunityFile = False
-        End If
-        On Error GoTo 0
-    End If
-End Sub
+Friend Property Let isOpportunityFile(value As Boolean)
+    mIsOpportunityFile = value
+End Property
 
 ' ==========================================
 ' CONSULTAS DE ESTADO
