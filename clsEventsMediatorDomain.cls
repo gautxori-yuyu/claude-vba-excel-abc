@@ -23,10 +23,11 @@ Private WithEvents mFileMgr As clsFileManager
 Attribute mFileMgr.VB_VarHelpID = -1
 
 Private mCtx As clsExecutionContext
+Private mCtxMgr As clsExecutionContextMgr
 Private mApplicationState As clsApplicationState
 
 '--------------------------------------------------------------
-' Inicialización
+' Inicializaciï¿½n
 '--------------------------------------------------------------
 Private Sub Class_Initialize()
     LogInfo MODULE_NAME, "[Class_Initialize]"
@@ -39,18 +40,20 @@ End Sub
 
 'TODO: faltaria crear clases para otras funciones que estan en macros, y pasarlas como parametros...
 Public Sub Initialize(oCtx As clsExecutionContext, _
+                oCtxMgr As clsExecutionContextMgr, _
                 oFSMonitoringCoord As clsFSMonitoringCoord, _
                 oOpportunities As clsOpportunitiesMgr, _
                 oFileMgr As clsFileManager, _
                 oApplicationState As clsApplicationState)
     On Error GoTo ErrHandler
-    
+
     Set mCtx = oCtx
-    
+    Set mCtxMgr = oCtxMgr
+
     Set mFileMgr = oFileMgr
-    
+
     Set mFSMonitoringCoord = oFSMonitoringCoord
-    
+
     Set mOpportunities = oOpportunities
 
     ' Guardar referencia a ApplicationState
@@ -81,7 +84,7 @@ Public Sub Terminate()
 ErrHandler:
     LogCurrentError MODULE_NAME, "[Terminate]"
     Err.Raise Err.Number, MODULE_NAME & " [Terminate]", _
-              "Error finalizando aplicación: " & Err.Description
+              "Error finalizando aplicaciï¿½n: " & Err.Description
 End Sub
 
 ' ==================================================================
@@ -99,7 +102,7 @@ Private Sub mOpportunities_OpportunityCollectionUpdate(ByVal cambios As String)
         mApplicationState.OnOpportunityCollectionChanged cambios
     End If
 End Sub
-'TODO: Extraer la lógica de clsFileXLS A una función
+'TODO: Extraer la lï¿½gica de clsFileXLS A una funciï¿½n
 Private Sub mOpportunities_currOpportunityChanged(ByVal Index As Long, ByVal Path As String)
     LogInfo MODULE_NAME, "[callback: clsOpportunitiesMgr currOpportunityChanged] - Oportunidad seleccionada: " & Path
     

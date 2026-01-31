@@ -110,11 +110,12 @@ Private Sub Class_Initialize()
                                  ChartState:=mChartManager.State
     ' GESTOR DE EVENTOS DE INFRAESTRUCTURA
     Set mEvMgrInfrastructure = New clsEventsMgrInfrastructure
-    Call mEvMgrInfrastructure.Initialize(mFileMgr, mChartManager, mCtx)
+    Call mEvMgrInfrastructure.Initialize(mFileMgr, mChartManager, mExecutionContextMgr)
 
     ' MEDIADOR DE EVENTOS DE DOMINIO - Inyectar ApplicationState
     Set mEvMediatorDomain = New clsEventsMediatorDomain
     Call mEvMediatorDomain.Initialize(mCtx, _
+                                    mExecutionContextMgr, _
                                     mFSMonitoringCoord, _
                                     mOpportunities, _
                                     mFileMgr, _
