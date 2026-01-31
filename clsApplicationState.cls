@@ -242,7 +242,6 @@ End Property
 '@Description: Indica si hay un archivo de oportunidad activo
 '@Returns: True si hay archivo activo Y es de oportunidad Y hay oportunidad seleccionada
 Public Function IsOpportunityFileActive() As Boolean
-    Stop ' De momento no se usa; tiene utilidad ¿para gestores de eventos?/¿para sistemas externos a la aplicación?
     IsOpportunityFileActive = mFileState.isOpportunityFile And mOpportunityState.HasCurrentOpportunity()
 End Function
 

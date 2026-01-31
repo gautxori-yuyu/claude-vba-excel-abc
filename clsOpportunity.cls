@@ -110,7 +110,11 @@ End Property
 ' MÉTODOS PÚBLICOS
 ' ==========================================
 Public Function Equals(op As clsOpportunity) As Boolean
-    Equals = (ObjPtr(Me) = ObjPtr(op))
+    If op Is Nothing Then
+        Equals = False
+    Else
+        Equals = (LCase(mPath) = LCase(op.Path))
+    End If
 End Function
 
 '@Description: Valida si la oportunidad tiene datos mínimos requeridos

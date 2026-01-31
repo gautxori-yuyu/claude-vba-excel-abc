@@ -76,27 +76,6 @@ Public Property Let Visible(value As Boolean)
     End If
 End Property
 
-'@Description: Indica si la pestaña principal del Ribbon debe ser visible
-'@Param isOpportunityFileActive: Indica si hay un archivo de oportunidad activo
-'@Scope: público (consultado por callbacks)
-'@Returns: Boolean
-'@Category: UI / Estado
-Public Function IsRibbonTabVisible(isOpportunityFileActive As Boolean) As Boolean
-    Select Case mModoRibbon
-    Case Ribbon_Admin
-        IsRibbonTabVisible = True
-
-    Case Ribbon_User
-        IsRibbonTabVisible = True
-
-    Case Ribbon_OpportunityOnly
-        IsRibbonTabVisible = isOpportunityFileActive
-
-    Case Else
-        IsRibbonTabVisible = False
-    End Select
-End Function
-
 Public Function IsAdminGroupVisible() As Boolean
     IsAdminGroupVisible = (mModoRibbon = Ribbon_Admin)
 End Function

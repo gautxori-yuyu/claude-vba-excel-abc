@@ -228,6 +228,29 @@ Public Property Get IsRecovering() As Boolean
 End Property
 
 
+'@Description: Determina si la pestana principal del Ribbon debe ser visible
+'@Note: La decision de visibilidad vive en el Mgr (no en State). El Mgr consulta
+'       su propio State (Modo) y, si hace falta, el estado de la aplicacion.
+'@Returns: True si la pestana debe mostrarse segun el modo actual
+Public Function IsTabVisible() As Boolean
+    On Error GoTo ErrHandler
+    Select Case mStateRibbon.Modo
+    Case Ribbon_Admin
+        IsTabVisible = True
+    Case Ribbon_User
+        IsTabVisible = True
+    Case Ribbon_OpportunityOnly
+        ' En este modo: visible solo si hay archivo de oportunidad activo.
+        ' La UI puede consultar estado de la aplicacion (conoce al mundo).
+        IsTabVisible = App().AppState.IsOpportunityFileActive()
+    Case Else
+        IsTabVisible = False
+    End Select
+    Exit Function
+ErrHandler:
+    IsTabVisible = False
+End Function
+
 '@Description: Diagnostico rapido del estado del Ribbon
 Public Function GetQuickDiagnostics() As String
     Dim info As String

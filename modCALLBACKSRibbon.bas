@@ -303,7 +303,7 @@ End Sub
 Public Sub GetTabABCVisible(control As IRibbonControl, ByRef Visible)
 Attribute GetTabABCVisible.VB_ProcData.VB_Invoke_Func = " \n0"
     On Error GoTo ErrHandler
-    Visible = App.ribbon.State.IsRibbonTabVisible
+    Visible = App.ribbon.IsTabVisible()
     Exit Sub
 
 ErrHandler:
