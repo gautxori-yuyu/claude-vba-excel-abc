@@ -74,7 +74,7 @@ End Sub
 Public Function EsValidoInvertirEjes() As Boolean
     On Error GoTo SafeExit
 
-    ' 1. Validacin segura de contexto mnimo
+    ' 1. Validaci?n segura de contexto mnimo
     If mCtx.Workbook Is Nothing Then Exit Function
     If mCtx.Selection Is Nothing Then Exit Function
     If mCtx.Chart Is Nothing Then Exit Function
@@ -102,7 +102,7 @@ Public Function EsValidoInvertirEjes() As Boolean
     Exit Function
 
 CheckSeries:
-    ' 6. Validacin adicional: que el grfico tenga series
+    ' 6. Validaci?n adicional: que el grfico tenga series
     On Error Resume Next
     EsValidoInvertirEjes = (mCtx.Chart.SeriesCollection.Count > 0)
     On Error GoTo 0
@@ -144,7 +144,7 @@ End Function
 ' Activar vigilancia de graficos en una hoja
 '--------------------------------------------------------------
 '@Description: Inicia la vigilancia de eventos de graficos en una hoja determinada
-'@Category: Grficos
+'@Category: gr?ficos
 '@Scope: interna, auxiliar
 '@ArgumentDescriptions: sh As Object
 Public Sub WatchSheet(sh As Object)
@@ -156,44 +156,52 @@ Public Sub WatchSheet(sh As Object)
     ' Crear coleccion de receptores de eventos
     Set mChartsInActiveSheet = New Collection
 
-    ' Iterar sobre objetos grafico en la hoja
-    Dim chObj As ChartObject
-    For Each chObj In sh.ChartObjects
-        Dim oChartEvents As clsChartEvents
-        Set oChartEvents = New clsChartEvents
-        Set oChartEvents.ParentManager = Me
-        Set oChartEvents.Chart = chObj.Chart
-        mChartsInActiveSheet.Add oChartEvents
-    Next chObj
+    ' Verificar que sh es un objeto que puede tener ChartObjects
+    If TypeOf sh Is Worksheet Then
+        ' Iterar sobre objetos grafico en la hoja
+        Dim chObj As ChartObject
+        For Each chObj In sh.ChartObjects
+            Dim oChartEvents As clsChartEvents
+            Set oChartEvents = New clsChartEvents
+            Set oChartEvents.ParentManager = Me
+            Set oChartEvents.Chart = chObj.Chart
+            mChartsInActiveSheet.Add oChartEvents
+        Next chObj
+    End If
 
-    LogDebug MODULE_NAME, "[WatchSheet] - grficos en observacin: " & mChartsInActiveSheet.Count
+    LogDebug MODULE_NAME, "[WatchSheet] - gr?ficos en observaci?n: " & mChartsInActiveSheet.Count
 
     Exit Sub
 ErrHandler:
     LogError MODULE_NAME, "[WatchSheet] Error", , Err.Description
     Err.Raise Err.Number, "clsChartMgr.WatchSheet", _
-              "Error al configurar la vigilancia de seleccin de grficos en hoja: " & Err.Description
+              "Error al configurar la vigilancia de selecci?n de gr?ficos en hoja: " & Err.Description
 End Sub
 
 '--------------------------------------------------------------
 ' Detener toda vigilancia
 '--------------------------------------------------------------
 '@Description: Detiene la vigilancia de todos los graficos actualmente observados
-'@Category: Grficos
+'@Category: gr?ficos
 '@Scope: interna, auxiliar
 Public Sub StopWatching()
     On Error GoTo ErrHandler
-    Dim oChartEvents As clsChartEvents
-    For Each oChartEvents In mChartsInActiveSheet
-        Set oChartEvents.Chart = Nothing
-    Next oChartEvents
+    
+    ' Check if the collection exists before iterating
+    If Not mChartsInActiveSheet Is Nothing Then
+        Dim oChartEvents As clsChartEvents
+        For Each oChartEvents In mChartsInActiveSheet
+            Set oChartEvents.Chart = Nothing
+        Next oChartEvents
+    End If
+    
     Set mChartsInActiveSheet = New Collection
-    LogDebug MODULE_NAME, "[StopWatching] - Eventos de grficos desactivados"
+    LogDebug MODULE_NAME, "[StopWatching] - Eventos de gr?ficos desactivados"
 
     Exit Sub
 ErrHandler:
     LogCurrentError MODULE_NAME, "[StopWatching]"
-    Err.Raise Err.Number, MODULE_NAME & " [StopWatching] - Error al detener la vigilancia de seleccin de grficos en hoja", Err.Description
+    Err.Raise Err.Number, MODULE_NAME & " [StopWatching] - Error al detener la vigilancia de selecci?n de gr?ficos en hoja", Err.Description
 End Sub
 
 Public Sub RefreshCurrentSheet()
@@ -214,7 +222,7 @@ End Sub
 ' Mtodos internos: llamados por clsChartEvents
 '--------------------------------------------------------------
 '@Description: Notifica la activacion de un grafico al gestor central
-'@Category: Grficos
+'@Category: gr?ficos
 '@Scope: interna, auxiliar
 '@ArgumentDescriptions: cht As Chart
 Friend Sub NotifyChartActivated(cht As Chart)
@@ -225,7 +233,7 @@ Friend Sub NotifyChartActivated(cht As Chart)
 End Sub
 
 '@Description: Notifica la desactivacion de un grafico al gestor central
-'@Category: Grficos
+'@Category: gr?ficos
 '@Scope: interna, auxiliar
 '@ArgumentDescriptions: cht As Chart
 Friend Sub NotifyChartDeactivated(cht As Chart)

@@ -117,7 +117,7 @@ Private Sub Workbook_AddinInstall()
     
     On Error GoTo 0
 End Sub
-' Elimina los ficheros de log que tengan m�s de 3 d�as, si hay m�s de 3 ficheros de log
+' Elimina los ficheros de log que tengan M�s de 3 d�as, si hay M�s de 3 ficheros de log
 Private Sub removeOldLogs()
     Dim fso As Object
     Dim folderPath As String
@@ -150,7 +150,7 @@ Private Sub removeOldLogs()
         End If
     Next oFile
     
-    ' 2. Si hay m�s de 3 ficheros en total, evaluamos el borrado
+    ' 2. Si hay M�s de 3 ficheros en total, evaluamos el borrado
     Do While logFiles.Count > 3
         logFiles.Item(1).Delete True
         logFiles.Remove 1
@@ -160,7 +160,7 @@ Private Sub removeOldLogs()
         ' Usamos DateLastModified para mayor precisi�n, o DateCreated
         fileDate = oFile.DateLastModified
         
-        ' Requisito: M�s de 3 d�as de antig�edad
+        ' Requisito: M�s de 3 d�as de antiguedad
         If DateDiff("d", fileDate, Now) > 3 Then
             ' Re-verificamos el conteo antes de cada borrado para asegurar que siempre queden 3
             If logFiles.Count > 3 Then
@@ -184,5 +184,74 @@ Private Sub removeOldLogs()
     Set fso = Nothing
     LogInfo MODULE_NAME, "[removeOldLogs] - Finalizado"
 End Sub
+
+' ==========================================
+' EVENTOS DE APLICACIN - Captura de eventos tcnicos (sin semntica)
+' ==========================================
+
+Private Sub mXLApp_WorkbookOpen(ByVal wb As Workbook)
+    ' Solo reenviar al gestor de contexto, sin lgica
+    If Not mExecutionContextMgr Is Nothing Then
+        mExecutionContextMgr.OnWorkbookOpened wb
+    End If
+End Sub
+
+Private Sub mXLApp_WorkbookActivate(ByVal wb As Workbook)
+    ' Solo reenviar al gestor de contexto, sin lgica
+    If Not mExecutionContextMgr Is Nothing Then
+        mExecutionContextMgr.OnWorkbookActivated wb
+    End If
+End Sub
+
+Private Sub mXLApp_WorkbookBeforeClose(ByVal wb As Workbook, ByRef Cancel As Boolean)
+    ' Solo reenviar al gestor de contexto, sin lgica
+    If Not mExecutionContextMgr Is Nothing Then
+        mExecutionContextMgr.OnWorkbookBeforeClose wb, Cancel
+    End If
+End Sub
+
+Private Sub mXLApp_SheetActivate(ByVal sh As Object)
+    ' Solo reenviar al gestor de contexto, sin lgica
+    If Not mExecutionContextMgr Is Nothing Then
+        mExecutionContextMgr.OnSheetActivated sh
+    End If
+End Sub
+
+Private Sub mXLApp_SheetDeactivate(ByVal sh As Object)
+    ' Solo reenviar al gestor de contexto, sin lgica
+    If Not mExecutionContextMgr Is Nothing Then
+        mExecutionContextMgr.OnSheetDeactivated sh
+    End If
+End Sub
+
+Private Sub mXLApp_WindowActivate(ByVal Wn As Window)
+    ' Solo reenviar al gestor de contexto, sin lgica
+    If Not mExecutionContextMgr Is Nothing Then
+        mExecutionContextMgr.OnWindowActivated Wn
+    End If
+End Sub
+
+Private Sub mXLApp_WindowDeactivate(ByVal Wn As Window)
+    ' Solo reenviar al gestor de contexto, sin lgica
+    If Not mExecutionContextMgr Is Nothing Then
+        mExecutionContextMgr.OnWindowDeactivated Wn
+    End If
+End Sub
+
+Private Sub mXLApp_SelectionChange(ByVal Target As Range)
+    ' Solo reenviar al gestor de contexto, sin lgica
+    If Not mExecutionContextMgr Is Nothing Then
+        mExecutionContextMgr.OnSelectionChanged Target
+    End If
+End Sub
+
+Private Sub mXLApp_SheetCalculate(ByVal Sh As Object)
+    ' Solo reenviar al gestor de contexto, sin lgica
+    If Not mExecutionContextMgr Is Nothing Then
+        mExecutionContextMgr.OnSheetCalculated Sh
+    End If
+End Sub
+
+
 
 
