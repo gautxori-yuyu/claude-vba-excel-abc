@@ -173,14 +173,6 @@ End Sub
 
 Private Sub mFSMonitoringCoord_MonitoringError(ByVal folder As String, ByVal errorMessage As String)
     LogError MODULE_NAME, "[mFSMonitoringCoord_MonitoringError] " & folder & ": " & errorMessage
-
-    ' Mostrar al usuario solo errores criticos
-    If InStr(1, errorMessage, "Limite", vbTextCompare) > 0 Or _
-       InStr(1, errorMessage, "no encontrada", vbTextCompare) > 0 Then
-        MsgBox "Error en monitoreo de carpeta:" & vbCrLf & _
-               folder & vbCrLf & vbCrLf & _
-               errorMessage, vbExclamation, "FolderWatcher"
-    End If
 End Sub
 
 Private Sub mFSMonitoringCoord_MonitoringReconnected(ByVal folder As String, ByVal attempts As Long)
@@ -189,12 +181,6 @@ End Sub
 
 Private Sub mFSMonitoringCoord_MonitoringFailed(ByVal folder As String, ByVal reason As String)
     LogError MODULE_NAME, "[mFSMonitoringCoord_MonitoringFailed] " & folder & ": " & reason
-
-    MsgBox "El monitoreo de la carpeta ha fallado permanentemente:" & vbCrLf & _
-           folder & vbCrLf & vbCrLf & _
-           "Razon: " & reason & vbCrLf & vbCrLf & _
-           "Es posible que la carpeta no este accesible o haya problemas de red.", _
-           vbExclamation, "FolderWatcher - Reconexion Fallida"
 End Sub
 
 
