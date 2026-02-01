@@ -31,7 +31,7 @@ Public Event ChartDeactivated(Chart As Chart)
 '--------------------------------------------------------------
 Private mChartsInActiveSheet As Collection              ' Colección de instancias de clsChartEvents activas
 Private mChartState As clsChartState              ' Estado de Chart activo (composición)
-Private mCtx As clsExecutionContext
+Private mCtxState As clsExecutionContextState
 
 '--------------------------------------------------------------
 ' Inicialización
@@ -59,8 +59,8 @@ Public Property Get State() As clsChartState
     Set State = mChartState
 End Property
 
-Public Sub Initialize(oCtx As clsExecutionContext)
-    Set mCtx = oCtx
+Public Sub Initialize(oCtxState As clsExecutionContextState)
+    Set mCtxState = oCtxState
     ' No cacheamos nada aquí ? lazy evaluation segura
     LogInfo MODULE_NAME, "[Initialize] - Suscrito a eventos de Application"
 End Sub
@@ -69,7 +69,7 @@ End Sub
 ' @Description: Comprueba si el gráfico activo es válido para invertir ejes
 '--------------------------------------------------------------
 ' TODO: unificar esta funcion con lo de clsExecutioContext: alli la funcion Chart DEVUELVE CASI TODO LO QUE HACE ESTA FUNCION,
-' queda cambiar el Select Case TypeName(mCtx.Selection) usando la informacion cacheada alli (m_cachedChartInfo) (y sigo pensando que
+' queda cambiar el Select Case TypeName(mCtxState.Selection) usando la informacion cacheada alli (m_cachedChartInfo) (y sigo pensando que
 ' clsExecutionContext "ESTA DE SOBRA", lo unico que aporta es el "Cacheado"... y pendiente de incoporarle funcionalidad para,
 ' cuando se pierde el contexto, **reenganchar eventos, **reconstruir estado derivado, y **aislar el daño del reset)
 
@@ -77,9 +77,9 @@ Public Function EsValidoInvertirEjes() As Boolean
     On Error GoTo SafeExit
     
     ' 1. Validación segura de contexto mínimo
-    If mCtx.Workbook Is Nothing Then Exit Function
-    If mCtx.Selection Is Nothing Then Exit Function
-    If mCtx.Chart Is Nothing Then Exit Function
+    If mCtxState.Workbook Is Nothing Then Exit Function
+    If mCtxState.Selection Is Nothing Then Exit Function
+    If mCtxState.Chart Is Nothing Then Exit Function
     
     ' 3. Caso de hoja de gráfico activa (ChartSheet)
     If TypeName(Application.ActiveSheet) = "Chart" Then
@@ -88,7 +88,7 @@ Public Function EsValidoInvertirEjes() As Boolean
     End If
     
     ' 4. Caso de gráfico incrustado en hoja de cálculo (ChartObject)
-    Select Case TypeName(mCtx.Selection)
+    Select Case TypeName(mCtxState.Selection)
         Case "ChartObject", "ChartArea"
             ' No tengo nada claro que en este tipo de objetos se puedan invertir los ejes; en todo caso, NO son los que yo creo
             EsValidoInvertirEjes = True

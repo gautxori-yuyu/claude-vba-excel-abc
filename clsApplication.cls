@@ -14,8 +14,8 @@ Option Explicit
 Private Const MODULE_NAME As String = "clsApplication"
 
 Private mChartManager As clsChartMgr
-Private mCtx As clsExecutionContext
-Attribute mCtx.VB_VarHelpID = -1
+Private mCtxState As clsExecutionContextState
+Private mCtxMgr As clsExecutionContextMgr
 
 Private mEventDispatcher As clsEventDispatcher
 Private mEvMgrInfrastructure As clsEventsMgrInfrastructure
@@ -35,8 +35,8 @@ Public Property Get ChartManager() As clsChartMgr
     Set ChartManager = mChartManager
 End Property
 
-Public Property Get executionContext() As clsExecutionContext
-    Set executionContext = mCtx
+Public Property Get ExecutionContextMgr() As clsExecutionContextMgr
+    Set ExecutionContextMgr = mCtxMgr
 End Property
 
 Public Static Property Get ribbon() As clsRibbon
@@ -74,8 +74,9 @@ Private Sub Class_Initialize()
     LogInfo MODULE_NAME, "[Class_Initialize] - Iniciando aplicacion"
 
     ' INFRAESTRUCTURA
-    Set mCtx = New clsExecutionContext
-    mCtx.Initialize
+    Set mCtxState = New clsExecutionContextState
+    Set mCtxMgr = New clsExecutionContextMgr
+    mCtxMgr.Initialize mCtxState
     ' TODO: creo que es mejor UNIFICARLO, o HACER COMPOSICION, de clsChartMgr, dentro de clsExecutionContext (ChartMgr PERTENECE al exec context,
     ' mas que depender de él; actualmente parece que la relación está invertida, está asi para minimizar los cambios al resto del codigo...)
     Set mChartManager = New clsChartMgr
@@ -83,7 +84,7 @@ Private Sub Class_Initialize()
     Set mEventDispatcher = New clsEventDispatcher
 
     Set mFileMgr = New clsFileManager
-    mFileMgr.Init mCtx.Application.Workbooks
+    mFileMgr.Init mCtxState.Application.Workbooks
 
     ' DOMINIO - Crear managers (ellos crean sus estados internamente)
     Set mOpportunities = New clsOpportunitiesMgr
@@ -97,21 +98,22 @@ Private Sub Class_Initialize()
 
     ' INTERFAZ - Crear Ribbon (crea RibbonState internamente)
     Set mRibbon = New clsRibbon
-    mRibbon.Initialize mOpportunities, mFileMgr, mChartManager, mCtx
+    mRibbon.Initialize mOpportunities, mFileMgr, mChartManager, mCtxMgr
     
     ' ESTADO CENTRALIZADO - Inyectar referencias a subestados (Dependency Injection)
     Set mApplicationState = New clsApplicationState
     mApplicationState.Initialize RibbonState:=mRibbon.State, _
                                  OpportunityState:=mOpportunities.State, _
                                  FileState:=mFileMgr.State, _
-                                 ChartState:=mChartManager.State
+                                 ChartState:=mChartManager.State, _
+                                 CtxState:=mCtxState
     ' GESTOR DE EVENTOS DE INFRAESTRUCTURA
     Set mEvMgrInfrastructure = New clsEventsMgrInfrastructure
-    Call mEvMgrInfrastructure.Initialize(mFileMgr, mChartManager, mCtx)
+    Call mEvMgrInfrastructure.Initialize(mFileMgr, mChartManager, mCtxMgr)
 
     ' MEDIADOR DE EVENTOS DE DOMINIO - Inyectar ApplicationState
     Set mEvMediatorDomain = New clsEventsMediatorDomain
-    Call mEvMediatorDomain.Initialize(mCtx, _
+    Call mEvMediatorDomain.Initialize(mCtxState, _
                                     mFSMonitoringCoord, _
                                     mOpportunities, _
                                     mFileMgr, _
@@ -157,6 +159,10 @@ Private Sub Class_Terminate()
 
     ' Liberar estado centralizado
     Set mApplicationState = Nothing
+
+    ' Liberar contexto de ejecución
+    Set mCtxMgr = Nothing
+    Set mCtxState = Nothing
 
     LogInfo MODULE_NAME, "[Terminate] - Limpieza completada"
 End Sub

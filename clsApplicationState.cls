@@ -21,6 +21,7 @@ Private mRibbonState As clsRibbonState
 Private mOpportunityState As clsOpportunityState
 Private mChartState As clsChartState
 Private mFileState As clsFileState
+Private mCtxState As clsExecutionContextState
 
 
 ' ==========================================
@@ -39,6 +40,7 @@ Private Sub Class_Terminate()
     Set mOpportunityState = Nothing
     Set mChartState = Nothing
     Set mFileState = Nothing
+    Set mCtxState = Nothing
 End Sub
 
 '@Description: Inicializa el coordinador con referencias a subestados (Dependency Injection)
@@ -50,7 +52,8 @@ End Sub
 Public Sub Initialize(Optional RibbonState As clsRibbonState = Nothing, _
                       Optional OpportunityState As clsOpportunityState = Nothing, _
                       Optional FileState As clsFileState = Nothing, _
-                      Optional ChartState As clsChartState = Nothing)
+                      Optional ChartState As clsChartState = Nothing, _
+                      Optional CtxState As clsExecutionContextState = Nothing)
     On Error GoTo ErrHandler
 
     ' Inyectar referencias a subestados
@@ -58,6 +61,7 @@ Public Sub Initialize(Optional RibbonState As clsRibbonState = Nothing, _
     Set mOpportunityState = OpportunityState
     Set mFileState = FileState
     Set mChartState = ChartState
+    Set mCtxState = CtxState
 
     LogInfo MODULE_NAME, "[Initialize] Referencias inyectadas: " & _
             "Ribbon=" & CStr(Not (RibbonState Is Nothing)) & ", " & _
@@ -117,6 +121,15 @@ End Function
 Public Function IsFileActive() As Boolean
     IsFileActive = mFileState.HasCurrentFile()
 End Function
+
+'@Description: Indica si el contexto de ejecución Excel es válido
+Public Property Get IsContextValid() As Boolean
+    If mCtxState Is Nothing Then
+        IsContextValid = False
+    Else
+        IsContextValid = mCtxState.IsContextValid
+    End If
+End Property
 
 '@Description: Obtiene diagnóstico completo del contexto actual
 Public Function GetContextDiagnostics() As String

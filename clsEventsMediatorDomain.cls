@@ -22,7 +22,7 @@ Attribute mOpportunities.VB_VarHelpID = -1
 Private WithEvents mFileMgr As clsFileManager
 Attribute mFileMgr.VB_VarHelpID = -1
 
-Private mCtx As clsExecutionContext
+Private mCtxState As clsExecutionContextState
 Private mApplicationState As clsApplicationState
 
 '--------------------------------------------------------------
@@ -38,14 +38,14 @@ Private Sub Class_Terminate()
 End Sub
 
 'TODO: faltaria crear clases para otras funciones que estan en macros, y pasarlas como parametros...
-Public Sub Initialize(oCtx As clsExecutionContext, _
+Public Sub Initialize(oCtxState As clsExecutionContextState, _
                 oFSMonitoringCoord As clsFSMonitoringCoord, _
                 oOpportunities As clsOpportunitiesMgr, _
                 oFileMgr As clsFileManager, _
                 oApplicationState As clsApplicationState)
     On Error GoTo ErrHandler
     
-    Set mCtx = oCtx
+    Set mCtxState = oCtxState
     
     Set mFileMgr = oFileMgr
     
@@ -75,7 +75,7 @@ Public Sub Terminate()
     ' Luego referencias normales
     Set mApplicationState = Nothing
     Set mFileMgr = Nothing
-    Set mCtx = Nothing
+    Set mCtxState = Nothing
     
     Exit Sub
 ErrHandler:
@@ -104,7 +104,7 @@ Private Sub mOpportunities_currOpportunityChanged(ByVal Index As Long, ByVal Pat
     LogInfo MODULE_NAME, "[callback: clsOpportunitiesMgr currOpportunityChanged] - Oportunidad seleccionada: " & Path
     
     Dim f As clsFileXLS
-    Set f = mFileMgr.GetOrTrackWorkbook(mCtx.Workbook)
+    Set f = mFileMgr.GetOrTrackWorkbook(mCtxState.Workbook)
     If Not f Is Nothing Then
         If f.DebeMoverseAOp(Path, mOpportunities.BaseFolder) Then
             f.MoverAOp Path, mOpportunities.BaseFolder

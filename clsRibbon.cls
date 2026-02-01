@@ -46,8 +46,8 @@ Attribute mFileMgr.VB_VarHelpID = -1
 Private WithEvents mChartMgr As clsChartMgr
 Attribute mChartMgr.VB_VarHelpID = -1
 
-Private WithEvents mCtx As clsExecutionContext
-Attribute mCtx.VB_VarHelpID = -1
+Private WithEvents mCtxMgr As clsExecutionContextMgr
+Attribute mCtxMgr.VB_VarHelpID = -1
 
 ' ==========================================
 ' PROPERTY GET/SET PARA MIEMBROS
@@ -98,11 +98,11 @@ End Sub
 Public Sub Initialize(oOpportunities As clsOpportunitiesMgr, _
                       oFileMgr As clsFileManager, _
                       oChartMgr As clsChartMgr, _
-                      oCtx As clsExecutionContext)
+                      oCtxMgr As clsExecutionContextMgr)
     Set mOpportunities = oOpportunities
     Set mFileMgr = oFileMgr
     Set mChartMgr = oChartMgr
-    Set mCtx = oCtx
+    Set mCtxMgr = oCtxMgr
 End Sub
 
 Public Sub StopEvents()
@@ -111,7 +111,7 @@ Public Sub StopEvents()
     Set mOpportunities = Nothing
     Set mFileMgr = Nothing
     Set mChartMgr = Nothing
-    Set mCtx = Nothing
+    Set mCtxMgr = Nothing
 End Sub
 
 
@@ -347,12 +347,12 @@ Private Sub mChartMgr_ChartDeactivated(cht As Chart)
     InvalidarControl "btnInvertirSeries"
 End Sub
 
-Private Sub mCtx_SheetActivated(ByVal sh As Object)
+Private Sub mCtxMgr_SheetActivated(ByVal sh As Object)
     InvalidarControl "btnGenerarGraficos"
     InvalidarControl "btnCGASING"
 End Sub
 
-Private Sub mCtx_SheetDeactivated(ByVal sh As Object)
+Private Sub mCtxMgr_SheetDeactivated(ByVal sh As Object)
     InvalidarControl "btnGenerarGraficos"
     InvalidarControl "btnCGASING"
 End Sub

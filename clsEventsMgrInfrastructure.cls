@@ -14,8 +14,8 @@ Option Explicit
 Private Const MODULE_NAME As String = "clsEventsMgrInfrastructure"
 
 Private mChartManager As clsChartMgr
-Private WithEvents mCtx As clsExecutionContext
-Attribute mCtx.VB_VarHelpID = -1
+Private WithEvents mCtxMgr As clsExecutionContextMgr
+Attribute mCtxMgr.VB_VarHelpID = -1
 
 Private mFileMgr As clsFileManager
 
@@ -30,12 +30,12 @@ Private Sub Class_Terminate()
     Terminate
     LogInfo MODULE_NAME, "[Class_Terminate]"
 End Sub
-Public Sub Initialize(oFileMgr As clsFileManager, oChartManager As clsChartMgr, oCtx As clsExecutionContext)
+Public Sub Initialize(oFileMgr As clsFileManager, oChartManager As clsChartMgr, oCtxMgr As clsExecutionContextMgr)
     On Error GoTo ErrHandler
     
     Set mChartManager = oChartManager
     
-    Set mCtx = oCtx
+    Set mCtxMgr = oCtxMgr
     
     Set mFileMgr = oFileMgr
     
@@ -51,7 +51,7 @@ Public Sub Terminate()
     
     Set mChartManager = Nothing
     
-    Set mCtx = Nothing
+    Set mCtxMgr = Nothing
     
     Set mFileMgr = Nothing
     
@@ -75,7 +75,7 @@ End Sub
 '@Scope: Grafico seleccionado
 '@ArgumentDescriptions: wb As Workbook
 
-Private Sub mCtx_WorkbookActivated(ByVal wb As Workbook)
+Private Sub mCtxMgr_WorkbookActivated(ByVal wb As Workbook)
     LogDebug MODULE_NAME, "[mCtx_WorkbookActivated] " & wb.Name
     mChartManager.RefreshCurrentSheet
 End Sub
@@ -85,7 +85,7 @@ End Sub
 '@Scope: Grafico seleccionado
 '@ArgumentDescriptions: sh As Object
 
-Private Sub mCtx_SheetActivated(ByVal sh As Object)
+Private Sub mCtxMgr_SheetActivated(ByVal sh As Object)
     On Error GoTo ErrHandler
 
     LogDebug MODULE_NAME, "[mCtx_SheetActivated] " & sh.Name & "'"
@@ -100,7 +100,7 @@ End Sub
 '@Scope: Grafico seleccionado
 '@ArgumentDescriptions: sh As Object
 
-Private Sub mCtx_SheetDeactivated(ByVal sh As Object)
+Private Sub mCtxMgr_SheetDeactivated(ByVal sh As Object)
     On Error GoTo ErrHandler
 
     LogDebug MODULE_NAME, "[mCtx_SheetDeactivated] '" & sh.Name & "'"
@@ -115,13 +115,13 @@ End Sub
 ' -------------------------------------------------------------
 
 '@Description: Callback cuando se abre un workbook
-Private Sub mCtx_WorkbookOpened(ByVal wb As Workbook)
+Private Sub mCtxMgr_WorkbookOpened(ByVal wb As Workbook)
     LogDebug MODULE_NAME, "[mCtx_WorkbookOpened] " & wb.Name
     mFileMgr.GetOrTrackWorkbook wb
 End Sub
 
 '@Description: Callback cuando se cierra un workbook
-Private Sub mCtx_WorkbookBeforeClose(ByVal wb As Workbook, Cancel As Boolean)
+Private Sub mCtxMgr_WorkbookBeforeClose(ByVal wb As Workbook, Cancel As Boolean)
     LogDebug MODULE_NAME, "[mCtx_WorkbookBeforeClose] " & wb.Name
     mFileMgr.UntrackWorkbook wb
 End Sub

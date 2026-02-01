@@ -13,6 +13,8 @@ Option Explicit
 Private Const MODULE_NAME As String = "ThisWorkbook"
 
 Private mApp As clsApplication
+Private WithEvents mXLApp As Application
+Attribute mXLApp.VB_VarHelpID = -1
 
 Friend Function App() As clsApplication
     If mApp Is Nothing Then
@@ -39,6 +41,9 @@ Private Sub Workbook_Open()
     ' Ctrl + Shift + R
     Application.OnKey "^+R", "ToggleRibbonTab"
 
+    ' Capturar eventos de Application (Listener)
+    Set mXLApp = Application
+
     ' Iniciar aplicación (lazy init del singleton)
     App
 End Sub
@@ -56,6 +61,11 @@ Private Sub Workbook_BeforeClose(Cancel As Boolean)
 
     ' Limpiar atajos de teclado
     Application.OnKey "^+R"
+
+    ' Shutdown del contexto de ejecución
+    If Not mApp Is Nothing Then
+        App.ExecutionContextMgr.Shutdown
+    End If
 
     ' Terminar aplicacion de forma segura
     TerminateApp
@@ -175,4 +185,32 @@ Private Sub removeOldLogs()
     LogInfo MODULE_NAME, "[removeOldLogs] - Finalizado"
 End Sub
 
+' ==========================================
+' LISTENER - Reenvio de eventos de Application
+' ==========================================
+
+Private Sub mXLApp_WorkbookOpen(ByVal Wb As Workbook)
+    If mApp Is Nothing Then Exit Sub
+    App.ExecutionContextMgr.OnWorkbookOpened Wb
+End Sub
+
+Private Sub mXLApp_WorkbookActivate(ByVal Wb As Workbook)
+    If mApp Is Nothing Then Exit Sub
+    App.ExecutionContextMgr.OnWorkbookActivated Wb
+End Sub
+
+Private Sub mXLApp_WorkbookBeforeClose(ByVal Wb As Workbook, Cancel As Boolean)
+    If mApp Is Nothing Then Exit Sub
+    App.ExecutionContextMgr.OnWorkbookBeforeClose Wb, Cancel
+End Sub
+
+Private Sub mXLApp_SheetActivate(ByVal Sh As Object)
+    If mApp Is Nothing Then Exit Sub
+    App.ExecutionContextMgr.OnSheetActivated Sh
+End Sub
+
+Private Sub mXLApp_SheetDeactivate(ByVal Sh As Object)
+    If mApp Is Nothing Then Exit Sub
+    App.ExecutionContextMgr.OnSheetDeactivated Sh
+End Sub
 
