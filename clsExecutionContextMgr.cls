@@ -179,4 +179,11 @@ Public Sub ReconnectEvents()
     ' Método para reconexión de eventos en caso de reset
     LogInfo MODULE_NAME, "[ReconnectEvents] - Intentando reconexión de eventos"
     ' La reconexión real se harÃ­a en ThisWorkbook automáticamente
-End Sub
+End Sub 
+  
+' =========================================='  
+' MTODO DE CONSULTA DE ESTADO DE GRFICO'  
+' =========================================='  
+Public Function GetCachedChartInfo() As T_CachedChartInfo  
+    GetCachedChartInfo = m_state.CachedChartInfo  
+End Function 

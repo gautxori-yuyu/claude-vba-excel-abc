@@ -12,7 +12,7 @@ Attribute VB_Exposed = True
 ' ==================================================================
 ' Define el contrato que deben cumplir todas las clases que provean
 ' acceso a datos de oportunidad, permitiendo que el dominio trabaje
-' con oportunidades sin conocer la implementaci√≥n concreta.
+' con oportunidades sin conocer la implementaciÛn concreta.
 ' ==================================================================
 
 '@Folder "6-DOMINIO-Oportunidades y compresores.Interfaces"
@@ -29,46 +29,46 @@ Public Function ReadOpportunityData() As clsOpportunity
     Err.Raise 5, "IOpportunitySource", "ReadOpportunityData debe implementarse en clase concreta"
 End Function
 
-'@Description: Lee datos t√©cnicos de la oportunidad
-'@Returns: Dictionary u objeto con datos t√©cnicos
+'@Description: Lee datos tÈcnicos de la oportunidad
+'@Returns: Dictionary u objeto con datos tÈcnicos
 Public Function ReadTechnicalData() As Object
     Err.Raise 5, "IOpportunitySource", "ReadTechnicalData debe implementarse en clase concreta"
 End Function
 
-'@Description: Lee datos de cotizaci√≥n de la oportunidad
-'@Returns: Dictionary u objeto con datos de cotizaci√≥n
+'@Description: Lee datos de cotizaciÛn de la oportunidad
+'@Returns: Dictionary u objeto con datos de cotizaciÛn
 Public Function ReadQuotationData() As Object
     Err.Raise 5, "IOpportunitySource", "ReadQuotationData debe implementarse en clase concreta"
 End Function
 
-'@Description: Guarda los resultados de c√°lculos o procesamiento
+'@Description: Guarda los resultados de c·lculos o procesamiento
 '@Param: resultado - Objeto con los resultados a guardar
 Public Sub SaveResults(resultado As Object)
     Err.Raise 5, "IOpportunitySource", "SaveResults debe implementarse en clase concreta"
 End Sub
 
-'@Description: Valida si la fuente de datos es v√°lida para la oportunidad
-'@Returns: Boolean - True si la fuente es v√°lida
+'@Description: Valida si la fuente de datos es v·lida para la oportunidad
+'@Returns: Boolean - True si la fuente es v·lida
 Public Function IsValidSource() As Boolean
     Err.Raise 5, "IOpportunitySource", "IsValidSource debe implementarse en clase concreta"
 End Function
 
 '@Description: Obtiene el path o identificador de la oportunidad
-'@Returns: String - Ruta o identificador √∫nico
+'@Returns: String - Ruta o identificador ˙nico
 Public Property Get OpportunityIdentifier() As String
     Err.Raise 5, "IOpportunitySource", "OpportunityIdentifier debe implementarse en clase concreta"
 End Property
 
 ' ==================================================================
-' NOTAS DE IMPLEMENTACI√ìN
+' NOTAS DE IMPLEMENTACI”N
 ' ==================================================================
 ' Para implementar esta interfaz en una clase:
 '
 ' 1. Agregar al inicio de la clase:
 '    Implements IOpportunitySource
 '
-' 2. VBA generar√° autom√°ticoamente los stubs con prefijo "IOpportunitySource_"
+' 2. VBA generar· autom·ticoamente los stubs con prefijo "IOpportunitySource_"
 '
-' 3. Implementar cada m√©todo delegando a la l√≥gica espec√≠fica de la clase
+' 3. Implementar cada mÈtodo delegando a la lÛgica especÌfica de la clase
 '
 ' 4. Usar esta interfaz para que el dominio no dependa de implementaciones concretas

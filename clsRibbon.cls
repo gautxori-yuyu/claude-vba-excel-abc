@@ -142,7 +142,7 @@ Public Sub ToggleModo()
     End If
 End Sub
 
-'@Description: Activa una pesta�a del Ribbon por id
+'@Description: Activa una pesta?a del Ribbon por id
 '@Scope: Friend (uso exclusivo desde clsApplication)
 '@ArgumentDescriptions: tabId | id del tab a activar
 '@Category: UI / Ribbon

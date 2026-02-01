@@ -8,11 +8,11 @@ Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
 ' ==================================================================
-' ADAPTADOR DE SESIÃ“N DE EXCEL
+' ADAPTADOR DE SESIÓN DE EXCEL
 ' ==================================================================
 ' Implementa la interfaz IExcelSession para permitir que
-' el dominio interactÃºe con Excel sin conocer los detalles
-' de implementaciÃ³n concreta de Excel.
+' el dominio interactúe con Excel sin conocer los detalles
+' de implementación concreta de Excel.
 ' ==================================================================
 
 '@Folder "6-DOMINIO-Oportunidades y compresores.Adaptadores"
@@ -23,11 +23,11 @@ Private Const MODULE_NAME As String = "clsExcelSessionAdapter"
 ' Implementa la interfaz
 Implements IExcelSession
 
-' Referencia al contexto de ejecuciÃ³n
+' Referencia al contexto de ejecución
 Private mExecutionContext As clsExecutionContext
 
 ' ==========================================
-' INICIALIZACIÃ“N
+' INICIALIZACIÓN
 ' ==========================================
 Private Sub Class_Initialize()
     LogInfo MODULE_NAME, "[Class_Initialize]"
@@ -38,14 +38,14 @@ Private Sub Class_Terminate()
     Set mExecutionContext = Nothing
 End Sub
 
-'@Description: Inicializa el adaptador con un contexto de ejecuciÃ³n
+'@Description: Inicializa el adaptador con un contexto de ejecución
 Public Sub Initialize(executionContext As clsExecutionContext)
     Set mExecutionContext = executionContext
     LogInfo MODULE_NAME, "[Initialize] Adaptador inicializado con ExecutionContext"
 End Sub
 
 ' ==========================================
-' IMPLEMENTACIÃ“N DE LA INTERFAZ IExcelSession
+' IMPLEMENTACIÓN DE LA INTERFAZ IExcelSession
 ' ==========================================
 
 Private Property Get IExcelSession_ActiveWorkbook() As Workbook
@@ -105,10 +105,10 @@ Private Sub IExcelSession_WriteRangeValues(range As Range, values As Variant)
 End Sub
 
 ' ==========================================
-' MÃ‰TODOS PRIVADOS DE IMPLEMENTACIÃ“N
+' MÉTODOS PRIVADOS DE IMPLEMENTACIÓN
 ' ==========================================
 
-'@Description: Ejecuta un cÃ¡lculo dirty en el workbook
+'@Description: Ejecuta un cálculo dirty en el workbook
 Private Sub DirtyRecalcWorkbook()
     If mExecutionContext Is Nothing Then
         LogWarning MODULE_NAME, "[DirtyRecalcWorkbook] ExecutionContext es Nothing"
@@ -120,11 +120,11 @@ Private Sub DirtyRecalcWorkbook()
     
     If Not wb Is Nothing Then
         Application.CalculateFullRebuild
-        LogDebug MODULE_NAME, "[DirtyRecalcWorkbook] CÃ¡lculo completo ejecutado en: " & wb.Name
+        LogDebug MODULE_NAME, "[DirtyRecalcWorkbook] Cálculo completo ejecutado en: " & wb.Name
     End If
 End Sub
 
-'@Description: EvalÃºa las UDFs en el contexto actual
+'@Description: Evalúa las UDFs en el contexto actual
 Private Sub EvaluateUDFs()
     If mExecutionContext Is Nothing Then
         LogWarning MODULE_NAME, "[EvaluateUDFs] ExecutionContext es Nothing"
@@ -135,13 +135,13 @@ Private Sub EvaluateUDFs()
     Set wb = mExecutionContext.Workbook
     
     If Not wb Is Nothing Then
-        ' Forzar recÃ¡lculo de fÃ³rmulas
+        ' Forzar recálculo de fórmulas
         Application.Calculate
         LogDebug MODULE_NAME, "[EvaluateUDFs] UDFs evaluadas en: " & wb.Name
     End If
 End Sub
 
-'@Description: Valida si hay un contexto de Excel vÃ¡lido
+'@Description: Valida si hay un contexto de Excel válido
 Private Function ValidateExcelContext() As Boolean
     ValidateExcelContext = False
     
@@ -150,12 +150,12 @@ Private Function ValidateExcelContext() As Boolean
         Exit Function
     End If
     
-    ' Verificar que tengamos acceso a los objetos bÃ¡sicos
+    ' Verificar que tengamos acceso a los objetos básicos
     On Error GoTo ErrorHandler
     
     If Not mExecutionContext.Workbook Is Nothing Then
         ValidateExcelContext = True
-        LogDebug MODULE_NAME, "[ValidateExcelContext] Contexto vÃ¡lido"
+        LogDebug MODULE_NAME, "[ValidateExcelContext] Contexto válido"
     End If
     
     Exit Function
@@ -213,7 +213,7 @@ ErrorHandler:
     Set OpenWorkbookAtPath = Nothing
 End Function
 
-'@Description: Obtiene una hoja especÃ­fica por nombre
+'@Description: Obtiene una hoja específica por nombre
 Private Function GetWorksheetByName(workbook As Workbook, sheetName As String) As Worksheet
     Set GetWorksheetByName = Nothing
     
@@ -234,7 +234,7 @@ ErrorHandler:
     Set GetWorksheetByName = Nothing
 End Function
 
-'@Description: Obtiene un rango por direcciÃ³n
+'@Description: Obtiene un rango por dirección
 Private Function GetRangeByAddress(worksheet As Worksheet, rangeAddress As String) As Range
     Set GetRangeByAddress = Nothing
     
@@ -267,7 +267,7 @@ Private Function ReadValuesFromRange(range As Range) As Variant
     On Error GoTo ErrorHandler
     
     ReadValuesFromRange = range.Value
-    LogDebug MODULE_NAME, "[ReadValuesFromRange] Valores leÃ­dos del rango: " & range.Address
+    LogDebug MODULE_NAME, "[ReadValuesFromRange] Valores leídos del rango: " & range.Address
     
     Exit Function
     
@@ -295,10 +295,10 @@ ErrorHandler:
 End Sub
 
 ' ==========================================
-' MÃ‰TODOS PÃšBLICOS ADICIONALES
+' MÉTODOS PÚBLICOS ADICIONALES
 ' ==========================================
 
-'@Description: Obtiene el contexto de ejecuciÃ³n asociado
+'@Description: Obtiene el contexto de ejecución asociado
 Public Property Get ExecutionContext() As clsExecutionContext
     Set ExecutionContext = mExecutionContext
 End Property

@@ -302,3 +302,10 @@ End Type
 #End If
 
 
+ '--------------------------------------------------------------'  
+public Type T_CachedChartInfo  
+    IsValid As Boolean  
+    Chart As Chart  
+    SourceType As String  
+    ParentType As String  
+End Type 
