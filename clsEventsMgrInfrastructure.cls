@@ -67,11 +67,11 @@ End Sub
 ' ==================================================================
 
 ' -------------------------------------------------------------
-' Eventos de ExecutionContextMgr (semÃ¡nticos de infraestructura)
+' Eventos de ExecutionContextMgr (semánticos de infraestructura)
 ' -------------------------------------------------------------
 
-'@Description: Se dispara cuando se activa un workbook (semÃ¡ntico de infraestructura)
-'@Category: GrÃ¡ficos
+'@Description: Se dispara cuando se activa un workbook (semántico de infraestructura)
+'@Category: Gráficos
 '@Scope: Grafico seleccionado
 '@ArgumentDescriptions: path As String
 
@@ -80,8 +80,8 @@ Private Sub mCtxMgr_WorkbookSessionActivated(ByVal path As String)
     mChartManager.RefreshCurrentSheet
 End Sub
 
-'@Description: Se dispara al activar una hoja; inicia vigilancia de graficos (semÃ¡ntico de infraestructura)
-'@Category: GrÃ¡ficos
+'@Description: Se dispara al activar una hoja; inicia vigilancia de graficos (semántico de infraestructura)
+'@Category: Gráficos
 '@Scope: Grafico seleccionado
 '@ArgumentDescriptions: sheetName As String, sheetType As String
 
@@ -97,8 +97,8 @@ ErrHandler:
     LogError MODULE_NAME, "[mCtxMgr_SheetSessionActivated] Error", , Err.Description
 End Sub
 
-'@Description: Se dispara al desactivar una hoja; detiene vigilancia de graficos (semÃ¡ntico de infraestructura)
-'@Category: GrÃ¡ficos
+'@Description: Se dispara al desactivar una hoja; detiene vigilancia de graficos (semántico de infraestructura)
+'@Category: Gráficos
 '@Scope: Grafico seleccionado
 '@ArgumentDescriptions: sheetName As String, sheetType As String
 
@@ -116,7 +116,7 @@ End Sub
 ' Eventos de tracking de ficheros (desde clsFileMgr)
 ' -------------------------------------------------------------
 
-'@Description: Callback cuando se abre un workbook (semÃ¡ntico de infraestructura)
+'@Description: Callback cuando se abre un workbook (semántico de infraestructura)
 Private Sub mCtxMgr_WorkbookSessionStarted(ByVal path As String, ByVal readOnly As Boolean)
     LogDebug MODULE_NAME, "[mCtxMgr_WorkbookSessionStarted] " & path
     ' Need to get the actual workbook object from the path
@@ -129,7 +129,7 @@ Private Sub mCtxMgr_WorkbookSessionStarted(ByVal path As String, ByVal readOnly 
     End If
 End Sub
 
-'@Description: Callback cuando se cierra un workbook (semÃ¡ntico de infraestructura)
+'@Description: Callback cuando se cierra un workbook (semántico de infraestructura)
 Private Sub mCtxMgr_WorkbookSessionClosing(ByVal path As String, Cancel As Boolean)
     LogDebug MODULE_NAME, "[mCtxMgr_WorkbookSessionClosing] " & path
     ' Need to get the actual workbook object from the path

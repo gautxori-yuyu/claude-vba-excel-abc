@@ -12,6 +12,11 @@ Option Explicit
 
 Private Const MODULE_NAME As String = "ThisWorkbook"
 
+Private WithEvents mXLApp As Application
+Attribute mXLApp.VB_VarHelpID = -1
+
+Private mExecutionContextMgr As clsExecutionContextMgr
+
 Private mApp As clsApplication
 
 Friend Function App() As clsApplication
@@ -21,7 +26,7 @@ Friend Function App() As clsApplication
     Set App = mApp
 End Function
 
-' Método para que la aplicación pueda registrar el gestor de contexto
+' M�todo para que la aplicaci�n pueda registrar el gestor de contexto
 Friend Sub SetExecutionContextMgr(executionContextMgr As clsExecutionContextMgr)
     Set mExecutionContextMgr = executionContextMgr
 End Sub

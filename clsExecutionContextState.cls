@@ -8,30 +8,28 @@ Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
 '@Folder "2-Infraestructura.Estado"
-'@Description: Estado técnico de contexto de ejecución (Workbook, Worksheet, Chart, Selection)
+'@Description: Estado t�cnico de contexto de ejecuci�n (Workbook, Worksheet, Chart, Selection)
 '@Note: Solo memoria estructurada, no comportamiento. No emite eventos.
 Option Explicit
 
 Private Const MODULE_NAME As String = "clsExecutionContextState"
 
 ' ==========================================
-' CACHE DE ESTADO TÉCNICO
+' CACHE DE ESTADO T�CNICO
 ' ==========================================
 Private m_lastWorkbookObjKey As Double   ' Cache coherente (solo si sigue vigente)
 Private m_lastWorksheetObjKey As Double
 Private m_lastChartObjKey As Double
 Private m_lastSelectionObjKey As Double
 
-Private Type T_CachedChartInfo
-    IsValid As Boolean
-    Chart As Chart                      ' Chart activo (ActiveChart o desde ChartObject/Selection)
-    SourceType As String                ' "ActiveChart", "ChartObject", "ChartArea", etc.
-    ParentType As String                ' "ChartSheet", "Worksheet"
-End Type
-Private m_cachedChartInfo As T_CachedChartInfo
+' Structure to hold chart info - using individual properties since UDTs can't be returned from public functions
+Private m_cachedChartInfo_IsValid As Boolean
+Private m_cachedChartInfo_Chart As Chart
+Private m_cachedChartInfo_SourceType As String
+Private m_cachedChartInfo_ParentType As String
 
 ' ==========================================
-' ESTADO TÉCNICO
+' ESTADO T�CNICO
 ' ==========================================
 Private m_activeWorkbook As Workbook
 Private m_activeWorksheet As Worksheet
@@ -39,18 +37,16 @@ Private m_activeSelection As Object
 Private m_activeChart As Chart
 
 ' ==========================================
-' INICIALIZACIÓN
+' INICIALIZACI�N
 ' ==========================================
 Private Sub Class_Initialize()
     LogInfo MODULE_NAME, "[Class_Initialize]"
-    
+
     ' Inicializar estructura de chart info
-    With m_cachedChartInfo
-        .IsValid = False
-        Set .Chart = Nothing
-        .SourceType = ""
-        .ParentType = ""
-    End With
+    m_cachedChartInfo_IsValid = False
+    Set m_cachedChartInfo_Chart = Nothing
+    m_cachedChartInfo_SourceType = ""
+    m_cachedChartInfo_ParentType = ""
 End Sub
 
 Private Sub Class_Terminate()
@@ -59,7 +55,7 @@ Private Sub Class_Terminate()
 End Sub
 
 ' ==========================================
-' MÉTODOS DE MANIPULACIÓN DE ESTADO (llamados solo por el Manager)
+' M�TODOS DE MANIPULACI�N DE ESTADO (llamados solo por el Manager)
 ' ==========================================
 Friend Sub SetActiveWorkbook(wb As Workbook)
     Set m_activeWorkbook = wb
@@ -87,27 +83,27 @@ Friend Sub SetActiveChart(cht As Chart)
     If Not cht Is Nothing Then
         m_lastChartObjKey = ObjPtr(cht)
     End If
-    
+
     ' Actualizar cache de chart info
     If Not cht Is Nothing Then
-        m_cachedChartInfo.Chart = cht
-        m_cachedChartInfo.SourceType = "ActiveChart"
+        Set m_cachedChartInfo_Chart = cht
+        m_cachedChartInfo_SourceType = "ActiveChart"
         If TypeOf cht.Parent Is Worksheet Then
-            m_cachedChartInfo.ParentType = "Worksheet"
+            m_cachedChartInfo_ParentType = "Worksheet"
         ElseIf TypeOf cht.Parent Is Chart Then
-            m_cachedChartInfo.ParentType = "ChartSheet"
+            m_cachedChartInfo_ParentType = "ChartSheet"
         Else
-            m_cachedChartInfo.ParentType = TypeName(cht.Parent)
+            m_cachedChartInfo_ParentType = TypeName(cht.Parent)
         End If
-        m_cachedChartInfo.IsValid = True
+        m_cachedChartInfo_IsValid = True
     Else
-        m_cachedChartInfo.IsValid = False
-        Set m_cachedChartInfo.Chart = Nothing
+        m_cachedChartInfo_IsValid = False
+        Set m_cachedChartInfo_Chart = Nothing
     End If
 End Sub
 
 ' ==========================================
-' MÉTODOS DE LIMPIEZA
+' M�TODOS DE LIMPIEZA
 ' ==========================================
 Friend Sub ClearState()
     Set m_activeWorkbook = Nothing
@@ -129,7 +125,7 @@ Friend Sub ClearState()
 End Sub
 
 ' ==========================================
-' PROPIEDADES PÚBLICAS - Consulta de estado (solo lectura)
+' PROPIEDADES P�BLICAS - Consulta de estado (solo lectura)
 ' ==========================================
 Public Property Get ActiveWorkbook() As Workbook
     Set ActiveWorkbook = m_activeWorkbook
@@ -148,7 +144,7 @@ Public Property Get ActiveChart() As Chart
 End Property
 
 ' ==========================================
-' MÉTODOS DE CONSULTA DE ESTADO
+' M�TODOS DE CONSULTA DE ESTADO
 ' ==========================================
 Public Function HasWorkbook() As Boolean
     HasWorkbook = Not (m_activeWorkbook Is Nothing)
@@ -166,9 +162,22 @@ Public Function HasChart() As Boolean
     HasChart = Not (m_activeChart Is Nothing)
 End Function
 
-Public Function GetCachedChartInfo() As T_CachedChartInfo
-    GetCachedChartInfo = m_cachedChartInfo
-End Function
+' Properties to access chart info individually since we can't return a UDT from a public function
+Public Property Get CachedChartInfo_IsValid() As Boolean
+    CachedChartInfo_IsValid = m_cachedChartInfo_IsValid
+End Property
+
+Public Property Get CachedChartInfo_Chart() As Chart
+    Set CachedChartInfo_Chart = m_cachedChartInfo_Chart
+End Property
+
+Public Property Get CachedChartInfo_SourceType() As String
+    CachedChartInfo_SourceType = m_cachedChartInfo_SourceType
+End Property
+
+Public Property Get CachedChartInfo_ParentType() As String
+    CachedChartInfo_ParentType = m_cachedChartInfo_ParentType
+End Property
 
 Public Function GetLastWorkbookObjKey() As Double
     GetLastWorkbookObjKey = m_lastWorkbookObjKey
@@ -187,7 +196,7 @@ Public Function GetLastSelectionObjKey() As Double
 End Function
 
 ' ==========================================
-' MÉTODOS DE VALIDACIÓN DE OBJETOS
+' M�TODOS DE VALIDACI�N DE OBJETOS
 ' ==========================================
 Public Function IsWorkbookValid(wb As Workbook) As Boolean
     If wb Is Nothing Then
@@ -220,20 +229,18 @@ Public Function IsWorksheetValid(ws As Worksheet) As Boolean
 End Function
 
 ' ==========================================
-' DIAGNÓSTICO
+' DIAGN�STICO
 ' ==========================================
 Public Function Diagnostics() As String
     Dim s As String
-    s = "Estado técnico de contexto:" & vbCrLf
+    s = "Estado t�cnico de contexto:" & vbCrLf
     
     s = s & "  ActiveWorkbook: " & IIf(HasWorkbook(), m_activeWorkbook.Name, "(ninguno)") & vbCrLf
     s = s & "  ActiveWorksheet: " & IIf(HasWorksheet(), m_activeWorksheet.Name, "(ninguna)") & vbCrLf
     s = s & "  ActiveSelection: " & IIf(HasSelection(), TypeName(m_activeSelection), "(nada)") & vbCrLf
     
     If HasChart() Then
-        With m_cachedChartInfo
-            s = s & "  ActiveChart: Sí (" & .SourceType & " en " & .ParentType & ")" & vbCrLf
-        End With
+        s = s & "  ActiveChart: Sí (" & CachedChartInfo_SourceType & " en " & CachedChartInfo_ParentType & ")" & vbCrLf
     Else
         s = s & "  ActiveChart: No" & vbCrLf
     End If

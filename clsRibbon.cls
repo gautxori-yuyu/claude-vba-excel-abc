@@ -95,7 +95,7 @@ Public Sub Init(ByRef ribbonObj As IRibbonUI)
 End Sub
 
 '@Description: Inyecta dependencias para escuchar eventos de los Managers
-Public Sub Initialize(oOpportunities As clsOpportunitiesMgr, _
+Friend Sub Initialize(oOpportunities As clsOpportunitiesMgr, _
                       oFileMgr As clsFileManager, _
                       oChartMgr As clsChartMgr, _
                       oCtx As clsExecutionContext)
@@ -142,7 +142,7 @@ Public Sub ToggleModo()
     End If
 End Sub
 
-'@Description: Activa una pestaña del Ribbon por id
+'@Description: Activa una pestaï¿½a del Ribbon por id
 '@Scope: Friend (uso exclusivo desde clsApplication)
 '@ArgumentDescriptions: tabId | id del tab a activar
 '@Category: UI / Ribbon

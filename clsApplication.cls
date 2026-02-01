@@ -31,7 +31,7 @@ Private mRibbon As clsRibbon
 ' Estado centralizado de la aplicaciï¿½n
 Private mApplicationState As clsApplicationState
 
-' Nuevo gestor de contexto de ejecuciÃ³n
+' Nuevo gestor de contexto de ejecución
 Private mExecutionContextMgr As clsExecutionContextMgr
 
 Public Property Get ChartManager() As clsChartMgr
