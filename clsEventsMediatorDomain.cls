@@ -22,10 +22,13 @@ Attribute mOpportunities.VB_VarHelpID = -1
 Private WithEvents mFileMgr As clsFileManager
 Attribute mFileMgr.VB_VarHelpID = -1
 
+Private WithEvents mCtxMgr As clsExecutionContextMgr
+Attribute mCtxMgr.VB_VarHelpID = -1
+
 Private mCtxState As clsExecutionContextState
 
 '--------------------------------------------------------------
-' Inicialización
+' Inicializaciï¿½n
 '--------------------------------------------------------------
 Private Sub Class_Initialize()
     LogInfo MODULE_NAME, "[Class_Initialize]"
@@ -38,17 +41,19 @@ End Sub
 
 'TODO: faltaria crear clases para otras funciones que estan en macros, y pasarlas como parametros...
 Public Sub Initialize(oCtxState As clsExecutionContextState, _
+                oCtxMgr As clsExecutionContextMgr, _
                 oFSMonitoringCoord As clsFSMonitoringCoord, _
                 oOpportunities As clsOpportunitiesMgr, _
                 oFileMgr As clsFileManager)
     On Error GoTo ErrHandler
-    
+
     Set mCtxState = oCtxState
-    
+    Set mCtxMgr = oCtxMgr
+
     Set mFileMgr = oFileMgr
-    
+
     Set mFSMonitoringCoord = oFSMonitoringCoord
-    
+
     Set mOpportunities = oOpportunities
 
     LogInfo MODULE_NAME, "[Initialize] Mediador configurado"
@@ -64,18 +69,18 @@ Public Sub Terminate()
 
     ' Liberar referencias WithEvents primero
     Set mOpportunities = Nothing
-    
     Set mFSMonitoringCoord = Nothing
+    Set mFileMgr = Nothing
+    Set mCtxMgr = Nothing
 
     ' Luego referencias normales
-    Set mFileMgr = Nothing
     Set mCtxState = Nothing
-    
+
     Exit Sub
 ErrHandler:
     LogCurrentError MODULE_NAME, "[Terminate]"
     Err.Raise Err.Number, MODULE_NAME & " [Terminate]", _
-              "Error finalizando aplicación: " & Err.Description
+              "Error finalizando aplicacion: " & Err.Description
 End Sub
 
 ' ==================================================================
@@ -88,7 +93,7 @@ End Sub
 Private Sub mOpportunities_OpportunityCollectionUpdate(ByVal cambios As String)
     LogInfo MODULE_NAME, "[callback: clsOpportunitiesMgr OpportunityCollectionUpdate] - cambios detectados: " & cambios
 End Sub
-'TODO: Extraer la lógica de clsFileXLS A una función
+'TODO: Extraer la lï¿½gica de clsFileXLS A una funciï¿½n
 Private Sub mOpportunities_currOpportunityChanged(ByVal Index As Long, ByVal Path As String)
     LogInfo MODULE_NAME, "[callback: clsOpportunitiesMgr currOpportunityChanged] - Oportunidad seleccionada: " & Path
     
@@ -183,4 +188,40 @@ Private Sub mFSMonitoringCoord_MonitoringFailed(ByVal folder As String, ByVal re
     LogError MODULE_NAME, "[mFSMonitoringCoord_MonitoringFailed] " & folder & ": " & reason
 End Sub
 
+' -------------------------------------------------------------
+' Eventos de ciclo de vida del contexto (desde ExecutionContextMgr)
+' -------------------------------------------------------------
 
+'@Description: Se dispara cuando el contexto se invalida (shutdown, error COM, etc.)
+'@Note: Permite al dominio prepararse para la invalidacion del contexto
+Private Sub mCtxMgr_ContextInvalidated()
+    LogWarning MODULE_NAME, "[mCtxMgr_ContextInvalidated] - Contexto invalidado, notificando a dominio"
+
+    ' Pausar monitoreo de FS si esta activo (puede tener referencias invalidas)
+    On Error Resume Next
+    If Not mFSMonitoringCoord Is Nothing Then
+        mFSMonitoringCoord.PausarMonitoreo
+    End If
+    On Error GoTo 0
+End Sub
+
+'@Description: Se dispara cuando el contexto se reinicializa tras un reset
+'@Note: Permite al dominio reenganchar sus dependencias y refrescar estado
+Private Sub mCtxMgr_ContextReinitialized()
+    On Error GoTo ErrHandler
+    LogInfo MODULE_NAME, "[mCtxMgr_ContextReinitialized] - Reconectando dominio"
+
+    ' Reanudar monitoreo de FS
+    If Not mFSMonitoringCoord Is Nothing Then
+        mFSMonitoringCoord.ReanudarMonitoreo
+    End If
+
+    ' Refrescar coleccion de oportunidades por si hubo cambios durante el reset
+    If Not mOpportunities Is Nothing Then
+        mOpportunities.actualizarColeccionOportunidades
+    End If
+
+    Exit Sub
+ErrHandler:
+    LogError MODULE_NAME, "[mCtxMgr_ContextReinitialized] Error durante reconexion de dominio", , Err.Description
+End Sub

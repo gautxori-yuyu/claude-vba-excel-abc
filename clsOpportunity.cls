@@ -11,6 +11,7 @@ Attribute VB_Exposed = False
 
 '@Folder "6-DOMINIO-Oportunidades y compresores"
 Option Explicit
+Implements IOpportunity
 
 Private Const MODULE_NAME As String = "clsOpportunity"
 
@@ -21,10 +22,10 @@ Private mLabel As String        ' Nombre completo de la oportunidad (ej: "412601
 Private mName As String         ' Nombre corto (ej: "412601015")
 Private mPath As String         ' Ruta completa a la carpeta
 Private mCustomer As String     ' Nombre del cliente
-Private mQuoteNumber As String  ' Número de cotización
-Private mCreatedDate As Date    ' Fecha de creación
+Private mQuoteNumber As String  ' Nï¿½mero de cotizaciï¿½n
+Private mCreatedDate As Date    ' Fecha de creaciï¿½n
 
-' Componentes futuros (no implementados aún):
+' Componentes futuros (no implementados aï¿½n):
 'Private mFiles As clsOpportunityFileCollection
 'Private mCompressors As clsCompressorCollection
 'Private mOffers As clsOfferCollection
@@ -32,7 +33,7 @@ Private mCreatedDate As Date    ' Fecha de creación
 'Private mStatus As OpportunityStatus
 
 ' ==========================================
-' INICIALIZACIÓN
+' INICIALIZACIï¿½N
 ' ==========================================
 
 Private Sub Class_Initialize()
@@ -49,7 +50,7 @@ Private Sub Class_Terminate()
 End Sub
 
 ' ==========================================
-' PROPIEDADES PÚBLICAS
+' PROPIEDADES Pï¿½BLICAS
 ' ==========================================
 
 '@Description: Obtiene o establece el label completo de la oportunidad
@@ -88,7 +89,7 @@ Public Property Let Customer(value As String)
     mCustomer = value
 End Property
 
-'@Description: Obtiene o establece el número de cotización
+'@Description: Obtiene o establece el nï¿½mero de cotizaciï¿½n
 Public Property Get QuoteNumber() As String
     QuoteNumber = mQuoteNumber
 End Property
@@ -97,7 +98,7 @@ Public Property Let QuoteNumber(value As String)
     mQuoteNumber = value
 End Property
 
-'@Description: Obtiene o establece la fecha de creación
+'@Description: Obtiene o establece la fecha de creaciï¿½n
 Public Property Get CreatedDate() As Date
     CreatedDate = mCreatedDate
 End Property
@@ -107,7 +108,7 @@ Public Property Let CreatedDate(value As Date)
 End Property
 
 ' ==========================================
-' MÉTODOS PÚBLICOS
+' Mï¿½TODOS Pï¿½BLICOS
 ' ==========================================
 Public Function Equals(op As clsOpportunity) As Boolean
     If op Is Nothing Then
@@ -117,24 +118,61 @@ Public Function Equals(op As clsOpportunity) As Boolean
     End If
 End Function
 
-'@Description: Valida si la oportunidad tiene datos mínimos requeridos
+'@Description: Valida si la oportunidad tiene datos mï¿½nimos requeridos
 Public Function IsValid() As Boolean
     IsValid = Len(mLabel) > 0 And Len(mPath) > 0
 End Function
 
-'@Description: Genera la estructura de carpetas para la oportunidad (pendiente implementación)
+'@Description: Genera la estructura de carpetas para la oportunidad (pendiente implementaciï¿½n)
 Public Sub GenerateFolderStructure()
-    ' TODO: Implementar creación de estructura de carpetas
+    ' TODO: Implementar creaciï¿½n de estructura de carpetas
 End Sub
 
-'@Description: Obtiene la plantilla de presupuesto (pendiente implementación)
+'@Description: Obtiene la plantilla de presupuesto (pendiente implementaciï¿½n)
 Public Function GetBudgetTemplate() As clsFileXLS
-    ' TODO: Implementar obtención de plantilla
+    ' TODO: Implementar obtenciï¿½n de plantilla
     Set GetBudgetTemplate = Nothing
 End Function
 
-'@Description: Sincroniza con el repositorio (pendiente implementación)
+'@Description: Sincroniza con el repositorio (pendiente implementacion)
 Public Sub SyncWithRepository()
-    ' TODO: Implementar sincronización
+    ' TODO: Implementar sincronizacion
 End Sub
 
+' ==========================================
+' IMPLEMENTACION DE IOpportunity
+' ==========================================
+
+Private Property Get IOpportunity_OpportunityId() As String
+    IOpportunity_OpportunityId = mName
+End Property
+
+Private Property Get IOpportunity_BasePath() As String
+    IOpportunity_BasePath = mPath
+End Property
+
+Private Property Get IOpportunity_DisplayName() As String
+    IOpportunity_DisplayName = mLabel
+End Property
+
+Private Function IOpportunity_IsValid() As Boolean
+    IOpportunity_IsValid = IsValid()
+End Function
+
+Private Function IOpportunity_CanGenerateQuote() As Boolean
+    ' Por ahora, si es valida puede generar oferta
+    IOpportunity_CanGenerateQuote = IsValid()
+End Function
+
+Private Function IOpportunity_ReadTechnicalData() As Variant
+    ' Devolver datos basicos como diccionario
+    Dim data As Object
+    Set data = CreateObject("Scripting.Dictionary")
+    data("Name") = mName
+    data("Label") = mLabel
+    data("Path") = mPath
+    data("Customer") = mCustomer
+    data("QuoteNumber") = mQuoteNumber
+    data("CreatedDate") = mCreatedDate
+    Set IOpportunity_ReadTechnicalData = data
+End Function
