@@ -45,7 +45,6 @@ Public Sub Dispatch(controlID As String)
                 Call FixCGASING
         Case "btnNuevaOp"
                 App.OpportunitiesMgr.CreaOportunidad
-                App.ribbon.InvalidarControl "ddlOportunidades"
         Case "btnConfig"
                 App.OpportunitiesMgr.Conf.ShowUI
         Case "btnValidationsToNames"
@@ -55,9 +54,6 @@ Public Sub Dispatch(controlID As String)
             ThisWorkbook.IsAddin = Not (ThisWorkbook.IsAddin)
         Case "btnOpRefresh"
             App.OpportunitiesMgr.actualizarColeccionOportunidades
-            'FIXME: La invalidacion de ribbon no debería aparecer aqui: ¿tal vez en el coordinador de eventos?
-            App.ribbon.InvalidarRibbon
-            'App.Ribbon.InvalidarControl "ddlOportunidades"
     End Select
 
 ErrorHandler:
@@ -89,9 +85,6 @@ Public Sub SetRibbonSelectionIndex(controlID As String, Index As Integer, id As 
             App.OpportunitiesMgr.CurrOpportunity = Index
             LogInfo MODULE_NAME, "[SetItemSelectionIndex] - Cambiada oportunidad activa: " & id
     End Select
-    ' FIXME: invalidar, refrescar el UI? yo creo que estas funciones son llamadas CUANDO SE HA
-    ' SOLICITADO UNA INVALIDACION y que NO debería forzarse una nueva invalidacion desde aqui...
-    App.ribbon.InvalidarControl controlID
 End Sub
 
 Public Function GetRibbonControlEnabled(controlID As String) As Boolean

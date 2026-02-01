@@ -162,6 +162,7 @@ Public Function actualizarColeccionOportunidades()
 
 Salida:
     p_CurrOpportunity = IIf(p_CurrOpportunity > 0, p_CurrOpportunity, IIf(p_ColOpportunities.Count > 0, 0, -1))
+    RaiseEvent OpportunityCollectionUpdate("refresh")
     actualizarColeccionOportunidades = arr
 End Function
 
@@ -184,11 +185,6 @@ Public Sub ProcesarCambiosEnOportunidades(ByVal subfolderName As String)
     If bCambiosEnOportunidades Then
         LogInfo MODULE_NAME, "[ProcesarCambiosEnOportunidades] - cambios identificados"
         Call actualizarColeccionOportunidades
-        ' NO actualizar ribbon directamente - delegar al evento
-        ' La clase NO debe conocer el ribbon
-        ' Disparar evento para que otros componentes reaccionen
-        LogInfo MODULE_NAME, "[ProcesarCambiosEnOportunidades] - promoviendo evento OpportunityCollectionUpdate para poner al corriente a otros módulos"
-        RaiseEvent OpportunityCollectionUpdate(subfolderName)
     End If
 End Sub
 
