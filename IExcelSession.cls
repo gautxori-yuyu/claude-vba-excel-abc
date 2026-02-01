@@ -8,11 +8,11 @@ Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = True
 ' ==================================================================
-' INTERFAZ PARA SESIÓN DE EXCEL
+' INTERFAZ PARA SESIï¿½N DE EXCEL
 ' ==================================================================
 ' Define el contrato que deben cumplir todas las clases que provean
-' acceso a operaciones de Excel, permitiendo que el dominio interactúe
-' con Excel sin conocer la implementación concreta.
+' acceso a operaciones de Excel, permitiendo que el dominio interactï¿½e
+' con Excel sin conocer la implementaciï¿½n concreta.
 ' ==================================================================
 
 '@Folder "6-DOMINIO-Oportunidades y compresores.Interfaces"
@@ -23,42 +23,42 @@ Option Explicit
 Private Const MODULE_NAME As String = "IExcelSession"
 
 '@Description: Obtiene el workbook activo
-'@Returns: Workbook - El workbook activo en la sesión
+'@Returns: Workbook - El workbook activo en la sesiï¿½n
 Public Property Get ActiveWorkbook() As Workbook
     ' Las interfaces en VBA deben lanzar error o no hacer nada
     Err.Raise 5, "IExcelSession", "ActiveWorkbook debe implementarse en clase concreta"
 End Property
 
 '@Description: Obtiene la hoja activa
-'@Returns: Worksheet - La hoja activa en la sesión
+'@Returns: Worksheet - La hoja activa en la sesiï¿½n
 Public Property Get ActiveWorksheet() As Worksheet
     Err.Raise 5, "IExcelSession", "ActiveWorksheet debe implementarse en clase concreta"
 End Property
 
-'@Description: Obtiene el gráfico activo
-'@Returns: Chart - El gráfico activo en la sesión
+'@Description: Obtiene el grï¿½fico activo
+'@Returns: Chart - El grï¿½fico activo en la sesiï¿½n
 Public Property Get ActiveChart() As Chart
     Err.Raise 5, "IExcelSession", "ActiveChart debe implementarse en clase concreta"
 End Property
 
-'@Description: Obtiene la selección actual
-'@Returns: Object - La selección actual en la sesión
+'@Description: Obtiene la selecciï¿½n actual
+'@Returns: Object - La selecciï¿½n actual en la sesiï¿½n
 Public Property Get Selection() As Object
     Err.Raise 5, "IExcelSession", "Selection debe implementarse en clase concreta"
 End Property
 
-'@Description: Ejecuta un cálculo dirty en el workbook
+'@Description: Ejecuta un cï¿½lculo dirty en el workbook
 Public Sub DirtyRecalc()
     Err.Raise 5, "IExcelSession", "DirtyRecalc debe implementarse en clase concreta"
 End Sub
 
-'@Description: Evalúa las UDFs en el contexto actual
+'@Description: Evalï¿½a las UDFs en el contexto actual
 Public Sub EvalUDFs()
     Err.Raise 5, "IExcelSession", "EvalUDFs debe implementarse en clase concreta"
 End Sub
 
-'@Description: Verifica si hay un contexto de Excel válido
-'@Returns: Boolean - True si hay un contexto válido
+'@Description: Verifica si hay un contexto de Excel vï¿½lido
+'@Returns: Boolean - True si hay un contexto vï¿½lido
 Public Function HasValidContext() As Boolean
     Err.Raise 5, "IExcelSession", "HasValidContext debe implementarse en clase concreta"
 End Function
@@ -81,7 +81,7 @@ Public Function OpenWorkbook(filePath As String) As Workbook
     Err.Raise 5, "IExcelSession", "OpenWorkbook debe implementarse en clase concreta"
 End Function
 
-'@Description: Obtiene una referencia a una hoja específica
+'@Description: Obtiene una referencia a una hoja especï¿½fica
 '@Param: workbook - El workbook que contiene la hoja
 '@Param: sheetName - Nombre de la hoja
 '@Returns: Worksheet - La hoja solicitada
@@ -89,38 +89,38 @@ Public Function GetWorksheet(Workbook As Workbook, sheetName As String) As Works
     Err.Raise 5, "IExcelSession", "GetWorksheet debe implementarse en clase concreta"
 End Function
 
-'@Description: Obtiene un rango específico
+'@Description: Obtiene un rango especï¿½fico
 '@Param: worksheet - La hoja que contiene el rango
-'@Param: rangeAddress - Dirección del rango (ej. "A1:B10")
+'@Param: rangeAddress - Direcciï¿½n del rango (ej. "A1:B10")
 '@Returns: Range - El rango solicitado
-Public Function GetRange(Worksheet As Worksheet, rangeAddress As String) As range
+Public Function GetRange(Worksheet As Worksheet, rangeAddress As String) As Range
     Err.Raise 5, "IExcelSession", "GetRange debe implementarse en clase concreta"
 End Function
 
 '@Description: Lee valores de un rango
 '@Param: range - El rango del cual leer valores
 '@Returns: Variant - Valores del rango
-Public Function ReadRangeValues(range As range) As Variant
+Public Function ReadRangeValues(range As Range) As Variant
     Err.Raise 5, "IExcelSession", "ReadRangeValues debe implementarse en clase concreta"
 End Function
 
 '@Description: Escribe valores en un rango
 '@Param: range - El rango donde escribir valores
 '@Param: values - Valores a escribir
-Public Sub WriteRangeValues(range As range, values As Variant)
+Public Sub WriteRangeValues(range As Range, values As Variant)
     Err.Raise 5, "IExcelSession", "WriteRangeValues debe implementarse en clase concreta"
 End Sub
 
 ' ==================================================================
-' NOTAS DE IMPLEMENTACIÓN
+' NOTAS DE IMPLEMENTACIï¿½N
 ' ==================================================================
 ' Para implementar esta interfaz en una clase:
 '
 ' 1. Agregar al inicio de la clase:
 '    Implements IExcelSession
 '
-' 2. VBA generará automáticoamente los stubs con prefijo "IExcelSession_"
+' 2. VBA generarï¿½ automï¿½ticoamente los stubs con prefijo "IExcelSession_"
 '
-' 3. Implementar cada método delegando a la lógica específica de la clase
+' 3. Implementar cada mï¿½todo delegando a la lï¿½gica especï¿½fica de la clase
 '
 ' 4. Usar esta interfaz para que el dominio no dependa de implementaciones concretas de Excel

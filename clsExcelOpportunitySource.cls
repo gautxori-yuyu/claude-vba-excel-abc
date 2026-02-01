@@ -11,8 +11,8 @@ Attribute VB_Exposed = False
 ' ADAPTADOR DE OPORTUNIDAD PARA EXCEL
 ' ==================================================================
 ' Implementa la interfaz IOpportunitySource para permitir que
-' el dominio acceda a datos de oportunidad a través de Excel
-' sin conocer los detalles de implementación de Excel.
+' el dominio acceda a datos de oportunidad a travs de Excel
+' sin conocer los detalles de implementacin de Excel.
 ' ==================================================================
 
 '@Folder "6-DOMINIO-Oportunidades y compresores.Adaptadores"
@@ -28,7 +28,7 @@ Private mFileXLS As clsFileXLS
 Private mPath As String
 
 ' ==========================================
-' INICIALIZACIÓN
+' INICIALIZACIN
 ' ==========================================
 Private Sub Class_Initialize()
     LogInfo MODULE_NAME, "[Class_Initialize]"
@@ -53,8 +53,8 @@ Public Sub Initialize(filePath As String)
 End Sub
 
 '@Description: Inicializa el adaptador con un clsFileXLS existente
-Public Sub InitializeWithFile(FileXLS As clsFileXLS)
-    Set mFileXLS = FileXLS
+Public Sub InitializeWithFile(fileXLS As clsFileXLS)
+    Set mFileXLS = fileXLS
     If Not mFileXLS Is Nothing Then
         mPath = mFileXLS.Path
     End If
@@ -63,7 +63,7 @@ Public Sub InitializeWithFile(FileXLS As clsFileXLS)
 End Sub
 
 ' ==========================================
-' IMPLEMENTACIÓN DE LA INTERFAZ IOpportunitySource
+' IMPLEMENTACIN DE LA INTERFAZ IOpportunitySource
 ' ==========================================
 
 Private Function IOpportunitySource_ReadOpportunityData() As Object
@@ -91,7 +91,7 @@ Private Property Get IOpportunitySource_OpportunityIdentifier() As String
 End Property
 
 ' ==========================================
-' MÉTODOS PRIVADOS DE IMPLEMENTACIÓN
+' MTODOS PRIVADOS DE IMPLEMENTACIN
 ' ==========================================
 
 '@Description: Crea un objeto clsOpportunity desde los datos en Excel
@@ -106,12 +106,12 @@ Private Function CreateOpportunityFromExcel() As clsOpportunity
     Dim wb As Workbook
     Set wb = mFileXLS.wb
     
-    ' Extraer información de la oportunidad desde el workbook
+    ' Extraer informacin de la oportunidad desde el workbook
     With CreateOpportunityFromExcel
         .Path = mFileXLS.Path
         .Name = mFileXLS.Name
         
-        ' Extraer información adicional del nombre de la carpeta o del archivo
+        ' Extraer informacin adicional del nombre de la carpeta o del archivo
         Dim parts() As String
         parts = Split(mFileXLS.Name, " - ")
         If UBound(parts) >= 0 Then
@@ -125,10 +125,10 @@ Private Function CreateOpportunityFromExcel() As clsOpportunity
     LogDebug MODULE_NAME, "[CreateOpportunityFromExcel] Oportunidad creada: " & CreateOpportunityFromExcel.Label
 End Function
 
-'@Description: Lee datos técnicos desde Excel
+'@Description: Lee datos tcnicos desde Excel
 Private Function ReadTechnicalDataFromExcel() As Object
     Set ReadTechnicalDataFromExcel = CreateObject("Scripting.Dictionary")
-    
+
     If mFileXLS Is Nothing Then
         LogWarning MODULE_NAME, "[ReadTechnicalDataFromExcel] mFileXLS es Nothing"
         Exit Function
@@ -137,21 +137,21 @@ Private Function ReadTechnicalDataFromExcel() As Object
     Dim wb As Workbook
     Set wb = mFileXLS.wb
     
-    ' Aquí iría la lógica específica para leer datos técnicos desde las hojas de Excel
-    ' Por ejemplo, buscar hojas específicas que contengan datos técnicos
+    ' Aqu ira la lgica especfica para leer datos tcnicos desde las hojas de Excel
+    ' Por ejemplo, buscar hojas especficas que contengan datos tcnicos
     Dim ws As Worksheet
     For Each ws In wb.Worksheets
         If InStr(1, ws.Name, "TECNIC", vbTextCompare) > 0 Then
-            ' Procesar hoja de datos técnicos
+            ' Procesar hoja de datos tcnicos
             ReadTechnicalDataFromExcel.Add "TechnicalSheet", ws.Name
-            ' Aquí se leerían los datos específicos de la hoja
+            ' Aqu se leeran los datos especficos de la hoja
         End If
     Next ws
     
-    LogDebug MODULE_NAME, "[ReadTechnicalDataFromExcel] Datos técnicos leídos"
+    LogDebug MODULE_NAME, "[ReadTechnicalDataFromExcel] Datos tcnicos ledos"
 End Function
 
-'@Description: Lee datos de cotización desde Excel
+'@Description: Lee datos de cotizacin desde Excel
 Private Function ReadQuotationDataFromExcel() As Object
     Set ReadQuotationDataFromExcel = CreateObject("Scripting.Dictionary")
     
@@ -163,18 +163,18 @@ Private Function ReadQuotationDataFromExcel() As Object
     Dim wb As Workbook
     Set wb = mFileXLS.wb
     
-    ' Aquí iría la lógica específica para leer datos de cotización desde las hojas de Excel
-    ' Por ejemplo, buscar hojas específicas que contengan datos de cotización
+    ' Aqu ira la lgica especfica para leer datos de cotizacin desde las hojas de Excel
+    ' Por ejemplo, buscar hojas especficas que contengan datos de cotizacin
     Dim ws As Worksheet
     For Each ws In wb.Worksheets
         If InStr(1, ws.Name, "OFERTA", vbTextCompare) > 0 Or InStr(1, ws.Name, "QUOTE", vbTextCompare) > 0 Then
-            ' Procesar hoja de cotización
+            ' Procesar hoja de cotizacin
             ReadQuotationDataFromExcel.Add "QuotationSheet", ws.Name
-            ' Aquí se leerían los datos específicos de la hoja
+            ' Aqu se leeran los datos especficos de la hoja
         End If
     Next ws
     
-    LogDebug MODULE_NAME, "[ReadQuotationDataFromExcel] Datos de cotización leídos"
+    LogDebug MODULE_NAME, "[ReadQuotationDataFromExcel] Datos de cotizacin ledos"
 End Function
 
 '@Description: Guarda resultados en Excel
@@ -187,12 +187,12 @@ Private Sub SaveResultsToExcel(resultado As Object)
     Dim wb As Workbook
     Set wb = mFileXLS.wb
     
-    ' Aquí iría la lógica específica para guardar resultados en Excel
-    ' Por ejemplo, escribir en hojas específicas o rangos específicos
+    ' Aqu ira la lgica especfica para guardar resultados en Excel
+    ' Por ejemplo, escribir en hojas especficas o rangos especficos
     LogDebug MODULE_NAME, "[SaveResultsToExcel] Resultados guardados en: " & mFileXLS.Path
 End Sub
 
-'@Description: Valida si la fuente de datos es válida
+'@Description: Valida si la fuente de datos es vlida
 Private Function ValidateExcelSource() As Boolean
     ValidateExcelSource = False
     
@@ -203,20 +203,20 @@ Private Function ValidateExcelSource() As Boolean
     
     On Error GoTo ErrorHandler
     
-    ' Verificar que el archivo exista y esté accesible
+    ' Verificar que el archivo exista y est accesible
     If mFileXLS.Path <> "(cerrado)" And mFileXLS.Path <> "" Then
-        ' Verificar que el workbook esté disponible
+        ' Verificar que el workbook est disponible
         Dim dummy As String
-        dummy = mFileXLS.Name  ' Esto causará un error si el workbook no está disponible
+        dummy = mFileXLS.Name  ' Esto causara un error si el workbook no est disponible
         
         ValidateExcelSource = True
-        LogDebug MODULE_NAME, "[ValidateExcelSource] Fuente válida: " & mFileXLS.Path
+        LogDebug MODULE_NAME, "[ValidateExcelSource] Fuente vlida: " & mFileXLS.Path
     End If
     
     Exit Function
     
 ErrorHandler:
-    LogError MODULE_NAME, "[ValidateExcelSource] Error validando fuente", Err.Number, Err.Description
+    LogError MODULE_NAME, "[ValidateExcelSource] Error", Err.Number, Err.Description
     ValidateExcelSource = False
 End Function
 
@@ -231,7 +231,7 @@ Private Function GetOpportunityIdentifier() As String
 End Function
 
 ' ==========================================
-' MÉTODOS PÚBLICOS ADICIONALES
+' MTODOS PBLICOS ADICIONALES
 ' ==========================================
 
 '@Description: Obtiene el archivo Excel asociado
@@ -240,6 +240,6 @@ Public Property Get FileXLS() As clsFileXLS
 End Property
 
 '@Description: Obtiene la ruta del archivo
-Public Property Get filePath() As String
-    filePath = mPath
+Public Property Get FilePath() As String
+    FilePath = mPath
 End Property

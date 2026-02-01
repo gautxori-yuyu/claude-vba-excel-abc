@@ -8,11 +8,11 @@ Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
 ' ==================================================================
-' ADAPTADOR DE SESIÓN DE EXCEL
+' ADAPTADOR DE SESIN DE EXCEL
 ' ==================================================================
 ' Implementa la interfaz IExcelSession para permitir que
-' el dominio interactúe con Excel sin conocer los detalles
-' de implementación concreta de Excel.
+' el dominio interacte con Excel sin conocer los detalles
+' de implementacin concreta de Excel.
 ' ==================================================================
 
 '@Folder "6-DOMINIO-Oportunidades y compresores.Adaptadores"
@@ -23,11 +23,11 @@ Private Const MODULE_NAME As String = "clsExcelSessionAdapter"
 ' Implementa la interfaz
 Implements IExcelSession
 
-' Referencia al contexto de ejecución
+' Referencia al contexto de ejecucin
 Private mExecutionContext As clsExecutionContext
 
 ' ==========================================
-' INICIALIZACIÓN
+' INICIALIZACIN
 ' ==========================================
 Private Sub Class_Initialize()
     LogInfo MODULE_NAME, "[Class_Initialize]"
@@ -38,14 +38,14 @@ Private Sub Class_Terminate()
     Set mExecutionContext = Nothing
 End Sub
 
-'@Description: Inicializa el adaptador con un contexto de ejecución
-Public Sub Initialize(ExecutionContext As clsExecutionContext)
-    Set mExecutionContext = ExecutionContext
+'@Description: Inicializa el adaptador con un contexto de ejecucin
+Public Sub Initialize(executionContext As clsExecutionContext)
+    Set mExecutionContext = executionContext
     LogInfo MODULE_NAME, "[Initialize] Adaptador inicializado con ExecutionContext"
 End Sub
 
 ' ==========================================
-' IMPLEMENTACIÓN DE LA INTERFAZ IExcelSession
+' IMPLEMENTACIN DE LA INTERFAZ IExcelSession
 ' ==========================================
 
 Private Property Get IExcelSession_ActiveWorkbook() As Workbook
@@ -65,11 +65,11 @@ Private Property Get IExcelSession_Selection() As Object
 End Property
 
 Private Sub IExcelSession_DirtyRecalc()
-    Call DirtyRecalcWorkbook
+    Call DirtyRecalcWorkbook()
 End Sub
 
 Private Sub IExcelSession_EvalUDFs()
-    Call EvaluateUDFs
+    Call EvaluateUDFs()
 End Sub
 
 Private Function IExcelSession_HasValidContext() As Boolean
@@ -77,7 +77,7 @@ Private Function IExcelSession_HasValidContext() As Boolean
 End Function
 
 Private Sub IExcelSession_SaveActiveWorkbook()
-    Call SaveCurrentWorkbook
+    Call SaveCurrentWorkbook()
 End Sub
 
 Private Sub IExcelSession_CloseActiveWorkbook(saveChanges As Boolean)
@@ -88,27 +88,27 @@ Private Function IExcelSession_OpenWorkbook(filePath As String) As Workbook
     Set IExcelSession_OpenWorkbook = OpenWorkbookAtPath(filePath)
 End Function
 
-Private Function IExcelSession_GetWorksheet(Workbook As Workbook, sheetName As String) As Worksheet
-    Set IExcelSession_GetWorksheet = GetWorksheetByName(Workbook, sheetName)
+Private Function IExcelSession_GetWorksheet(wb As Workbook, sheetName As String) As Worksheet
+    Set IExcelSession_GetWorksheet = GetWorksheetByName(wb, sheetName)
 End Function
 
-Private Function IExcelSession_GetRange(Worksheet As Worksheet, rangeAddress As String) As range
-    Set IExcelSession_GetRange = GetRangeByAddress(Worksheet, rangeAddress)
+Private Function IExcelSession_GetRange(ws As Worksheet, rangeAddress As String) As Range
+    Set IExcelSession_GetRange = GetRangeByAddress(ws, rangeAddress)
 End Function
 
-Private Function IExcelSession_ReadRangeValues(range As range) As Variant
-    IExcelSession_ReadRangeValues = ReadValuesFromRange(range)
+Private Function IExcelSession_ReadRangeValues(rng As Range) As Variant
+    IExcelSession_ReadRangeValues = ReadValuesFromRange(rng)
 End Function
 
-Private Sub IExcelSession_WriteRangeValues(range As range, values As Variant)
-    Call WriteValuesToRange(range, values)
+Private Sub IExcelSession_WriteRangeValues(rng As Range, values As Variant)
+    Call WriteValuesToRange(rng, values)
 End Sub
 
 ' ==========================================
-' MÉTODOS PRIVADOS DE IMPLEMENTACIÓN
+' MTODOS PRIVADOS DE IMPLEMENTACIN
 ' ==========================================
 
-'@Description: Ejecuta un cálculo dirty en el workbook
+'@Description: Ejecuta un clculo dirty en el workbook
 Private Sub DirtyRecalcWorkbook()
     If mExecutionContext Is Nothing Then
         LogWarning MODULE_NAME, "[DirtyRecalcWorkbook] ExecutionContext es Nothing"
@@ -120,11 +120,11 @@ Private Sub DirtyRecalcWorkbook()
     
     If Not wb Is Nothing Then
         Application.CalculateFullRebuild
-        LogDebug MODULE_NAME, "[DirtyRecalcWorkbook] Cálculo completo ejecutado en: " & wb.Name
+        LogDebug MODULE_NAME, "[DirtyRecalcWorkbook] Clculo completo ejecutado en: " & wb.Name
     End If
 End Sub
 
-'@Description: Evalúa las UDFs en el contexto actual
+'@Description: Evala las UDFs en el contexto actual
 Private Sub EvaluateUDFs()
     If mExecutionContext Is Nothing Then
         LogWarning MODULE_NAME, "[EvaluateUDFs] ExecutionContext es Nothing"
@@ -135,13 +135,13 @@ Private Sub EvaluateUDFs()
     Set wb = mExecutionContext.Workbook
     
     If Not wb Is Nothing Then
-        ' Forzar recálculo de fórmulas
+        ' Forzar recclculo de frmulas
         Application.Calculate
         LogDebug MODULE_NAME, "[EvaluateUDFs] UDFs evaluadas en: " & wb.Name
     End If
 End Sub
 
-'@Description: Valida si hay un contexto de Excel válido
+'@Description: Valida si hay un contexto de Excel vlido
 Private Function ValidateExcelContext() As Boolean
     ValidateExcelContext = False
     
@@ -150,18 +150,18 @@ Private Function ValidateExcelContext() As Boolean
         Exit Function
     End If
     
-    ' Verificar que tengamos acceso a los objetos básicos
+    ' Verificar que tengamos acceso a los objetos bsicos
     On Error GoTo ErrorHandler
     
     If Not mExecutionContext.Workbook Is Nothing Then
         ValidateExcelContext = True
-        LogDebug MODULE_NAME, "[ValidateExcelContext] Contexto válido"
+        LogDebug MODULE_NAME, "[ValidateExcelContext] Contexto vlido"
     End If
     
     Exit Function
     
 ErrorHandler:
-    LogError MODULE_NAME, "[ValidateExcelContext] Error validando contexto", Err.Number, Err.Description
+    LogError MODULE_NAME, "[ValidateExcelContext] Error", Err.Number, Err.Description
     ValidateExcelContext = False
 End Function
 
@@ -213,19 +213,19 @@ ErrorHandler:
     Set OpenWorkbookAtPath = Nothing
 End Function
 
-'@Description: Obtiene una hoja específica por nombre
-Private Function GetWorksheetByName(Workbook As Workbook, sheetName As String) As Worksheet
+'@Description: Obtiene una hoja especfica por nombre
+Private Function GetWorksheetByName(wb As Workbook, sheetName As String) As Worksheet
     Set GetWorksheetByName = Nothing
     
-    If Workbook Is Nothing Then
+    If wb Is Nothing Then
         LogWarning MODULE_NAME, "[GetWorksheetByName] Workbook es Nothing"
         Exit Function
     End If
     
     On Error GoTo ErrorHandler
     
-    Set GetWorksheetByName = Workbook.Worksheets(sheetName)
-    LogDebug MODULE_NAME, "[GetWorksheetByName] Hoja obtenida: " & sheetName & " en workbook: " & Workbook.Name
+    Set GetWorksheetByName = wb.Worksheets(sheetName)
+    LogDebug MODULE_NAME, "[GetWorksheetByName] Hoja obtenida: " & sheetName & " en workbook: " & wb.Name
     
     Exit Function
     
@@ -234,19 +234,19 @@ ErrorHandler:
     Set GetWorksheetByName = Nothing
 End Function
 
-'@Description: Obtiene un rango por dirección
-Private Function GetRangeByAddress(Worksheet As Worksheet, rangeAddress As String) As range
+'@Description: Obtiene un rango por direccin
+Private Function GetRangeByAddress(ws As Worksheet, rangeAddress As String) As Range
     Set GetRangeByAddress = Nothing
     
-    If Worksheet Is Nothing Then
+    If ws Is Nothing Then
         LogWarning MODULE_NAME, "[GetRangeByAddress] Worksheet es Nothing"
         Exit Function
     End If
     
     On Error GoTo ErrorHandler
     
-    Set GetRangeByAddress = Worksheet.range(rangeAddress)
-    LogDebug MODULE_NAME, "[GetRangeByAddress] Rango obtenido: " & rangeAddress & " en hoja: " & Worksheet.Name
+    Set GetRangeByAddress = ws.Range(rangeAddress)
+    LogDebug MODULE_NAME, "[GetRangeByAddress] Rango obtenido: " & rangeAddress & " en hoja: " & ws.Name
     
     Exit Function
     
@@ -256,49 +256,49 @@ ErrorHandler:
 End Function
 
 '@Description: Lee valores de un rango
-Private Function ReadValuesFromRange(range As range) As Variant
+Private Function ReadValuesFromRange(rng As Range) As Variant
     ReadValuesFromRange = Empty
     
-    If range Is Nothing Then
+    If rng Is Nothing Then
         LogWarning MODULE_NAME, "[ReadValuesFromRange] Range es Nothing"
         Exit Function
     End If
     
     On Error GoTo ErrorHandler
     
-    ReadValuesFromRange = range.Value
-    LogDebug MODULE_NAME, "[ReadValuesFromRange] Valores leídos del rango: " & range.Address
+    ReadValuesFromRange = rng.Value
+    LogDebug MODULE_NAME, "[ReadValuesFromRange] Valores ledos del rango: " & rng.Address
     
     Exit Function
     
 ErrorHandler:
-    LogError MODULE_NAME, "[ReadValuesFromRange] Error leyendo valores", Err.Number, Err.Description & " - Rango: " & range.Address
+    LogError MODULE_NAME, "[ReadValuesFromRange] Error leyendo valores", Err.Number, Err.Description & " - Rango: " & rng.Address
     ReadValuesFromRange = Empty
 End Function
 
 '@Description: Escribe valores en un rango
-Private Sub WriteValuesToRange(range As range, values As Variant)
-    If range Is Nothing Then
+Private Sub WriteValuesToRange(rng As Range, values As Variant)
+    If rng Is Nothing Then
         LogWarning MODULE_NAME, "[WriteValuesToRange] Range es Nothing"
         Exit Sub
     End If
     
     On Error GoTo ErrorHandler
     
-    range.Value = values
-    LogDebug MODULE_NAME, "[WriteValuesToRange] Valores escritos en rango: " & range.Address
+    rng.Value = values
+    LogDebug MODULE_NAME, "[WriteValuesToRange] Valores escritos en rango: " & rng.Address
     
     Exit Sub
     
 ErrorHandler:
-    LogError MODULE_NAME, "[WriteValuesToRange] Error escribiendo valores", Err.Number, Err.Description & " - Rango: " & range.Address
+    LogError MODULE_NAME, "[WriteValuesToRange] Error escribiendo valores", Err.Number, Err.Description & " - Rango: " & rng.Address
 End Sub
 
 ' ==========================================
-' MÉTODOS PÚBLICOS ADICIONALES
+' MTODOS PBLICOS ADICIONALES
 ' ==========================================
 
-'@Description: Obtiene el contexto de ejecución asociado
+'@Description: Obtiene el contexto de ejecucin asociado
 Public Property Get ExecutionContext() As clsExecutionContext
     Set ExecutionContext = mExecutionContext
 End Property
