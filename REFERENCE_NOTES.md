@@ -369,3 +369,29 @@ clsExecutionContext (289 líneas) eliminado e íntegramente redistribuido en:
 
 ### Bug residual Fase E: mCtx en ChartManager.Initialize (Fase F — commit e37520f)
 `mChartManager.Initialize mCtx` en clsApplication referenciaba la variable eliminada. Corregido a `mCtxState`.
+
+### Llamadas inadecuadas al Ribbon desde Dispatcher (Fase G — commit e6cea5e)
+clsEventDispatcher llamaba directamente a App.ribbon.InvalidarControl y App.ribbon.InvalidarRibbon en 3 lugares (btnNuevaOp, btnOpRefresh, SetRibbonSelectionIndex). Eliminadas estas llamadas. El Ribbon ahora se invalida automáticamente via eventos que clsRibbon escucha con WithEvents de los Managers (OpportunitiesMgr, FileMgr, etc.).
+
+### Detección de reset VBA (Fase G — commit e6cea5e)
+Añadida detección de reset de VBA mediante variable Static en modMACROAppLifecycle:
+- `DetectVBAResetOccurred()`: Detecta si ocurrió un reset desde la última llamada
+- `InitializationCount`: Contador de inicializaciones (>1 indica que hubo resets)
+- `LastInitializationTime`: Timestamp de la última inicialización
+
+### Validación de contexto COM (Fase G — commit e6cea5e)
+clsExecutionContextMgr ahora tiene:
+- `IsContextValid()`: Verifica que las referencias COM estén vivas (no zombis)
+- `RefreshContextState()`: Detecta y actualiza el contexto actual desde Excel
+- Handlers de ContextInvalidated/ContextReinitialized en clsEventsMgrInfrastructure
+
+### IsInitialized en clsApplicationState (Fase G — commit e6cea5e)
+Añadidas propiedades para diagnosticar estado de inicialización:
+- `IsInitialized`: True si todos los subestados críticos fueron inyectados
+- `GetInitializationStatus()`: String con estado de cada subestado
+
+### Interfaz IOpportunity de dominio (Fase H — commit 6acb541)
+IOpportunity.cls implementada como interfaz de dominio que define el contrato para trabajar con oportunidades. Métodos: OpportunityId, BasePath, DisplayName, IsValid, CanGenerateQuote, ReadTechnicalData.
+
+### Adaptador ExcelOpportunitySource (Fase H — commit 6acb541)
+ExcelOpportunitySource.cls creado como adaptador de infraestructura que implementa IOpportunity usando Excel. Encapsula clsFileXLS y traduce sus operaciones al contrato de dominio. El dominio solo ve IOpportunity; la infraestructura sabe hablar Excel.
