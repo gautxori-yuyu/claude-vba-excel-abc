@@ -46,6 +46,15 @@ Private Sub Workbook_Open()
 
     ' Iniciar aplicación (lazy init del singleton)
     App
+
+    ' Tras reset: si la app sobrevivió pero el contexto es inválido, reiniciar
+    If Not mApp Is Nothing Then
+        If Not App.ExecutionContextMgr Is Nothing Then
+            If Not App.ExecutionContextMgr.State.IsContextValid Then
+                App.ExecutionContextMgr.ReInitializeContext
+            End If
+        End If
+    End If
 End Sub
 
 Private Sub Workbook_BeforeClose(Cancel As Boolean)

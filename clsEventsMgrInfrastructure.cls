@@ -125,3 +125,23 @@ Private Sub mCtxMgr_WorkbookBeforeClose(ByVal wb As Workbook, Cancel As Boolean)
     LogDebug MODULE_NAME, "[mCtx_WorkbookBeforeClose] " & wb.Name
     mFileMgr.UntrackWorkbook wb
 End Sub
+
+' -------------------------------------------------------------
+' Eventos de reset / reenganche de contexto
+' -------------------------------------------------------------
+
+Private Sub mCtxMgr_ContextInvalidated()
+    LogWarning MODULE_NAME, "[mCtxMgr_ContextInvalidated] Contexto invalidado"
+End Sub
+
+Private Sub mCtxMgr_ContextReinitialized()
+    LogInfo MODULE_NAME, "[mCtxMgr_ContextReinitialized] Re-enganchando consumidores"
+    On Error Resume Next
+    Dim wb As Workbook
+    Set wb = Excel.Application.ActiveWorkbook
+    If Not wb Is Nothing Then
+        mFileMgr.GetOrTrackWorkbook wb
+    End If
+    mChartManager.RefreshCurrentSheet
+    On Error GoTo 0
+End Sub

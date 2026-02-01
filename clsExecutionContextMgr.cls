@@ -36,7 +36,7 @@ Private mState As clsExecutionContextState
 
 Public Sub Initialize(oState As clsExecutionContextState)
     Set mState = oState
-    mState.SetApplication Excel.Application
+    DetectFullContext
     LogInfo MODULE_NAME, "[Initialize] - Contexto inicializado"
 End Sub
 
@@ -103,14 +103,42 @@ Public Sub Shutdown()
 End Sub
 
 '@Description: Reinicializa el contexto tras un reset de VBA/Excel.
-'@Note: Este método será llamado por el mediador cuando detecte que el contexto
-'       se ha invalidado y necesita ser reconstruido.
-'TODO: Implementar reenganche completo de eventos tras reset
+'@Note: Llamado por ThisWorkbook cuando detecta que el contexto se ha invalidado.
+'       Reconstruye State desde el estado real de Excel y notifica a consumidores.
 Public Sub ReInitializeContext()
+    mState.InvalidateContext
+    RaiseEvent ContextInvalidated()
+    DetectFullContext
     mState.ValidateContext
-    mState.SetApplication Excel.Application
     RaiseEvent ContextReinitialized()
     LogInfo MODULE_NAME, "[ReInitializeContext] - Contexto reinicializado tras reset"
+End Sub
+
+'@Description: Detecta el contexto actual de Excel (workbook, worksheet, chart)
+'              y actualiza el State. Se usa en Initialize (bootstrap) y en
+'              ReInitializeContext (tras reset).
+Private Sub DetectFullContext()
+    mState.SetApplication Excel.Application
+
+    On Error Resume Next
+    Dim wb As Workbook
+    Set wb = Excel.Application.ActiveWorkbook
+    On Error GoTo 0
+
+    If Not wb Is Nothing Then
+        mState.UpdateWorkbook wb
+
+        On Error Resume Next
+        Dim ws As Worksheet
+        Set ws = wb.ActiveSheet   ' Falla si es Chart sheet
+        On Error GoTo 0
+
+        If Not ws Is Nothing Then
+            mState.UpdateWorksheet ws
+        End If
+
+        DetectChart
+    End If
 End Sub
 
 ' ==========================================
