@@ -103,7 +103,7 @@ Private Sub Class_Initialize()
 
     ' INTERFAZ - Crear Ribbon (crea RibbonState internamente)
     Set mRibbon = New clsRibbon
-    mRibbon.Initialize mOpportunities, mFileMgr, mChartManager, mCtx, mCtxMgr
+    mRibbon.Initialize mOpportunities, mFileMgr, mChartManager, mCtx, mExecutionContextMgr
     
     ' ESTADO CENTRALIZADO - Inyectar referencias a subestados (Dependency Injection)
     Set mApplicationState = New clsApplicationState
