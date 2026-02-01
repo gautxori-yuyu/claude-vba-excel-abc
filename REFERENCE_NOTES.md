@@ -395,3 +395,21 @@ IOpportunity.cls implementada como interfaz de dominio que define el contrato pa
 
 ### Adaptador ExcelOpportunitySource (Fase H — commit 6acb541)
 ExcelOpportunitySource.cls creado como adaptador de infraestructura que implementa IOpportunity usando Excel. Encapsula clsFileXLS y traduce sus operaciones al contrato de dominio. El dominio solo ve IOpportunity; la infraestructura sabe hablar Excel.
+
+### Detección de reset integrada en bootstrap (Feature 1 — commit 5001caf)
+ThisWorkbook.Workbook_Open ahora llama a DetectVBAResetOccurred() al inicio y fuerza reinicialización del contexto si detecta reset. Loguea número de inicialización para diagnóstico.
+
+### Flujo de reinicialización completo en dominio (Feature 1 — commit 5001caf)
+- clsEventsMediatorDomain ahora escucha ContextInvalidated/ContextReinitialized via WithEvents mCtxMgr
+- Durante ContextInvalidated: pausa FSMonitoringCoord
+- Durante ContextReinitialized: reanuda FSMonitoringCoord y refresca oportunidades
+- clsFSMonitoringCoord: nuevos métodos PausarMonitoreo/ReanudarMonitoreo y propiedad IsPaused
+
+### clsOpportunity implementa IOpportunity (Feature 1 — commit 5001caf)
+La entidad de dominio clsOpportunity ahora implementa la interfaz IOpportunity directamente, exponiendo: OpportunityId, BasePath, DisplayName, IsValid, CanGenerateQuote, ReadTechnicalData.
+
+### CurrentOpportunitySource en clsOpportunitiesMgr (Feature 1 — commit 5001caf)
+Nueva propiedad `CurrentOpportunitySource As IOpportunity` que permite al código de dominio trabajar con la oportunidad actual usando la interfaz abstracta en lugar de la implementación concreta.
+
+### Interfaz IOferta de dominio (Feature 1 — commit 5001caf)
+IOferta.cls implementada como interfaz de dominio para ofertas. Métodos: OfertaId, NumeroOferta, FechaOferta, IsValid, IsDirty, IsNew, GetDatosGenerales, OtrosCount.
