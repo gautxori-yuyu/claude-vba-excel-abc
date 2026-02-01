@@ -147,7 +147,7 @@ End Function
 '@Category: gráficos
 '@Scope: interna, auxiliar
 '@ArgumentDescriptions: sh As Object
-Public Sub WatchSheet(sh As Object)
+Public Sub WatchSheet(Sh As Object)
     On Error GoTo ErrHandler
 
     ' Detener vigilancia previa
@@ -157,10 +157,10 @@ Public Sub WatchSheet(sh As Object)
     Set mChartsInActiveSheet = New Collection
 
     ' Verificar que sh es un objeto que puede tener ChartObjects
-    If TypeOf sh Is Worksheet Then
+    If TypeOf Sh Is Worksheet Then
         ' Iterar sobre objetos grafico en la hoja
         Dim chObj As ChartObject
-        For Each chObj In sh.ChartObjects
+        For Each chObj In Sh.ChartObjects
             Dim oChartEvents As clsChartEvents
             Set oChartEvents = New clsChartEvents
             Set oChartEvents.ParentManager = Me
@@ -242,3 +242,5 @@ Friend Sub NotifyChartDeactivated(cht As Chart)
     ' Luego notificar el evento
     RaiseEvent ChartDeactivated(cht)
 End Sub
+
+

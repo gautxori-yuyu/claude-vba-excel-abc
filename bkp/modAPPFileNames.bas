@@ -15,21 +15,21 @@ Private Enum FNTag
     tStages
 End Enum
 
-Public Function fileName(Optional wb As Workbook = Nothing) As Variant
+Public Function fileName(Optional Wb As Workbook = Nothing) As Variant
 Attribute fileName.VB_Description = "[modAPPFileNames] file Name (función personalizada). Aplica a: ActiveWorkbook|Cells Range"
 Attribute fileName.VB_ProcData.VB_Invoke_Func = " \n23"
     On Error GoTo ErrorHandler
     ' Para manejar correctamente el contexto, tanto en VBA, como al ser llamada como UDF, con y sin parametros
     Select Case True
-    Case Not wb Is Nothing                       ' se procesa el parametro
+    Case Not Wb Is Nothing                       ' se procesa el parametro
     Case IsError(Application.Caller) And Not ActiveWorkbook Is Nothing ' se procesa en contexto VBA
-        Set wb = ActiveWorkbook
+        Set Wb = ActiveWorkbook
     Case TypeOf Application.Caller Is range      ' se procesa en contexto UDF
-        Set wb = Application.Caller.Worksheet.Parent
+        Set Wb = Application.Caller.Worksheet.Parent
     Case Else
         Err.Raise vbObjectError + 513, "FileName", "No available workbook"
     End Select
-    fileName = wb.Name
+    fileName = Wb.Name
     Exit Function
     
 ErrorHandler:
@@ -39,7 +39,7 @@ End Function
 '@Description: Devuelve el nombre del archivo actual (con extensión)
 '@Category: Información de Archivo
 '@ArgumentDescriptions: (sin argumentos)
-Private Function getFileNameTag(tag As FNTag, Optional wb As Workbook = Nothing) As String
+Private Function getFileNameTag(tag As FNTag, Optional Wb As Workbook = Nothing) As String
     Dim fileName As String
     Dim regEx As Object
     Dim matches As Object, sm As Integer
@@ -47,14 +47,14 @@ Private Function getFileNameTag(tag As FNTag, Optional wb As Workbook = Nothing)
     On Error GoTo ErrorHandler
     ' Para manejar correctamente el contexto en VBA
     Select Case True
-    Case Not wb Is Nothing                       ' se procesa el parametro
+    Case Not Wb Is Nothing                       ' se procesa el parametro
     Case Not ActiveWorkbook Is Nothing           ' se procesa en contexto VBA
-        Set wb = ActiveWorkbook
+        Set Wb = ActiveWorkbook
     Case Else
         Err.Raise vbObjectError + 513, "Customer", "No available workbook"
     End Select
     
-    fileName = wb.Name
+    fileName = Wb.Name
     
     Set regEx = CreateObject("VBScript.RegExp")
     regEx.IgnoreCase = True
@@ -120,22 +120,22 @@ End Function
 '@Description: Extrae el cliente del nombre de archivo, del workbook actual o el pasado como parametro
 '@Category: Información de Archivo
 '@ArgumentDescriptions:
-Public Function Customer(Optional wb As Workbook = Nothing) As Variant
+Public Function Customer(Optional Wb As Workbook = Nothing) As Variant
 Attribute Customer.VB_Description = "[modAPPFileNames] Extrae el cliente del nombre de archivo, del workbook actual o el pasado como parametro. Aplica a: ActiveWorkbook|Cells Range"
 Attribute Customer.VB_ProcData.VB_Invoke_Func = " \n23"
     On Error GoTo ErrorHandler
     ' Para manejar correctamente el contexto, tanto en VBA, como al ser llamada como UDF, con y sin parametros
     Select Case True
-    Case Not wb Is Nothing                       ' se procesa el parametro
+    Case Not Wb Is Nothing                       ' se procesa el parametro
     Case TypeOf Application.Caller Is range      ' se procesa en contexto UDF
-        Set wb = Application.Caller.Worksheet.Parent
+        Set Wb = Application.Caller.Worksheet.Parent
     Case Not ActiveWorkbook Is Nothing           ' se procesa en contexto VBA
-        Set wb = ActiveWorkbook
+        Set Wb = ActiveWorkbook
     Case Else
         Err.Raise vbObjectError + 513, "Customer", "No available workbook"
     End Select
     
-    Customer = getFileNameTag(tCustomer, wb)
+    Customer = getFileNameTag(tCustomer, Wb)
 
     Exit Function
     
@@ -147,22 +147,22 @@ End Function
 '@Description: Extrae el número de oferta del nombre de archivo, del workbook actual o el pasado como parametro
 '@Category: Información de Archivo
 '@ArgumentDescriptions: (sin argumentos)
-Public Function QuoteNr(Optional wb As Workbook = Nothing) As Variant
+Public Function QuoteNr(Optional Wb As Workbook = Nothing) As Variant
 Attribute QuoteNr.VB_Description = "[modAPPFileNames] Extrae el número de oferta del nombre de archivo, del workbook actual o el pasado como parametro. Aplica a: ActiveWorkbook|Cells Range"
 Attribute QuoteNr.VB_ProcData.VB_Invoke_Func = " \n23"
     On Error GoTo ErrorHandler
     ' Para manejar correctamente el contexto, tanto en VBA, como al ser llamada como UDF, con y sin parametros
     Select Case True
-    Case Not wb Is Nothing                       ' se procesa el parametro
+    Case Not Wb Is Nothing                       ' se procesa el parametro
     Case TypeOf Application.Caller Is range      ' se procesa en contexto UDF
-        Set wb = Application.Caller.Worksheet.Parent
+        Set Wb = Application.Caller.Worksheet.Parent
     Case Not ActiveWorkbook Is Nothing           ' se procesa en contexto VBA
-        Set wb = ActiveWorkbook
+        Set Wb = ActiveWorkbook
     Case Else
         Err.Raise vbObjectError + 513, "QuoteNr", "No available workbook"
     End Select
     
-    QuoteNr = getFileNameTag(tQuoteNr, wb)
+    QuoteNr = getFileNameTag(tQuoteNr, Wb)
 
     Exit Function
     
@@ -174,22 +174,22 @@ End Function
 '@Description: Extrae el número de revisión de la oferta del nombre de archivo, del workbook actual o el pasado como parametro
 '@Category: Información de Archivo
 '@ArgumentDescriptions: (sin argumentos)
-Public Function QuoteRev(Optional wb As Workbook = Nothing) As Variant
+Public Function QuoteRev(Optional Wb As Workbook = Nothing) As Variant
 Attribute QuoteRev.VB_Description = "[modAPPFileNames] Extrae el número de revisión de la oferta del nombre de archivo, del workbook actual o el pasado como parametro. Aplica a: ActiveWorkbook|Cells Range"
 Attribute QuoteRev.VB_ProcData.VB_Invoke_Func = " \n23"
     On Error GoTo ErrorHandler
     ' Para manejar correctamente el contexto, tanto en VBA, como al ser llamada como UDF, con y sin parametros
     Select Case True
-    Case Not wb Is Nothing                       ' se procesa el parametro
+    Case Not Wb Is Nothing                       ' se procesa el parametro
     Case TypeOf Application.Caller Is range      ' se procesa en contexto UDF
-        Set wb = Application.Caller.Worksheet.Parent
+        Set Wb = Application.Caller.Worksheet.Parent
     Case Not ActiveWorkbook Is Nothing           ' se procesa en contexto VBA
-        Set wb = ActiveWorkbook
+        Set Wb = ActiveWorkbook
     Case Else
         Err.Raise vbObjectError + 513, "QuoteRev", "No available workbook"
     End Select
     
-    QuoteRev = getFileNameTag(tQuoteRev, wb)
+    QuoteRev = getFileNameTag(tQuoteRev, Wb)
 
     Exit Function
     
@@ -201,22 +201,22 @@ End Function
 '@Description: Extrae el modelo del compresor del nombre del nombre de archivo, del workbook actual o el pasado como parametro
 '@Category: Información de Archivo
 '@ArgumentDescriptions: (sin argumentos)
-Public Function Model(Optional wb As Workbook = Nothing) As Variant
+Public Function Model(Optional Wb As Workbook = Nothing) As Variant
 Attribute Model.VB_Description = "[modAPPFileNames] Extrae el modelo del compresor del nombre del nombre de archivo, del workbook actual o el pasado como parametro. Aplica a: ActiveWorkbook|Cells Range"
 Attribute Model.VB_ProcData.VB_Invoke_Func = " \n23"
     On Error GoTo ErrorHandler
     ' Para manejar correctamente el contexto, tanto en VBA, como al ser llamada como UDF, con y sin parametros
     Select Case True
-    Case Not wb Is Nothing                       ' se procesa el parametro
+    Case Not Wb Is Nothing                       ' se procesa el parametro
     Case TypeOf Application.Caller Is range      ' se procesa en contexto UDF
-        Set wb = Application.Caller.Worksheet.Parent
+        Set Wb = Application.Caller.Worksheet.Parent
     Case Not ActiveWorkbook Is Nothing           ' se procesa en contexto VBA
-        Set wb = ActiveWorkbook
+        Set Wb = ActiveWorkbook
     Case Else
         Err.Raise vbObjectError + 513, "Model", "No available workbook"
     End Select
     
-    Model = getFileNameTag(tModel, wb)
+    Model = getFileNameTag(tModel, Wb)
 
     Exit Function
     
@@ -228,22 +228,22 @@ End Function
 '@Description: Extrae la familia del compresor (HA, HG, HP, HX) del modelo
 '@Category: Información de Archivo
 '@ArgumentDescriptions: (sin argumentos)
-Public Function Family(Optional wb As Workbook = Nothing) As Variant
+Public Function Family(Optional Wb As Workbook = Nothing) As Variant
 Attribute Family.VB_Description = "[modAPPFileNames] Extrae la familia del compresor (HA, HG, HP, HX) del modelo. Aplica a: ActiveWorkbook|Cells Range"
 Attribute Family.VB_ProcData.VB_Invoke_Func = " \n23"
     On Error GoTo ErrorHandler
     ' Para manejar correctamente el contexto, tanto en VBA, como al ser llamada como UDF, con y sin parametros
     Select Case True
-    Case Not wb Is Nothing                       ' se procesa el parametro
+    Case Not Wb Is Nothing                       ' se procesa el parametro
     Case TypeOf Application.Caller Is range      ' se procesa en contexto UDF
-        Set wb = Application.Caller.Worksheet.Parent
+        Set Wb = Application.Caller.Worksheet.Parent
     Case Not ActiveWorkbook Is Nothing           ' se procesa en contexto VBA
-        Set wb = ActiveWorkbook
+        Set Wb = ActiveWorkbook
     Case Else
         Err.Raise vbObjectError + 513, "Family", "No available workbook"
     End Select
     
-    Family = getFileNameTag(tFamily, wb)
+    Family = getFileNameTag(tFamily, Wb)
 
     Exit Function
     
@@ -255,22 +255,22 @@ End Function
 '@Description: Extrae el número de etapas del compresor del modelo
 '@Category: Información de Archivo
 '@ArgumentDescriptions: (sin argumentos)
-Public Function Stages(Optional wb As Workbook = Nothing) As Variant
+Public Function Stages(Optional Wb As Workbook = Nothing) As Variant
 Attribute Stages.VB_Description = "[modAPPFileNames] Extrae el número de etapas del compresor del modelo. Aplica a: ActiveWorkbook|Cells Range"
 Attribute Stages.VB_ProcData.VB_Invoke_Func = " \n23"
     On Error GoTo ErrorHandler
     ' Para manejar correctamente el contexto, tanto en VBA, como al ser llamada como UDF, con y sin parametros
     Select Case True
-    Case Not wb Is Nothing                       ' se procesa el parametro
+    Case Not Wb Is Nothing                       ' se procesa el parametro
     Case TypeOf Application.Caller Is range      ' se procesa en contexto UDF
-        Set wb = Application.Caller.Worksheet.Parent
+        Set Wb = Application.Caller.Worksheet.Parent
     Case Not ActiveWorkbook Is Nothing           ' se procesa en contexto VBA
-        Set wb = ActiveWorkbook
+        Set Wb = ActiveWorkbook
     Case Else
         Err.Raise vbObjectError + 513, "Stages", "No available workbook"
     End Select
     
-    Stages = getFileNameTag(tStages, wb)
+    Stages = getFileNameTag(tStages, Wb)
 
     Exit Function
     
@@ -282,22 +282,22 @@ End Function
 '@Description: Extrae el número de cilindros del compresor del modelo
 '@Category: Información de Archivo
 '@ArgumentDescriptions: (sin argumentos)
-Public Function Cylinders(Optional wb As Workbook = Nothing) As Variant
+Public Function Cylinders(Optional Wb As Workbook = Nothing) As Variant
 Attribute Cylinders.VB_Description = "[modAPPFileNames] Extrae el número de cilindros del compresor del modelo. Aplica a: ActiveWorkbook|Cells Range"
 Attribute Cylinders.VB_ProcData.VB_Invoke_Func = " \n23"
     On Error GoTo ErrorHandler
     ' Para manejar correctamente el contexto, tanto en VBA, como al ser llamada como UDF, con y sin parametros
     Select Case True
-    Case Not wb Is Nothing                       ' se procesa el parametro
+    Case Not Wb Is Nothing                       ' se procesa el parametro
     Case TypeOf Application.Caller Is range      ' se procesa en contexto UDF
-        Set wb = Application.Caller.Worksheet.Parent
+        Set Wb = Application.Caller.Worksheet.Parent
     Case Not ActiveWorkbook Is Nothing           ' se procesa en contexto VBA
-        Set wb = ActiveWorkbook
+        Set Wb = ActiveWorkbook
     Case Else
         Err.Raise vbObjectError + 513, "Cylinders", "No available workbook"
     End Select
     
-    Cylinders = getFileNameTag(tCylinders, wb)
+    Cylinders = getFileNameTag(tCylinders, Wb)
 
     Exit Function
     

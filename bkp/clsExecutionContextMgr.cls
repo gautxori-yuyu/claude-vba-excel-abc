@@ -53,63 +53,63 @@ End Sub
 ' MÉTODOS PARA PROCESAR EVENTOS TÉCNICOS (llamados desde ThisWorkbook)
 ' ==========================================
 
-Public Sub OnWorkbookOpened(wb As Workbook)
-    LogDebug MODULE_NAME, "[OnWorkbookOpened] " & wb.Name
+Public Sub OnWorkbookOpened(Wb As Workbook)
+    LogDebug MODULE_NAME, "[OnWorkbookOpened] " & Wb.Name
     
     ' Actualizar estado técnico
-    m_state.SetActiveWorkbook wb
+    m_state.SetActiveWorkbook Wb
     
     ' Emitir evento semántico de infraestructura
-    RaiseEvent WorkbookSessionStarted(wb.FullName, wb.readOnly)
+    RaiseEvent WorkbookSessionStarted(Wb.FullName, Wb.readOnly)
 End Sub
 
-Public Sub OnWorkbookActivated(wb As Workbook)
-    LogDebug MODULE_NAME, "[OnWorkbookActivated] " & wb.Name
+Public Sub OnWorkbookActivated(Wb As Workbook)
+    LogDebug MODULE_NAME, "[OnWorkbookActivated] " & Wb.Name
     
     ' Actualizar estado técnico
-    m_state.SetActiveWorkbook wb
+    m_state.SetActiveWorkbook Wb
     
     ' Emitir evento semántico de infraestructura
-    RaiseEvent WorkbookSessionActivated(wb.FullName)
+    RaiseEvent WorkbookSessionActivated(Wb.FullName)
 End Sub
 
-Public Sub OnWorkbookBeforeClose(wb As Workbook, ByRef Cancel As Boolean)
-    LogDebug MODULE_NAME, "[OnWorkbookBeforeClose] " & wb.Name
+Public Sub OnWorkbookBeforeClose(Wb As Workbook, ByRef Cancel As Boolean)
+    LogDebug MODULE_NAME, "[OnWorkbookBeforeClose] " & Wb.Name
     
     ' Emitir evento semántico de infraestructura
-    RaiseEvent WorkbookSessionClosing(wb.FullName, Cancel)
+    RaiseEvent WorkbookSessionClosing(Wb.FullName, Cancel)
     
     ' Si no se cancela, limpiar estado
     If Not Cancel Then
-        If m_state.IsWorkbookValid(wb) Then
+        If m_state.IsWorkbookValid(Wb) Then
             ' Si es el workbook activo, limpiar estado
-            If m_state.ActiveWorkbook Is wb Then
+            If m_state.ActiveWorkbook Is Wb Then
                 m_state.SetActiveWorkbook Nothing
             End If
         End If
     End If
 End Sub
 
-Public Sub OnSheetActivated(sh As Object)
-    LogDebug MODULE_NAME, "[OnSheetActivated] " & TypeName(sh) & " '" & sh.Name & "'"
+Public Sub OnSheetActivated(Sh As Object)
+    LogDebug MODULE_NAME, "[OnSheetActivated] " & TypeName(Sh) & " '" & Sh.Name & "'"
     
     ' Actualizar estado técnico
-    If TypeOf sh Is Worksheet Then
-        m_state.SetActiveWorksheet sh
+    If TypeOf Sh Is Worksheet Then
+        m_state.SetActiveWorksheet Sh
     End If
     
     ' Emitir evento semántico de infraestructura
-    RaiseEvent SheetSessionActivated(sh.Name, TypeName(sh))
+    RaiseEvent SheetSessionActivated(Sh.Name, TypeName(Sh))
 End Sub
 
-Public Sub OnSheetDeactivated(sh As Object)
-    LogDebug MODULE_NAME, "[OnSheetDeactivated] '" & sh.Name & "'"
+Public Sub OnSheetDeactivated(Sh As Object)
+    LogDebug MODULE_NAME, "[OnSheetDeactivated] '" & Sh.Name & "'"
     
     ' Emitir evento semántico de infraestructura
-    RaiseEvent SheetSessionDeactivated(sh.Name, TypeName(sh))
+    RaiseEvent SheetSessionDeactivated(Sh.Name, TypeName(Sh))
     
     ' Si es la hoja activa, limpiar estado
-    If m_state.ActiveWorksheet Is sh Then
+    If m_state.ActiveWorksheet Is Sh Then
         m_state.SetActiveWorksheet Nothing
     End If
 End Sub
@@ -138,11 +138,11 @@ Public Sub OnSelectionChanged(Target As range)
     RaiseEvent SelectionChangedInSession(Target.Address)
 End Sub
 
-Public Sub OnSheetCalculated(sh As Object)
-    LogDebug MODULE_NAME, "[OnSheetCalculated] " & sh.Name
+Public Sub OnSheetCalculated(Sh As Object)
+    LogDebug MODULE_NAME, "[OnSheetCalculated] " & Sh.Name
     
     ' Emitir evento semántico de infraestructura
-    RaiseEvent SheetCalculatedInSession(sh.Name)
+    RaiseEvent SheetCalculatedInSession(Sh.Name)
 End Sub
 
 ' ==========================================
@@ -180,10 +180,3 @@ Public Sub ReconnectEvents()
     LogInfo MODULE_NAME, "[ReconnectEvents] - Intentando reconexión de eventos"
     ' La reconexión real se harÃ­a en ThisWorkbook automáticamente
 End Sub
-  
-' =========================================='  
-' MÉTODO DE CONSULTA DE ESTADO DE GRÁFICO'  
-' =========================================='  
-Public Function GetCachedChartInfo() As T_CachedChartInfo  
-    GetCachedChartInfo = m_state.CachedChartInfo  
-End Function 

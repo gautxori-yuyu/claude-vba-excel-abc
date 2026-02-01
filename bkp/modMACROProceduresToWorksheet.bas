@@ -98,9 +98,9 @@ End Sub
 '@Scope: Privado
 '@ArgumentDescriptions: wb: Workbook donde crear | sheetName: Nombre de la hoja
 '@Returns: Worksheet | Referencia a la hoja creada
-Private Function CrearHojaProcedimientos(wb As Workbook, ByVal sheetName As String) As Worksheet
+Private Function CrearHojaProcedimientos(Wb As Workbook, ByVal sheetName As String) As Worksheet
     Dim ws As Worksheet
-    Set ws = wb.Worksheets.Add
+    Set ws = Wb.Worksheets.Add
     ws.Name = sheetName
     
     Call CrearEncabezadosHoja(ws)

@@ -189,56 +189,56 @@ End Sub
 ' EVENTOS DE APLICACIÓN - Captura de eventos técnicos (sin semántica)
 ' ==========================================
 
-Private Sub mXLApp_WorkbookOpen(ByVal wb As Workbook)
+Private Sub mXLApp_WorkbookOpen(ByVal Wb As Workbook)
     ' Solo reenviar al gestor de contexto, sin lgica
     If Not mExecutionContextMgr Is Nothing Then
-        mExecutionContextMgr.OnWorkbookOpened wb
+        mExecutionContextMgr.OnWorkbookOpened Wb
     End If
 End Sub
 
-Private Sub mXLApp_WorkbookActivate(ByVal wb As Workbook)
+Private Sub mXLApp_WorkbookActivate(ByVal Wb As Workbook)
     ' Solo reenviar al gestor de contexto, sin lgica
     If Not mExecutionContextMgr Is Nothing Then
-        mExecutionContextMgr.OnWorkbookActivated wb
+        mExecutionContextMgr.OnWorkbookActivated Wb
     End If
 End Sub
 
-Private Sub mXLApp_WorkbookBeforeClose(ByVal wb As Workbook, ByRef Cancel As Boolean)
+Private Sub mXLApp_WorkbookBeforeClose(ByVal Wb As Workbook, ByRef Cancel As Boolean)
     ' Solo reenviar al gestor de contexto, sin lgica
     If Not mExecutionContextMgr Is Nothing Then
-        mExecutionContextMgr.OnWorkbookBeforeClose wb, Cancel
+        mExecutionContextMgr.OnWorkbookBeforeClose Wb, Cancel
     End If
 End Sub
 
-Private Sub mXLApp_SheetActivate(ByVal sh As Object)
+Private Sub mXLApp_SheetActivate(ByVal Sh As Object)
     ' Solo reenviar al gestor de contexto, sin lgica
     If Not mExecutionContextMgr Is Nothing Then
-        mExecutionContextMgr.OnSheetActivated sh
+        mExecutionContextMgr.OnSheetActivated Sh
     End If
 End Sub
 
-Private Sub mXLApp_SheetDeactivate(ByVal sh As Object)
+Private Sub mXLApp_SheetDeactivate(ByVal Sh As Object)
     ' Solo reenviar al gestor de contexto, sin lgica
     If Not mExecutionContextMgr Is Nothing Then
-        mExecutionContextMgr.OnSheetDeactivated sh
+        mExecutionContextMgr.OnSheetDeactivated Sh
     End If
 End Sub
 
-Private Sub mXLApp_WindowActivate(ByVal Wn As Window)
+Private Sub mXLApp_WindowActivate(ByVal Wb As Workbook, ByVal Wn As Window)
     ' Solo reenviar al gestor de contexto, sin lgica
     If Not mExecutionContextMgr Is Nothing Then
         mExecutionContextMgr.OnWindowActivated Wn
     End If
 End Sub
 
-Private Sub mXLApp_WindowDeactivate(ByVal Wn As Window)
+Private Sub mXLApp_WindowDeactivate(ByVal Wb As Workbook, ByVal Wn As Window)
     ' Solo reenviar al gestor de contexto, sin lgica
     If Not mExecutionContextMgr Is Nothing Then
         mExecutionContextMgr.OnWindowDeactivated Wn
     End If
 End Sub
 
-Private Sub mXLApp_SelectionChange(ByVal Target As Range)
+Private Sub mXLApp_SelectionChange(ByVal Target As range)
     ' Solo reenviar al gestor de contexto, sin lgica
     If Not mExecutionContextMgr Is Nothing Then
         mExecutionContextMgr.OnSelectionChanged Target
@@ -251,3 +251,5 @@ Private Sub mXLApp_SheetCalculate(ByVal Sh As Object)
         mExecutionContextMgr.OnSheetCalculated Sh
     End If
 End Sub
+
+

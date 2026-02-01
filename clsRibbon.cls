@@ -395,8 +395,8 @@ Private Sub SyncRibbonStateWithActiveFile(f As clsFileXLS)
         mStateRibbon.Visible = False
         mStateRibbon.Modo = Ribbon_OpportunityOnly
     Else
-        ' Usar el estado del ribbon especÃ­fico para este archivo
-        ' Si el archivo no tiene estado de ribbon aÃºn, crearlo con valores por defecto
+        ' Usar el estado del ribbon específico para este archivo
+        ' Si el archivo no tiene estado de ribbon aún, crearlo con valores por defecto
         If f.RibbonState Is Nothing Then
             ' Crear estado de ribbon para este archivo con valores por defecto
             Dim newRibbonState As clsRibbonState

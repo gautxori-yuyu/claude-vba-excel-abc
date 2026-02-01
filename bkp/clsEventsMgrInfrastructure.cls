@@ -120,12 +120,12 @@ End Sub
 Private Sub mCtxMgr_WorkbookSessionStarted(ByVal Path As String, ByVal readOnly As Boolean)
     LogDebug MODULE_NAME, "[mCtxMgr_WorkbookSessionStarted] " & Path
     ' Need to get the actual workbook object from the path
-    Dim wb As Workbook
+    Dim Wb As Workbook
     On Error Resume Next
-    Set wb = Workbooks(GetFileNameFromPath(Path))
+    Set Wb = Workbooks(GetFileNameFromPath(Path))
     On Error GoTo 0
-    If Not wb Is Nothing Then
-        mFileMgr.GetOrTrackWorkbook wb
+    If Not Wb Is Nothing Then
+        mFileMgr.GetOrTrackWorkbook Wb
     End If
 End Sub
 
@@ -133,12 +133,12 @@ End Sub
 Private Sub mCtxMgr_WorkbookSessionClosing(ByVal Path As String, Cancel As Boolean)
     LogDebug MODULE_NAME, "[mCtxMgr_WorkbookSessionClosing] " & Path
     ' Need to get the actual workbook object from the path
-    Dim wb As Workbook
+    Dim Wb As Workbook
     On Error Resume Next
-    Set wb = Workbooks(GetFileNameFromPath(Path))
+    Set Wb = Workbooks(GetFileNameFromPath(Path))
     On Error GoTo 0
-    If Not wb Is Nothing Then
-        mFileMgr.UntrackWorkbook wb
+    If Not Wb Is Nothing Then
+        mFileMgr.UntrackWorkbook Wb
     End If
 End Sub
 

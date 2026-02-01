@@ -45,9 +45,9 @@ Public Sub Initialize(filePath As String)
     
     ' Crear instancia de clsFileXLS para manejar el archivo
     Set mFileXLS = New clsFileXLS
-    Dim wb As Workbook
-    Set wb = Workbooks.Open(filePath)
-    mFileXLS.BindTo wb
+    Dim Wb As Workbook
+    Set Wb = Workbooks.Open(filePath)
+    mFileXLS.BindTo Wb
     
     LogInfo MODULE_NAME, "[Initialize] Adaptador inicializado para: " & filePath
 End Sub
@@ -103,8 +103,8 @@ Private Function CreateOpportunityFromExcel() As clsOpportunity
         Exit Function
     End If
     
-    Dim wb As Workbook
-    Set wb = mFileXLS.wb
+    Dim Wb As Workbook
+    Set Wb = mFileXLS.Wb
     
     ' Extraer información de la oportunidad desde el workbook
     With CreateOpportunityFromExcel
@@ -134,13 +134,13 @@ Private Function ReadTechnicalDataFromExcel() As Object
         Exit Function
     End If
     
-    Dim wb As Workbook
-    Set wb = mFileXLS.wb
+    Dim Wb As Workbook
+    Set Wb = mFileXLS.Wb
     
     ' Aquí iría la lógica específica para leer datos técnicos desde las hojas de Excel
     ' Por ejemplo, buscar hojas específicas que contengan datos técnicos
     Dim ws As Worksheet
-    For Each ws In wb.Worksheets
+    For Each ws In Wb.Worksheets
         If InStr(1, ws.Name, "TECNIC", vbTextCompare) > 0 Then
             ' Procesar hoja de datos técnicos
             ReadTechnicalDataFromExcel.Add "TechnicalSheet", ws.Name
@@ -160,13 +160,13 @@ Private Function ReadQuotationDataFromExcel() As Object
         Exit Function
     End If
     
-    Dim wb As Workbook
-    Set wb = mFileXLS.wb
+    Dim Wb As Workbook
+    Set Wb = mFileXLS.Wb
     
     ' Aquí iría la lógica específica para leer datos de cotización desde las hojas de Excel
     ' Por ejemplo, buscar hojas específicas que contengan datos de cotización
     Dim ws As Worksheet
-    For Each ws In wb.Worksheets
+    For Each ws In Wb.Worksheets
         If InStr(1, ws.Name, "OFERTA", vbTextCompare) > 0 Or InStr(1, ws.Name, "QUOTE", vbTextCompare) > 0 Then
             ' Procesar hoja de cotización
             ReadQuotationDataFromExcel.Add "QuotationSheet", ws.Name
@@ -184,8 +184,8 @@ Private Sub SaveResultsToExcel(resultado As Object)
         Exit Sub
     End If
     
-    Dim wb As Workbook
-    Set wb = mFileXLS.wb
+    Dim Wb As Workbook
+    Set Wb = mFileXLS.Wb
     
     ' Aquí iría la lógica específica para guardar resultados en Excel
     ' Por ejemplo, escribir en hojas específicas o rangos específicos

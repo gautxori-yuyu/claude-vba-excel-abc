@@ -45,6 +45,14 @@ Public Property Get ExecutionContext() As clsExecutionContext
     Set ExecutionContext = mCtx
 End Property
 
+Public Property Get ExecutionContextMgr() As clsExecutionContextMgr
+    Set ExecutionContextMgr = mExecutionContextMgr
+End Property
+
+Public Sub SetExecutionContextMgr(contextMgr As clsExecutionContextMgr)
+    Set mExecutionContextMgr = contextMgr
+End Sub
+
 Public Static Property Get ribbon() As clsRibbon
     Set ribbon = mRibbon
 End Property
@@ -80,9 +88,16 @@ Private Sub Class_Initialize()
     LogInfo MODULE_NAME, "[Class_Initialize] - Iniciando aplicacion"
 
     ' INFRAESTRUCTURA
+    Dim executionContextState As clsExecutionContextState
+    Set executionContextState = New clsExecutionContextState
+    
     Set mCtx = New clsExecutionContext
     mCtx.Initialize
-    ' TODO: creo que es mejor UNIFICARLO, o HACER COMPOSICION, de clsChartMgr, dentro de clsExecutionContext (ChartMgr PERTENECE al exec context,
+    
+    ' Crear y conectar el nuevo gestor de contexto
+    Set mExecutionContextMgr = New clsExecutionContextMgr
+    mExecutionContextMgr.Initialize executionContextState
+    
     ' mas que depender de �l; actualmente parece que la relaci�n est� invertida, est� asi para minimizar los cambios al resto del codigo...)
     Set mChartManager = New clsChartMgr
     mChartManager.Initialize mCtx

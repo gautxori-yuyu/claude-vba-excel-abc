@@ -1,0 +1,109 @@
+02/01 22:02:43 [INFO]   [ThisWorkbook]                  [Open] - Abriendo Workbook Libro1.xlsm
+02/01 22:02:44 [INFO]   [modUTILSProcedureParsing]      [ParsearProcs] - 806 procedimientos encontrados.
+02/01 22:02:44 [INFO]   [modAPPUDFsRegistration]        [AutoRegistrarTodasLasUDFs] - 65 funciones registradas correctamente.
+02/01 22:02:44 [INFO]   [clsApplication]                [Class_Initialize] - Iniciando aplicacion
+02/01 22:02:44 [INFO]   [clsExecutionContext]           [Initialize] - Suscrito a eventos de Application
+02/01 22:02:44 [INFO]   [clsChartMgr]                   [Class_Initialize]
+02/01 22:02:44 [INFO]   [clsChartMgr]                   [Class_Initialize]
+02/01 22:02:44 [INFO]   [clsChartMgr]                   [Initialize] - Suscrito a eventos de Application
+02/01 22:02:44 [INFO]   [clsFileManager]                [Class_Initialize]
+02/01 22:02:44 [INFO]   [clsFileManager]                [Init]
+02/01 22:02:44 [INFO]   [clsFileXLS]                    [BindTo] Asociado a: C:\abc compressors\2-0-OPORTUNIDADES\_MIS scripts\git_claude\claude-vba-excel-abc\claude-mirror__GITHUB_TMP\bkp\Libro1.xlsm (key: 2888651858496)
+02/01 22:02:44 [DEBUG]  [clsFileManager]                [GetOrTrackWorkbook] Nuevo archivo tracked: C:\abc compressors\2-0-OPORTUNIDADES\_MIS scripts\git_claude\claude-vba-excel-abc\claude-mirror__GITHUB_TMP\bkp\Libro1.xlsm (total: 1)
+02/01 22:02:44 [INFO]   [clsFileManager]                [Init] Workbooks tracked: 1
+02/01 22:02:44 [INFO]   [clsOpportunitiesMgr]           [Class_Initialize]
+02/01 22:02:44 [INFO]   [clsConfiguration]              [Class_Initialize]
+02/01 22:02:44 [INFO]   [clsConfiguration]              [CargarConfiguracionDesdeRegistro] - inicializacion de todas las rutas desde registro o valores por defecto
+02/01 22:02:44 [DEBUG]  [clsConfiguration]              [ObtenerRuta] - ruta leida del registro: C:\abc compressors\INTRANET\OilGas\3_OFERTAS\OFERTAS\2026\41 - SER
+02/01 22:02:44 [DEBUG]  [clsConfiguration]              [ObtenerRuta] - ruta leida del registro: C:\abc compressors\INTRANET\OilGas\3_OFERTAS\OFERTAS\2026\41 - SER\_plantilla\
+02/01 22:02:44 [DEBUG]  [clsConfiguration]              [ObtenerRuta] - ruta leida del registro: C:\Program Files (x86)\Ofertas_Gas\
+02/01 22:02:44 [DEBUG]  [clsConfiguration]              [ObtenerRuta] - ruta leida del registro: C:\Aire\
+02/01 22:02:44 [DEBUG]  [clsConfiguration]              [ObtenerRuta] - ruta leida del registro: C:\abc compressors\2-0-OPORTUNIDADES\_Mis notas\
+02/01 22:02:44 [DEBUG]  [clsConfiguration]              [ObtenerListaCarpetas] - Lista de carpetas leida desde registro: 
+	C:\abc compressors\INTRANET\OilGas\1_COMUNICACION\0- MARKETING\2- FOTOS\Fotos y planos\FOTOS\
+02/01 22:02:44 [DEBUG]  [clsConfiguration]              [ObtenerListaCarpetas] - Lista de carpetas leida desde registro: 
+	C:\abc compressors\INTRANET\OilGas\5_DOCUMENTACION TECNICA\ADJUNTOS OFERTAS\3-1-PLANOS\
+	C:\abc compressors\INTRANET\OilGas\1_COMUNICACION\0- MARKETING\2- FOTOS\Fotos y planos\PLANOS
+02/01 22:02:44 [DEBUG]  [clsConfiguration]              [ObtenerSAM] Leido del registro: 41
+02/01 22:02:44 [INFO]   [clsOpportunitiesMgr]           [actualizarColeccionOportunidades] - regenerando la variable local que contiene la lista de carpetas de oportunidades
+02/01 22:02:44 [DEBUG]  [clsFileManager]                [ListarSubcarpetas] - Encontradas 4 subcarpetas en: C:\abc compressors\INTRANET\OilGas\3_OFERTAS\OFERTAS\2026\41 - SER
+02/01 22:02:44 [INFO]   [clsFSWatcher]                  [Class_Initialize] - Inicializando wrapper VBA para FolderWatcher COM
+02/01 22:02:44 [DEBUG]  [clsFSWatcher]                  [CrearCOMConActivationContext] - COM creado exitosamente con Activation Context
+02/01 22:02:44 [DEBUG]  [clsFSWatcher]                  [Class_Initialize] - Componente COM conectado: HeartbeatInterval=90000ms, InactivityMinutes=10, DebounceSeconds=0,4, AutoRestart=True, MaxWatchers=6, Logging=False
+02/01 22:02:44 [INFO]   [clsFSMonitoringCoord]          [IniciarMonitoreo]
+02/01 22:02:44 [DEBUG]  [clsFSWatcher]                  [IniciarMonitoreo] - Monitoreo iniciado: C:\abc compressors\INTRANET\OilGas\3_OFERTAS\OFERTAS\2026\41 - SER (solo subcarpetas)
+02/01 22:02:44 [DEBUG]  [clsFSWatcher]                  [ConfigurarFiltroSoloCarpetas] - Filtro solo carpetas en: C:\abc compressors\INTRANET\OilGas\3_OFERTAS\OFERTAS\2026\41 - SER
+02/01 22:02:44 [INFO]   [clsFSMonitoringCoord]          [ConfigurarMonitoreoOportunidades] - configurado en: C:\abc compressors\INTRANET\OilGas\3_OFERTAS\OFERTAS\2026\41 - SER
+02/01 22:02:44 [INFO]   [clsFSMonitoringCoord]          [IniciarMonitoreo] Oportunidades monitoreadas: C:\abc compressors\INTRANET\OilGas\3_OFERTAS\OFERTAS\2026\41 - SER
+02/01 22:02:44 [DEBUG]  [clsFSWatcher]                  [IniciarMonitoreo] - Monitoreo iniciado: C:\abc compressors\INTRANET\OilGas\3_OFERTAS\OFERTAS\2026\41 - SER\_plantilla
+02/01 22:02:44 [INFO]   [clsFSMonitoringCoord]          [ConfigurarMonitoreoPlantillas] - configurado en: C:\abc compressors\INTRANET\OilGas\3_OFERTAS\OFERTAS\2026\41 - SER\_plantilla\
+02/01 22:02:44 [INFO]   [clsFSMonitoringCoord]          [IniciarMonitoreo] Plantillas monitoreadas: C:\abc compressors\INTRANET\OilGas\3_OFERTAS\OFERTAS\2026\41 - SER\_plantilla\
+02/01 22:02:44 [DEBUG]  [clsFSWatcher]                  [IniciarMonitoreo] - Monitoreo iniciado: C:\Program Files (x86)\Ofertas_Gas
+02/01 22:02:44 [INFO]   [clsFSMonitoringCoord]          [IniciarMonitoreo] Monitoreo genérico: C:\Program Files (x86)\Ofertas_Gas\
+02/01 22:02:44 [DEBUG]  [clsFSWatcher]                  [IniciarMonitoreo] - Monitoreo iniciado: C:\Aire
+02/01 22:02:44 [INFO]   [clsFSMonitoringCoord]          [ConfigurarMonitoreoPlantillas] - configurado en: C:\Aire\
+02/01 22:02:44 [INFO]   [clsFSMonitoringCoord]          [IniciarMonitoreo] Gas monitoreado: C:\Aire\
+02/01 22:02:44 [DEBUG]  [clsFSWatcher]                  [IniciarMonitoreo] - Monitoreo iniciado: C:\abc compressors\2-0-OPORTUNIDADES\_Mis notas
+02/01 22:02:44 [INFO]   [clsFSMonitoringCoord]          [IniciarMonitoreo] Monitoreo genérico: C:\abc compressors\2-0-OPORTUNIDADES\_Mis notas\
+02/01 22:02:44 [INFO]   [clsFSMonitoringCoord]          [IniciarMonitoreo] Monitoreo iniciado en 5 carpetas
+02/01 22:02:44 [INFO]   [clsRibbon]                     [Class_Initialize]
+02/01 22:02:44 [INFO]   [clsApplicationState]           [Class_Initialize]
+02/01 22:02:44 [INFO]   [clsApplicationState]           [Initialize] Referencias inyectadas: Ribbon=Verdadero, Opportunity=Verdadero, File=Verdadero, Chart=Verdadero
+02/01 22:02:44 [INFO]   [clsEventsMgrInfrastructure]    [Class_Initialize]
+02/01 22:02:44 [INFO]   [clsEventsMediatorDomain]       [Class_Initialize]
+02/01 22:02:44 [INFO]   [clsEventsMediatorDomain]       [Initialize] Mediador configurado con ApplicationState y subestados
+02/01 22:02:44 [INFO]   [clsApplication]                [Class_Initialize] - inicialización completada
+02/01 22:02:44 [DEBUG]  [clsExecutionContext]           [xlApp_WorkbookOpen] Libro1.xlsm
+02/01 22:02:44 [DEBUG]  [clsExecutionContext]           [xlApp_WorkbookActivate] Libro1.xlsm
+02/01 22:02:44 [INFO]   [modCALLBACKSRibbon]            [callback: RibbonOnLoad] - Inicio
+02/01 22:02:44 [DEBUG]  [clsRibbon]                     [Init] - Recibiendo puntero IRibbonUI
+02/01 22:02:44 [DEBUG]  [clsRibbon]                     [Init] - Puntero establecido correctamente
+02/01 22:02:44 [INFO]   [modCALLBACKSRibbon]            [callback: RibbonOnLoad] - ribbon cargado en la interfaz de excel
+02/01 22:02:48 [DEBUG]  [clsEventDispatcher]            [GetRibbonControlEnabled] - ¿btnNuevaOp?: Verdadero
+02/01 22:02:48 [DEBUG]  [clsEventDispatcher]            [GetRibbonControlEnabled] - ¿btnGenerarGraficos?: Falso
+02/01 22:02:48 [DEBUG]  [clsEventDispatcher]            [GetRibbonControlEnabled] - ¿btnInvertirSeries?: Falso
+02/01 22:02:48 [DEBUG]  [clsEventDispatcher]            [GetRibbonControlEnabled] - ¿btnCGASING?: Falso
+02/01 22:02:51 [DEBUG]  [clsEventDispatcher]            [GetRibbonControlEnabled] - ¿btnNuevaOp?: Verdadero
+02/01 22:02:51 [DEBUG]  [clsEventDispatcher]            [GetRibbonControlEnabled] - ¿btnGenerarGraficos?: Falso
+02/01 22:02:51 [DEBUG]  [clsEventDispatcher]            [GetRibbonControlEnabled] - ¿btnInvertirSeries?: Falso
+02/01 22:02:51 [DEBUG]  [clsEventDispatcher]            [GetRibbonControlEnabled] - ¿btnCGASING?: Falso
+02/01 22:02:53 [DEBUG]  [clsEventDispatcher]            [GetRibbonControlEnabled] - ¿btnNuevaOp?: Verdadero
+02/01 22:02:53 [DEBUG]  [clsEventDispatcher]            [GetRibbonControlEnabled] - ¿btnGenerarGraficos?: Falso
+02/01 22:02:53 [DEBUG]  [clsEventDispatcher]            [GetRibbonControlEnabled] - ¿btnInvertirSeries?: Falso
+02/01 22:02:53 [DEBUG]  [clsEventDispatcher]            [GetRibbonControlEnabled] - ¿btnCGASING?: Falso
+02/01 22:03:00 [INFO]   [modCALLBACKSRibbon]            [callback: OnVBAExport]
+02/01 22:03:01 [DEBUG]  [clsExecutionContext]           [xlApp_WorkbookBeforeClose] FUNCRES.XLAM
+02/01 22:03:01 [DEBUG]  [clsExecutionContext]           [xlApp_WorkbookBeforeClose] ATPVBAEN.XLAM
+02/01 22:03:01 [DEBUG]  [clsExecutionContext]           [xlApp_WorkbookBeforeClose] CoolProp.xlam
+02/01 22:03:01 [DEBUG]  [clsExecutionContext]           [xlApp_WorkbookBeforeClose] SOLVER.XLAM
+02/01 22:03:01 [DEBUG]  [clsExecutionContext]           [xlApp_WorkbookBeforeClose] Adjust_row_height (AutoFitRowEx).xlam
+02/01 22:03:01 [DEBUG]  [clsExecutionContext]           [xlApp_WorkbookBeforeClose] RibbonEditor64bit.xlam
+02/01 22:03:01 [INFO]   [modAPPInstallXLAM]             [ComprobarSiInstalado] - XLAM no instalado
+02/01 22:03:01 [WARN.]? [ThisWorkbook]                  [Workbook_BeforeClose] - Complemento no instalado, realizando limpieza
+02/01 22:03:01 [INFO]   [clsApplication]                [Terminate] - Iniciando limpieza de la aplicacion
+02/01 22:03:01 [DEBUG]  [clsRibbon]                     [StopEvents] - Liberando puntero
+02/01 22:03:01 [INFO]   [clsRibbon]                     [Class_Terminate]
+02/01 22:03:01 [INFO]   [clsEventsMediatorDomain]       [Class_Terminate]
+02/01 22:03:01 [INFO]   [clsFSMonitoringCoord]          [Terminate] - Liberando FolderWatcher COM
+02/01 22:03:01 [INFO]   [clsFSWatcher]                  [Class_Terminate] - Iniciando limpieza
+02/01 22:03:01 [DEBUG]  [clsFSWatcher]                  [Dispose] - Iniciando limpieza de recursos
+02/01 22:03:01 [DEBUG]  [clsFSWatcher]                  [Dispose] - Deteniendo monitoreo de: C:\abc compressors\INTRANET\OilGas\3_OFERTAS\OFERTAS\2026\41 - SER
+02/01 22:03:01 [DEBUG]  [clsFSWatcher]                  [Dispose] - Deteniendo monitoreo de: C:\abc compressors\INTRANET\OilGas\3_OFERTAS\OFERTAS\2026\41 - SER\_plantilla
+02/01 22:03:01 [DEBUG]  [clsFSWatcher]                  [Dispose] - Deteniendo monitoreo de: C:\Program Files (x86)\Ofertas_Gas
+02/01 22:03:01 [DEBUG]  [clsFSWatcher]                  [Dispose] - Deteniendo monitoreo de: C:\Aire
+02/01 22:03:01 [DEBUG]  [clsFSWatcher]                  [Dispose] - Deteniendo monitoreo de: C:\abc compressors\2-0-OPORTUNIDADES\_Mis notas
+02/01 22:03:01 [DEBUG]  [clsFSWatcher]                  [Dispose] - 5 carpetas liberadas
+02/01 22:03:01 [DEBUG]  [clsFSWatcher]                  [Dispose] - Liberando referencia COM
+02/01 22:03:01 [INFO]   [clsFSWatcher]                  [Dispose] - Limpieza completada
+02/01 22:03:01 [INFO]   [clsOpportunitiesMgr]           [Class_Terminate]
+02/01 22:03:01 [INFO]   [clsConfiguration]              [Class_Terminate]
+02/01 22:03:01 [INFO]   [clsFileManager]                [Class_Terminate]
+02/01 22:03:01 [INFO]   [clsEventsMgrInfrastructure]    [Class_Terminate]
+02/01 22:03:01 [DEBUG]  [clsChartMgr]                   [StopWatching] - Eventos de gráficos desactivados
+02/01 22:03:01 [INFO]   [clsChartMgr]                   [Class_Terminate]
+02/01 22:03:01 [INFO]   [clsApplicationState]           [Class_Terminate]
+02/01 22:03:01 [INFO]   [clsApplication]                [Terminate] - Limpieza completada
+02/01 22:03:01 [DEBUG]  [clsExecutionContext]           [Class_Terminate]
+02/01 22:03:02 [INFO]   [modAPPUDFsRegistration]        [BorrarListaFuncionesRegistradas] - Lista de UDFs eliminada del registro.
+02/01 22:03:02 [INFO]   [modAPPUDFsRegistration]        [DesregistrarTodasLasUDFs] : 65 funciones desregistradas.
+02/01 22:03:02 [INFO]   [ThisWorkbook]                  [Workbook_BeforeClose] - UDFs desregistradas

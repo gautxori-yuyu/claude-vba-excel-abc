@@ -19,12 +19,12 @@ End Function
 '@Scope: Privado
 '@ArgumentDescriptions: wb: Workbook donde buscar | sheetName: Nombre de la hoja
 '@Returns: Boolean | True si la hoja existe
-Function SheetExists(wb As Workbook, ByVal sheetName As String) As Boolean
+Function SheetExists(Wb As Workbook, ByVal sheetName As String) As Boolean
 Attribute SheetExists.VB_Description = "[UDFs_UtilsExcel] Verifica si una hoja existe en un workbook"
 Attribute SheetExists.VB_ProcData.VB_Invoke_Func = " \n23"
     Dim ws As Worksheet
     On Error Resume Next
-    Set ws = wb.Worksheets(sheetName)
+    Set ws = Wb.Worksheets(sheetName)
     SheetExists = Not ws Is Nothing
     On Error GoTo 0
 End Function
@@ -33,9 +33,9 @@ Function HojaEstaSeleccionada(nombreHoja As String) As Boolean
 Attribute HojaEstaSeleccionada.VB_Description = "[UDFs_UtilsExcel] Hoja Esta Seleccionada (función personalizada)"
 Attribute HojaEstaSeleccionada.VB_ProcData.VB_Invoke_Func = " \n23"
     On Error Resume Next
-    Dim sh As Object
-    Set sh = ActiveWindow.SelectedSheets(nombreHoja)
-    HojaEstaSeleccionada = (Not sh Is Nothing)
+    Dim Sh As Object
+    Set Sh = ActiveWindow.SelectedSheets(nombreHoja)
+    HojaEstaSeleccionada = (Not Sh Is Nothing)
     On Error GoTo 0
 End Function
 

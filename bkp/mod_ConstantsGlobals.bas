@@ -283,15 +283,12 @@ Public Type T_CodeBlock
     procNumLines As Long
     'procWrongEndLines As Long
 End Type
-
 Public Type T_CachedChartInfo
     IsValid As Boolean
     Chart As Chart                      ' Chart activo (ActiveChart o desde ChartObject/Selection)
     SourceType As String                ' "ActiveChart", "ChartObject", "ChartArea", etc.
     ParentType As String                ' "ChartSheet", "Worksheet"
 End Type
-
- '--------------------------------------------------------------'  
 
 #If Win64 Then
     ' Código para Excel 64-bit

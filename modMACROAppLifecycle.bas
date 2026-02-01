@@ -23,7 +23,7 @@ Attribute ReiniciarAplicacion.VB_ProcData.VB_Invoke_Func = " \n0"
 
     result = MsgBox("Esto reiniciara completamente el complemento ABC." & vbCrLf & vbCrLf & _
                     "Se cerrara y volvera a inicializar la aplicacion." & vbCrLf & _
-                    "ï¿½Desea continuar?", _
+                    "¿Desea continuar?", _
                     vbQuestion + vbYesNo, "Reiniciar Aplicacion")
 
     If result <> vbYes Then Exit Sub
@@ -48,10 +48,10 @@ Attribute ReiniciarAplicacion.VB_ProcData.VB_Invoke_Func = " \n0"
 
     ' Verificar estado
     If IsRibbonAvailable() Then
-        MsgBox "Aplicaciï¿½n reiniciada correctamente." & vbCrLf & vbCrLf & _
+        MsgBox "Aplicación reiniciada correctamente." & vbCrLf & vbCrLf & _
                App.ribbon.GetQuickDiagnostics(), vbInformation, "Reinicio Exitoso"
     Else
-        MsgBox "Aplicaciï¿½n reiniciada, pero el Ribbon puede requerir atenciï¿½n adicional." & vbCrLf & _
+        MsgBox "Aplicación reiniciada, pero el Ribbon puede requerir atención adicional." & vbCrLf & _
                "Ejecute 'RecuperarRibbon' si es necesario.", _
                vbExclamation, "Reinicio Parcial"
     End If
@@ -63,7 +63,7 @@ End Sub
 ' ==========================================
 
 '@Description: Activa temporalmente la visibilidad del XLAM para operaciones de copia
-'              Muestra el libro que contiene este XLAM, haciï¿½ndolo visible en la interfaz de Excel.
+'              Muestra el libro que contiene este XLAM, haciéndolo visible en la interfaz de Excel.
 '@Scope: Manipula el libro host del complemento XLAM cargado.
 '@ArgumentDescriptions: (no tiene argumentos)
 '@Returns: (ninguno)
@@ -110,19 +110,19 @@ Attribute ToggleRibbonTab.VB_ProcData.VB_Invoke_Func = " \n0"
     If IsRibbonAvailable() Then
         App.ribbon.ToggleModo
     Else
-        LogWarning MODULE_NAME, "[ToggleRibbonTab] - Ribbon no disponible, intentando recuperacin"
+        LogWarning MODULE_NAME, "[ToggleRibbonTab] - Ribbon no disponible, intentando recuperación"
 
         ' Intentar recuperar el ribbon antes de continuar
         If TryRecoverRibbon() Then
             ' Si la recuperacin fue exitosa, intentar nuevamente
             If IsRibbonAvailable() Then
                 App.ribbon.ToggleModo
-                LogInfo MODULE_NAME, "[ToggleRibbonTab] - Modo del Ribbon cambiado despus de recuperacin"
+                LogInfo MODULE_NAME, "[ToggleRibbonTab] - Modo del Ribbon cambiado despues de recuperación"
             Else
                 MsgBox "No se pudo recuperar el Ribbon. Es posible que necesite reiniciar Excel.", vbExclamation
             End If
         Else
-            MsgBox "El Ribbon no est disponible. Si contina el problema, cierre y vuelva a abrir Excel.", vbExclamation
+            MsgBox "El Ribbon no está disponible. Si continúa el problema, cierre y vuelva a abrir Excel.", vbExclamation
         End If
     End If
 
@@ -410,7 +410,7 @@ Private Function RecoverByAddinToggle() As Boolean
     LogDebug MODULE_NAME, "RecoverByAddinToggle - Desactivando add-in..."
     targetAddin.Installed = False
 
-    ' Pequeï¿½a pausa
+    ' Pequeña pausa
     DoEvents
     Application.Wait Now + TimeSerial(0, 0, 1)
     DoEvents

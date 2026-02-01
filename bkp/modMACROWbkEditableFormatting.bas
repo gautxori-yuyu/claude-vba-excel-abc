@@ -180,9 +180,9 @@ Attribute AjustarSelWSheetsParaImpresionPDF.VB_ProcData.VB_Invoke_Func = " \n0"
     Dim aw As Window
     Set aw = ActiveWindow
         
-    Dim wb As Workbook
-    Set wb = aw.Parent
-    If wb Is Nothing Then
+    Dim Wb As Workbook
+    Set Wb = aw.Parent
+    If Wb Is Nothing Then
         MsgBox "[ERR] No hay libro activo.", vbCritical
         Exit Sub
     End If
@@ -191,35 +191,35 @@ Attribute AjustarSelWSheetsParaImpresionPDF.VB_ProcData.VB_Invoke_Func = " \n0"
     Set selSheets = aw.SelectedSheets
     
     If selSheets.Count = 0 Then
-        MsgBox "[WARN] No hay hojas seleccionadas en el libro '" & wb.Name & "'.", vbExclamation
+        MsgBox "[WARN] No hay hojas seleccionadas en el libro '" & Wb.Name & "'.", vbExclamation
         Exit Sub
     End If
     
-    Debug.Print "=== AjustarSelWSheetsParaImpresionPDF: " & selSheets.Count & " hoja(s) en '" & wb.Name & "' ==="
+    Debug.Print "=== AjustarSelWSheetsParaImpresionPDF: " & selSheets.Count & " hoja(s) en '" & Wb.Name & "' ==="
     
-    Dim sh As Object
+    Dim Sh As Object
     Dim hojasProcesadas As Long, hojasFallidas As Long
     Dim estados() As CompactacionEstado
     ReDim estados(1 To selSheets.Count)
     
     Dim i As Long: i = 0
     
-    For Each sh In selSheets
+    For Each Sh In selSheets
         i = i + 1
-        If TypeName(sh) = "Worksheet" Then
+        If TypeName(Sh) = "Worksheet" Then
             On Error Resume Next
-            estados(i) = AjustarWSParaPDF_ImpresionMaestra(sh)
+            estados(i) = AjustarWSParaPDF_ImpresionMaestra(Sh)
             If Err.Number = 0 Then
                 hojasProcesadas = hojasProcesadas + 1
             Else
-                Debug.Print "[ERR] Falló en '" & sh.Name & "': " & Err.Description
+                Debug.Print "[ERR] Falló en '" & Sh.Name & "': " & Err.Description
                 hojasFallidas = hojasFallidas + 1
             End If
             On Error GoTo 0
         Else
-            Debug.Print "[INFO] Saltada hoja no Worksheet: '" & sh.Name & "' (tipo: " & TypeName(sh) & ")"
+            Debug.Print "[INFO] Saltada hoja no Worksheet: '" & Sh.Name & "' (tipo: " & TypeName(Sh) & ")"
         End If
-    Next sh
+    Next Sh
     
     Debug.Print "[OK] Proceso finalizado: " & hojasProcesadas & " hojas ajustadas, " & hojasFallidas & " con error."
     
@@ -240,8 +240,8 @@ Attribute AjustarSelWSheetsParaImpresionPDF.VB_ProcData.VB_Invoke_Func = " \n0"
         ' grabar el documento como PDF
         ' Exportar la hoja "Graficos" a PDF
         On Error Resume Next
-        wb.ExportAsFixedFormat Type:=xlTypePDF, _
-                fileName:=wb.Path & "\" & Left(wb.Name, InStrRev(wb.Name, ".") - 1) & ".pdf", _
+        Wb.ExportAsFixedFormat Type:=xlTypePDF, _
+                fileName:=Wb.Path & "\" & Left(Wb.Name, InStrRev(Wb.Name, ".") - 1) & ".pdf", _
                 Quality:=xlQualityStandard, _
                 OpenAfterPublish:=True
         On Error GoTo 0
@@ -258,22 +258,22 @@ CleanUp:
     hojasProcesadas = 0
     hojasFallidas = 0
     i = 0
-    For Each sh In selSheets
+    For Each Sh In selSheets
         i = i + 1
-        If TypeName(sh) = "Worksheet" Then
+        If TypeName(Sh) = "Worksheet" Then
             On Error Resume Next
-            RestaurarAreaDeImpresion sh, estados(i)
+            RestaurarAreaDeImpresion Sh, estados(i)
             If Err.Number = 0 Then
                 hojasProcesadas = hojasProcesadas + 1
             Else
-                Debug.Print "[ERR] Falló en '" & sh.Name & "': " & Err.Description
+                Debug.Print "[ERR] Falló en '" & Sh.Name & "': " & Err.Description
                 hojasFallidas = hojasFallidas + 1
             End If
             On Error GoTo 0
         Else
-            Debug.Print "[INFO] Saltada hoja no Worksheet: '" & sh.Name & "' (tipo: " & TypeName(sh) & ")"
+            Debug.Print "[INFO] Saltada hoja no Worksheet: '" & Sh.Name & "' (tipo: " & TypeName(Sh) & ")"
         End If
-    Next sh
+    Next Sh
     
     Debug.Print "[OK] Proceso finalizado: " & hojasProcesadas & " hojas ajustadas, " & hojasFallidas & " con error."
     

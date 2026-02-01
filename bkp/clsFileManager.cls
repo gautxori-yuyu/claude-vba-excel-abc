@@ -134,22 +134,22 @@ End Sub
 
 '@Description: Obtiene o crea el tracker para un Workbook
 '@Returns: clsFileXLS asociado al Workbook
-Public Function GetOrTrackWorkbook(wb As Workbook) As clsFileXLS
-    If wb Is Nothing Then Exit Function
+Public Function GetOrTrackWorkbook(Wb As Workbook) As clsFileXLS
+    If Wb Is Nothing Then Exit Function
     
     On Error GoTo ErrHandler
     
     ' Crear instancia temporal para obtener su clave
     Dim f As clsFileXLS
     Set f = New clsFileXLS
-    f.BindTo wb
+    f.BindTo Wb
     
     Dim key As Double
     key = GetFileKey(f)
     
     ' Validar que la clave es válida
     If key = 0 Then
-        LogError MODULE_NAME, "[GetOrTrackWorkbook] - ObjectKey inválido para " & wb.Name
+        LogError MODULE_NAME, "[GetOrTrackWorkbook] - ObjectKey inválido para " & Wb.Name
         Exit Function
     End If
     
@@ -172,12 +172,12 @@ ErrHandler:
 End Function
 
 '@Description: Remueve un Workbook del tracking (interfaz específica Excel)
-Public Sub UntrackWorkbook(wb As Workbook)
-    If wb Is Nothing Then Exit Sub
+Public Sub UntrackWorkbook(Wb As Workbook)
+    If Wb Is Nothing Then Exit Sub
     
     ' Buscar el archivo tracked correspondiente
     Dim f As clsFileXLS
-    Set f = FindTrackedWorkbook(wb)
+    Set f = FindTrackedWorkbook(Wb)
     
     If Not f Is Nothing Then
         UntrackFile f
@@ -267,21 +267,21 @@ End Function
 ' ==================================================================
 
 '@Description: Verifica si un workbook está siendo tracked
-Public Function IsTracked(wb As Workbook) As Boolean
-    If wb Is Nothing Then Exit Function
-    IsTracked = Not (FindTrackedWorkbook(wb) Is Nothing)
+Public Function IsTracked(Wb As Workbook) As Boolean
+    If Wb Is Nothing Then Exit Function
+    IsTracked = Not (FindTrackedWorkbook(Wb) Is Nothing)
 End Function
 
 '@Description: Busca el clsFileXLS correspondiente a un Workbook
 '@Returns: clsFileXLS si está tracked, Nothing si no
-Private Function FindTrackedWorkbook(wb As Workbook) As clsFileXLS
-    If wb Is Nothing Then Exit Function
+Private Function FindTrackedWorkbook(Wb As Workbook) As clsFileXLS
+    If Wb Is Nothing Then Exit Function
     
     ' Crear instancia temporal solo para obtener la clave
     Dim fTemp As clsFileXLS
     Set fTemp = New clsFileXLS
     Dim key As Double
-    key = fTemp.CreateFromWorkbook(wb).ObjectKey
+    key = fTemp.CreateFromWorkbook(Wb).ObjectKey
     
     If mTrackedFiles.Exists(key) Then
         Set FindTrackedWorkbook = mTrackedFiles(key)

@@ -18,13 +18,13 @@ Private Const MODULE_NAME As String = "clsExecutionContext"
 ' ==========================================
 ' EVENTOS PUBLICOS - Otras clases pueden suscribirse
 ' ==========================================
-Public Event WorkbookOpened(ByVal wb As Workbook)
-Public Event WorkbookActivated(ByVal wb As Workbook)
-Public Event WorkbookBeforeClose(ByVal wb As Workbook, ByRef Cancel As Boolean)
+Public Event WorkbookOpened(ByVal Wb As Workbook)
+Public Event WorkbookActivated(ByVal Wb As Workbook)
+Public Event WorkbookBeforeClose(ByVal Wb As Workbook, ByRef Cancel As Boolean)
 Public Event WorksheetActivated(ByVal ws As Worksheet)
 Public Event WorksheetDeactivated(ByVal ws As Worksheet)
-Public Event SheetActivated(ByVal sh As Object)
-Public Event SheetDeactivated(ByVal sh As Object)
+Public Event SheetActivated(ByVal Sh As Object)
+Public Event SheetDeactivated(ByVal Sh As Object)
 Public Event SelectionChanged(ByVal sel As Object)
 
 ' ==========================================
@@ -72,37 +72,37 @@ End Sub
 ' EVENTOS DE APPLICATION - Capturados y propagados
 ' ---------------------------------------------------------------------------
 
-Private Sub m_xlApp_WorkbookOpen(ByVal wb As Workbook)
-    LogDebug MODULE_NAME, "[xlApp_WorkbookOpen] " & wb.Name
-    RaiseEvent WorkbookOpened(wb)
+Private Sub m_xlApp_WorkbookOpen(ByVal Wb As Workbook)
+    LogDebug MODULE_NAME, "[xlApp_WorkbookOpen] " & Wb.Name
+    RaiseEvent WorkbookOpened(Wb)
 End Sub
 
-Private Sub m_xlApp_WorkbookActivate(ByVal wb As Workbook)
-    LogDebug MODULE_NAME, "[xlApp_WorkbookActivate] " & wb.Name
-    m_lastWorkbookObjKey = ObjPtr(wb)
-    RaiseEvent WorkbookActivated(wb)
+Private Sub m_xlApp_WorkbookActivate(ByVal Wb As Workbook)
+    LogDebug MODULE_NAME, "[xlApp_WorkbookActivate] " & Wb.Name
+    m_lastWorkbookObjKey = ObjPtr(Wb)
+    RaiseEvent WorkbookActivated(Wb)
 End Sub
 
-Private Sub m_xlApp_WorkbookBeforeClose(ByVal wb As Workbook, Cancel As Boolean)
-    LogDebug MODULE_NAME, "[xlApp_WorkbookBeforeClose] " & wb.Name
-    RaiseEvent WorkbookBeforeClose(wb, Cancel)
+Private Sub m_xlApp_WorkbookBeforeClose(ByVal Wb As Workbook, Cancel As Boolean)
+    LogDebug MODULE_NAME, "[xlApp_WorkbookBeforeClose] " & Wb.Name
+    RaiseEvent WorkbookBeforeClose(Wb, Cancel)
 End Sub
 
-Private Sub m_xlApp_SheetActivate(ByVal sh As Object)
-    LogDebug MODULE_NAME, "[xlApp_SheetActivate] " & TypeName(sh) & " '" & sh.Name & "'"
-    If TypeOf sh Is Worksheet Then
-        m_lastWorksheetObjKey = ObjPtr(sh)
-        RaiseEvent WorksheetActivated(sh)
+Private Sub m_xlApp_SheetActivate(ByVal Sh As Object)
+    LogDebug MODULE_NAME, "[xlApp_SheetActivate] " & TypeName(Sh) & " '" & Sh.Name & "'"
+    If TypeOf Sh Is Worksheet Then
+        m_lastWorksheetObjKey = ObjPtr(Sh)
+        RaiseEvent WorksheetActivated(Sh)
     End If
-    RaiseEvent SheetActivated(sh)
+    RaiseEvent SheetActivated(Sh)
 End Sub
 
-Private Sub m_xlApp_SheetDeactivate(ByVal sh As Object)
-    LogDebug MODULE_NAME, "[xlApp_SheetDeactivate] " & sh.Name
-    If TypeOf sh Is Worksheet Then
-        RaiseEvent WorksheetDeactivated(sh)
+Private Sub m_xlApp_SheetDeactivate(ByVal Sh As Object)
+    LogDebug MODULE_NAME, "[xlApp_SheetDeactivate] " & Sh.Name
+    If TypeOf Sh Is Worksheet Then
+        RaiseEvent WorksheetDeactivated(Sh)
     End If
-    RaiseEvent SheetDeactivated(sh)
+    RaiseEvent SheetDeactivated(Sh)
 End Sub
 
 ' ---------------------------------------------------------------------------

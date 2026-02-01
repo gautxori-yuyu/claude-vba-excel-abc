@@ -23,17 +23,17 @@ Private colorSeleccionado As Long
 
 ' Evento al inicializar el formulario
 Private Sub UserForm_Initialize()
-    Dim wb As Workbook
+    Dim Wb As Workbook
     
     On Error GoTo ErrHandler
     
     ' Llenar ComboBox de Libros
     cboLibro1.Clear
     cboLibro2.Clear
-    For Each wb In Application.Workbooks
-        cboLibro1.AddItem wb.Name
-        cboLibro2.AddItem wb.Name
-    Next wb
+    For Each Wb In Application.Workbooks
+        cboLibro1.AddItem Wb.Name
+        cboLibro2.AddItem Wb.Name
+    Next Wb
     
     ' Valores por defecto - libro activo
     If cboLibro1.ListCount > 0 Then
@@ -79,17 +79,17 @@ End Sub
 ' Actualizar lista de hojas para Libro 1
 Private Sub ActualizarHojas1()
     Dim ws As Worksheet
-    Dim wb As Workbook
+    Dim Wb As Workbook
     
     cboHoja1.Clear
     
     If cboLibro1.Value <> "" Then
         On Error Resume Next
-        Set wb = Workbooks(cboLibro1.Value)
+        Set Wb = Workbooks(cboLibro1.Value)
         On Error GoTo 0
         
-        If Not wb Is Nothing Then
-            For Each ws In wb.Worksheets
+        If Not Wb Is Nothing Then
+            For Each ws In Wb.Worksheets
                 If ws.Visible Then
                     cboHoja1.AddItem ws.Name
                 End If
@@ -102,17 +102,17 @@ End Sub
 ' Actualizar lista de hojas para Libro 2
 Private Sub ActualizarHojas2()
     Dim ws As Worksheet
-    Dim wb As Workbook
+    Dim Wb As Workbook
     
     cboHoja2.Clear
     
     If cboLibro2.Value <> "" Then
         On Error Resume Next
-        Set wb = Workbooks(cboLibro2.Value)
+        Set Wb = Workbooks(cboLibro2.Value)
         On Error GoTo 0
         
-        If Not wb Is Nothing Then
-            For Each ws In wb.Worksheets
+        If Not Wb Is Nothing Then
+            For Each ws In Wb.Worksheets
                 If ws.Visible Then
                     cboHoja2.AddItem ws.Name
                 End If

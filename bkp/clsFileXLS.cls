@@ -48,22 +48,22 @@ End Property
 ' @Description: Asocia esta instancia a un Workbook.
 '               Solo se puede llamar una vez por instancia.
 '--------------------------------------------------------------
-Public Static Sub BindTo(wb As Workbook)
+Public Static Sub BindTo(Wb As Workbook)
     If Not p_wb Is Nothing Then
         Err.Raise vbObjectError + 570, TypeName(Me), "La instancia ya está asociada a un Workbook."
     End If
-    If wb Is Nothing Then
+    If Wb Is Nothing Then
         Err.Raise vbObjectError + 571, TypeName(Me), "No se puede asociar a Nothing."
     End If
-    Set p_wb = wb
+    Set p_wb = Wb
     p_ObjectKey = ObjPtr(p_wb)
     LogInfo MODULE_NAME, "[BindTo] Asociado a: " & Me.Path & " (key: " & p_ObjectKey & ")"
 End Sub
 ' Factory Method estático: "Creador especializado"
-Public Static Function CreateFromWorkbook(wb As Workbook) As clsFileXLS
+Public Static Function CreateFromWorkbook(Wb As Workbook) As clsFileXLS
     Dim instance As clsFileXLS
     Set instance = New clsFileXLS
-    instance.BindTo wb
+    instance.BindTo Wb
     Set CreateFromWorkbook = instance
 End Function
 
@@ -102,11 +102,11 @@ End Property
 ' @Description: Acceso seguro al Workbook subyacente.
 '               Lanza error si el wb ya no es válido.
 '--------------------------------------------------------------
-Public Property Get wb() As Workbook
+Public Property Get Wb() As Workbook
     If p_ObjectKey = 0 Then
         Err.Raise vbObjectError + 572, TypeName(Me), "Workbook ya no está disponible (cerrado o inválido)."
     End If
-    Set wb = p_wb
+    Set Wb = p_wb
 End Property
 
 '--------------------------------------------------------------
@@ -129,12 +129,12 @@ End Function
 ' @Description: Realiza el análisis completo del Workbook.
 '               Actualiza internamente `p_wbinf`.
 '--------------------------------------------------------------
-Public Function AnalizarWorkBook(Optional ByVal wb As Workbook = Nothing) As mod_ConstantsGlobals.T_InfoArchivo
+Public Function AnalizarWorkBook(Optional ByVal Wb As Workbook = Nothing) As mod_ConstantsGlobals.T_InfoArchivo
     If p_ObjectKey = 0 Then Exit Function
     
-    If Not wb Is Nothing And p_wb Is Nothing Then
-        Set p_wb = wb
-    ElseIf Not (p_wb Is wb) Then
+    If Not Wb Is Nothing And p_wb Is Nothing Then
+        Set p_wb = Wb
+    ElseIf Not (p_wb Is Wb) Then
         ' El libro ya estaba definido y se intenta analizar uno distinto
         LogError MODULE_NAME, "[AnalizarWorkBook] - Intentando analizar un libro diferente al asociado"
         Err.Raise vbObjectError + 573, MODULE_NAME, _
@@ -170,15 +170,15 @@ End Property
 '--------------------------------------------------------------
 Public Function DebeMoverseAOp(rutaOportunidadRelativa As String, rutaBaseOportunidades As String) As Boolean
     ' Usa Me.Path, Me.AnalizarWorkBook, OpportunityNr(Me.WB), etc.
-    Dim wb As Workbook, rutaOportunidad As String
+    Dim Wb As Workbook, rutaOportunidad As String
     rutaOportunidad = rutaBaseOportunidades & "\" & rutaOportunidadRelativa
-    Set wb = p_wb
+    Set Wb = p_wb
     
     ' 1. Verificar si es un fichero de oportunidad válido
     If Not EsFicheroOportunidad() Then Exit Function
     
     ' 2. Verificar si ya está en la carpeta correcta
-    If InStr(1, wb.Path, rutaOportunidad, vbTextCompare) > 0 Then
+    If InStr(1, Wb.Path, rutaOportunidad, vbTextCompare) > 0 Then
         ' Ya está en la carpeta correcta
         Exit Function
     End If

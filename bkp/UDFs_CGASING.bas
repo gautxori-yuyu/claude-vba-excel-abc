@@ -266,7 +266,7 @@ End Function
 '@Description: Devuelve un array con los nombres de todas las hojas C-GAS-ING del libro activo
 '@Category: Comprobación de formato de ficheros
 '@ArgumentDescriptions: Libro de excel al que se aplica (opcional)
-Public Function HojasCGASING(Optional wb As Workbook = Nothing) As Variant
+Public Function HojasCGASING(Optional Wb As Workbook = Nothing) As Variant
 Attribute HojasCGASING.VB_Description = "[UDFs_CGASING] Devuelve un array con los nombres de todas las hojas C-GAS-ING del libro activo. Aplica a: ActiveWorkbook"
 Attribute HojasCGASING.VB_ProcData.VB_Invoke_Func = " \n23"
     Dim ws As Worksheet
@@ -276,8 +276,8 @@ Attribute HojasCGASING.VB_ProcData.VB_Invoke_Func = " \n23"
     On Error GoTo ErrorHandler
     
     n = 0
-    If wb Is Nothing Then Set wb = ActiveWorkbook
-    For Each ws In wb.Worksheets
+    If Wb Is Nothing Then Set Wb = ActiveWorkbook
+    For Each ws In Wb.Worksheets
         If IsCGASING(ws) Then
             ReDim Preserve tmp(0 To n)
             tmp(n) = ws.Name
@@ -307,15 +307,15 @@ Attribute MaximaPotencia.VB_ProcData.VB_Invoke_Func = " \n23"
     Dim strHoja As Variant
     Dim maxVal As Double, val As Variant
     Dim valorTexto As String
-    Dim wb As Workbook
+    Dim Wb As Workbook
     
     On Error GoTo ErrorHandler
     
     maxVal = 0
-    Set wb = CeldaBuscada.Worksheet.Parent
-    For Each strHoja In HojasCGASING(wb)
+    Set Wb = CeldaBuscada.Worksheet.Parent
+    For Each strHoja In HojasCGASING(Wb)
         If CStr(strHoja) <> "" Then
-            val = wb.Worksheets(CStr(strHoja)).range(CeldaBuscada.Address).Value
+            val = Wb.Worksheets(CStr(strHoja)).range(CeldaBuscada.Address).Value
             
             ' Extraer valor numérico del formato "xxx / yyy HP/kW"
             valorTexto = CStr(val)

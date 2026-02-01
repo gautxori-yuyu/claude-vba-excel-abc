@@ -115,12 +115,12 @@ Private Sub DirtyRecalcWorkbook()
         Exit Sub
     End If
     
-    Dim wb As Workbook
-    Set wb = mExecutionContext.Workbook
+    Dim Wb As Workbook
+    Set Wb = mExecutionContext.Workbook
     
-    If Not wb Is Nothing Then
+    If Not Wb Is Nothing Then
         Application.CalculateFullRebuild
-        LogDebug MODULE_NAME, "[DirtyRecalcWorkbook] Cálculo completo ejecutado en: " & wb.Name
+        LogDebug MODULE_NAME, "[DirtyRecalcWorkbook] Cálculo completo ejecutado en: " & Wb.Name
     End If
 End Sub
 
@@ -131,13 +131,13 @@ Private Sub EvaluateUDFs()
         Exit Sub
     End If
     
-    Dim wb As Workbook
-    Set wb = mExecutionContext.Workbook
+    Dim Wb As Workbook
+    Set Wb = mExecutionContext.Workbook
     
-    If Not wb Is Nothing Then
+    If Not Wb Is Nothing Then
         ' Forzar recálculo de fórmulas
         Application.Calculate
-        LogDebug MODULE_NAME, "[EvaluateUDFs] UDFs evaluadas en: " & wb.Name
+        LogDebug MODULE_NAME, "[EvaluateUDFs] UDFs evaluadas en: " & Wb.Name
     End If
 End Sub
 
@@ -172,12 +172,12 @@ Private Sub SaveCurrentWorkbook()
         Exit Sub
     End If
     
-    Dim wb As Workbook
-    Set wb = mExecutionContext.Workbook
+    Dim Wb As Workbook
+    Set Wb = mExecutionContext.Workbook
     
-    If Not wb Is Nothing Then
-        wb.Save
-        LogDebug MODULE_NAME, "[SaveCurrentWorkbook] Workbook guardado: " & wb.Name
+    If Not Wb Is Nothing Then
+        Wb.Save
+        LogDebug MODULE_NAME, "[SaveCurrentWorkbook] Workbook guardado: " & Wb.Name
     End If
 End Sub
 
@@ -188,12 +188,12 @@ Private Sub CloseCurrentWorkbook(saveChanges As Boolean)
         Exit Sub
     End If
     
-    Dim wb As Workbook
-    Set wb = mExecutionContext.Workbook
+    Dim Wb As Workbook
+    Set Wb = mExecutionContext.Workbook
     
-    If Not wb Is Nothing Then
-        wb.Close saveChanges
-        LogDebug MODULE_NAME, "[CloseCurrentWorkbook] Workbook cerrado: " & wb.Name
+    If Not Wb Is Nothing Then
+        Wb.Close saveChanges
+        LogDebug MODULE_NAME, "[CloseCurrentWorkbook] Workbook cerrado: " & Wb.Name
     End If
 End Sub
 

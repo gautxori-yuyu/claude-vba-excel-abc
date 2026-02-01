@@ -59,10 +59,10 @@ End Property
 '@Dependencies: Application.Workbooks, Application.AddIns
 '@Note: Se ejecuta automáticamente al crear el formulario. Incluye tanto libros normales como Add-ins
 Private Sub UserForm_Initialize()
-    Dim wb As Workbook, wbaddin As AddIn
-    For Each wb In Application.Workbooks
-        Me.cmbLibros.AddItem wb.Name
-    Next wb
+    Dim Wb As Workbook, wbaddin As AddIn
+    For Each Wb In Application.Workbooks
+        Me.cmbLibros.AddItem Wb.Name
+    Next Wb
     For Each wbaddin In Application.AddIns
         Me.cmbLibros.AddItem wbaddin.Name
     Next wbaddin

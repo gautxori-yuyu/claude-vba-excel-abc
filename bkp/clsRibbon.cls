@@ -347,12 +347,12 @@ Private Sub mChartMgr_ChartDeactivated(cht As Chart)
     InvalidarControl "btnInvertirSeries"
 End Sub
 
-Private Sub mCtx_SheetActivated(ByVal sh As Object)
+Private Sub mCtx_SheetActivated(ByVal Sh As Object)
     InvalidarControl "btnGenerarGraficos"
     InvalidarControl "btnCGASING"
 End Sub
 
-Private Sub mCtx_SheetDeactivated(ByVal sh As Object)
+Private Sub mCtx_SheetDeactivated(ByVal Sh As Object)
     InvalidarControl "btnGenerarGraficos"
     InvalidarControl "btnCGASING"
 End Sub
