@@ -1,0 +1,6 @@
+# CRLF -> LF by default, but not for modules or classes (especially classes)
+* text=auto
+*.bas text eol=crlf working-tree-encoding=8859-1
+*.cls text eol=crlf working-tree-encoding=8859-1
+*.frm text eol=crlf working-tree-encoding=8859-1
+CodeExport.config.json text eol=crlf
