@@ -23,7 +23,6 @@ Private WithEvents mFileMgr As clsFileManager
 Attribute mFileMgr.VB_VarHelpID = -1
 
 Private mCtxState As clsExecutionContextState
-Private mApplicationState As clsApplicationState
 
 '--------------------------------------------------------------
 ' Inicialización
@@ -41,8 +40,7 @@ End Sub
 Public Sub Initialize(oCtxState As clsExecutionContextState, _
                 oFSMonitoringCoord As clsFSMonitoringCoord, _
                 oOpportunities As clsOpportunitiesMgr, _
-                oFileMgr As clsFileManager, _
-                oApplicationState As clsApplicationState)
+                oFileMgr As clsFileManager)
     On Error GoTo ErrHandler
     
     Set mCtxState = oCtxState
@@ -53,10 +51,7 @@ Public Sub Initialize(oCtxState As clsExecutionContextState, _
     
     Set mOpportunities = oOpportunities
 
-    ' Guardar referencia a ApplicationState
-    Set mApplicationState = oApplicationState
-
-    LogInfo MODULE_NAME, "[Initialize] Mediador configurado con ApplicationState y subestados"
+    LogInfo MODULE_NAME, "[Initialize] Mediador configurado"
 
     Exit Sub
 ErrHandler:
@@ -73,7 +68,6 @@ Public Sub Terminate()
     Set mFSMonitoringCoord = Nothing
 
     ' Luego referencias normales
-    Set mApplicationState = Nothing
     Set mFileMgr = Nothing
     Set mCtxState = Nothing
     
@@ -93,11 +87,6 @@ End Sub
 ' -------------------------------------------------------------
 Private Sub mOpportunities_OpportunityCollectionUpdate(ByVal cambios As String)
     LogInfo MODULE_NAME, "[callback: clsOpportunitiesMgr OpportunityCollectionUpdate] - cambios detectados: " & cambios
-
-    ' Llamar a ApplicationState para coordinar estados
-    If Not mApplicationState Is Nothing Then
-        mApplicationState.OnOpportunityCollectionChanged cambios
-    End If
 End Sub
 'TODO: Extraer la lógica de clsFileXLS A una función
 Private Sub mOpportunities_currOpportunityChanged(ByVal Index As Long, ByVal Path As String)
@@ -109,12 +98,6 @@ Private Sub mOpportunities_currOpportunityChanged(ByVal Index As Long, ByVal Pat
         If f.DebeMoverseAOp(Path, mOpportunities.BaseFolder) Then
             f.MoverAOp Path, mOpportunities.BaseFolder
         End If
-    End If
-    ' Coordinar estado en ApplicationState
-    If Not mApplicationState Is Nothing Then
-        Dim op As clsOpportunity
-        Set op = mOpportunities.State.CurrentOpportunity
-        mApplicationState.OnOpportunityChanged op, Index
     End If
 End Sub
 
@@ -135,11 +118,6 @@ Private Sub mFileMgr_ActiveFileChanged(f As clsFileXLS)
 
     LogInfo MODULE_NAME, "[callback: FileManager ActiveFileChanged] - File=" & fileName & _
                          ", IsOpportunity=" & mFileMgr.State.isOpportunityFile
-
-    ' Llamar a ApplicationState para coordinar estados
-    If Not mApplicationState Is Nothing Then
-        mApplicationState.OnFileChanged f
-    End If
 End Sub
 
 ' -------------------------------------------------------------

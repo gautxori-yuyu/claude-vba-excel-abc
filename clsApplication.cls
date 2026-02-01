@@ -80,7 +80,7 @@ Private Sub Class_Initialize()
     ' TODO: creo que es mejor UNIFICARLO, o HACER COMPOSICION, de clsChartMgr, dentro de clsExecutionContext (ChartMgr PERTENECE al exec context,
     ' mas que depender de él; actualmente parece que la relación está invertida, está asi para minimizar los cambios al resto del codigo...)
     Set mChartManager = New clsChartMgr
-    mChartManager.Initialize mCtx
+    mChartManager.Initialize mCtxState
     Set mEventDispatcher = New clsEventDispatcher
 
     Set mFileMgr = New clsFileManager
@@ -111,13 +111,12 @@ Private Sub Class_Initialize()
     Set mEvMgrInfrastructure = New clsEventsMgrInfrastructure
     Call mEvMgrInfrastructure.Initialize(mFileMgr, mChartManager, mCtxMgr)
 
-    ' MEDIADOR DE EVENTOS DE DOMINIO - Inyectar ApplicationState
+    ' MEDIADOR DE EVENTOS DE DOMINIO
     Set mEvMediatorDomain = New clsEventsMediatorDomain
     Call mEvMediatorDomain.Initialize(mCtxState, _
                                     mFSMonitoringCoord, _
                                     mOpportunities, _
-                                    mFileMgr, _
-                                    mApplicationState)
+                                    mFileMgr)
 
     LogInfo MODULE_NAME, "[Class_Initialize] - inicialización completada"
     

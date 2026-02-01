@@ -74,35 +74,6 @@ ErrHandler:
     LogCurrentError MODULE_NAME, "[Initialize]"
 End Sub
 ' ==========================================
-' PROPIEDADES FACADE - Acceso conveniente al estado
-' ==========================================
-
-'@Description: Oportunidad actual (delegado a OpportunityState)
-Public Property Get CurrentOpportunity() As clsOpportunity
-    Set CurrentOpportunity = mOpportunityState.CurrentOpportunity
-End Property
-
-'@Description: Archivo Excel activo actual (delegado a FileState)
-Public Property Get CurrentFile() As clsFileXLS
-    Set CurrentFile = mFileState.CurrentFile
-End Property
-
-'@Description: Chart activo actual (delegado a ChartState)
-Public Property Get CurrentChart() As Chart
-    Set CurrentChart = mChartState.CurrentChart
-End Property
-
-'@Description: Modo del Ribbon (delegado a RibbonState)
-Public Property Get RibbonMode() As eRibbonMode
-    RibbonMode = mRibbonState.Modo
-End Property
-
-'@Description: Visibilidad del Ribbon (delegado a RibbonState)
-Public Property Get RibbonVisible() As Boolean
-    RibbonVisible = mRibbonState.Visible
-End Property
-
-' ==========================================
 ' CONSULTAS DE CONTEXTO
 ' ==========================================
 
@@ -110,16 +81,6 @@ End Property
 '@Returns: True si hay archivo activo Y es de oportunidad Y hay oportunidad seleccionada
 Public Function IsOpportunityFileActive() As Boolean
     IsOpportunityFileActive = mFileState.isOpportunityFile And mOpportunityState.HasCurrentOpportunity()
-End Function
-
-'@Description: Indica si hay un chart activo
-Public Function IsChartActive() As Boolean
-    IsChartActive = mChartState.HasCurrentChart()
-End Function
-
-'@Description: Indica si hay un archivo activo
-Public Function IsFileActive() As Boolean
-    IsFileActive = mFileState.HasCurrentFile()
 End Function
 
 '@Description: Indica si el contexto de ejecución Excel es válido
@@ -130,85 +91,4 @@ Public Property Get IsContextValid() As Boolean
         IsContextValid = mCtxState.IsContextValid
     End If
 End Property
-
-'@Description: Obtiene diagnóstico completo del contexto actual
-Public Function GetContextDiagnostics() As String
-    Dim info As String
-    info = "=== CONTEXTO DE APLICACIÓN ===" & vbCrLf
-    info = info & "Oportunidad: " & mOpportunityState.GetCurrentOpportunityLabel() & vbCrLf
-    info = info & "Archivo: " & mFileState.GetCurrentFileName() & vbCrLf
-    info = info & "  - Es oportunidad: " & CStr(mFileState.isOpportunityFile) & vbCrLf
-    info = info & "Chart: " & mChartState.GetCurrentChartName() & vbCrLf
-    info = info & "Ribbon Mode: " & mRibbonState.Description() & vbCrLf
-    info = info & "Ribbon Visible: " & CStr(mRibbonState.Visible) & vbCrLf
-    GetContextDiagnostics = info
-End Function
-
-' ==========================================
-' SINCRONIZACIÓN ENTRE SUBCLASES (Coordinación privada)
-' ==========================================
-
-'@Description: Sincroniza oportunidad actual desde el archivo activo (si corresponde)
-Private Sub SyncOpportunityFromFile(f As clsFileXLS)
-    ' Si el archivo es de oportunidad, aquí se podría actualizar CurrentOpportunity
-    ' basándose en el path del archivo
-    ' Esta lógica requiere acceso a OpportunitiesMgr, por lo que se delega
-    ' al mediador de eventos (clsEventsMediatorDomain)
-
-    ' Por ahora, solo loguear
-    If Not f Is Nothing Then
-        If mFileState.isOpportunityFile Then
-            LogDebug MODULE_NAME, "[SyncOpportunityFromFile] Archivo de oportunidad detectado: " & f.Name
-        End If
-    End If
-End Sub
-
-' ==========================================
-' COORDINACIÓN DE EVENTOS (llamados por Mediadores)
-' ==========================================
-
-'@Description: Coordinación cuando cambia la oportunidad actual (llamado desde EventsMediatorDomain)
-'@Param op: Nueva oportunidad seleccionada
-'@Param index: Índice en la colección
-Friend Sub OnOpportunityChanged(op As clsOpportunity, Index As Long)
-    On Error Resume Next
-
-    LogDebug MODULE_NAME, "[OnOpportunityChanged] op=" & IIf(op Is Nothing, "(Nothing)", op.Label) & _
-                         ", index=" & Index
-
-    On Error GoTo 0
-End Sub
-
-'@Description: Coordinación cuando cambia el archivo activo (llamado desde EventsMediatorDomain)
-'@Param f: Nuevo archivo activo
-Friend Sub OnFileChanged(f As clsFileXLS)
-    On Error Resume Next
-
-    Dim fileName As String
-    If f Is Nothing Then
-        fileName = "(ninguno)"
-    Else
-        fileName = f.Name
-        If Err.Number <> 0 Then fileName = "(error)"
-    End If
-
-    LogDebug MODULE_NAME, "[OnFileChanged] file=" & fileName
-
-    ' Sincronizar oportunidad desde archivo si aplica
-    SyncOpportunityFromFile f
-
-    On Error GoTo 0
-End Sub
-
-'@Description: Coordinación cuando cambia la colección de oportunidades (llamado desde EventsMediatorDomain)
-'@Param changeType: Tipo de cambio (agregado, eliminado, renombrado)
-Friend Sub OnOpportunityCollectionChanged(changeType As String)
-    On Error Resume Next
-
-    LogDebug MODULE_NAME, "[OnOpportunityCollectionChanged] changeType=" & changeType
-
-
-    On Error GoTo 0
-End Sub
-
 
