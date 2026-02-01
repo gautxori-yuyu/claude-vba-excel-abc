@@ -110,8 +110,20 @@ Attribute ToggleRibbonTab.VB_ProcData.VB_Invoke_Func = " \n0"
     If IsRibbonAvailable() Then
         App.ribbon.ToggleModo
     Else
-        LogWarning MODULE_NAME, "[ToggleRibbonTab] - Ribbon no disponible, omitiendo cambio de modo"
-        MsgBox "El Ribbon no est disponible en este momento. Intente nuevamente en unos segundos.", vbExclamation
+        LogWarning MODULE_NAME, "[ToggleRibbonTab] - Ribbon no disponible, intentando recuperacin"
+
+        ' Intentar recuperar el ribbon antes de continuar
+        If TryRecoverRibbon() Then
+            ' Si la recuperacin fue exitosa, intentar nuevamente
+            If IsRibbonAvailable() Then
+                App.ribbon.ToggleModo
+                LogInfo MODULE_NAME, "[ToggleRibbonTab] - Modo del Ribbon cambiado despus de recuperacin"
+            Else
+                MsgBox "No se pudo recuperar el Ribbon. Es posible que necesite reiniciar Excel.", vbExclamation
+            End If
+        Else
+            MsgBox "El Ribbon no est disponible. Si contina el problema, cierre y vuelva a abrir Excel.", vbExclamation
+        End If
     End If
 
     Exit Sub

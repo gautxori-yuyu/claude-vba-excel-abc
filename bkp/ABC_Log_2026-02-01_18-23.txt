@@ -1,0 +1,226 @@
+02/01 18:23:04 [INFO]   [ThisWorkbook]                  [Open] - Abriendo Workbook Libro1.xlsm
+02/01 18:23:05 [INFO]   [modUTILSProcedureParsing]      [ParsearProcs] - 806 procedimientos encontrados.
+02/01 18:23:05 [INFO]   [modAPPUDFsRegistration]        [AutoRegistrarTodasLasUDFs] - 65 funciones registradas correctamente.
+02/01 18:23:05 [INFO]   [clsApplication]                [Class_Initialize] - Iniciando aplicacion
+02/01 18:23:05 [INFO]   [clsExecutionContext]           [Initialize] - Suscrito a eventos de Application
+02/01 18:23:05 [INFO]   [clsChartMgr]                   [Class_Initialize]
+02/01 18:23:05 [INFO]   [clsChartMgr]                   [Class_Initialize]
+02/01 18:23:05 [INFO]   [clsChartMgr]                   [Initialize] - Suscrito a eventos de Application
+02/01 18:23:05 [INFO]   [clsFileManager]                [Class_Initialize]
+02/01 18:23:05 [INFO]   [clsFileManager]                [Init]
+02/01 18:23:05 [INFO]   [clsFileXLS]                    [BindTo] Asociado a: C:\abc compressors\2-0-OPORTUNIDADES\_MIS scripts\git_claude\claude-vba-excel-abc\claude-mirror__GITHUB_TMP\bkp\Libro1.xlsm (key: 2525553360256)
+02/01 18:23:05 [DEBUG]  [clsFileManager]                [GetOrTrackWorkbook] Nuevo archivo tracked: C:\abc compressors\2-0-OPORTUNIDADES\_MIS scripts\git_claude\claude-vba-excel-abc\claude-mirror__GITHUB_TMP\bkp\Libro1.xlsm (total: 1)
+02/01 18:23:05 [INFO]   [clsFileManager]                [Init] Workbooks tracked: 1
+02/01 18:23:05 [INFO]   [clsOpportunitiesMgr]           [Class_Initialize]
+02/01 18:23:05 [INFO]   [clsConfiguration]              [Class_Initialize]
+02/01 18:23:05 [INFO]   [clsConfiguration]              [CargarConfiguracionDesdeRegistro] - inicializacion de todas las rutas desde registro o valores por defecto
+02/01 18:23:05 [DEBUG]  [clsConfiguration]              [ObtenerRuta] - ruta leida del registro: C:\abc compressors\INTRANET\OilGas\3_OFERTAS\OFERTAS\2026\41 - SER
+02/01 18:23:05 [DEBUG]  [clsConfiguration]              [ObtenerRuta] - ruta leida del registro: C:\abc compressors\INTRANET\OilGas\3_OFERTAS\OFERTAS\2026\41 - SER\_plantilla\
+02/01 18:23:05 [DEBUG]  [clsConfiguration]              [ObtenerRuta] - ruta leida del registro: C:\Program Files (x86)\Ofertas_Gas\
+02/01 18:23:05 [DEBUG]  [clsConfiguration]              [ObtenerRuta] - ruta leida del registro: C:\Aire\
+02/01 18:23:05 [DEBUG]  [clsConfiguration]              [ObtenerRuta] - ruta leida del registro: C:\abc compressors\2-0-OPORTUNIDADES\_Mis notas\
+02/01 18:23:05 [DEBUG]  [clsConfiguration]              [ObtenerListaCarpetas] - Lista de carpetas leida desde registro: 
+	C:\abc compressors\INTRANET\OilGas\1_COMUNICACION\0- MARKETING\2- FOTOS\Fotos y planos\FOTOS\
+02/01 18:23:05 [DEBUG]  [clsConfiguration]              [ObtenerListaCarpetas] - Lista de carpetas leida desde registro: 
+	C:\abc compressors\INTRANET\OilGas\5_DOCUMENTACION TECNICA\ADJUNTOS OFERTAS\3-1-PLANOS\
+	C:\abc compressors\INTRANET\OilGas\1_COMUNICACION\0- MARKETING\2- FOTOS\Fotos y planos\PLANOS
+02/01 18:23:05 [DEBUG]  [clsConfiguration]              [ObtenerSAM] Leido del registro: 41
+02/01 18:23:05 [INFO]   [clsOpportunitiesMgr]           [actualizarColeccionOportunidades] - regenerando la variable local que contiene la lista de carpetas de oportunidades
+02/01 18:23:05 [DEBUG]  [clsFileManager]                [ListarSubcarpetas] - Encontradas 4 subcarpetas en: C:\abc compressors\INTRANET\OilGas\3_OFERTAS\OFERTAS\2026\41 - SER
+02/01 18:23:05 [INFO]   [clsFSWatcher]                  [Class_Initialize] - Inicializando wrapper VBA para FolderWatcher COM
+02/01 18:23:05 [DEBUG]  [clsFSWatcher]                  [CrearCOMConActivationContext] - COM creado exitosamente con Activation Context
+02/01 18:23:05 [DEBUG]  [clsFSWatcher]                  [Class_Initialize] - Componente COM conectado: HeartbeatInterval=90000ms, InactivityMinutes=10, DebounceSeconds=0,4, AutoRestart=True, MaxWatchers=6, Logging=False
+02/01 18:23:05 [INFO]   [clsFSMonitoringCoord]          [IniciarMonitoreo]
+02/01 18:23:05 [DEBUG]  [clsFSWatcher]                  [IniciarMonitoreo] - Monitoreo iniciado: C:\abc compressors\INTRANET\OilGas\3_OFERTAS\OFERTAS\2026\41 - SER (solo subcarpetas)
+02/01 18:23:05 [DEBUG]  [clsFSWatcher]                  [ConfigurarFiltroSoloCarpetas] - Filtro solo carpetas en: C:\abc compressors\INTRANET\OilGas\3_OFERTAS\OFERTAS\2026\41 - SER
+02/01 18:23:05 [INFO]   [clsFSMonitoringCoord]          [ConfigurarMonitoreoOportunidades] - configurado en: C:\abc compressors\INTRANET\OilGas\3_OFERTAS\OFERTAS\2026\41 - SER
+02/01 18:23:05 [INFO]   [clsFSMonitoringCoord]          [IniciarMonitoreo] Oportunidades monitoreadas: C:\abc compressors\INTRANET\OilGas\3_OFERTAS\OFERTAS\2026\41 - SER
+02/01 18:23:05 [DEBUG]  [clsFSWatcher]                  [IniciarMonitoreo] - Monitoreo iniciado: C:\abc compressors\INTRANET\OilGas\3_OFERTAS\OFERTAS\2026\41 - SER\_plantilla
+02/01 18:23:05 [INFO]   [clsFSMonitoringCoord]          [ConfigurarMonitoreoPlantillas] - configurado en: C:\abc compressors\INTRANET\OilGas\3_OFERTAS\OFERTAS\2026\41 - SER\_plantilla\
+02/01 18:23:05 [INFO]   [clsFSMonitoringCoord]          [IniciarMonitoreo] Plantillas monitoreadas: C:\abc compressors\INTRANET\OilGas\3_OFERTAS\OFERTAS\2026\41 - SER\_plantilla\
+02/01 18:23:05 [DEBUG]  [clsFSWatcher]                  [IniciarMonitoreo] - Monitoreo iniciado: C:\Program Files (x86)\Ofertas_Gas
+02/01 18:23:05 [INFO]   [clsFSMonitoringCoord]          [IniciarMonitoreo] Monitoreo genérico: C:\Program Files (x86)\Ofertas_Gas\
+02/01 18:23:05 [DEBUG]  [clsFSWatcher]                  [IniciarMonitoreo] - Monitoreo iniciado: C:\Aire
+02/01 18:23:05 [INFO]   [clsFSMonitoringCoord]          [ConfigurarMonitoreoPlantillas] - configurado en: C:\Aire\
+02/01 18:23:05 [INFO]   [clsFSMonitoringCoord]          [IniciarMonitoreo] Gas monitoreado: C:\Aire\
+02/01 18:23:05 [DEBUG]  [clsFSWatcher]                  [IniciarMonitoreo] - Monitoreo iniciado: C:\abc compressors\2-0-OPORTUNIDADES\_Mis notas
+02/01 18:23:05 [INFO]   [clsFSMonitoringCoord]          [IniciarMonitoreo] Monitoreo genérico: C:\abc compressors\2-0-OPORTUNIDADES\_Mis notas\
+02/01 18:23:05 [INFO]   [clsFSMonitoringCoord]          [IniciarMonitoreo] Monitoreo iniciado en 5 carpetas
+02/01 18:23:05 [INFO]   [clsRibbon]                     [Class_Initialize]
+02/01 18:23:05 [INFO]   [clsApplicationState]           [Class_Initialize]
+02/01 18:23:05 [INFO]   [clsApplicationState]           [Initialize] Referencias inyectadas: Ribbon=Verdadero, Opportunity=Verdadero, File=Verdadero, Chart=Verdadero
+02/01 18:23:05 [INFO]   [clsEventsMgrInfrastructure]    [Class_Initialize]
+02/01 18:23:05 [INFO]   [clsEventsMediatorDomain]       [Class_Initialize]
+02/01 18:23:05 [INFO]   [clsEventsMediatorDomain]       [Initialize] Mediador configurado con ApplicationState y subestados
+02/01 18:23:05 [INFO]   [clsApplication]                [Class_Initialize] - inicialización completada
+02/01 18:23:05 [DEBUG]  [clsExecutionContext]           [xlApp_WorkbookOpen] Libro1.xlsm
+02/01 18:23:05 [DEBUG]  [clsExecutionContext]           [xlApp_WorkbookActivate] Libro1.xlsm
+02/01 18:23:06 [INFO]   [modCALLBACKSRibbon]            [callback: RibbonOnLoad] - Inicio
+02/01 18:23:06 [DEBUG]  [clsRibbon]                     [Init] - Recibiendo puntero IRibbonUI
+02/01 18:23:06 [DEBUG]  [clsRibbon]                     [Init] - Puntero establecido correctamente
+02/01 18:23:06 [INFO]   [modCALLBACKSRibbon]            [callback: RibbonOnLoad] - ribbon cargado en la interfaz de excel
+02/01 18:25:39 [DEBUG]  [clsEventDispatcher]            [GetRibbonControlEnabled] - ¿btnNuevaOp?: Verdadero
+02/01 18:25:39 [DEBUG]  [clsEventDispatcher]            [GetRibbonControlEnabled] - ¿btnGenerarGraficos?: Falso
+02/01 18:25:39 [DEBUG]  [clsEventDispatcher]            [GetRibbonControlEnabled] - ¿btnInvertirSeries?: Falso
+02/01 18:25:39 [DEBUG]  [clsEventDispatcher]            [GetRibbonControlEnabled] - ¿btnCGASING?: Falso
+02/01 18:26:18 [DEBUG]  [clsEventDispatcher]            [GetRibbonControlEnabled] - ¿btnNuevaOp?: Verdadero
+02/01 18:26:18 [DEBUG]  [clsEventDispatcher]            [GetRibbonControlEnabled] - ¿btnGenerarGraficos?: Falso
+02/01 18:26:18 [DEBUG]  [clsEventDispatcher]            [GetRibbonControlEnabled] - ¿btnInvertirSeries?: Falso
+02/01 18:26:18 [DEBUG]  [clsEventDispatcher]            [GetRibbonControlEnabled] - ¿btnCGASING?: Falso
+02/01 18:27:16 [DEBUG]  [clsExecutionContext]           [xlApp_WorkbookOpen] 412510064 rev05 - Zachry Group - 45V Compliance package.xlsx
+02/01 18:27:16 [DEBUG]  [clsExecutionContext]           [xlApp_WorkbookActivate] 412510064 rev05 - Zachry Group - 45V Compliance package.xlsx
+02/01 18:33:36 [DEBUG]  [clsFSWatcher]                  [callback: FolderWatcher.Monitor WatcherReconnected] - C:\abc compressors\INTRANET\OilGas\3_OFERTAS\OFERTAS\2026\41 - SER\_plantilla (tras 1 intento(s))
+02/01 18:33:36 [DEBUG]  [clsFSMonitoringCoord]          [WatcherReconnected] C:\abc compressors\INTRANET\OilGas\3_OFERTAS\OFERTAS\2026\41 - SER\_plantilla reconectado tras 1 intento(s)
+02/01 18:33:36 [INFO]   [clsEventsMediatorDomain]       [mFSMonitoringCoord_MonitoringReconnected] C:\abc compressors\INTRANET\OilGas\3_OFERTAS\OFERTAS\2026\41 - SER\_plantilla tras 1 intentos
+02/01 18:33:36 [DEBUG]  [clsFSWatcher]                  [callback: FolderWatcher.Monitor WatcherReconnected] - C:\Program Files (x86)\Ofertas_Gas (tras 1 intento(s))
+02/01 18:33:36 [DEBUG]  [clsFSMonitoringCoord]          [WatcherReconnected] C:\Program Files (x86)\Ofertas_Gas reconectado tras 1 intento(s)
+02/01 18:33:36 [INFO]   [clsEventsMediatorDomain]       [mFSMonitoringCoord_MonitoringReconnected] C:\Program Files (x86)\Ofertas_Gas tras 1 intentos
+02/01 18:33:36 [DEBUG]  [clsFSWatcher]                  [callback: FolderWatcher.Monitor WatcherReconnected] - C:\Aire (tras 1 intento(s))
+02/01 18:33:36 [DEBUG]  [clsFSMonitoringCoord]          [WatcherReconnected] C:\Aire reconectado tras 1 intento(s)
+02/01 18:33:36 [INFO]   [clsEventsMediatorDomain]       [mFSMonitoringCoord_MonitoringReconnected] C:\Aire tras 1 intentos
+02/01 18:33:36 [DEBUG]  [clsFSWatcher]                  [callback: FolderWatcher.Monitor WatcherReconnected] - C:\abc compressors\2-0-OPORTUNIDADES\_Mis notas (tras 1 intento(s))
+02/01 18:33:36 [DEBUG]  [clsFSMonitoringCoord]          [WatcherReconnected] C:\abc compressors\2-0-OPORTUNIDADES\_Mis notas reconectado tras 1 intento(s)
+02/01 18:33:36 [INFO]   [clsEventsMediatorDomain]       [mFSMonitoringCoord_MonitoringReconnected] C:\abc compressors\2-0-OPORTUNIDADES\_Mis notas tras 1 intentos
+02/01 18:35:06 [DEBUG]  [clsFSWatcher]                  [callback: FolderWatcher.Monitor WatcherReconnected] - C:\abc compressors\INTRANET\OilGas\3_OFERTAS\OFERTAS\2026\41 - SER (tras 1 intento(s))
+02/01 18:35:06 [DEBUG]  [clsFSMonitoringCoord]          [WatcherReconnected] C:\abc compressors\INTRANET\OilGas\3_OFERTAS\OFERTAS\2026\41 - SER reconectado tras 1 intento(s)
+02/01 18:35:06 [INFO]   [clsEventsMediatorDomain]       [mFSMonitoringCoord_MonitoringReconnected] C:\abc compressors\INTRANET\OilGas\3_OFERTAS\OFERTAS\2026\41 - SER tras 1 intentos
+02/01 18:38:55 [DEBUG]  [clsExecutionContext]           [xlApp_WorkbookActivate] Libro1.xlsm
+02/01 18:38:55 [DEBUG]  [clsExecutionContext]           [xlApp_WorkbookOpen] Different-Tab-For-Each-Worksheet.xlsm
+02/01 18:38:55 [DEBUG]  [clsExecutionContext]           [xlApp_WorkbookActivate] Different-Tab-For-Each-Worksheet.xlsm
+02/01 18:38:56 [DEBUG]  [clsExecutionContext]           [xlApp_WorkbookBeforeClose] Different-Tab-For-Each-Worksheet.xlsm
+02/01 18:38:58 [DEBUG]  [clsExecutionContext]           [xlApp_WorkbookActivate] Libro1.xlsm
+02/01 18:38:58 [DEBUG]  [clsEventDispatcher]            [GetRibbonControlEnabled] - ¿btnNuevaOp?: Verdadero
+02/01 18:38:58 [DEBUG]  [clsEventDispatcher]            [GetRibbonControlEnabled] - ¿btnGenerarGraficos?: Falso
+02/01 18:38:58 [DEBUG]  [clsEventDispatcher]            [GetRibbonControlEnabled] - ¿btnInvertirSeries?: Falso
+02/01 18:38:58 [DEBUG]  [clsEventDispatcher]            [GetRibbonControlEnabled] - ¿btnCGASING?: Falso
+02/01 18:39:25 [DEBUG]  [clsExecutionContext]           [xlApp_WorkbookOpen] Different-Tab-For-Each-Worksheet.xlsm
+02/01 18:39:25 [DEBUG]  [clsExecutionContext]           [xlApp_WorkbookActivate] Different-Tab-For-Each-Worksheet.xlsm
+02/01 18:39:31 [DEBUG]  [clsExecutionContext]           [xlApp_SheetDeactivate] Menu
+02/01 18:39:31 [DEBUG]  [clsExecutionContext]           [xlApp_SheetActivate] Worksheet 'Ron'
+02/01 18:39:34 [DEBUG]  [clsExecutionContext]           [xlApp_SheetDeactivate] Ron
+02/01 18:39:34 [DEBUG]  [clsExecutionContext]           [xlApp_SheetActivate] Worksheet 'Dave'
+02/01 18:39:35 [DEBUG]  [clsExecutionContext]           [xlApp_SheetDeactivate] Dave
+02/01 18:39:35 [DEBUG]  [clsExecutionContext]           [xlApp_SheetActivate] Worksheet 'RonDave'
+02/01 18:39:56 [DEBUG]  [clsExecutionContext]           [xlApp_SheetDeactivate] RonDave
+02/01 18:39:56 [DEBUG]  [clsExecutionContext]           [xlApp_SheetActivate] Worksheet 'Dave'
+02/01 18:41:06 [DEBUG]  [clsFSWatcher]                  [callback: FolderWatcher.Monitor WatcherReconnected] - C:\abc compressors\INTRANET\OilGas\3_OFERTAS\OFERTAS\2026\41 - SER (tras 1 intento(s))
+02/01 18:41:06 [DEBUG]  [clsFSMonitoringCoord]          [WatcherReconnected] C:\abc compressors\INTRANET\OilGas\3_OFERTAS\OFERTAS\2026\41 - SER reconectado tras 1 intento(s)
+02/01 18:41:06 [INFO]   [clsEventsMediatorDomain]       [mFSMonitoringCoord_MonitoringReconnected] C:\abc compressors\INTRANET\OilGas\3_OFERTAS\OFERTAS\2026\41 - SER tras 1 intentos
+02/01 18:44:06 [DEBUG]  [clsFSWatcher]                  [callback: FolderWatcher.Monitor WatcherReconnected] - C:\abc compressors\INTRANET\OilGas\3_OFERTAS\OFERTAS\2026\41 - SER\_plantilla (tras 1 intento(s))
+02/01 18:44:06 [DEBUG]  [clsFSMonitoringCoord]          [WatcherReconnected] C:\abc compressors\INTRANET\OilGas\3_OFERTAS\OFERTAS\2026\41 - SER\_plantilla reconectado tras 1 intento(s)
+02/01 18:44:06 [INFO]   [clsEventsMediatorDomain]       [mFSMonitoringCoord_MonitoringReconnected] C:\abc compressors\INTRANET\OilGas\3_OFERTAS\OFERTAS\2026\41 - SER\_plantilla tras 1 intentos
+02/01 18:44:06 [DEBUG]  [clsFSWatcher]                  [callback: FolderWatcher.Monitor WatcherReconnected] - C:\Program Files (x86)\Ofertas_Gas (tras 1 intento(s))
+02/01 18:44:06 [DEBUG]  [clsFSMonitoringCoord]          [WatcherReconnected] C:\Program Files (x86)\Ofertas_Gas reconectado tras 1 intento(s)
+02/01 18:44:06 [INFO]   [clsEventsMediatorDomain]       [mFSMonitoringCoord_MonitoringReconnected] C:\Program Files (x86)\Ofertas_Gas tras 1 intentos
+02/01 18:44:06 [DEBUG]  [clsFSWatcher]                  [callback: FolderWatcher.Monitor WatcherReconnected] - C:\Aire (tras 1 intento(s))
+02/01 18:44:06 [DEBUG]  [clsFSMonitoringCoord]          [WatcherReconnected] C:\Aire reconectado tras 1 intento(s)
+02/01 18:44:06 [INFO]   [clsEventsMediatorDomain]       [mFSMonitoringCoord_MonitoringReconnected] C:\Aire tras 1 intentos
+02/01 18:44:06 [DEBUG]  [clsFSWatcher]                  [callback: FolderWatcher.Monitor WatcherReconnected] - C:\abc compressors\2-0-OPORTUNIDADES\_Mis notas (tras 1 intento(s))
+02/01 18:44:06 [DEBUG]  [clsFSMonitoringCoord]          [WatcherReconnected] C:\abc compressors\2-0-OPORTUNIDADES\_Mis notas reconectado tras 1 intento(s)
+02/01 18:44:06 [INFO]   [clsEventsMediatorDomain]       [mFSMonitoringCoord_MonitoringReconnected] C:\abc compressors\2-0-OPORTUNIDADES\_Mis notas tras 1 intentos
+02/01 18:47:06 [DEBUG]  [clsFSWatcher]                  [callback: FolderWatcher.Monitor WatcherReconnected] - C:\abc compressors\INTRANET\OilGas\3_OFERTAS\OFERTAS\2026\41 - SER (tras 1 intento(s))
+02/01 18:47:06 [DEBUG]  [clsFSMonitoringCoord]          [WatcherReconnected] C:\abc compressors\INTRANET\OilGas\3_OFERTAS\OFERTAS\2026\41 - SER reconectado tras 1 intento(s)
+02/01 18:47:06 [INFO]   [clsEventsMediatorDomain]       [mFSMonitoringCoord_MonitoringReconnected] C:\abc compressors\INTRANET\OilGas\3_OFERTAS\OFERTAS\2026\41 - SER tras 1 intentos
+02/01 18:53:06 [DEBUG]  [clsFSWatcher]                  [callback: FolderWatcher.Monitor WatcherReconnected] - C:\abc compressors\INTRANET\OilGas\3_OFERTAS\OFERTAS\2026\41 - SER (tras 1 intento(s))
+02/01 18:53:06 [DEBUG]  [clsFSMonitoringCoord]          [WatcherReconnected] C:\abc compressors\INTRANET\OilGas\3_OFERTAS\OFERTAS\2026\41 - SER reconectado tras 1 intento(s)
+02/01 18:53:06 [INFO]   [clsEventsMediatorDomain]       [mFSMonitoringCoord_MonitoringReconnected] C:\abc compressors\INTRANET\OilGas\3_OFERTAS\OFERTAS\2026\41 - SER tras 1 intentos
+02/01 18:53:37 [DEBUG]  [clsExecutionContext]           [xlApp_WorkbookActivate] 412510064 rev05 - Zachry Group - 45V Compliance package.xlsx
+02/01 18:54:36 [DEBUG]  [clsFSWatcher]                  [callback: FolderWatcher.Monitor WatcherReconnected] - C:\abc compressors\INTRANET\OilGas\3_OFERTAS\OFERTAS\2026\41 - SER\_plantilla (tras 1 intento(s))
+02/01 18:54:36 [DEBUG]  [clsFSMonitoringCoord]          [WatcherReconnected] C:\abc compressors\INTRANET\OilGas\3_OFERTAS\OFERTAS\2026\41 - SER\_plantilla reconectado tras 1 intento(s)
+02/01 18:54:36 [INFO]   [clsEventsMediatorDomain]       [mFSMonitoringCoord_MonitoringReconnected] C:\abc compressors\INTRANET\OilGas\3_OFERTAS\OFERTAS\2026\41 - SER\_plantilla tras 1 intentos
+02/01 18:54:36 [DEBUG]  [clsFSWatcher]                  [callback: FolderWatcher.Monitor WatcherReconnected] - C:\Program Files (x86)\Ofertas_Gas (tras 1 intento(s))
+02/01 18:54:36 [DEBUG]  [clsFSMonitoringCoord]          [WatcherReconnected] C:\Program Files (x86)\Ofertas_Gas reconectado tras 1 intento(s)
+02/01 18:54:36 [INFO]   [clsEventsMediatorDomain]       [mFSMonitoringCoord_MonitoringReconnected] C:\Program Files (x86)\Ofertas_Gas tras 1 intentos
+02/01 18:54:36 [DEBUG]  [clsFSWatcher]                  [callback: FolderWatcher.Monitor WatcherReconnected] - C:\Aire (tras 1 intento(s))
+02/01 18:54:36 [DEBUG]  [clsFSMonitoringCoord]          [WatcherReconnected] C:\Aire reconectado tras 1 intento(s)
+02/01 18:54:36 [INFO]   [clsEventsMediatorDomain]       [mFSMonitoringCoord_MonitoringReconnected] C:\Aire tras 1 intentos
+02/01 18:54:36 [DEBUG]  [clsFSWatcher]                  [callback: FolderWatcher.Monitor WatcherReconnected] - C:\abc compressors\2-0-OPORTUNIDADES\_Mis notas (tras 1 intento(s))
+02/01 18:54:36 [DEBUG]  [clsFSMonitoringCoord]          [WatcherReconnected] C:\abc compressors\2-0-OPORTUNIDADES\_Mis notas reconectado tras 1 intento(s)
+02/01 18:54:36 [INFO]   [clsEventsMediatorDomain]       [mFSMonitoringCoord_MonitoringReconnected] C:\abc compressors\2-0-OPORTUNIDADES\_Mis notas tras 1 intentos
+02/01 18:59:06 [DEBUG]  [clsFSWatcher]                  [callback: FolderWatcher.Monitor WatcherReconnected] - C:\abc compressors\INTRANET\OilGas\3_OFERTAS\OFERTAS\2026\41 - SER (tras 1 intento(s))
+02/01 18:59:06 [DEBUG]  [clsFSMonitoringCoord]          [WatcherReconnected] C:\abc compressors\INTRANET\OilGas\3_OFERTAS\OFERTAS\2026\41 - SER reconectado tras 1 intento(s)
+02/01 18:59:06 [INFO]   [clsEventsMediatorDomain]       [mFSMonitoringCoord_MonitoringReconnected] C:\abc compressors\INTRANET\OilGas\3_OFERTAS\OFERTAS\2026\41 - SER tras 1 intentos
+02/01 19:01:45 [DEBUG]  [clsExecutionContext]           [xlApp_WorkbookBeforeClose] 412510064 rev05 - Zachry Group - 45V Compliance package.xlsx
+02/01 19:01:47 [DEBUG]  [clsExecutionContext]           [xlApp_WorkbookActivate] Different-Tab-For-Each-Worksheet.xlsm
+02/01 19:01:49 [DEBUG]  [clsExecutionContext]           [xlApp_WorkbookBeforeClose] Different-Tab-For-Each-Worksheet.xlsm
+02/01 19:01:52 [DEBUG]  [clsExecutionContext]           [xlApp_SheetDeactivate] Dave
+02/01 19:01:54 [DEBUG]  [clsExecutionContext]           [xlApp_SheetActivate] Worksheet 'Menu'
+02/01 19:01:55 [DEBUG]  [clsExecutionContext]           [xlApp_WorkbookActivate] Libro1.xlsm
+02/01 19:01:55 [DEBUG]  [clsEventDispatcher]            [GetRibbonControlEnabled] - ¿btnNuevaOp?: Verdadero
+02/01 19:01:55 [DEBUG]  [clsEventDispatcher]            [GetRibbonControlEnabled] - ¿btnGenerarGraficos?: Falso
+02/01 19:01:55 [DEBUG]  [clsEventDispatcher]            [GetRibbonControlEnabled] - ¿btnInvertirSeries?: Falso
+02/01 19:01:56 [DEBUG]  [clsEventDispatcher]            [GetRibbonControlEnabled] - ¿btnCGASING?: Falso
+02/01 19:02:16 [DEBUG]  [clsEventDispatcher]            [GetRibbonControlEnabled] - ¿btnNuevaOp?: Verdadero
+02/01 19:02:16 [DEBUG]  [clsEventDispatcher]            [GetRibbonControlEnabled] - ¿btnGenerarGraficos?: Falso
+02/01 19:02:16 [DEBUG]  [clsEventDispatcher]            [GetRibbonControlEnabled] - ¿btnInvertirSeries?: Falso
+02/01 19:02:16 [DEBUG]  [clsEventDispatcher]            [GetRibbonControlEnabled] - ¿btnCGASING?: Falso
+02/01 19:05:06 [DEBUG]  [clsFSWatcher]                  [callback: FolderWatcher.Monitor WatcherReconnected] - C:\abc compressors\INTRANET\OilGas\3_OFERTAS\OFERTAS\2026\41 - SER (tras 1 intento(s))
+02/01 19:05:06 [DEBUG]  [clsFSMonitoringCoord]          [WatcherReconnected] C:\abc compressors\INTRANET\OilGas\3_OFERTAS\OFERTAS\2026\41 - SER reconectado tras 1 intento(s)
+02/01 19:05:06 [INFO]   [clsEventsMediatorDomain]       [mFSMonitoringCoord_MonitoringReconnected] C:\abc compressors\INTRANET\OilGas\3_OFERTAS\OFERTAS\2026\41 - SER tras 1 intentos
+02/01 19:05:06 [DEBUG]  [clsFSWatcher]                  [callback: FolderWatcher.Monitor WatcherReconnected] - C:\abc compressors\INTRANET\OilGas\3_OFERTAS\OFERTAS\2026\41 - SER\_plantilla (tras 1 intento(s))
+02/01 19:05:06 [DEBUG]  [clsFSMonitoringCoord]          [WatcherReconnected] C:\abc compressors\INTRANET\OilGas\3_OFERTAS\OFERTAS\2026\41 - SER\_plantilla reconectado tras 1 intento(s)
+02/01 19:05:06 [INFO]   [clsEventsMediatorDomain]       [mFSMonitoringCoord_MonitoringReconnected] C:\abc compressors\INTRANET\OilGas\3_OFERTAS\OFERTAS\2026\41 - SER\_plantilla tras 1 intentos
+02/01 19:05:06 [DEBUG]  [clsFSWatcher]                  [callback: FolderWatcher.Monitor WatcherReconnected] - C:\Program Files (x86)\Ofertas_Gas (tras 1 intento(s))
+02/01 19:05:06 [DEBUG]  [clsFSMonitoringCoord]          [WatcherReconnected] C:\Program Files (x86)\Ofertas_Gas reconectado tras 1 intento(s)
+02/01 19:05:06 [INFO]   [clsEventsMediatorDomain]       [mFSMonitoringCoord_MonitoringReconnected] C:\Program Files (x86)\Ofertas_Gas tras 1 intentos
+02/01 19:05:06 [DEBUG]  [clsFSWatcher]                  [callback: FolderWatcher.Monitor WatcherReconnected] - C:\Aire (tras 1 intento(s))
+02/01 19:05:06 [DEBUG]  [clsFSMonitoringCoord]          [WatcherReconnected] C:\Aire reconectado tras 1 intento(s)
+02/01 19:05:06 [INFO]   [clsEventsMediatorDomain]       [mFSMonitoringCoord_MonitoringReconnected] C:\Aire tras 1 intentos
+02/01 19:05:06 [DEBUG]  [clsFSWatcher]                  [callback: FolderWatcher.Monitor WatcherReconnected] - C:\abc compressors\2-0-OPORTUNIDADES\_Mis notas (tras 1 intento(s))
+02/01 19:05:06 [DEBUG]  [clsFSMonitoringCoord]          [WatcherReconnected] C:\abc compressors\2-0-OPORTUNIDADES\_Mis notas reconectado tras 1 intento(s)
+02/01 19:05:06 [INFO]   [clsEventsMediatorDomain]       [mFSMonitoringCoord_MonitoringReconnected] C:\abc compressors\2-0-OPORTUNIDADES\_Mis notas tras 1 intentos
+02/01 19:11:06 [DEBUG]  [clsFSWatcher]                  [callback: FolderWatcher.Monitor WatcherReconnected] - C:\abc compressors\INTRANET\OilGas\3_OFERTAS\OFERTAS\2026\41 - SER (tras 1 intento(s))
+02/01 19:11:06 [DEBUG]  [clsFSMonitoringCoord]          [WatcherReconnected] C:\abc compressors\INTRANET\OilGas\3_OFERTAS\OFERTAS\2026\41 - SER reconectado tras 1 intento(s)
+02/01 19:11:06 [INFO]   [clsEventsMediatorDomain]       [mFSMonitoringCoord_MonitoringReconnected] C:\abc compressors\INTRANET\OilGas\3_OFERTAS\OFERTAS\2026\41 - SER tras 1 intentos
+02/01 19:12:59 [DEBUG]  [clsExecutionContext]           [xlApp_WorkbookOpen] 412510064 rev05 - Zachry Group - 45V Compliance package.xlsx
+02/01 19:12:59 [DEBUG]  [clsExecutionContext]           [xlApp_WorkbookActivate] 412510064 rev05 - Zachry Group - 45V Compliance package.xlsx
+02/01 19:15:36 [DEBUG]  [clsFSWatcher]                  [callback: FolderWatcher.Monitor WatcherReconnected] - C:\abc compressors\INTRANET\OilGas\3_OFERTAS\OFERTAS\2026\41 - SER\_plantilla (tras 1 intento(s))
+02/01 19:15:36 [DEBUG]  [clsFSMonitoringCoord]          [WatcherReconnected] C:\abc compressors\INTRANET\OilGas\3_OFERTAS\OFERTAS\2026\41 - SER\_plantilla reconectado tras 1 intento(s)
+02/01 19:15:36 [INFO]   [clsEventsMediatorDomain]       [mFSMonitoringCoord_MonitoringReconnected] C:\abc compressors\INTRANET\OilGas\3_OFERTAS\OFERTAS\2026\41 - SER\_plantilla tras 1 intentos
+02/01 19:15:36 [DEBUG]  [clsFSWatcher]                  [callback: FolderWatcher.Monitor WatcherReconnected] - C:\Program Files (x86)\Ofertas_Gas (tras 1 intento(s))
+02/01 19:15:36 [DEBUG]  [clsFSMonitoringCoord]          [WatcherReconnected] C:\Program Files (x86)\Ofertas_Gas reconectado tras 1 intento(s)
+02/01 19:15:36 [INFO]   [clsEventsMediatorDomain]       [mFSMonitoringCoord_MonitoringReconnected] C:\Program Files (x86)\Ofertas_Gas tras 1 intentos
+02/01 19:15:36 [DEBUG]  [clsFSWatcher]                  [callback: FolderWatcher.Monitor WatcherReconnected] - C:\Aire (tras 1 intento(s))
+02/01 19:15:36 [DEBUG]  [clsFSMonitoringCoord]          [WatcherReconnected] C:\Aire reconectado tras 1 intento(s)
+02/01 19:15:36 [INFO]   [clsEventsMediatorDomain]       [mFSMonitoringCoord_MonitoringReconnected] C:\Aire tras 1 intentos
+02/01 19:15:36 [DEBUG]  [clsFSWatcher]                  [callback: FolderWatcher.Monitor WatcherReconnected] - C:\abc compressors\2-0-OPORTUNIDADES\_Mis notas (tras 1 intento(s))
+02/01 19:15:36 [DEBUG]  [clsFSMonitoringCoord]          [WatcherReconnected] C:\abc compressors\2-0-OPORTUNIDADES\_Mis notas reconectado tras 1 intento(s)
+02/01 19:15:36 [INFO]   [clsEventsMediatorDomain]       [mFSMonitoringCoord_MonitoringReconnected] C:\abc compressors\2-0-OPORTUNIDADES\_Mis notas tras 1 intentos
+02/01 19:17:06 [DEBUG]  [clsFSWatcher]                  [callback: FolderWatcher.Monitor WatcherReconnected] - C:\abc compressors\INTRANET\OilGas\3_OFERTAS\OFERTAS\2026\41 - SER (tras 1 intento(s))
+02/01 19:17:06 [DEBUG]  [clsFSMonitoringCoord]          [WatcherReconnected] C:\abc compressors\INTRANET\OilGas\3_OFERTAS\OFERTAS\2026\41 - SER reconectado tras 1 intento(s)
+02/01 19:17:06 [INFO]   [clsEventsMediatorDomain]       [mFSMonitoringCoord_MonitoringReconnected] C:\abc compressors\INTRANET\OilGas\3_OFERTAS\OFERTAS\2026\41 - SER tras 1 intentos
+02/01 19:23:06 [DEBUG]  [clsFSWatcher]                  [callback: FolderWatcher.Monitor WatcherReconnected] - C:\abc compressors\INTRANET\OilGas\3_OFERTAS\OFERTAS\2026\41 - SER (tras 1 intento(s))
+02/01 19:23:06 [DEBUG]  [clsFSMonitoringCoord]          [WatcherReconnected] C:\abc compressors\INTRANET\OilGas\3_OFERTAS\OFERTAS\2026\41 - SER reconectado tras 1 intento(s)
+02/01 19:23:06 [INFO]   [clsEventsMediatorDomain]       [mFSMonitoringCoord_MonitoringReconnected] C:\abc compressors\INTRANET\OilGas\3_OFERTAS\OFERTAS\2026\41 - SER tras 1 intentos
+02/01 19:26:06 [DEBUG]  [clsFSWatcher]                  [callback: FolderWatcher.Monitor WatcherReconnected] - C:\abc compressors\INTRANET\OilGas\3_OFERTAS\OFERTAS\2026\41 - SER\_plantilla (tras 1 intento(s))
+02/01 19:26:06 [DEBUG]  [clsFSMonitoringCoord]          [WatcherReconnected] C:\abc compressors\INTRANET\OilGas\3_OFERTAS\OFERTAS\2026\41 - SER\_plantilla reconectado tras 1 intento(s)
+02/01 19:26:06 [INFO]   [clsEventsMediatorDomain]       [mFSMonitoringCoord_MonitoringReconnected] C:\abc compressors\INTRANET\OilGas\3_OFERTAS\OFERTAS\2026\41 - SER\_plantilla tras 1 intentos
+02/01 19:26:06 [DEBUG]  [clsFSWatcher]                  [callback: FolderWatcher.Monitor WatcherReconnected] - C:\Program Files (x86)\Ofertas_Gas (tras 1 intento(s))
+02/01 19:26:06 [DEBUG]  [clsFSMonitoringCoord]          [WatcherReconnected] C:\Program Files (x86)\Ofertas_Gas reconectado tras 1 intento(s)
+02/01 19:26:06 [INFO]   [clsEventsMediatorDomain]       [mFSMonitoringCoord_MonitoringReconnected] C:\Program Files (x86)\Ofertas_Gas tras 1 intentos
+02/01 19:26:06 [DEBUG]  [clsFSWatcher]                  [callback: FolderWatcher.Monitor WatcherReconnected] - C:\Aire (tras 1 intento(s))
+02/01 19:26:06 [DEBUG]  [clsFSMonitoringCoord]          [WatcherReconnected] C:\Aire reconectado tras 1 intento(s)
+02/01 19:26:06 [INFO]   [clsEventsMediatorDomain]       [mFSMonitoringCoord_MonitoringReconnected] C:\Aire tras 1 intentos
+02/01 19:26:06 [DEBUG]  [clsFSWatcher]                  [callback: FolderWatcher.Monitor WatcherReconnected] - C:\abc compressors\2-0-OPORTUNIDADES\_Mis notas (tras 1 intento(s))
+02/01 19:26:06 [DEBUG]  [clsFSMonitoringCoord]          [WatcherReconnected] C:\abc compressors\2-0-OPORTUNIDADES\_Mis notas reconectado tras 1 intento(s)
+02/01 19:26:06 [INFO]   [clsEventsMediatorDomain]       [mFSMonitoringCoord_MonitoringReconnected] C:\abc compressors\2-0-OPORTUNIDADES\_Mis notas tras 1 intentos
+02/01 19:29:06 [DEBUG]  [clsFSWatcher]                  [callback: FolderWatcher.Monitor WatcherReconnected] - C:\abc compressors\INTRANET\OilGas\3_OFERTAS\OFERTAS\2026\41 - SER (tras 1 intento(s))
+02/01 19:29:06 [DEBUG]  [clsFSMonitoringCoord]          [WatcherReconnected] C:\abc compressors\INTRANET\OilGas\3_OFERTAS\OFERTAS\2026\41 - SER reconectado tras 1 intento(s)
+02/01 19:29:06 [INFO]   [clsEventsMediatorDomain]       [mFSMonitoringCoord_MonitoringReconnected] C:\abc compressors\INTRANET\OilGas\3_OFERTAS\OFERTAS\2026\41 - SER tras 1 intentos
+02/01 19:29:56 [DEBUG]  [clsExecutionContext]           [xlApp_WorkbookBeforeClose] 412510064 rev05 - Zachry Group - 45V Compliance package.xlsx
+02/01 19:29:57 [DEBUG]  [clsExecutionContext]           [xlApp_WorkbookActivate] Libro1.xlsm
+02/01 19:35:06 [DEBUG]  [clsFSWatcher]                  [callback: FolderWatcher.Monitor WatcherReconnected] - C:\abc compressors\INTRANET\OilGas\3_OFERTAS\OFERTAS\2026\41 - SER (tras 1 intento(s))
+02/01 19:35:06 [DEBUG]  [clsFSMonitoringCoord]          [WatcherReconnected] C:\abc compressors\INTRANET\OilGas\3_OFERTAS\OFERTAS\2026\41 - SER reconectado tras 1 intento(s)
+02/01 19:35:06 [INFO]   [clsEventsMediatorDomain]       [mFSMonitoringCoord_MonitoringReconnected] C:\abc compressors\INTRANET\OilGas\3_OFERTAS\OFERTAS\2026\41 - SER tras 1 intentos
+02/01 19:36:36 [DEBUG]  [clsFSWatcher]                  [callback: FolderWatcher.Monitor WatcherReconnected] - C:\abc compressors\INTRANET\OilGas\3_OFERTAS\OFERTAS\2026\41 - SER\_plantilla (tras 1 intento(s))
+02/01 19:36:36 [DEBUG]  [clsFSMonitoringCoord]          [WatcherReconnected] C:\abc compressors\INTRANET\OilGas\3_OFERTAS\OFERTAS\2026\41 - SER\_plantilla reconectado tras 1 intento(s)
+02/01 19:36:36 [INFO]   [clsEventsMediatorDomain]       [mFSMonitoringCoord_MonitoringReconnected] C:\abc compressors\INTRANET\OilGas\3_OFERTAS\OFERTAS\2026\41 - SER\_plantilla tras 1 intentos
+02/01 19:36:36 [DEBUG]  [clsFSWatcher]                  [callback: FolderWatcher.Monitor WatcherReconnected] - C:\Program Files (x86)\Ofertas_Gas (tras 1 intento(s))
+02/01 19:36:36 [DEBUG]  [clsFSMonitoringCoord]          [WatcherReconnected] C:\Program Files (x86)\Ofertas_Gas reconectado tras 1 intento(s)
+02/01 19:36:36 [INFO]   [clsEventsMediatorDomain]       [mFSMonitoringCoord_MonitoringReconnected] C:\Program Files (x86)\Ofertas_Gas tras 1 intentos
+02/01 19:36:36 [DEBUG]  [clsFSWatcher]                  [callback: FolderWatcher.Monitor WatcherReconnected] - C:\Aire (tras 1 intento(s))
+02/01 19:36:36 [DEBUG]  [clsFSMonitoringCoord]          [WatcherReconnected] C:\Aire reconectado tras 1 intento(s)
+02/01 19:36:36 [INFO]   [clsEventsMediatorDomain]       [mFSMonitoringCoord_MonitoringReconnected] C:\Aire tras 1 intentos
+02/01 19:36:36 [DEBUG]  [clsFSWatcher]                  [callback: FolderWatcher.Monitor WatcherReconnected] - C:\abc compressors\2-0-OPORTUNIDADES\_Mis notas (tras 1 intento(s))
+02/01 19:36:36 [DEBUG]  [clsFSMonitoringCoord]          [WatcherReconnected] C:\abc compressors\2-0-OPORTUNIDADES\_Mis notas reconectado tras 1 intento(s)
+02/01 19:36:36 [INFO]   [clsEventsMediatorDomain]       [mFSMonitoringCoord_MonitoringReconnected] C:\abc compressors\2-0-OPORTUNIDADES\_Mis notas tras 1 intentos

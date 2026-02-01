@@ -17,6 +17,9 @@ Private mChartManager As clsChartMgr
 Private mCtx As clsExecutionContext
 Attribute mCtx.VB_VarHelpID = -1
 
+' Nuevo contexto refactorizado
+Private mCtxMgr As clsExecutionContextMgr
+
 Private mEventDispatcher As clsEventDispatcher
 Private mEvMgrInfrastructure As clsEventsMgrInfrastructure
 
@@ -31,15 +34,15 @@ Private mRibbon As clsRibbon
 ' Estado centralizado de la aplicaciï¿½n
 Private mApplicationState As clsApplicationState
 
-' Nuevo gestor de contexto de ejecución
+' Nuevo gestor de contexto de ejecuciï¿½n
 Private mExecutionContextMgr As clsExecutionContextMgr
 
 Public Property Get ChartManager() As clsChartMgr
     Set ChartManager = mChartManager
 End Property
 
-Public Property Get executionContext() As clsExecutionContext
-    Set executionContext = mCtx
+Public Property Get ExecutionContext() As clsExecutionContext
+    Set ExecutionContext = mCtx
 End Property
 
 Public Static Property Get ribbon() As clsRibbon
@@ -100,7 +103,7 @@ Private Sub Class_Initialize()
 
     ' INTERFAZ - Crear Ribbon (crea RibbonState internamente)
     Set mRibbon = New clsRibbon
-    mRibbon.Initialize mOpportunities, mFileMgr, mChartManager, mCtx
+    mRibbon.Initialize mOpportunities, mFileMgr, mChartManager, mCtx, mCtxMgr
     
     ' ESTADO CENTRALIZADO - Inyectar referencias a subestados (Dependency Injection)
     Set mApplicationState = New clsApplicationState

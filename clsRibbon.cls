@@ -49,6 +49,10 @@ Attribute mChartMgr.VB_VarHelpID = -1
 Private WithEvents mCtx As clsExecutionContext
 Attribute mCtx.VB_VarHelpID = -1
 
+' Nuevo contexto refactorizado
+Private WithEvents mCtxMgr As clsExecutionContextMgr
+Attribute mCtxMgr.VB_VarHelpID = -1
+
 ' ==========================================
 ' PROPERTY GET/SET PARA MIEMBROS
 ' ==========================================
@@ -98,11 +102,15 @@ End Sub
 Friend Sub Initialize(oOpportunities As clsOpportunitiesMgr, _
                       oFileMgr As clsFileManager, _
                       oChartMgr As clsChartMgr, _
-                      oCtx As clsExecutionContext)
+                      oCtx As clsExecutionContext, _
+                      Optional oCtxMgr As clsExecutionContextMgr = Nothing)
     Set mOpportunities = oOpportunities
     Set mFileMgr = oFileMgr
     Set mChartMgr = oChartMgr
     Set mCtx = oCtx
+    If Not oCtxMgr Is Nothing Then
+        Set mCtxMgr = oCtxMgr
+    End If
 End Sub
 
 Public Sub StopEvents()
@@ -112,6 +120,7 @@ Public Sub StopEvents()
     Set mFileMgr = Nothing
     Set mChartMgr = Nothing
     Set mCtx = Nothing
+    Set mCtxMgr = Nothing
 End Sub
 
 
@@ -133,12 +142,36 @@ Public Sub ToggleModo()
         mStateRibbon.Modo = Ribbon_OpportunityOnly
     End Select
 
+    ' Actualizar el estado del ribbon en el archivo activo
+    UpdateActiveFileRibbonState
+
     ' El Mgr invalida el ribbon despues de cambiar estado
     InvalidarRibbon
 
     On Error Resume Next
     If EsFicheroOportunidad() Then
         ActivarTab "tabOfertasEspecial"
+    End If
+End Sub
+
+'@Description: Actualiza el estado del ribbon en el archivo activo
+Private Sub UpdateActiveFileRibbonState()
+    If Not mFileMgr Is Nothing Then
+        Dim activeFile As clsFileXLS
+        Set activeFile = mFileMgr.State.CurrentFile
+
+        If Not activeFile Is Nothing Then
+            ' Asegurarse de que el archivo tiene un estado de ribbon
+            If activeFile.RibbonState Is Nothing Then
+                Dim newRibbonState As clsRibbonState
+                Set newRibbonState = New clsRibbonState
+                Set activeFile.RibbonState = newRibbonState
+            End If
+
+            ' Actualizar el estado del ribbon del archivo con el estado actual
+            activeFile.RibbonState.Modo = mStateRibbon.Modo
+            activeFile.RibbonState.Visible = mStateRibbon.Visible
+        End If
     End If
 End Sub
 
@@ -333,10 +366,50 @@ Private Sub mOpportunities_currOpportunityChanged(ByVal Index As Long, ByVal Pat
 End Sub
 
 Private Sub mFileMgr_ActiveFileChanged(f As clsFileXLS)
+    Dim fileName As String
+    If f Is Nothing Then
+        fileName = "(ninguno)"
+    Else
+        On Error Resume Next
+        fileName = f.Name
+        If Err.Number <> 0 Then fileName = "(error)"
+        On Error GoTo 0
+    End If
+
+    LogDebug MODULE_NAME, "[mFileMgr_ActiveFileChanged] File=" & fileName
+
+    ' Sincronizar el estado del ribbon con el archivo activo
+    SyncRibbonStateWithActiveFile f
+
+    ' Invalidar controles afectados
     InvalidarControl "btnGenerarGraficos"
     InvalidarControl "btnExportarPDF"
     InvalidarControl "btnLimpiarFormato"
     InvalidarControl "btnAjustarFilas"
+End Sub
+
+'@Description: Sincroniza el estado del ribbon con el archivo activo
+Private Sub SyncRibbonStateWithActiveFile(f As clsFileXLS)
+    If f Is Nothing Then
+        ' Si no hay archivo activo, usar valores por defecto
+        mStateRibbon.Visible = False
+        mStateRibbon.Modo = Ribbon_OpportunityOnly
+    Else
+        ' Usar el estado del ribbon específico para este archivo
+        ' Si el archivo no tiene estado de ribbon aún, crearlo con valores por defecto
+        If f.RibbonState Is Nothing Then
+            ' Crear estado de ribbon para este archivo con valores por defecto
+            Dim newRibbonState As clsRibbonState
+            Set newRibbonState = New clsRibbonState
+            newRibbonState.Modo = Ribbon_OpportunityOnly
+            newRibbonState.Visible = f.EsOportunidad  ' Mostrar solo si es archivo de oportunidad
+            Set f.RibbonState = newRibbonState
+        End If
+
+        ' Sincronizar el estado actual del ribbon con el del archivo
+        mStateRibbon.Modo = f.RibbonState.Modo
+        mStateRibbon.Visible = f.RibbonState.Visible
+    End If
 End Sub
 
 Private Sub mChartMgr_ChartActivated(cht As Chart)
