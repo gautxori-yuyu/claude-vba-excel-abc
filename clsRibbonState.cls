@@ -7,7 +7,7 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = True
-'@Description: Estado lï¿½gico del Ribbon
+'@Description: Estado lógico del Ribbon
 '@Category: State
 
 '@Folder "3-UI.Excel.Ribbon"
@@ -22,7 +22,7 @@ Public Property Get Modo() As eRibbonMode
     Modo = mModoRibbon
 End Property
 
-Public Property Let Modo(value As eRibbonMode)
+Friend Property Let Modo(value As eRibbonMode)
     mModoRibbon = value
 End Property
 
@@ -46,7 +46,7 @@ Public Property Get Visible() As Boolean
     Visible = mVisible
 End Property
 
-Public Property Let Visible(value As Boolean)
+Friend Property Let Visible(value As Boolean)
     mVisible = value
 End Property
 
