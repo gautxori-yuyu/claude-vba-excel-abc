@@ -7,8 +7,8 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
-'@Description: Manager del contexto de ejecución Excel. Recibe eventos del Listener (ThisWorkbook),
-'              actualiza State, emite eventos semánticos de infraestructura.
+'@Description: Manager del contexto de ejecuciï¿½n Excel. Recibe eventos del Listener (ThisWorkbook),
+'              actualiza State, emite eventos semï¿½nticos de infraestructura.
 '@Category: Manager
 '@Folder "2-Infraestructura"
 Option Explicit
@@ -16,7 +16,7 @@ Option Explicit
 Private Const MODULE_NAME As String = "clsExecutionContextMgr"
 
 ' ==========================================
-' EVENTOS SEMÓNTICOS DE INFRAESTRUCTURA
+' EVENTOS SEMï¿½NTICOS DE INFRAESTRUCTURA
 ' ==========================================
 Public Event WorkbookOpened(ByVal wb As Workbook)
 Public Event WorkbookActivated(ByVal wb As Workbook)
@@ -31,12 +31,12 @@ Public Event ContextReinitialized()
 Private mState As clsExecutionContextState
 
 ' ==========================================
-' INICIALIZACIÓN
+' INICIALIZACIï¿½N
 ' ==========================================
 
 Public Sub Initialize(oState As clsExecutionContextState)
     Set mState = oState
-    DetectFullContext
+    RefreshContextState
     LogInfo MODULE_NAME, "[Initialize] - Contexto inicializado"
 End Sub
 
@@ -50,7 +50,7 @@ Private Sub Class_Terminate()
 End Sub
 
 ' ==========================================
-' MÉTODOS DEL LISTENER (llamados por ThisWorkbook)
+' Mï¿½TODOS DEL LISTENER (llamados por ThisWorkbook)
 ' ==========================================
 
 Public Sub OnWorkbookOpened(ByVal wb As Workbook)
@@ -108,16 +108,60 @@ End Sub
 Public Sub ReInitializeContext()
     mState.InvalidateContext
     RaiseEvent ContextInvalidated()
-    DetectFullContext
+    RefreshContextState
     mState.ValidateContext
     RaiseEvent ContextReinitialized()
     LogInfo MODULE_NAME, "[ReInitializeContext] - Contexto reinicializado tras reset"
 End Sub
 
+'@Description: Verifica si el contexto completo es valido (referencias COM vivas)
+'@Returns: True si todas las referencias criticas estan vivas y responden
+'@Note: Usa accesos reales a propiedades para verificar que los objetos no son zombis
+Public Function IsContextValid() As Boolean
+    On Error GoTo InvalidContext
+
+    ' 1. Verificar que tenemos State
+    If mState Is Nothing Then
+        LogWarning MODULE_NAME, "[IsContextValid] mState Is Nothing"
+        GoTo InvalidContext
+    End If
+
+    ' 2. Verificar que Application existe y responde
+    If mState.Application Is Nothing Then
+        LogWarning MODULE_NAME, "[IsContextValid] Application Is Nothing"
+        GoTo InvalidContext
+    End If
+
+    ' 3. Verificar que Application responde (no es referencia zombi)
+    Dim testName As String
+    testName = mState.Application.Name
+    If Len(testName) = 0 Then
+        LogWarning MODULE_NAME, "[IsContextValid] Application.Name vacio"
+        GoTo InvalidContext
+    End If
+
+    ' 4. Verificar que podemos acceder a Workbooks
+    Dim testCount As Long
+    testCount = mState.Application.Workbooks.Count
+
+    ' 5. Verificar flag de validez del State
+    If Not mState.IsContextValid Then
+        LogWarning MODULE_NAME, "[IsContextValid] State.IsContextValid = False"
+        GoTo InvalidContext
+    End If
+
+    IsContextValid = True
+    Exit Function
+
+InvalidContext:
+    IsContextValid = False
+    LogWarning MODULE_NAME, "[IsContextValid] Contexto invalido detectado"
+End Function
+
 '@Description: Detecta el contexto actual de Excel (workbook, worksheet, chart)
 '              y actualiza el State. Se usa en Initialize (bootstrap) y en
 '              ReInitializeContext (tras reset).
-Private Sub DetectFullContext()
+Private Sub RefreshContextState()
     mState.SetApplication Excel.Application
 
     On Error Resume Next
@@ -142,7 +186,7 @@ Private Sub DetectFullContext()
 End Sub
 
 ' ==========================================
-' ELECCIÓN DE CHART (lógica privada del Mgr)
+' ELECCIï¿½N DE CHART (lï¿½gica privada del Mgr)
 ' ==========================================
 
 Private Sub DetectChart()

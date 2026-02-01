@@ -7,7 +7,7 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
-'@Description: Gestor centralizado del estado actual de la aplicación
+'@Description: Gestor centralizado del estado actual de la aplicaciï¿½n
 '@Category: State
 '@Folder "5-Aplicac (Coord).Estado"
 Option Explicit
@@ -15,7 +15,7 @@ Option Explicit
 Private Const MODULE_NAME As String = "clsApplicationState"
 
 ' ==========================================
-' SUBCLASES DE ESTADO (Composición)
+' SUBCLASES DE ESTADO (Composiciï¿½n)
 ' ==========================================
 Private mRibbonState As clsRibbonState
 Private mOpportunityState As clsOpportunityState
@@ -25,12 +25,12 @@ Private mCtxState As clsExecutionContextState
 
 
 ' ==========================================
-' INICIALIZACIÓN
+' INICIALIZACIï¿½N
 ' ==========================================
 
 Private Sub Class_Initialize()
     LogInfo MODULE_NAME, "[Class_Initialize]"
-    ' NO crear subestados aquí - se inyectan mediante Initialize()
+    ' NO crear subestados aquï¿½ - se inyectan mediante Initialize()
 End Sub
 
 Private Sub Class_Terminate()
@@ -44,11 +44,11 @@ Private Sub Class_Terminate()
 End Sub
 
 '@Description: Inicializa el coordinador con referencias a subestados (Dependency Injection)
-'@Note: Todos los parámetros son opcionales (Nothing es un estado válido)
-'@Param ribbonState: Instancia de clsRibbonState (creada y poseída por clsRibbon)
-'@Param opportunityState: Instancia de clsOpportunityState (creada y poseída por clsOpportunitiesMgr)
-'@Param fileState: Instancia de clsFileState (creada y poseída por clsFileManager)
-'@Param chartState: Instancia de clsChartState (creada y poseída por clsChartMgr)
+'@Note: Todos los parï¿½metros son opcionales (Nothing es un estado vï¿½lido)
+'@Param ribbonState: Instancia de clsRibbonState (creada y poseï¿½da por clsRibbon)
+'@Param opportunityState: Instancia de clsOpportunityState (creada y poseï¿½da por clsOpportunitiesMgr)
+'@Param fileState: Instancia de clsFileState (creada y poseï¿½da por clsFileManager)
+'@Param chartState: Instancia de clsChartState (creada y poseï¿½da por clsChartMgr)
 Public Sub Initialize(Optional RibbonState As clsRibbonState = Nothing, _
                       Optional OpportunityState As clsOpportunityState = Nothing, _
                       Optional FileState As clsFileState = Nothing, _
@@ -83,7 +83,7 @@ Public Function IsOpportunityFileActive() As Boolean
     IsOpportunityFileActive = mFileState.isOpportunityFile And mOpportunityState.HasCurrentOpportunity()
 End Function
 
-'@Description: Indica si el contexto de ejecución Excel es válido
+'@Description: Indica si el contexto de ejecucion Excel es valido
 Public Property Get IsContextValid() As Boolean
     If mCtxState Is Nothing Then
         IsContextValid = False
@@ -91,4 +91,28 @@ Public Property Get IsContextValid() As Boolean
         IsContextValid = mCtxState.IsContextValid
     End If
 End Property
+
+'@Description: Indica si la aplicacion esta completamente inicializada
+'@Returns: True si todos los subestados criticos han sido inyectados
+'@Note: Util para detectar estados parciales tras un reset de VBA
+Public Property Get IsInitialized() As Boolean
+    ' Verificar que todos los subestados criticos estan presentes
+    IsInitialized = Not (mCtxState Is Nothing) And _
+                    Not (mRibbonState Is Nothing) And _
+                    Not (mOpportunityState Is Nothing) And _
+                    Not (mFileState Is Nothing)
+End Property
+
+'@Description: Obtiene informacion de diagnostico sobre el estado de inicializacion
+'@Returns: String con el estado de cada subestado
+Public Function GetInitializationStatus() As String
+    Dim status As String
+    status = "Subestados: "
+    status = status & "Ctx=" & CStr(Not (mCtxState Is Nothing)) & ", "
+    status = status & "Ribbon=" & CStr(Not (mRibbonState Is Nothing)) & ", "
+    status = status & "Opp=" & CStr(Not (mOpportunityState Is Nothing)) & ", "
+    status = status & "File=" & CStr(Not (mFileState Is Nothing)) & ", "
+    status = status & "Chart=" & CStr(Not (mChartState Is Nothing))
+    GetInitializationStatus = status
+End Function
 

@@ -11,8 +11,62 @@ Option Explicit
 
 Private Const MODULE_NAME As String = "modMACROAppLifecycle"
 
+' ==========================================
+' DETECCION DE RESET VBA
+' ==========================================
+' Cuando VBA se resetea (error fatal, End en depuracion, etc.),
+' todas las variables de modulo se reinicializan a 0/Nothing.
+' Usamos una variable Static dentro de una funcion para detectar esto.
+' ==========================================
+
+Private mInitCounter As Long       ' Contador de inicializaciones (persistente en sesion)
+Private mLastInitTime As Double    ' Timestamp de ultima inicializacion
+
+'@Description: Detecta si ocurrio un reset de VBA desde la ultima llamada
+'@Returns: True si es la primera llamada tras un reset (contador > 1)
+'@Note: Esta funcion usa una variable Static que sobrevive entre llamadas
+'       pero se reinicia si VBA hace reset. El patron detecta ese reset.
+Public Function DetectVBAResetOccurred() As Boolean
+    Static sInitFlag As Boolean
+
+    If Not sInitFlag Then
+        ' Primera vez que se ejecuta desde reset
+        sInitFlag = True
+        mInitCounter = mInitCounter + 1
+        mLastInitTime = Timer
+
+        ' Si contador > 1, hubo reset previo
+        DetectVBAResetOccurred = (mInitCounter > 1)
+
+        If DetectVBAResetOccurred Then
+            LogWarning MODULE_NAME, "[DetectVBAResetOccurred] Reset detectado! Inicializacion #" & mInitCounter
+        Else
+            LogInfo MODULE_NAME, "[DetectVBAResetOccurred] Primera inicializacion de la sesion"
+        End If
+    Else
+        ' Llamadas subsiguientes en la misma sesion - no hay reset
+        DetectVBAResetOccurred = False
+    End If
+End Function
+
+'@Description: Obtiene el numero de veces que se ha inicializado la aplicacion
+'@Returns: Long - Contador de inicializaciones (1 = primera vez, >1 = hubo resets)
+Public Property Get InitializationCount() As Long
+    InitializationCount = mInitCounter
+End Property
+
+'@Description: Obtiene el timestamp de la ultima inicializacion
+'@Returns: Double - Valor de Timer en la ultima inicializacion
+Public Property Get LastInitializationTime() As Double
+    LastInitializationTime = mLastInitTime
+End Property
+
+' ==========================================
+' ACCESO A LA APLICACION
+' ==========================================
+
 Public Function App() As clsApplication
-Attribute App.VB_Description = "[modMACROAppLifecycle] App (función personalizada). Aplica a: ThisWorkbook"
+Attribute App.VB_Description = "[modMACROAppLifecycle] App (funciï¿½n personalizada). Aplica a: ThisWorkbook"
 Attribute App.VB_ProcData.VB_Invoke_Func = " \n21"
     Set App = ThisWorkbook.App
 End Function
@@ -24,7 +78,7 @@ Attribute ReiniciarAplicacion.VB_ProcData.VB_Invoke_Func = " \n0"
 
     result = MsgBox("Esto reiniciara completamente el complemento ABC." & vbCrLf & vbCrLf & _
                     "Se cerrara y volvera a inicializar la aplicacion." & vbCrLf & _
-                    "¿Desea continuar?", _
+                    "ï¿½Desea continuar?", _
                     vbQuestion + vbYesNo, "Reiniciar Aplicacion")
 
     If result <> vbYes Then Exit Sub
@@ -49,10 +103,10 @@ Attribute ReiniciarAplicacion.VB_ProcData.VB_Invoke_Func = " \n0"
 
     ' Verificar estado
     If IsRibbonAvailable() Then
-        MsgBox "Aplicación reiniciada correctamente." & vbCrLf & vbCrLf & _
+        MsgBox "Aplicaciï¿½n reiniciada correctamente." & vbCrLf & vbCrLf & _
                App.ribbon.GetQuickDiagnostics(), vbInformation, "Reinicio Exitoso"
     Else
-        MsgBox "Aplicación reiniciada, pero el Ribbon puede requerir atención adicional." & vbCrLf & _
+        MsgBox "Aplicaciï¿½n reiniciada, pero el Ribbon puede requerir atenciï¿½n adicional." & vbCrLf & _
                "Ejecute 'RecuperarRibbon' si es necesario.", _
                vbExclamation, "Reinicio Parcial"
     End If
@@ -64,7 +118,7 @@ End Sub
 ' ==========================================
 
 '@Description: Activa temporalmente la visibilidad del XLAM para operaciones de copia
-'              Muestra el libro que contiene este XLAM, haciéndolo visible en la interfaz de Excel.
+'              Muestra el libro que contiene este XLAM, haciï¿½ndolo visible en la interfaz de Excel.
 '@Scope: Manipula el libro host del complemento XLAM cargado.
 '@ArgumentDescriptions: (no tiene argumentos)
 '@Returns: (ninguno)
@@ -395,7 +449,7 @@ Private Function RecoverByAddinToggle() As Boolean
     LogDebug MODULE_NAME, "RecoverByAddinToggle - Desactivando add-in..."
     targetAddin.Installed = False
 
-    ' Pequeña pausa
+    ' Pequeï¿½a pausa
     DoEvents
     Application.Wait Now + TimeSerial(0, 0, 1)
     DoEvents

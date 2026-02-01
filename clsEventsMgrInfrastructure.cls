@@ -20,7 +20,7 @@ Attribute mCtxMgr.VB_VarHelpID = -1
 Private mFileMgr As clsFileManager
 
 '--------------------------------------------------------------
-' Inicialización
+' Inicializaciï¿½n
 '--------------------------------------------------------------
 Private Sub Class_Initialize()
     LogInfo MODULE_NAME, "[Class_Initialize]"
@@ -43,7 +43,7 @@ Public Sub Initialize(oFileMgr As clsFileManager, oChartManager As clsChartMgr, 
 ErrHandler:
     LogCurrentError MODULE_NAME, "[Initialize]"
     Err.Raise Err.Number, MODULE_NAME & " [Initialize]", _
-              "Error inicializando aplicación: " & Err.Description
+              "Error inicializando aplicaciï¿½n: " & Err.Description
 End Sub
 
 Public Sub Terminate()
@@ -59,7 +59,7 @@ Public Sub Terminate()
 ErrHandler:
     LogCurrentError MODULE_NAME, "[Terminate]"
     Err.Raise Err.Number, MODULE_NAME & " [Terminate]", _
-              "Error finalizando aplicación: " & Err.Description
+              "Error finalizando aplicaciï¿½n: " & Err.Description
 End Sub
 
 ' ==================================================================
@@ -71,7 +71,7 @@ End Sub
 ' -------------------------------------------------------------
 
 '@Description: Se dispara cuando se activa un workbook
-'@Category: Gráficos
+'@Category: Grï¿½ficos
 '@Scope: Grafico seleccionado
 '@ArgumentDescriptions: wb As Workbook
 
@@ -81,7 +81,7 @@ Private Sub mCtxMgr_WorkbookActivated(ByVal wb As Workbook)
 End Sub
 
 '@Description: Se dispara al activar una hoja; inicia vigilancia de graficos
-'@Category: Gráficos
+'@Category: Grï¿½ficos
 '@Scope: Grafico seleccionado
 '@ArgumentDescriptions: sh As Object
 
@@ -96,7 +96,7 @@ ErrHandler:
 End Sub
 
 '@Description: Se dispara al desactivar una hoja; detiene vigilancia de graficos
-'@Category: Gráficos
+'@Category: Grï¿½ficos
 '@Scope: Grafico seleccionado
 '@ArgumentDescriptions: sh As Object
 
@@ -127,21 +127,42 @@ Private Sub mCtxMgr_WorkbookBeforeClose(ByVal wb As Workbook, Cancel As Boolean)
 End Sub
 
 ' -------------------------------------------------------------
-' Eventos de reset / reenganche de contexto
+' Eventos de ciclo de vida del contexto (reset / reenganche)
 ' -------------------------------------------------------------
 
+'@Description: Se dispara cuando el contexto se invalida (shutdown, error COM, etc.)
+'@Note: Libera referencias que puedan estar corruptas para evitar errores en cascada
 Private Sub mCtxMgr_ContextInvalidated()
-    LogWarning MODULE_NAME, "[mCtxMgr_ContextInvalidated] Contexto invalidado"
+    On Error Resume Next
+    LogWarning MODULE_NAME, "[mCtxMgr_ContextInvalidated] - Contexto invalidado, liberando recursos"
+
+    ' Detener vigilancia de charts (pueden tener referencias muertas)
+    If Not mChartManager Is Nothing Then
+        mChartManager.StopWatching
+    End If
+
+    On Error GoTo 0
 End Sub
 
+'@Description: Se dispara cuando el contexto se reinicializa tras un reset
+'@Note: Reconecta los managers que necesitan referencias actualizadas
 Private Sub mCtxMgr_ContextReinitialized()
-    LogInfo MODULE_NAME, "[mCtxMgr_ContextReinitialized] Re-enganchando consumidores"
-    On Error Resume Next
+    On Error GoTo ErrHandler
+    LogInfo MODULE_NAME, "[mCtxMgr_ContextReinitialized] - Re-enganchando consumidores"
+
+    ' Re-registrar el workbook activo si existe
     Dim wb As Workbook
     Set wb = Excel.Application.ActiveWorkbook
     If Not wb Is Nothing Then
         mFileMgr.GetOrTrackWorkbook wb
     End If
-    mChartManager.RefreshCurrentSheet
-    On Error GoTo 0
+
+    ' Refrescar el ChartManager con la hoja actual
+    If Not mChartManager Is Nothing Then
+        mChartManager.RefreshCurrentSheet
+    End If
+
+    Exit Sub
+ErrHandler:
+    LogError MODULE_NAME, "[mCtxMgr_ContextReinitialized] Error durante reconexion", , Err.Description
 End Sub
