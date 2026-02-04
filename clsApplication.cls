@@ -112,9 +112,10 @@ Private Sub Class_Initialize()
     Call mEvMgrInfrastructure.Initialize(mFileMgr, mChartManager, mCtxMgr)
 
     ' MEDIADOR DE EVENTOS DE DOMINIO
+    ' Escucha eventos SEMANTICOS del mediador de infraestructura (no directamente de mCtxMgr)
     Set mEvMediatorDomain = New clsEventsMediatorDomain
     Call mEvMediatorDomain.Initialize(mCtxState, _
-                                    mCtxMgr, _
+                                    mEvMgrInfrastructure, _
                                     mFSMonitoringCoord, _
                                     mOpportunities, _
                                     mFileMgr)

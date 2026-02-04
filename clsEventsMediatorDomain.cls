@@ -13,19 +13,27 @@ Option Explicit
 
 Private Const MODULE_NAME As String = "clsEventsMediatorDomain"
 
+' ==================================================================
+' SUSCRIPCIONES A EVENTOS
+' ==================================================================
+' El mediador de dominio escucha:
+' - mInfraMediador: eventos SEMANTICOS traducidos de infraestructura
+' - mFSMonitoringCoord: eventos de sistema de archivos (ya son semanticos)
+' - mOpportunities: eventos de dominio (Manager de oportunidades)
+'
+' NO escucha directamente a clases de infraestructura pura (mCtxMgr, mFileMgr)
+
+Private WithEvents mInfraMediador As clsEventsMgrInfrastructure
+Attribute mInfraMediador.VB_VarHelpID = -1
+
 Private WithEvents mFSMonitoringCoord As clsFSMonitoringCoord
 Attribute mFSMonitoringCoord.VB_VarHelpID = -1
 
 Private WithEvents mOpportunities As clsOpportunitiesMgr
 Attribute mOpportunities.VB_VarHelpID = -1
 
-Private WithEvents mFileMgr As clsFileManager
-Attribute mFileMgr.VB_VarHelpID = -1
-
-Private WithEvents mCtxMgr As clsExecutionContextMgr
-Attribute mCtxMgr.VB_VarHelpID = -1
-
 Private mCtxState As clsExecutionContextState
+Private mFileMgr As clsFileManager   ' Referencia sin WithEvents (solo para consultas)
 
 '--------------------------------------------------------------
 ' Inicializaci�n
@@ -41,22 +49,25 @@ End Sub
 
 'TODO: faltaria crear clases para otras funciones que estan en macros, y pasarlas como parametros...
 Public Sub Initialize(oCtxState As clsExecutionContextState, _
-                oCtxMgr As clsExecutionContextMgr, _
+                oInfraMediador As clsEventsMgrInfrastructure, _
                 oFSMonitoringCoord As clsFSMonitoringCoord, _
                 oOpportunities As clsOpportunitiesMgr, _
                 oFileMgr As clsFileManager)
     On Error GoTo ErrHandler
 
     Set mCtxState = oCtxState
-    Set mCtxMgr = oCtxMgr
 
+    ' Escuchar eventos SEMANTICOS del mediador de infraestructura
+    Set mInfraMediador = oInfraMediador
+
+    ' Referencia a FileMgr solo para consultas (no WithEvents)
     Set mFileMgr = oFileMgr
 
     Set mFSMonitoringCoord = oFSMonitoringCoord
 
     Set mOpportunities = oOpportunities
 
-    LogInfo MODULE_NAME, "[Initialize] Mediador configurado"
+    LogInfo MODULE_NAME, "[Initialize] Mediador configurado (escucha via InfraMediador)"
 
     Exit Sub
 ErrHandler:
@@ -70,10 +81,10 @@ Public Sub Terminate()
     ' Liberar referencias WithEvents primero
     Set mOpportunities = Nothing
     Set mFSMonitoringCoord = Nothing
-    Set mFileMgr = Nothing
-    Set mCtxMgr = Nothing
+    Set mInfraMediador = Nothing
 
     ' Luego referencias normales
+    Set mFileMgr = Nothing
     Set mCtxState = Nothing
 
     Exit Sub
@@ -93,10 +104,15 @@ End Sub
 Private Sub mOpportunities_OpportunityCollectionUpdate(ByVal cambios As String)
     LogInfo MODULE_NAME, "[callback: clsOpportunitiesMgr OpportunityCollectionUpdate] - cambios detectados: " & cambios
 End Sub
-'TODO: Extraer la l�gica de clsFileXLS A una funci�n
+'TODO: VIOLACION ARQUITECTONICA - El mediador de dominio no deberia usar clsFileXLS directamente.
+'      Esta logica de "mover archivo a carpeta de oportunidad" deberia:
+'      1. Delegarse a un servicio de infraestructura (FileLocationService?), o
+'      2. El mediador de infraestructura deberia exponer un evento/metodo semantico
+'      Pendiente de decision cuando se tenga la especificacion de dominio.
 Private Sub mOpportunities_currOpportunityChanged(ByVal Index As Long, ByVal Path As String)
     LogInfo MODULE_NAME, "[callback: clsOpportunitiesMgr currOpportunityChanged] - Oportunidad seleccionada: " & Path
-    
+
+    ' TEMPORAL: Uso directo de clsFileXLS (ver TODO arriba)
     Dim f As clsFileXLS
     Set f = mFileMgr.GetOrTrackWorkbook(mCtxState.Workbook)
     If Not f Is Nothing Then
@@ -107,22 +123,29 @@ Private Sub mOpportunities_currOpportunityChanged(ByVal Index As Long, ByVal Pat
 End Sub
 
 
-'--------------------------------------------------------------
-' Evento de cambio de archivo activo (desde FileManager)
-'--------------------------------------------------------------
-Private Sub mFileMgr_ActiveFileChanged(f As clsFileXLS)
+' -------------------------------------------------------------
+' Eventos SEMANTICOS del mediador de infraestructura
+' (traducidos de eventos tecnicos - el dominio no conoce Excel/COM)
+' -------------------------------------------------------------
+
+'@Description: Evento semantico: el archivo activo ha cambiado
+Private Sub mInfraMediador_ActiveFileSessionChanged(ByVal filePath As String, ByVal isOpportunityFile As Boolean)
     Dim fileName As String
-    If f Is Nothing Then
+    If Len(filePath) = 0 Then
         fileName = "(ninguno)"
     Else
-        On Error Resume Next
-        fileName = f.Name
-        If Err.Number <> 0 Then fileName = "(error)"
-        On Error GoTo 0
+        ' Extraer solo el nombre del archivo del path
+        Dim pos As Long
+        pos = InStrRev(filePath, "\")
+        If pos > 0 Then
+            fileName = Mid$(filePath, pos + 1)
+        Else
+            fileName = filePath
+        End If
     End If
 
-    LogInfo MODULE_NAME, "[callback: FileManager ActiveFileChanged] - File=" & fileName & _
-                         ", IsOpportunity=" & mFileMgr.State.isOpportunityFile
+    LogInfo MODULE_NAME, "[InfraMediador_ActiveFileSessionChanged] - File=" & fileName & _
+                         ", IsOpportunity=" & isOpportunityFile
 End Sub
 
 ' -------------------------------------------------------------
@@ -188,14 +211,10 @@ Private Sub mFSMonitoringCoord_MonitoringFailed(ByVal folder As String, ByVal re
     LogError MODULE_NAME, "[mFSMonitoringCoord_MonitoringFailed] " & folder & ": " & reason
 End Sub
 
-' -------------------------------------------------------------
-' Eventos de ciclo de vida del contexto (desde ExecutionContextMgr)
-' -------------------------------------------------------------
-
-'@Description: Se dispara cuando el contexto se invalida (shutdown, error COM, etc.)
-'@Note: Permite al dominio prepararse para la invalidacion del contexto
-Private Sub mCtxMgr_ContextInvalidated()
-    LogWarning MODULE_NAME, "[mCtxMgr_ContextInvalidated] - Contexto invalidado, notificando a dominio"
+'@Description: Evento semantico: el contexto de infraestructura se ha invalidado
+'@Note: Permite al dominio prepararse para la invalidacion sin conocer detalles tecnicos
+Private Sub mInfraMediador_InfraContextInvalidated()
+    LogWarning MODULE_NAME, "[InfraMediador_InfraContextInvalidated] - Contexto invalidado, notificando a dominio"
 
     ' Pausar monitoreo de FS si esta activo (puede tener referencias invalidas)
     On Error Resume Next
@@ -205,11 +224,11 @@ Private Sub mCtxMgr_ContextInvalidated()
     On Error GoTo 0
 End Sub
 
-'@Description: Se dispara cuando el contexto se reinicializa tras un reset
+'@Description: Evento semantico: el contexto de infraestructura se ha reinicializado
 '@Note: Permite al dominio reenganchar sus dependencias y refrescar estado
-Private Sub mCtxMgr_ContextReinitialized()
+Private Sub mInfraMediador_InfraContextReinitialized()
     On Error GoTo ErrHandler
-    LogInfo MODULE_NAME, "[mCtxMgr_ContextReinitialized] - Reconectando dominio"
+    LogInfo MODULE_NAME, "[InfraMediador_InfraContextReinitialized] - Reconectando dominio"
 
     ' Reanudar monitoreo de FS
     If Not mFSMonitoringCoord Is Nothing Then
@@ -223,5 +242,5 @@ Private Sub mCtxMgr_ContextReinitialized()
 
     Exit Sub
 ErrHandler:
-    LogError MODULE_NAME, "[mCtxMgr_ContextReinitialized] Error durante reconexion de dominio", , Err.Description
+    LogError MODULE_NAME, "[InfraMediador_InfraContextReinitialized] Error durante reconexion de dominio", , Err.Description
 End Sub

@@ -13,11 +13,33 @@ Option Explicit
 
 Private Const MODULE_NAME As String = "clsEventsMgrInfrastructure"
 
+' ==================================================================
+' EVENTOS SEMANTICOS DE INFRAESTRUCTURA (para consumo por dominio)
+' ==================================================================
+' Estos eventos traducen los eventos tecnicos de infraestructura
+' a un lenguaje que el dominio puede entender sin conocer Excel/COM.
+' El mediador de dominio escucha ESTOS eventos, no los de mCtxMgr directamente.
+
+'@Description: El contexto de ejecucion se ha invalidado (reset VBA, error COM, etc.)
+Public Event InfraContextInvalidated()
+
+'@Description: El contexto de ejecucion se ha reinicializado tras un reset
+Public Event InfraContextReinitialized()
+
+'@Description: El archivo activo ha cambiado (traduccion de ActiveFileChanged)
+'@Param filePath: Ruta del archivo activo (vacio si ninguno)
+'@Param isOpportunityFile: True si el archivo es de una oportunidad
+Public Event ActiveFileSessionChanged(ByVal filePath As String, ByVal isOpportunityFile As Boolean)
+
+' ==================================================================
+' REFERENCIAS INTERNAS
+' ==================================================================
 Private mChartManager As clsChartMgr
 Private WithEvents mCtxMgr As clsExecutionContextMgr
 Attribute mCtxMgr.VB_VarHelpID = -1
 
-Private mFileMgr As clsFileManager
+Private WithEvents mFileMgr As clsFileManager
+Attribute mFileMgr.VB_VarHelpID = -1
 
 '--------------------------------------------------------------
 ' Inicializaci�n
@@ -141,6 +163,9 @@ Private Sub mCtxMgr_ContextInvalidated()
         mChartManager.StopWatching
     End If
 
+    ' Emitir evento semantico para que el dominio pueda reaccionar
+    RaiseEvent InfraContextInvalidated
+
     On Error GoTo 0
 End Sub
 
@@ -162,7 +187,39 @@ Private Sub mCtxMgr_ContextReinitialized()
         mChartManager.RefreshCurrentSheet
     End If
 
+    ' Emitir evento semantico para que el dominio pueda reaccionar
+    RaiseEvent InfraContextReinitialized
+
     Exit Sub
 ErrHandler:
     LogError MODULE_NAME, "[mCtxMgr_ContextReinitialized] Error durante reconexion", , Err.Description
+End Sub
+
+' -------------------------------------------------------------
+' Eventos de FileManager (traduccion a eventos semanticos)
+' -------------------------------------------------------------
+
+'@Description: Traduce el evento tecnico ActiveFileChanged a evento semantico
+Private Sub mFileMgr_ActiveFileChanged(f As clsFileXLS)
+    On Error GoTo ErrHandler
+
+    Dim filePath As String
+    Dim isOpp As Boolean
+
+    If f Is Nothing Then
+        filePath = ""
+        isOpp = False
+    Else
+        filePath = f.FullName
+        isOpp = mFileMgr.State.isOpportunityFile
+    End If
+
+    LogDebug MODULE_NAME, "[mFileMgr_ActiveFileChanged] -> ActiveFileSessionChanged: " & filePath
+
+    ' Emitir evento semantico (sin referencias a clsFileXLS)
+    RaiseEvent ActiveFileSessionChanged(filePath, isOpp)
+
+    Exit Sub
+ErrHandler:
+    LogError MODULE_NAME, "[mFileMgr_ActiveFileChanged] Error traduciendo evento", , Err.Description
 End Sub

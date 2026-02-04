@@ -399,10 +399,10 @@ ExcelOpportunitySource.cls creado como adaptador de infraestructura que implemen
 ### Detección de reset integrada en bootstrap (Feature 1 — commit 5001caf)
 ThisWorkbook.Workbook_Open ahora llama a DetectVBAResetOccurred() al inicio y fuerza reinicialización del contexto si detecta reset. Loguea número de inicialización para diagnóstico.
 
-### Flujo de reinicialización completo en dominio (Feature 1 — commit 5001caf)
-- clsEventsMediatorDomain ahora escucha ContextInvalidated/ContextReinitialized via WithEvents mCtxMgr
-- Durante ContextInvalidated: pausa FSMonitoringCoord
-- Durante ContextReinitialized: reanuda FSMonitoringCoord y refresca oportunidades
+### Flujo de reinicialización completo en dominio (Feature 1 — commit 5001caf, actualizado Feature 2)
+- clsEventsMediatorDomain escucha InfraContextInvalidated/InfraContextReinitialized via WithEvents mInfraMediador (eventos traducidos)
+- Durante InfraContextInvalidated: pausa FSMonitoringCoord
+- Durante InfraContextReinitialized: reanuda FSMonitoringCoord y refresca oportunidades
 - clsFSMonitoringCoord: nuevos métodos PausarMonitoreo/ReanudarMonitoreo y propiedad IsPaused
 
 ### clsOpportunity implementa IOpportunity (Feature 1 — commit 5001caf)
@@ -413,3 +413,19 @@ Nueva propiedad `CurrentOpportunitySource As IOpportunity` que permite al códig
 
 ### Interfaz IOferta de dominio (Feature 1 — commit 5001caf)
 IOferta.cls implementada como interfaz de dominio para ofertas. Métodos: OfertaId, NumeroOferta, FechaOferta, IsValid, IsDirty, IsNew, GetDatosGenerales, OtrosCount.
+
+### Traducción de eventos infra→dominio (Feature 2)
+Corregida la violación del Objetivo 5: el mediador de dominio ya NO escucha directamente a clases de infraestructura.
+- clsEventsMgrInfrastructure ahora emite eventos semánticos traducidos:
+  - `InfraContextInvalidated` (traducción de mCtxMgr_ContextInvalidated)
+  - `InfraContextReinitialized` (traducción de mCtxMgr_ContextReinitialized)
+  - `ActiveFileSessionChanged` (traducción de mFileMgr_ActiveFileChanged)
+- clsEventsMediatorDomain ahora escucha `WithEvents mInfraMediador` en lugar de escuchar directamente a mCtxMgr y mFileMgr
+- El flujo correcto es: Excel → ExecutionContextMgr → InfraMediador (traduce) → DomainMediador
+- clsApplication.cls actualizado para pasar mEvMgrInfrastructure al inicializar el mediador de dominio
+
+### clsFileManager reclasificado como infraestructura (Feature 2)
+@Folder cambiado de "4-Servicios.Archivos" a "2-Infraestructura" según Objetivo 6 de REFERENCE_NOTES.md.
+
+### Violación pendiente documentada: uso de clsFileXLS en domain mediator (Feature 2)
+En mOpportunities_currOpportunityChanged se usa clsFileXLS directamente. Documentado con TODO explicando que requiere decisión de diseño cuando se tenga la especificación de dominio. Opciones: delegarlo a servicio de infraestructura o que el mediador de infraestructura exponga método semántico.
