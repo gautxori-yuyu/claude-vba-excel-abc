@@ -7,7 +7,7 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
-'@Description: Gestor centralizado del estado actual de la aplicaci�n
+'@Description: Gestor centralizado del estado actual de la aplicaciÃ³n
 '@Category: State
 '@Folder "5-Aplicac (Coord).Estado"
 Option Explicit
@@ -15,7 +15,7 @@ Option Explicit
 Private Const MODULE_NAME As String = "clsApplicationState"
 
 ' ==========================================
-' SUBCLASES DE ESTADO (Composici�n)
+' SUBCLASES DE ESTADO (ComposiciÃ³n)
 ' ==========================================
 Private mRibbonState As clsRibbonState
 Private mOpportunityState As clsOpportunityState
@@ -25,12 +25,12 @@ Private mCtxState As clsExecutionContextState
 
 
 ' ==========================================
-' INICIALIZACI�N
+' INICIALIZACIÃ³N
 ' ==========================================
 
 Private Sub Class_Initialize()
     LogInfo MODULE_NAME, "[Class_Initialize]"
-    ' NO crear subestados aqu� - se inyectan mediante Initialize()
+    ' NO crear subestados aquÃ³ - se inyectan mediante Initialize()
 End Sub
 
 Private Sub Class_Terminate()
@@ -44,11 +44,11 @@ Private Sub Class_Terminate()
 End Sub
 
 '@Description: Inicializa el coordinador con referencias a subestados (Dependency Injection)
-'@Note: Todos los par�metros son opcionales (Nothing es un estado v�lido)
-'@Param ribbonState: Instancia de clsRibbonState (creada y pose�da por clsRibbon)
-'@Param opportunityState: Instancia de clsOpportunityState (creada y pose�da por clsOpportunitiesMgr)
-'@Param fileState: Instancia de clsFileState (creada y pose�da por clsFileManager)
-'@Param chartState: Instancia de clsChartState (creada y pose�da por clsChartMgr)
+'@Note: Todos los parÃ³metros son opcionales (Nothing es un estado vÃ³lido)
+'@Param ribbonState: Instancia de clsRibbonState (creada y poseÃ³da por clsRibbon)
+'@Param opportunityState: Instancia de clsOpportunityState (creada y poseÃ³da por clsOpportunitiesMgr)
+'@Param fileState: Instancia de clsFileState (creada y poseÃ³da por clsFileManager)
+'@Param chartState: Instancia de clsChartState (creada y poseÃ³da por clsChartMgr)
 Public Sub Initialize(Optional RibbonState As clsRibbonState = Nothing, _
                       Optional OpportunityState As clsOpportunityState = Nothing, _
                       Optional FileState As clsFileState = Nothing, _

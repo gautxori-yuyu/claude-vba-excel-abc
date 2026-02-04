@@ -66,7 +66,7 @@ End Property
 ' ==========================================
 
 Public Function App() As clsApplication
-Attribute App.VB_Description = "[modMACROAppLifecycle] App (funci�n personalizada). Aplica a: ThisWorkbook"
+Attribute App.VB_Description = "[modMACROAppLifecycle] App (funciÃ³n personalizada). Aplica a: ThisWorkbook"
 Attribute App.VB_ProcData.VB_Invoke_Func = " \n21"
     Set App = ThisWorkbook.App
 End Function
@@ -78,7 +78,7 @@ Attribute ReiniciarAplicacion.VB_ProcData.VB_Invoke_Func = " \n0"
 
     result = MsgBox("Esto reiniciara completamente el complemento ABC." & vbCrLf & vbCrLf & _
                     "Se cerrara y volvera a inicializar la aplicacion." & vbCrLf & _
-                    "�Desea continuar?", _
+                    "Ã³Desea continuar?", _
                     vbQuestion + vbYesNo, "Reiniciar Aplicacion")
 
     If result <> vbYes Then Exit Sub
@@ -103,10 +103,10 @@ Attribute ReiniciarAplicacion.VB_ProcData.VB_Invoke_Func = " \n0"
 
     ' Verificar estado
     If IsRibbonAvailable() Then
-        MsgBox "Aplicaci�n reiniciada correctamente." & vbCrLf & vbCrLf & _
+        MsgBox "AplicaciÃ³n reiniciada correctamente." & vbCrLf & vbCrLf & _
                App.ribbon.GetQuickDiagnostics(), vbInformation, "Reinicio Exitoso"
     Else
-        MsgBox "Aplicaci�n reiniciada, pero el Ribbon puede requerir atenci�n adicional." & vbCrLf & _
+        MsgBox "AplicaciÃ³n reiniciada, pero el Ribbon puede requerir atenciÃ³n adicional." & vbCrLf & _
                "Ejecute 'RecuperarRibbon' si es necesario.", _
                vbExclamation, "Reinicio Parcial"
     End If
@@ -118,7 +118,7 @@ End Sub
 ' ==========================================
 
 '@Description: Activa temporalmente la visibilidad del XLAM para operaciones de copia
-'              Muestra el libro que contiene este XLAM, haci�ndolo visible en la interfaz de Excel.
+'              Muestra el libro que contiene este XLAM, haciÃ³ndolo visible en la interfaz de Excel.
 '@Scope: Manipula el libro host del complemento XLAM cargado.
 '@ArgumentDescriptions: (no tiene argumentos)
 '@Returns: (ninguno)
@@ -449,7 +449,7 @@ Private Function RecoverByAddinToggle() As Boolean
     LogDebug MODULE_NAME, "RecoverByAddinToggle - Desactivando add-in..."
     targetAddin.Installed = False
 
-    ' Peque�a pausa
+    ' PequeÃ³a pausa
     DoEvents
     Application.Wait Now + TimeSerial(0, 0, 1)
     DoEvents

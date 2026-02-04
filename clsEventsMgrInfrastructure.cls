@@ -42,7 +42,7 @@ Private WithEvents mFileMgr As clsFileManager
 Attribute mFileMgr.VB_VarHelpID = -1
 
 '--------------------------------------------------------------
-' Inicializaci�n
+' InicializaciÃ³n
 '--------------------------------------------------------------
 Private Sub Class_Initialize()
     LogInfo MODULE_NAME, "[Class_Initialize]"
@@ -65,7 +65,7 @@ Public Sub Initialize(oFileMgr As clsFileManager, oChartManager As clsChartMgr, 
 ErrHandler:
     LogCurrentError MODULE_NAME, "[Initialize]"
     Err.Raise Err.Number, MODULE_NAME & " [Initialize]", _
-              "Error inicializando aplicaci�n: " & Err.Description
+              "Error inicializando aplicaciÃ³n: " & Err.Description
 End Sub
 
 Public Sub Terminate()
@@ -81,7 +81,7 @@ Public Sub Terminate()
 ErrHandler:
     LogCurrentError MODULE_NAME, "[Terminate]"
     Err.Raise Err.Number, MODULE_NAME & " [Terminate]", _
-              "Error finalizando aplicaci�n: " & Err.Description
+              "Error finalizando aplicaciÃ³n: " & Err.Description
 End Sub
 
 ' ==================================================================
@@ -93,7 +93,7 @@ End Sub
 ' -------------------------------------------------------------
 
 '@Description: Se dispara cuando se activa un workbook
-'@Category: Gr�ficos
+'@Category: GrÃ³ficos
 '@Scope: Grafico seleccionado
 '@ArgumentDescriptions: wb As Workbook
 
@@ -103,7 +103,7 @@ Private Sub mCtxMgr_WorkbookActivated(ByVal wb As Workbook)
 End Sub
 
 '@Description: Se dispara al activar una hoja; inicia vigilancia de graficos
-'@Category: Gr�ficos
+'@Category: GrÃ³ficos
 '@Scope: Grafico seleccionado
 '@ArgumentDescriptions: sh As Object
 
@@ -118,7 +118,7 @@ ErrHandler:
 End Sub
 
 '@Description: Se dispara al desactivar una hoja; detiene vigilancia de graficos
-'@Category: Gr�ficos
+'@Category: GrÃ³ficos
 '@Scope: Grafico seleccionado
 '@ArgumentDescriptions: sh As Object
 
