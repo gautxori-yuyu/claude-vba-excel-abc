@@ -99,6 +99,13 @@ End Sub
 
 Private Sub mCtxMgr_WorkbookActivated(ByVal wb As Workbook)
     LogDebug MODULE_NAME, "[mCtx_WorkbookActivated] " & wb.Name
+
+    ' Actualizar el archivo activo en FileManager
+    ' Esto dispara ActiveFileChanged -> sincroniza estado del ribbon
+    Dim f As clsFileXLS
+    Set f = mFileMgr.GetOrTrackWorkbook(wb)
+    mFileMgr.SetActiveFile f
+
     mChartManager.RefreshCurrentSheet
 End Sub
 
