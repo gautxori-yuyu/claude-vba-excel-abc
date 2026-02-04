@@ -21,7 +21,7 @@ Private mCurrentOpportunity As clsOpportunity
 Private mCurrentIndex As Long
 
 ' ==========================================
-' INICIALIZACI�N
+' INICIALIZACIÃN
 ' ==========================================
 
 Private Sub Class_Initialize()
@@ -34,7 +34,7 @@ Private Sub Class_Terminate()
 End Sub
 
 ' ==========================================
-' PROPIEDADES P�BLICAS
+' PROPIEDADES PÃBLICAS
 ' ==========================================
 
 '@Description: Obtiene o establece la oportunidad actual
@@ -47,7 +47,7 @@ Friend Property Set CurrentOpportunity(op As clsOpportunity)
     LogDebug MODULE_NAME, "[CurrentOpportunity] Changed to: " & GetCurrentOpportunityLabel()
 End Property
 
-'@Description: Obtiene o establece el �ndice de la oportunidad actual en la colecci�n
+'@Description: Obtiene o establece el Ã­ndice de la oportunidad actual en la colecciÃ³n
 Public Property Get CurrentIndex() As Long
     CurrentIndex = mCurrentIndex
 End Property

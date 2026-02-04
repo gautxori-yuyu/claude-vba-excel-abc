@@ -53,7 +53,7 @@ Private Sub UserForm_Initialize()
     colorSeleccionado = RGB(255, 100, 200)
     btnColor.BackColor = colorSeleccionado
     
-    ' Deshabilitar bot�n deshacer
+    ' Deshabilitar botÃ³n deshacer
     btnDeshacer.enabled = False
     
     btnSelRango1.ControlTipText = "Seleccionar rango de celdas a comparar."
@@ -121,7 +121,7 @@ Private Sub ActualizarHojas2()
     End If
 End Sub
 
-' Bot�n para seleccionar Rango 1
+' BotÃ³n para seleccionar Rango 1
 Private Sub btnSelRango1_Click()
     Dim rng As Range
     
@@ -135,7 +135,7 @@ Private Sub btnSelRango1_Click()
     End If
 End Sub
 
-' Bot�n para seleccionar Rango 2
+' BotÃ³n para seleccionar Rango 2
 Private Sub btnSelRango2_Click()
     Dim rng As Range
     
@@ -181,7 +181,7 @@ Private Sub cboHoja2_DblClick(ByVal Cancel As MSForms.ReturnBoolean)
     On Error GoTo 0
 End Sub
 
-' Bot�n Comparar
+' BotÃ³n Comparar
 Private Sub btnComparar_Click()
     Dim wb1 As Workbook, wb2 As Workbook
     Dim Hoja1 As Worksheet, Hoja2 As Worksheet
@@ -212,7 +212,7 @@ Private Sub btnComparar_Click()
     
     If Trim(txtRango1.Value) = "" Or Trim(txtRango2.Value) = "" Then
         If vbNo = MsgBox("No se han especificado rangos." & vbCrLf & _
-                         "�Desea comparar las hojas completas?", _
+                         "Â¿Desea comparar las hojas completas?", _
                          vbQuestion + vbYesNo, "Comparar hojas completas") Then
             Exit Sub
         End If
@@ -234,26 +234,26 @@ Private Sub btnComparar_Click()
                         rango2, chkColorear2.Value, _
                         colorSeleccionado, chkSoloBlanco.Value)
     
-    ' Habilitar bot�n deshacer
+    ' Habilitar botÃ³n deshacer
     btnDeshacer.enabled = True
     
-    ' Mostrar hojas en paralelo autom�ticamente
+    ' Mostrar hojas en paralelo automÃ¡ticamente
     Call VerHojasEnParalelo(Hoja1, Hoja2, rango1, rango2)
     
-    'MsgBox "Comparaci�n completada. Las diferencias han sido resaltadas.", vbInformation
+    'MsgBox "ComparaciÃ³n completada. Las diferencias han sido resaltadas.", vbInformation
     
     Exit Sub
 ErrorHandler:
     
 End Sub
 
-' Bot�n Deshacer
+' BotÃ³n Deshacer
 Private Sub btnDeshacer_Click()
     Dim wb1 As Workbook, wb2 As Workbook
     Dim Hoja1 As Worksheet, Hoja2 As Worksheet
     
     If Not HayComparacionActiva() Then
-        MsgBox "No hay comparaci�n activa para deshacer.", vbInformation
+        MsgBox "No hay comparaciÃ³n activa para deshacer.", vbInformation
         Exit Sub
     End If
     
@@ -273,13 +273,13 @@ Private Sub btnDeshacer_Click()
     ' Deshacer
     Call DeshacerComparacion
     
-    ' Deshabilitar bot�n deshacer
+    ' Deshabilitar botÃ³n deshacer
     btnDeshacer.enabled = False
     
-    MsgBox "Comparaci�n deshecha. Los colores han sido restaurados.", vbInformation
+    MsgBox "ComparaciÃ³n deshecha. Los colores han sido restaurados.", vbInformation
 End Sub
 
-' Bot�n seleccionar color - CON COLOR PICKER NATIVO
+' BotÃ³n seleccionar color - CON COLOR PICKER NATIVO
 Private Sub btnColor_Click()
     Dim RGBRed As Long, RGBGreen As Long, RGBBlue As Long
     Dim FullColorCode As Long
@@ -311,8 +311,8 @@ End Sub
 Private Sub UserForm_QueryClose(Cancel As Integer, CloseMode As Integer)
     If HayComparacionActiva() Then
         Dim respuesta As VbMsgBoxResult
-        respuesta = MsgBox("Los cambios de la comparaci�n se convertir�n en definitivos." & vbCrLf & _
-                           "�Continuar?", vbQuestion + vbYesNo, "Confirmar cierre")
+        respuesta = MsgBox("Los cambios de la comparaciÃ³n se convertirÃ¡n en definitivos." & vbCrLf & _
+                           "Â¿Continuar?", vbQuestion + vbYesNo, "Confirmar cierre")
         
         If respuesta = vbNo Then
             Cancel = True

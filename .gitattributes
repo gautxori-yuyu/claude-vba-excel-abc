@@ -1,0 +1,17 @@
+# Configuración de codificación para archivos VBA
+# - Repositorio: UTF-8 (formato interno de git)
+# - Working tree: ISO-8859-1 (para compatibilidad con VBA/Excel)
+#
+# Cuando se hace checkout: UTF-8 (repo) → 8859-1 (working tree)
+# Cuando se hace commit:   8859-1 (working tree) → UTF-8 (repo)
+
+* text=auto
+
+# Archivos VBA: forzar CRLF y codificación 8859-1 en working tree
+*.bas text eol=crlf working-tree-encoding=ISO-8859-1
+*.cls text eol=crlf working-tree-encoding=ISO-8859-1
+*.frm text eol=crlf working-tree-encoding=ISO-8859-1
+
+# Configuración adicional
+CodeExport.config.json text eol=crlf
+*.md text eol=lf

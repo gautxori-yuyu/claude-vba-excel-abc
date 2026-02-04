@@ -16,7 +16,7 @@ Private Enum FNTag
 End Enum
 
 Public Function fileName(Optional wb As Workbook = Nothing) As Variant
-Attribute fileName.VB_Description = "[modAPPFileNames] file Name (funci�n personalizada). Aplica a: ActiveWorkbook|Cells Range"
+Attribute fileName.VB_Description = "[modAPPFileNames] file Name (funciÃ³n personalizada). Aplica a: ActiveWorkbook|Cells Range"
 Attribute fileName.VB_ProcData.VB_Invoke_Func = " \n21"
     On Error GoTo ErrorHandler
     ' Para manejar correctamente el contexto, tanto en VBA, como al ser llamada como UDF, con y sin parametros
@@ -36,8 +36,8 @@ ErrorHandler:
     fileName = "#ERROR"
 End Function
 
-'@Description: Devuelve el nombre del archivo actual (con extensi�n)
-'@Category: Informaci�n de Archivo
+'@Description: Devuelve el nombre del archivo actual (con extensiÃ³n)
+'@Category: InformaciÃ³n de Archivo
 '@ArgumentDescriptions: (sin argumentos)
 Private Function getFileNameTag(tag As FNTag, Optional wb As Workbook = Nothing) As String
     Dim fileName As String
@@ -118,7 +118,7 @@ End Function
 
 '@UDF
 '@Description: Extrae el cliente del nombre de archivo, del workbook actual o el pasado como parametro
-'@Category: Informaci�n de Archivo
+'@Category: InformaciÃ³n de Archivo
 '@ArgumentDescriptions:
 Public Function Customer(Optional wb As Workbook = Nothing) As Variant
 Attribute Customer.VB_Description = "[modAPPFileNames] Extrae el cliente del nombre de archivo, del workbook actual o el pasado como parametro. Aplica a: ActiveWorkbook|Cells Range"
@@ -144,11 +144,11 @@ ErrorHandler:
 End Function
 
 '@UDF
-'@Description: Extrae el n�mero de oferta del nombre de archivo, del workbook actual o el pasado como parametro
-'@Category: Informaci�n de Archivo
+'@Description: Extrae el nÃºmero de oferta del nombre de archivo, del workbook actual o el pasado como parametro
+'@Category: InformaciÃ³n de Archivo
 '@ArgumentDescriptions: (sin argumentos)
 Public Function QuoteNr(Optional wb As Workbook = Nothing) As Variant
-Attribute QuoteNr.VB_Description = "[modAPPFileNames] Extrae el n�mero de oferta del nombre de archivo, del workbook actual o el pasado como parametro. Aplica a: ActiveWorkbook|Cells Range"
+Attribute QuoteNr.VB_Description = "[modAPPFileNames] Extrae el nÃºmero de oferta del nombre de archivo, del workbook actual o el pasado como parametro. Aplica a: ActiveWorkbook|Cells Range"
 Attribute QuoteNr.VB_ProcData.VB_Invoke_Func = " \n21"
     On Error GoTo ErrorHandler
     ' Para manejar correctamente el contexto, tanto en VBA, como al ser llamada como UDF, con y sin parametros
@@ -171,11 +171,11 @@ ErrorHandler:
 End Function
 
 '@UDF
-'@Description: Extrae el n�mero de revisi�n de la oferta del nombre de archivo, del workbook actual o el pasado como parametro
-'@Category: Informaci�n de Archivo
+'@Description: Extrae el nÃºmero de revisiÃ³n de la oferta del nombre de archivo, del workbook actual o el pasado como parametro
+'@Category: InformaciÃ³n de Archivo
 '@ArgumentDescriptions: (sin argumentos)
 Public Function QuoteRev(Optional wb As Workbook = Nothing) As Variant
-Attribute QuoteRev.VB_Description = "[modAPPFileNames] Extrae el n�mero de revisi�n de la oferta del nombre de archivo, del workbook actual o el pasado como parametro. Aplica a: ActiveWorkbook|Cells Range"
+Attribute QuoteRev.VB_Description = "[modAPPFileNames] Extrae el nÃºmero de revisiÃ³n de la oferta del nombre de archivo, del workbook actual o el pasado como parametro. Aplica a: ActiveWorkbook|Cells Range"
 Attribute QuoteRev.VB_ProcData.VB_Invoke_Func = " \n21"
     On Error GoTo ErrorHandler
     ' Para manejar correctamente el contexto, tanto en VBA, como al ser llamada como UDF, con y sin parametros
@@ -199,7 +199,7 @@ End Function
 
 '@UDF
 '@Description: Extrae el modelo del compresor del nombre del nombre de archivo, del workbook actual o el pasado como parametro
-'@Category: Informaci�n de Archivo
+'@Category: InformaciÃ³n de Archivo
 '@ArgumentDescriptions: (sin argumentos)
 Public Function Model(Optional wb As Workbook = Nothing) As Variant
 Attribute Model.VB_Description = "[modAPPFileNames] Extrae el modelo del compresor del nombre del nombre de archivo, del workbook actual o el pasado como parametro. Aplica a: ActiveWorkbook|Cells Range"
@@ -226,7 +226,7 @@ End Function
 
 '@UDF
 '@Description: Extrae la familia del compresor (HA, HG, HP, HX) del modelo
-'@Category: Informaci�n de Archivo
+'@Category: InformaciÃ³n de Archivo
 '@ArgumentDescriptions: (sin argumentos)
 Public Function Family(Optional wb As Workbook = Nothing) As Variant
 Attribute Family.VB_Description = "[modAPPFileNames] Extrae la familia del compresor (HA, HG, HP, HX) del modelo. Aplica a: ActiveWorkbook|Cells Range"
@@ -252,11 +252,11 @@ ErrorHandler:
 End Function
 
 '@UDF
-'@Description: Extrae el n�mero de etapas del compresor del modelo
-'@Category: Informaci�n de Archivo
+'@Description: Extrae el nÃºmero de etapas del compresor del modelo
+'@Category: InformaciÃ³n de Archivo
 '@ArgumentDescriptions: (sin argumentos)
 Public Function Stages(Optional wb As Workbook = Nothing) As Variant
-Attribute Stages.VB_Description = "[modAPPFileNames] Extrae el n�mero de etapas del compresor del modelo. Aplica a: ActiveWorkbook|Cells Range"
+Attribute Stages.VB_Description = "[modAPPFileNames] Extrae el nÃºmero de etapas del compresor del modelo. Aplica a: ActiveWorkbook|Cells Range"
 Attribute Stages.VB_ProcData.VB_Invoke_Func = " \n21"
     On Error GoTo ErrorHandler
     ' Para manejar correctamente el contexto, tanto en VBA, como al ser llamada como UDF, con y sin parametros
@@ -279,11 +279,11 @@ ErrorHandler:
 End Function
 
 '@UDF
-'@Description: Extrae el n�mero de cilindros del compresor del modelo
-'@Category: Informaci�n de Archivo
+'@Description: Extrae el nÃºmero de cilindros del compresor del modelo
+'@Category: InformaciÃ³n de Archivo
 '@ArgumentDescriptions: (sin argumentos)
 Public Function Cylinders(Optional wb As Workbook = Nothing) As Variant
-Attribute Cylinders.VB_Description = "[modAPPFileNames] Extrae el n�mero de cilindros del compresor del modelo. Aplica a: ActiveWorkbook|Cells Range"
+Attribute Cylinders.VB_Description = "[modAPPFileNames] Extrae el nÃºmero de cilindros del compresor del modelo. Aplica a: ActiveWorkbook|Cells Range"
 Attribute Cylinders.VB_ProcData.VB_Invoke_Func = " \n21"
     On Error GoTo ErrorHandler
     ' Para manejar correctamente el contexto, tanto en VBA, como al ser llamada como UDF, con y sin parametros

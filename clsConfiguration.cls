@@ -7,8 +7,8 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
-'TODO Migrar de Registry a archivo JSON para configuraci�n (NO PRIORITARIO)
-'TODO Implementar importar/exportar configuraci�n (NO PRIORITARIO)
+'TODO Migrar de Registry a archivo JSON para configuraciÃ³n (NO PRIORITARIO)
+'TODO Implementar importar/exportar configuraciÃ³n (NO PRIORITARIO)
 
 '@Folder "2-Infraestructura.Configuracion"
 '@IgnoreModule ProcedureNotUsed
@@ -132,14 +132,14 @@ Private Sub CargarConfiguracionDesdeRegistro()
     Exit Sub
 ErrHandler:
     Err.Raise Err.Number, "clsConfiguration.CargarConfiguracionDesdeRegistro", _
-              "Error en la carga de configuraci�n desde registro: " & Err.Description
+              "Error en la carga de configuraciÃ³n desde registro: " & Err.Description
 End Sub
 
 '@Description: Devuelve diccionario de carpetas a monitorear (cacheado)
 '@Note: La cache se invalida automaticamente cuando cambian las rutas
 '
-'TODO: revisar el uso de esta funci�n: Buscar otra forma de que el folder watcher tenga conocimiento de qu� carpetas son supervisadas;
-' posiblemente presentando de otra manera el formulario de configuraci�n de carpetas, y creando en �l opciones para su selecci�n...
+'TODO: revisar el uso de esta funciÃ³n: Buscar otra forma de que el folder watcher tenga conocimiento de quÃ© carpetas son supervisadas;
+' posiblemente presentando de otra manera el formulario de configuraciÃ³n de carpetas, y creando en Ã©l opciones para su selecciÃ³n...
 'TODO: Considerar refactorizar a una estructura mas clara:
 ' - Crear clase clsFolderWatchConfig con propiedades: TipoCarpeta, Ruta, EsMonitoreable
 ' - Exponer como Collection tipada en lugar de Dictionary
@@ -241,7 +241,7 @@ Private Function ObtenerListaCarpetas(nombreConfig As String, strDefault As Stri
     ObtenerListaCarpetas = Split(CreateObject("WScript.Shell").RegRead(CFG_PATH_SECTION_RUTAS & nombreConfig & "\"), "|")
     
     If Err.Number <> 0 Then
-        LogWarning MODULE_NAME, "[ObtenerListaCarpetas] - No se encontr� lista guardada en registro."
+        LogWarning MODULE_NAME, "[ObtenerListaCarpetas] - No se encontrÃ³ lista guardada en registro."
         ObtenerListaCarpetas = Split(strDefault, "|")
         Call GuardarListaCarpetas(ObtenerListaCarpetas, nombreConfig)
     Else

@@ -1,6 +1,6 @@
 Attribute VB_Name = "modAPPFSWatcher"
 ' =====================================================
-' M�DULO DE UTILIDADES Y GESTI�N DEL FOLDERWATCHER
+' MÃDULO DE UTILIDADES Y GESTIÃN DEL FOLDERWATCHER
 ' Reemplaza la funcionalidad del VBScript fw.vbs
 ' =====================================================
 '

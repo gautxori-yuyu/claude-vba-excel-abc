@@ -26,8 +26,8 @@ Attribute ParsearUDFsDeTodosLosProyectos.VB_ProcData.VB_Invoke_Func = " \n21"
             ' Acceder al contenido
             LogInfo "modUTILSProcedureParsing", "[ProcesarTodosLosProyectos] - Procesando proyecto: " & vbeProj.Name & " [" & vbeProj.fileName & "]"
             
-            ' Llamamos a tu funci�n de parseo pasando el proyecto actual
-            ' Suponiendo que tu funci�n ahora acepta el argumento: ParsearProcsDelProyecto(vbProj As Object)
+            ' Llamamos a tu funciÃ³n de parseo pasando el proyecto actual
+            ' Suponiendo que tu funciÃ³n ahora acepta el argumento: ParsearProcsDelProyecto(vbProj As Object)
             Set oDicProcs = ParsearProcs(vbeProj)
         
             oDicUDFs.Add vbeProj.fileName, CreateObject("Scripting.Dictionary")
@@ -43,7 +43,7 @@ Attribute ParsearUDFsDeTodosLosProyectos.VB_ProcData.VB_Invoke_Func = " \n21"
     Set ParsearUDFsDeTodosLosProyectos = oDicUDFs
 End Function
 Public Function ParsearProcsDelProyecto() As Object
-Attribute ParsearProcsDelProyecto.VB_Description = "[modUTILSProcedureParsing] Parsear Procs Del Proyecto (funci�n personalizada). Aplica a: ThisWorkbook"
+Attribute ParsearProcsDelProyecto.VB_Description = "[modUTILSProcedureParsing] Parsear Procs Del Proyecto (funciÃ³n personalizada). Aplica a: ThisWorkbook"
 Attribute ParsearProcsDelProyecto.VB_ProcData.VB_Invoke_Func = " \n21"
     On Error GoTo ErrorHandler
     
@@ -74,12 +74,12 @@ Attribute ParsearProcs.VB_ProcData.VB_Invoke_Func = " \n21"
     If vbProj Is Nothing Then
         LogInfo "modUTILSProcedureParsing", "[ParsearProcs] - No hay acceso al VBA Project."
         LogInfo "modUTILSProcedureParsing", "  -> Habilita 'Confiar en el acceso al modelo de objetos de proyectos de VBA'"
-        LogInfo "modUTILSProcedureParsing", "  -> En: Archivo > Opciones > Centro de confianza > Configuraci�n"
+        LogInfo "modUTILSProcedureParsing", "  -> En: Archivo > Opciones > Centro de confianza > ConfiguraciÃ³n"
         Set ParsearProcs = Nothing
         Exit Function
     End If
     
-    ' Recorrer todos los m�dulos est�ndar
+    ' Recorrer todos los mÃ³dulos estÃ¡ndar
     For Each vbComp In vbProj.VBComponents
         With vbComp
             ' Usar Members para enumerar todos los procedimientos
@@ -136,7 +136,7 @@ Private Function getProcCode(CodeModule As Object, procName As String, PKind As 
         .procNumLines = CodeModule.ProcCountLines(procName, PKind)
         .procSignatureLine = CodeModule.ProcBodyLine(procName, PKind)
         
-        ' se reajusta el comienzo del bloque de c�digo, VBE no lo pone bien
+        ' se reajusta el comienzo del bloque de cÃ³digo, VBE no lo pone bien
         re.Pattern = "^\s*'.+"
         On Error GoTo ErrorHandler
         Do While .procStartLine > 1
@@ -145,7 +145,7 @@ Private Function getProcCode(CodeModule As Object, procName As String, PKind As 
             .procStartLine = .procStartLine - 1
         Loop
         
-        ' ... y hay que corregir el final, tampoco termina bien los bloques de funci�n
+        ' ... y hay que corregir el final, tampoco termina bien los bloques de funciÃ³n
         re.Pattern = "\bFunction|Sub|Property\b"
         re.Pattern = "^\s*End\s+" & re.Execute(CodeModule.Lines(.procSignatureLine, 1)).Item(0).value
         i = .procStartLine
@@ -166,7 +166,7 @@ ErrorHandler:
     LogError "modUTILSProcedureParsing", "[getProcCode] - Error", , Err.Description
 End Function
 
-' Verifica si un m�dulo tiene Option Private Module
+' Verifica si un mÃ³dulo tiene Option Private Module
 Private Function EsModuloPrivado(CodeModule As Object) As Boolean
     EsModuloPrivado = False
     Dim i As Long, lineText As String
@@ -181,7 +181,7 @@ Private Function EsModuloPrivado(CodeModule As Object) As Boolean
                Left$(lineText, 1) <> "'" And _
                InStr(1, lineText, "Option", vbTextCompare) = 0 And _
                InStr(1, lineText, "Attribute", vbTextCompare) = 0 Then
-            ' Si encontramos c�digo (no opciones/comentarios), dejar de buscar
+            ' Si encontramos cÃ³digo (no opciones/comentarios), dejar de buscar
             Exit For
         End If
     Next i

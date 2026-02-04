@@ -21,7 +21,7 @@ Private mCurrentFile As clsFileXLS
 Private mIsOpportunityFile As Boolean
 
 ' ==========================================
-' INICIALIZACI�N
+' INICIALIZACIÃN
 ' ==========================================
 
 Private Sub Class_Initialize()
@@ -34,7 +34,7 @@ Private Sub Class_Terminate()
 End Sub
 
 ' ==========================================
-' PROPIEDADES P�BLICAS
+' PROPIEDADES PÃBLICAS
 ' ==========================================
 
 '@Description: Obtiene o establece el archivo Excel activo actual
@@ -81,7 +81,7 @@ Public Function GetCurrentFileName() As String
 End Function
 
 '@Description: Obtiene el path completo del archivo actual
-'@Returns: String con el path o cadena vac�a
+'@Returns: String con el path o cadena vacÃ­a
 Public Function GetCurrentFilePath() As String
     If mCurrentFile Is Nothing Then
         GetCurrentFilePath = ""

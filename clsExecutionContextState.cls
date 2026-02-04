@@ -7,7 +7,7 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
-'@Description: Estado cached del contexto de ejecuci�n Excel (Workbook, Worksheet, Chart)
+'@Description: Estado cached del contexto de ejecuciÃ³n Excel (Workbook, Worksheet, Chart)
 '@Category: State
 '@Folder "2-Infraestructura.Estado"
 Option Explicit
@@ -29,11 +29,11 @@ Private Type T_CachedChartInfo
 End Type
 Private m_chartInfo As T_CachedChartInfo
 
-' Flag de validez del contexto (protecci�n contra reset)
+' Flag de validez del contexto (protecciÃ³n contra reset)
 Private m_IsContextValid As Boolean
 
 ' ==========================================
-' INICIALIZACI�N
+' INICIALIZACIÃN
 ' ==========================================
 
 Friend Sub SetApplication(oApp As Application)
@@ -50,7 +50,7 @@ Private Sub Class_Terminate()
 End Sub
 
 ' ==========================================
-' CONSULTAS P�BLICAS (Property Get)
+' CONSULTAS PÃBLICAS (Property Get)
 ' ==========================================
 
 Public Property Get Workbook() As Workbook
@@ -84,7 +84,7 @@ End Property
 
 Public Property Get Chart() As Chart
     On Error GoTo SafeExit
-    ' Si el cache es v�lido, devolver valor cached
+    ' Si el cache es vÃ¡lido, devolver valor cached
     If m_chartInfo.IsValid Then
         Set Chart = m_chartInfo.Chart
         Exit Property
@@ -170,7 +170,7 @@ Friend Sub ValidateContext()
 End Sub
 
 ' ==========================================
-' DIAGN�STICO
+' DIAGNÃSTICO
 ' ==========================================
 
 Public Function Diagnostics() As String

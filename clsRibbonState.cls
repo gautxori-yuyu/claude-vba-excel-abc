@@ -7,7 +7,7 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = True
-'@Description: Estado l�gico del Ribbon
+'@Description: Estado lÃ³gico del Ribbon
 '@Category: State
 
 '@Folder "3-UI.Excel.Ribbon"

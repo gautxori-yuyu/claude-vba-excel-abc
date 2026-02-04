@@ -1,14 +1,14 @@
 Attribute VB_Name = "modAPPInstallXLAM"
 ' ==========================================
-' INSTALACI�N Y DESINSTALACI�N AUTOM�TICA DEL COMPLEMENTO XLAM
+' INSTALACIÃN Y DESINSTALACIÃN AUTOMÃTICA DEL COMPLEMENTO XLAM
 ' ==========================================
-' Este m�dulo contiene la l�gica de auto-instalaci�n / auto-desinstalaci�n
-' del complemento XLAM en la carpeta de complementos del usuario, apoy�ndose
+' Este mÃ³dulo contiene la lÃ³gica de auto-instalaciÃ³n / auto-desinstalaciÃ³n
+' del complemento XLAM en la carpeta de complementos del usuario, apoyÃ¡ndose
 ' en un script externo (VBScript) codificado en Base64 + RC4.
 '
 ' El VBScript (AutoXLAM_Installer.vbs) gestiona:
 '   1. Copia del XLAM a la carpeta de complementos
-'   2. Extracci�n del COM desde dentro del XLAM (que es un ZIP):
+'   2. ExtracciÃ³n del COM desde dentro del XLAM (que es un ZIP):
 '      - xl/embeddings/FolderWatcherCOM.dll
 '      - xl/embeddings/FolderWatcherCOM.dll.manifest
 '   3. Registro/desregistro del complemento en Excel
@@ -25,10 +25,10 @@ Option Explicit
 Private Const MODULE_NAME As String = "modAPPInstallXLAM"
 
 ' ---------------------------------------------------------------------
-' CONSTANTES DE INSTALACI�N
+' CONSTANTES DE INSTALACIÃN
 ' ---------------------------------------------------------------------
 
-' Constantes asociadas a la instalaci�n del XLAM
+' Constantes asociadas a la instalaciÃ³n del XLAM
 Public Const SCRIPT_NOMBRE As String = "AutoXLAM_Installer.vbs"
 
 ' Constantes para el componente COM FolderWatcher
@@ -36,14 +36,14 @@ Private Const COM_DLL_NOMBRE As String = "FolderWatcherCOM.dll"
 Private Const COM_MANIFEST_NOMBRE As String = "FolderWatcherCOM.dll.manifest"
 
 ' ---------------------------------------------------------------------
-' UTILIDADES DE PREPARACI�N DEL SCRIPT
+' UTILIDADES DE PREPARACIÃN DEL SCRIPT
 ' ---------------------------------------------------------------------
 
-'@Description: Codifica el script de instalaci�n VBScript a Base64 utilizando RC4 y lo transforma en una funci�n VBA embebida.
-'@Scope: Manipula archivos temporales del sistema y genera c�digo embebido.
+'@Description: Codifica el script de instalaciÃ³n VBScript a Base64 utilizando RC4 y lo transforma en una funciÃ³n VBA embebida.
+'@Scope: Manipula archivos temporales del sistema y genera cÃ³digo embebido.
 '@ArgumentDescriptions: (sin argumentos)
 '@Returns: (ninguno)
-'@Category: Instalaci�n XLAM
+'@Category: InstalaciÃ³n XLAM
 Sub archivoInstScriptToBase64RC4()
 Attribute archivoInstScriptToBase64RC4.VB_ProcData.VB_Invoke_Func = " \n0"
     ScriptToFunctionBase64RC4 _
@@ -53,7 +53,7 @@ Attribute archivoInstScriptToBase64RC4.VB_ProcData.VB_Invoke_Func = " \n0"
 End Sub
 
 ' ---------------------------------------------------------------------
-' FUNCIONES COM (DEPRECATED - El VBScript ahora gestiona la instalaci�n)
+' FUNCIONES COM (DEPRECATED - El VBScript ahora gestiona la instalaciÃ³n)
 ' ---------------------------------------------------------------------
 ' NOTA: Estas funciones se mantienen como fallback pero ya no se usan
 ' directamente. El VBScript extrae el COM desde dentro del XLAM.
@@ -121,7 +121,7 @@ ErrHandler:
 End Function
 
 '@Description: [DEPRECATED] Desinstala los archivos COM de la carpeta AddIns
-'@Note: Ya no se usa. El VBScript elimina el COM durante desinstalaci�n.
+'@Note: Ya no se usa. El VBScript elimina el COM durante desinstalaciÃ³n.
 Private Function DesinstalarCOM() As Boolean
     On Error GoTo ErrHandler
 
@@ -160,9 +160,9 @@ ErrHandler:
     Resume CleanUp
 End Function
 
-'@Description: Verifica si los archivos COM est�n instalados en la carpeta AddIns
+'@Description: Verifica si los archivos COM estÃ¡n instalados en la carpeta AddIns
 '@Returns: Boolean | True si ambos archivos (DLL y manifest) existen
-'@Category: Instalaci�n COM
+'@Category: InstalaciÃ³n COM
 Public Function ComprobarCOMInstalado() As Boolean
 Attribute ComprobarCOMInstalado.VB_ProcData.VB_Invoke_Func = " \n0"
     Dim fso As Object
@@ -178,18 +178,18 @@ Attribute ComprobarCOMInstalado.VB_ProcData.VB_Invoke_Func = " \n0"
 End Function
 
 ' ---------------------------------------------------------------------
-' FLUJO PRINCIPAL DE AUTO-INSTALACI�N / DESINSTALACI�N
+' FLUJO PRINCIPAL DE AUTO-INSTALACIÃN / DESINSTALACIÃN
 ' ---------------------------------------------------------------------
 
-'@Description: Gestiona autom�ticamente la instalaci�n o desinstalaci�n del complemento XLAM seg�n su estado actual.
+'@Description: Gestiona automÃ¡ticamente la instalaciÃ³n o desinstalaciÃ³n del complemento XLAM segÃºn su estado actual.
 '@Scope: Manipula el libro actual, complementos de Excel y ejecuta scripts externos.
 '@ArgumentDescriptions: (sin argumentos)
 '@Returns: (ninguno)
-'@Category: Instalaci�n XLAM
+'@Category: InstalaciÃ³n XLAM
 Public Sub AutoInstalador()
 Attribute AutoInstalador.VB_ProcData.VB_Invoke_Func = " \n0"
     
-    ' Validar que se est� ejecutando desde un XLAM
+    ' Validar que se estÃ¡ ejecutando desde un XLAM
     If Not (ThisWorkbook.FileFormat = xlOpenXMLAddIn Or ThisWorkbook.FileFormat = xlAddIn) Then Exit Sub
     
     Dim rutaActual As String
@@ -200,22 +200,22 @@ Attribute AutoInstalador.VB_ProcData.VB_Invoke_Func = " \n0"
     
     ' Si ya se ejecuta desde la carpeta destino, no hacer nada
     If rutaActual = rutaDestino Then
-        LogInfo "modAPPInstallXLAM", "[AutoInstalador] - el complemento se inicia desde la ruta destino de instalaci�n, NO se ejecuta el proceso de instalaci�n / desinstalaci�n"
+        LogInfo "modAPPInstallXLAM", "[AutoInstalador] - el complemento se inicia desde la ruta destino de instalaciÃ³n, NO se ejecuta el proceso de instalaciÃ³n / desinstalaciÃ³n"
         Exit Sub
     End If
     
-    ' Si NO est� instalado
+    ' Si NO estÃ¡ instalado
     If Not ComprobarSiInstalado() Then
         
         ' Evitar sobrescribir un XLAM con el mismo nombre final
         If LCase$(ThisWorkbook.Name) = LCase$(APP_NAME & ".xlam") Then
             
             LogInfo "modAPPInstallXLAM", "[AutoInstalador] - XLAM no es posible instalarlo"
-            MsgBox "El nombre del fichero a instalar tiene que ser diferente de '" & APP_NAME & ".xlam" & "'. C�mbialo si quieres hacer la instalaci�n."
+            MsgBox "El nombre del fichero a instalar tiene que ser diferente de '" & APP_NAME & ".xlam" & "'. CÃ¡mbialo si quieres hacer la instalaciÃ³n."
             
-        ElseIf MsgBox("�Deseas instalar este complemento?", vbYesNo + vbQuestion) = vbYes Then
+        ElseIf MsgBox("Â¿Deseas instalar este complemento?", vbYesNo + vbQuestion) = vbYes Then
             
-            LogInfo "modAPPInstallXLAM", "[AutoInstalador] - ejecutando script de instalaci�n"
+            LogInfo "modAPPInstallXLAM", "[AutoInstalador] - ejecutando script de instalaciÃ³n"
             
             EjecutarScript _
                 INSTALLSCRIPT_B64RC4, _
@@ -228,12 +228,12 @@ Attribute AutoInstalador.VB_ProcData.VB_Invoke_Func = " \n0"
             
         End If
         
-    ' Si YA est� instalado
+    ' Si YA estÃ¡ instalado
     Else
         
-        If MsgBox("Este complemento ya est� instalado. �Deseas desinstalarlo?", vbYesNo + vbQuestion) = vbYes Then
+        If MsgBox("Este complemento ya estÃ¡ instalado. Â¿Deseas desinstalarlo?", vbYesNo + vbQuestion) = vbYes Then
             
-            LogInfo "modAPPInstallXLAM", "[AutoInstalador] - ejecutando script de desinstalaci�n"
+            LogInfo "modAPPInstallXLAM", "[AutoInstalador] - ejecutando script de desinstalaciÃ³n"
             
             EjecutarScript _
                 INSTALLSCRIPT_B64RC4, _
@@ -251,21 +251,21 @@ Attribute AutoInstalador.VB_ProcData.VB_Invoke_Func = " \n0"
 End Sub
 
 ' ---------------------------------------------------------------------
-' COMPROBACI�N DE ESTADO DE INSTALACI�N
+' COMPROBACIÃN DE ESTADO DE INSTALACIÃN
 ' ---------------------------------------------------------------------
 
-'@Description: Comprueba si el complemento XLAM est� instalado correctamente en Excel y sincroniza su estado si hay inconsistencias.
-'@Scope: Manipula la colecci�n Application.AddIns y verifica archivos en el sistema.
+'@Description: Comprueba si el complemento XLAM estÃ¡ instalado correctamente en Excel y sincroniza su estado si hay inconsistencias.
+'@Scope: Manipula la colecciÃ³n Application.AddIns y verifica archivos en el sistema.
 '@ArgumentDescriptions: (sin argumentos)
-'@Returns: Boolean | True si el XLAM est� instalado; False en caso contrario.
-'@Category: Instalaci�n XLAM
+'@Returns: Boolean | True si el XLAM estÃ¡ instalado; False en caso contrario.
+'@Category: InstalaciÃ³n XLAM
 Public Function ComprobarSiInstalado() As Boolean
 Attribute ComprobarSiInstalado.VB_ProcData.VB_Invoke_Func = " \n0"
     
     Dim ai As AddIn
     Dim bFExists As Boolean
     
-    ' Verificar existencia f�sica del XLAM
+    ' Verificar existencia fÃ­sica del XLAM
     bFExists = Dir(Application.UserLibraryPath & APP_NAME & ".xlam", vbNormal) <> ""
     
     For Each ai In Application.AddIns
@@ -273,7 +273,7 @@ Attribute ComprobarSiInstalado.VB_ProcData.VB_Invoke_Func = " \n0"
             
             ' Estado inconsistente: marcado como instalado pero el fichero no existe
             If Not bFExists And ai.Installed Then
-                LogError "modAPPInstallXLAM", "[ComprobarSiInstalado] - XLAM marcado como instalado, pero inexistente: forzando el proceso de desinstalaci�n"
+                LogError "modAPPInstallXLAM", "[ComprobarSiInstalado] - XLAM marcado como instalado, pero inexistente: forzando el proceso de desinstalaciÃ³n"
                 ai.Installed = False
             End If
             

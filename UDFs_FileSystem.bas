@@ -54,7 +54,7 @@ Attribute EsRutaRemovibleORed.VB_ProcData.VB_Invoke_Func = " \n21"
 End Function
 
 '@Description: Determina si una ruta es de red (UNC o unidad mapeada)
-'@Scope: Private (uso interno del m�dulo)
+'@Scope: Private (uso interno del mÃ³dulo)
 '@ArgumentDescriptions: ruta | Ruta completa a verificar
 '@Returns: Boolean | True si es ruta de red
 Function IsNetworkPath(ByVal ruta As String) As Boolean
@@ -127,7 +127,7 @@ Attribute ObtenerNombreCarpeta.VB_ProcData.VB_Invoke_Func = " \n21"
 End Function
 
 Function ObtenerRutaEjecutable(nombreExe As String) As String
-Attribute ObtenerRutaEjecutable.VB_Description = "[UDFs_FileSystem] Obtener Ruta Ejecutable (funci�n personalizada)"
+Attribute ObtenerRutaEjecutable.VB_Description = "[UDFs_FileSystem] Obtener Ruta Ejecutable (funciÃ³n personalizada)"
 Attribute ObtenerRutaEjecutable.VB_ProcData.VB_Invoke_Func = " \n21"
     Dim objShell As Object
     Dim objExec As Object
@@ -143,7 +143,7 @@ Attribute ObtenerRutaEjecutable.VB_ProcData.VB_Invoke_Func = " \n21"
     Set objExec = objShell.Exec(comando)
     resultado = objExec.StdOut.ReadAll
     
-    ' Limpiar saltos de l�nea y devolver solo la primera ruta encontrada
+    ' Limpiar saltos de lÃ­nea y devolver solo la primera ruta encontrada
     If resultado <> "" Then
         ObtenerRutaEjecutable = Split(resultado, vbCrLf)(0)
     Else

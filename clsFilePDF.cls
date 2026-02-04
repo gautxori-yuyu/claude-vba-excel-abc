@@ -8,10 +8,10 @@ Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
 ' ==================================================================
-' EJEMPLO DE IMPLEMENTACI�N FUTURA
+' EJEMPLO DE IMPLEMENTACIÃN FUTURA
 ' ==================================================================
-' Demuestra c�mo clsFileManager puede gestionar diferentes tipos
-' de archivos sin modificar su c�digo
+' Demuestra cÃ³mo clsFileManager puede gestionar diferentes tipos
+' de archivos sin modificar su cÃ³digo
 ' ==================================================================
 
 ' ==================================================================
@@ -32,10 +32,10 @@ Option Explicit
 Private Const MODULE_NAME As String = "clsFilePDF"
 
 Private p_filePath As String
-Private p_fileInfo As Object                     ' Podr�a ser metadatos del PDF
+Private p_fileInfo As Object                     ' PodrÃ­a ser metadatos del PDF
 Private p_ObjectKey As Double
 
-' Implementaci�n de IFile
+' ImplementaciÃ³n de IFile
 Private Property Get IFile_ObjectKey() As Double
     IFile_ObjectKey = p_ObjectKey
 End Property
@@ -50,7 +50,7 @@ Private Property Get IFile_Name() As String
     IFile_Name = fso.GetFileName(p_filePath)
 End Property
 
-' Propiedades p�blicas
+' Propiedades pÃºblicas
 Public Property Get ObjectKey() As Double
     ObjectKey = p_ObjectKey
 End Property
@@ -63,10 +63,10 @@ Public Property Get Name() As String
     Name = IFile_Name
 End Property
 
-' M�todo espec�fico de PDF
+' MÃ©todo especÃ­fico de PDF
 Public Sub BindTo(filePath As String)
     If p_ObjectKey <> 0 Then
-        Err.Raise vbObjectError + 580, TypeName(Me), "Ya est� asociado a un archivo."
+        Err.Raise vbObjectError + 580, TypeName(Me), "Ya estÃ¡ asociado a un archivo."
     End If
     
     Dim fso As Object
@@ -83,7 +83,7 @@ End Sub
 
 ' Helper para generar ObjectKey consistente desde path
 Private Function GetPathHashCode(Path As String) As Double
-    ' Implementaci�n simple: sum de c�digos ASCII
+    ' ImplementaciÃ³n simple: sum de cÃ³digos ASCII
     Dim i As Long, hash As Double
     For i = 1 To Len(Path)
         hash = hash + Asc(Mid(Path, i, 1)) * i
@@ -91,12 +91,12 @@ Private Function GetPathHashCode(Path As String) As Double
     GetPathHashCode = hash
 End Function
 
-' M�todos espec�ficos de PDF
+' MÃ©todos especÃ­ficos de PDF
 Public Function ExtractText() As String
-    ' Implementaci�n futura: usar librer�a de PDF
+    ' ImplementaciÃ³n futura: usar librerÃ­a de PDF
 End Function
 
 Public Function GetPageCount() As Long
-    ' Implementaci�n futura
+    ' ImplementaciÃ³n futura
 End Function
 

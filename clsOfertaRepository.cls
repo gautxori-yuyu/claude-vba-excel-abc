@@ -40,7 +40,7 @@ Public Function LeerTodas() As Collection
 
     Do While Not rs.EOF
         OferID = NormalizarGUID(rs("OFER_ID"))
-        ' 2 Reutilizamos el m�todo ya probado
+        ' 2 Reutilizamos el mÃ©todo ya probado
         Set of = LeerPorOferID(OferID)
 
         col.Add of
@@ -59,7 +59,7 @@ End Function
 Public Function LeerPorOferID(ByVal OferID As String) As clsOferta
     Select Case True
         Case OferID = "", Not isGUID(OferID)
-            Err.Raise Err.Number, , "Error LeerPorOferID. OferID inv�lido."
+            Err.Raise Err.Number, , "Error LeerPorOferID. OferID invÃ¡lido."
             Exit Function
     End Select
     

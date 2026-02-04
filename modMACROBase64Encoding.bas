@@ -1,7 +1,7 @@
 Attribute VB_Name = "modMACROBase64Encoding"
 ' ==========================================
-' M�dulo de codificaci�n/decodificaci�n Base64
-' Usado internamente por el sistema de instalaci�n
+' MÃ³dulo de codificaciÃ³n/decodificaciÃ³n Base64
+' Usado internamente por el sistema de instalaciÃ³n
 ' ==========================================
 
 '@Folder "Funciones auxiliares"
@@ -54,9 +54,9 @@ ErrorHandler:
     Base64EncodeFromBytes = ""
 End Function
 
-' Codifica un archivo en Base64 ley�ndolo como binario
+' Codifica un archivo en Base64 leyÃ©ndolo como binario
 Function Base64EncodeFromFile(rutaArchivo As String) As String
-Attribute Base64EncodeFromFile.VB_Description = "[modMACROBase64Encoding] Codifica un archivo en Base64 ley�ndolo como binario"
+Attribute Base64EncodeFromFile.VB_Description = "[modMACROBase64Encoding] Codifica un archivo en Base64 leyÃ©ndolo como binario"
 Attribute Base64EncodeFromFile.VB_ProcData.VB_Invoke_Func = " \n21"
     Dim stream As Object
     Dim xml As Object
@@ -91,7 +91,7 @@ End Function
 '@Description: Convierte un script VBScript al texto de una funcion que se puede pegar en el VBA
 '@ArgumentDescriptions: rutaInput:ruta del fichero vbscript a convertir (normalmente ext. .vbs)
 ' |rutaOutput: ruta del fichero b64 convertido (normalmente ext. .Base64)
-' |FUNC_NAME: nombre que tendr� la funcion VBA (Function FUNC_NAME() As String)
+' |FUNC_NAME: nombre que tendrÃ¡ la funcion VBA (Function FUNC_NAME() As String)
 Sub ScriptToFunctionBase64RC4(rutaInput As String, rutaOutput As String, FUNC_NAME As String)
 Attribute ScriptToFunctionBase64RC4.VB_ProcData.VB_Invoke_Func = " \n0"
     Dim Salida As String

@@ -7,7 +7,7 @@ Private Const MODULE_NAME As String = "modMACROLeerOfertas"
 Const RUTA_BD As String = "C:\Program Files (x86)\Ofertas_Gas\BaseDatos\Ofertas_Gas.mdb"
 
 Function isGUID(ByVal strGUID)
-Attribute isGUID.VB_Description = "[modMACROLeerOfertas] is GUID (funci�n personalizada)"
+Attribute isGUID.VB_Description = "[modMACROLeerOfertas] is GUID (funciÃ³n personalizada)"
 Attribute isGUID.VB_ProcData.VB_Invoke_Func = " \n21"
   If IsNull(strGUID) Then
     isGUID = False
@@ -121,7 +121,7 @@ End Sub
 '@Scope: Excel VBA ? Base de datos Access (lectura)
 '@ArgumentDescriptions: -
 '@Returns: Nothing
-'@Category: Exportaci�n / Ofertas
+'@Category: ExportaciÃ³n / Ofertas
 
 Public Sub Test_VolcarTodasLasOfertasAExcel()
 Attribute Test_VolcarTodasLasOfertasAExcel.VB_ProcData.VB_Invoke_Func = " \n0"

@@ -27,7 +27,7 @@ Private Const OUT_DEVICE_PRECIS As Long = &H5
 Private Const OUT_RASTER_PRECIS As Long = &H6
 Private Const OUT_TT_ONLY_PRECIS As Long = &H7
 
-' === TIPO PARA GUARDAR ESTADO DE COMPACTACI�N ===
+' === TIPO PARA GUARDAR ESTADO DE COMPACTACIÃN ===
 Public Type CompactacionEstado
     PrintAreaOriginal As String
     FilasEstado() As Boolean    ' True = estaba visible; False = estaba oculta
@@ -60,7 +60,7 @@ Attribute AjustarAltoFilasSegunColor.VB_ProcData.VB_Invoke_Func = " \n0"
     ' Establecer el rango de trabajo como las celdas seleccionadas
     Set rng = Selection
     
-    ' Deshabilitar actualizaci�n de pantalla para mejor rendimiento
+    ' Deshabilitar actualizaciÃ³n de pantalla para mejor rendimiento
     'Application.ScreenUpdating = False
     
     ' Recorrer cada celda en el rango seleccionado
@@ -72,7 +72,7 @@ Attribute AjustarAltoFilasSegunColor.VB_ProcData.VB_Invoke_Func = " \n0"
         ' Obtener la altura actual de la fila
         alturaOriginal = celda.RowHeight
         
-        ' Calcular nueva altura seg�n el color de fondo
+        ' Calcular nueva altura segÃºn el color de fondo
         If colorFondo = colorBlanco Then
             nuevaAltura = alturaOriginal + 6     ' * 1.05
         Else
@@ -88,7 +88,7 @@ Attribute AjustarAltoFilasSegunColor.VB_ProcData.VB_Invoke_Func = " \n0"
         End If
     Next fila
     
-    ' Habilitar actualizaci�n de pantalla
+    ' Habilitar actualizaciÃ³n de pantalla
     Application.ScreenUpdating = True
     
     'MsgBox "Ajuste de altura de filas completado.", vbInformation
@@ -106,9 +106,9 @@ Private Function HideQTRow(r As Range) As Double
     If HideQTRow Then r.Hidden = True
 End Function
 
-' Funci�n auxiliar para detectar Marcadores
+' FunciÃ³n auxiliar para detectar Marcadores
 Private Function EsMarcador(c As Range) As Boolean
-    ' T�tulo Calibri 14 o Encabezado Verde
+    ' TÃ­tulo Calibri 14 o Encabezado Verde
     Dim esTitulo As Boolean
     esTitulo = (c.Font.Name = "Calibri" And c.Font.SIZE = 14)
     Dim esVerde As Boolean
@@ -137,8 +137,8 @@ Private Function ObtenerFactorCorreccion(c As Range) As Double
     Dim factor As Double
     factor = 1#  ' Factor base por defecto (5% de margen)
 
-    ' Correcci�n por Tipo de Fuente
-    ' Calibri suele necesitar un poco m�s de espacio que Arial en PDF
+    ' CorrecciÃ³n por Tipo de Fuente
+    ' Calibri suele necesitar un poco mÃ¡s de espacio que Arial en PDF
     Select Case True
         Case c.Font.Name = "Calibri" And c.Font.SIZE = 10:      factor = factor * 1
         Case c.Font.Name = "Calibri" And c.Font.SIZE = 11:      factor = factor * 1.02
@@ -152,8 +152,8 @@ Private Function ObtenerFactorCorreccion(c As Range) As Double
             Stop
     End Select
 
-    ' Correcci�n por Color de Fondo (Interior.Color)
-    ' A veces, celdas con fondos oscuros o rellenos s�lidos requieren
+    ' CorrecciÃ³n por Color de Fondo (Interior.Color)
+    ' A veces, celdas con fondos oscuros o rellenos sÃ³lidos requieren
     ' un margen extra para que el texto no parezca "pegado" al borde
     If c.Interior.ColorIndex <> xlNone Then
         Select Case c.Interior.Color
@@ -169,7 +169,7 @@ Private Function ObtenerFactorCorreccion(c As Range) As Double
         End Select
     End If
 
-    ' Correcci�n por Estilo
+    ' CorrecciÃ³n por Estilo
     If c.Font.Bold Then factor = factor * 1.01
 
     ObtenerFactorCorreccion = factor
@@ -212,7 +212,7 @@ Attribute AjustarSelWSheetsParaImpresionPDF.VB_ProcData.VB_Invoke_Func = " \n0"
             If Err.Number = 0 Then
                 hojasProcesadas = hojasProcesadas + 1
             Else
-                Debug.Print "[ERR] Fall� en '" & sh.Name & "': " & Err.Description
+                Debug.Print "[ERR] FallÃ³ en '" & sh.Name & "': " & Err.Description
                 hojasFallidas = hojasFallidas + 1
             End If
             On Error GoTo 0
@@ -224,18 +224,18 @@ Attribute AjustarSelWSheetsParaImpresionPDF.VB_ProcData.VB_Invoke_Func = " \n0"
     Debug.Print "[OK] Proceso finalizado: " & hojasProcesadas & " hojas ajustadas, " & hojasFallidas & " con error."
     
     ' ? Problema: `AjustarWS...` compacta, pero no devuelve el estado.
-    ' Soluci�n real: modificar `AjustarWS...` para que acepte ByRef estado (mejor dise�o).
+    ' SoluciÃ³n real: modificar `AjustarWS...` para que acepte ByRef estado (mejor diseÃ±o).
     
     ' --------------------------
-    ' ? SOLUCI�N CORRECTA (recomendada):
+    ' ? SOLUCIÃN CORRECTA (recomendada):
     ' Modificamos ligeramente `AjustarWS...` para que reciba ByRef estado.
-    ' As� evitamos doble compactaci�n.
+    ' AsÃ­ evitamos doble compactaciÃ³n.
     ' --------------------------
     
     If 6 = MsgBox("Proceso completado." & vbCrLf & _
            hojasProcesadas & " hoja(s) ajustada(s)." & vbCrLf & _
-           "�Deseas exportar el documento a PDF y restaurar Las �reas de impresi�n Del mismo (SI), " & _
-           "o quieres conservarlo reemplazando las �reas no imprimibles por filas y columnas ocultas (NO)?", _
+           "Â¿Deseas exportar el documento a PDF y restaurar Las Ã¡reas de impresiÃ³n Del mismo (SI), " & _
+           "o quieres conservarlo reemplazando las Ã¡reas no imprimibles por filas y columnas ocultas (NO)?", _
            vbQuestion + vbYesNo, "Ajuste listo") Then
         ' grabar el documento como PDF
         ' Exportar la hoja "Graficos" a PDF
@@ -254,7 +254,7 @@ Attribute AjustarSelWSheetsParaImpresionPDF.VB_ProcData.VB_Invoke_Func = " \n0"
 
 CleanUp:
     ' RESTAURACION DE LAS AREAS NO IMPRIMIBLES, tras generar documentos
-    Debug.Print "Restauraci�n de las �reas de impresi�n de cada hoja del libro:"
+    Debug.Print "RestauraciÃ³n de las Ã¡reas de impresiÃ³n de cada hoja del libro:"
     hojasProcesadas = 0
     hojasFallidas = 0
     i = 0
@@ -266,7 +266,7 @@ CleanUp:
             If Err.Number = 0 Then
                 hojasProcesadas = hojasProcesadas + 1
             Else
-                Debug.Print "[ERR] Fall� en '" & sh.Name & "': " & Err.Description
+                Debug.Print "[ERR] FallÃ³ en '" & sh.Name & "': " & Err.Description
                 hojasFallidas = hojasFallidas + 1
             End If
             On Error GoTo 0
@@ -294,9 +294,9 @@ Attribute AjustarWSParaPDF_ImpresionMaestra.VB_ProcData.VB_Invoke_Func = " \n0"
     prevCalcMode = Application.Calculation
     
     'Application.ScreenUpdating = False
-    'Application.Calculation = xlCalculationManual ' Acelerar c�lculos
+    'Application.Calculation = xlCalculationManual ' Acelerar cÃ¡lculos
 
-    ' --- Tarea 1: Determinar el estado del area de impresi�n: Rango M�ximo Ocupado ---
+    ' --- Tarea 1: Determinar el estado del area de impresiÃ³n: Rango MÃ¡ximo Ocupado ---
     On Error Resume Next
     Set rangoImpresion = GetAbsoluteUsedRange(ws)
     On Error GoTo 0
@@ -305,7 +305,7 @@ Attribute AjustarWSParaPDF_ImpresionMaestra.VB_ProcData.VB_Invoke_Func = " \n0"
 '    Set rangoImpresion = ws.Range(ws.Cells(1, 1), ws.Cells(ultimaFila, ultimaColumna))
 '    ws.PageSetup.PrintArea = rangoImpresion.Address
 
-    ' --- Tarea 2: Compactar area de impresi�n, convirtiendo en ocultas las lineas ---
+    ' --- Tarea 2: Compactar area de impresiÃ³n, convirtiendo en ocultas las lineas ---
     Dim EstadoCompactacionPrintAreaAOcultas As CompactacionEstado
     Call CompactarAreaDeImpresion(ws, EstadoCompactacionPrintAreaAOcultas)
     AjustarWSParaPDF_ImpresionMaestra = EstadoCompactacionPrintAreaAOcultas
@@ -321,24 +321,24 @@ Attribute AjustarWSParaPDF_ImpresionMaestra.VB_ProcData.VB_Invoke_Func = " \n0"
     ReajustarRangoAreasImpresion ws
     On Error GoTo 0
     
-    ' --- Tarea 2: Ajustar Alturas de Fila y Configuraci�n de P�gina ---
+    ' --- Tarea 2: Ajustar Alturas de Fila y ConfiguraciÃ³n de PÃ¡gina ---
     On Error Resume Next
     AjustarAlturaFilasSegunTexto ws, ultimaFila, ultimaColumna
     On Error GoTo 0
     
-    ' b) Configurar para que ocupe 1 p�gina de ancho y el largo necesario
+    ' b) Configurar para que ocupe 1 pÃ¡gina de ancho y el largo necesario
     With ws.PageSetup
         .FitToPagesWide = 1
         .Zoom = False
-        .FitToPagesTall = False ' Autom�tico
+        .FitToPagesTall = False ' AutomÃ¡tico
         .CenterHorizontally = True
     End With
     
-    ' --- Tarea 3: Ajustes Manuales de Saltos de P�gina ---
+    ' --- Tarea 3: Ajustes Manuales de Saltos de PÃ¡gina ---
     ConfigurarSaltosDePagina ws, ultimaFila
     
-    ' Restaurar configuraci�n y rendimiento
-    'ws.PageSetup.PrintQuality = 600 ' Restaurar calidad alta para la impresi�n final
+    ' Restaurar configuraciÃ³n y rendimiento
+    'ws.PageSetup.PrintQuality = 600 ' Restaurar calidad alta para la impresiÃ³n final
     
 CleanUp:
     Application.Calculation = prevCalcMode
@@ -353,7 +353,7 @@ End Function
 Private Sub AjustarAlturaFilasSegunTexto(ws As Worksheet, ultimaFila As Long, ultimaColumna As Long)
     Dim i As Long
     Dim altoMaximoFila As Double
-    ' Forzar DPI de dise�o para la medici�n
+    ' Forzar DPI de diseÃ±o para la mediciÃ³n
     'ws.PageSetup.PrintQuality = 72
     
     ' a) Recorrer y ajustar alturas (usa las funciones previas GetPrintHeightMultiLine y ObtenerFactorCorreccion)
@@ -380,10 +380,10 @@ End Sub
 Private Function GetCleanPrinterName() As String
     Dim fullPrinter As String
     fullPrinter = Application.ActivePrinter
-    ' Busca la posici�n de " en " (formato espa�ol) o " on " (ingl�s)
+    ' Busca la posiciÃ³n de " en " (formato espaÃ±ol) o " on " (inglÃ©s)
     Dim pos As Integer
-    pos = InStr(1, fullPrinter, " en ", vbTextCompare) ' Espa�ol
-    If pos = 0 Then pos = InStr(1, fullPrinter, " on ", vbTextCompare) ' Ingl�s
+    pos = InStr(1, fullPrinter, " en ", vbTextCompare) ' EspaÃ±ol
+    If pos = 0 Then pos = InStr(1, fullPrinter, " on ", vbTextCompare) ' InglÃ©s
     
     If pos > 0 Then
         GetCleanPrinterName = Left(fullPrinter, pos - 1)
@@ -399,16 +399,16 @@ Attribute ReajustarRangoAreasImpresion.VB_ProcData.VB_Invoke_Func = " \n0"
     Dim i As Integer
     Dim ultFila As Long, ultCol As Long
     
-    ' 1. Verificar si hay un �rea de impresi�n definida
+    ' 1. Verificar si hay un Ã¡rea de impresiÃ³n definida
     If ws.PageSetup.PrintArea = "" Then Exit Sub
     
-    ' 2. Dividir el �rea de impresi�n por si contiene m�ltiples rangos (separados por comas)
+    ' 2. Dividir el Ã¡rea de impresiÃ³n por si contiene mÃºltiples rangos (separados por comas)
     areasOriginales = Split(ws.PageSetup.PrintArea, ";")
     
     For i = LBound(areasOriginales) To UBound(areasOriginales)
         Set areaActual = ws.Range(areasOriginales(i))
         
-        ' 3. Encontrar la �ltima celda real CON VALORES dentro de este rango espec�fico
+        ' 3. Encontrar la Ãºltima celda real CON VALORES dentro de este rango especÃ­fico
         On Error Resume Next
         ultFila = areaActual.Find(What:="*", _
                                   After:=areaActual.Cells(1, 1), _
@@ -427,10 +427,10 @@ Attribute ReajustarRangoAreasImpresion.VB_ProcData.VB_Invoke_Func = " \n0"
         End With
         On Error GoTo 0
         
-        ' 4. Redefinir el �rea si se encontr� contenido
+        ' 4. Redefinir el Ã¡rea si se encontrÃ³ contenido
         If ultFila > 0 And ultCol > 0 Then
             ' El nuevo rango empieza donde el original, pero acaba en ultFila/ultCol
-            ' asegur�ndonos de no exceder los l�mites del rango original
+            ' asegurÃ¡ndonos de no exceder los lÃ­mites del rango original
             Dim filaFin As Long: filaFin = IIf(ultFila < areaActual.Row, areaActual.Row, ultFila)
             Dim colFin As Long: colFin = IIf(ultCol < areaActual.Column, areaActual.Column, ultCol)
             
@@ -446,16 +446,16 @@ Attribute ReajustarRangoAreasImpresion.VB_ProcData.VB_Invoke_Func = " \n0"
             End If
         End If
         
-        ' Reset para la siguiente �rea
+        ' Reset para la siguiente Ã¡rea
         ultFila = 0: ultCol = 0
     Next i
     
-    ' 6. Asignar el �rea de impresi�n final limpia
+    ' 6. Asignar el Ã¡rea de impresiÃ³n final limpia
     ws.PageSetup.PrintArea = nuevoPrintRange.Address
 End Sub
 
 Function GetPrintHeightMultiLine(ByVal c As Range) As Double
-Attribute GetPrintHeightMultiLine.VB_Description = "[modMACROWbkEditableFormatting] Get Print Height Multi Line (funci�n personalizada). Aplica a: Cells Range"
+Attribute GetPrintHeightMultiLine.VB_Description = "[modMACROWbkEditableFormatting] Get Print Height Multi Line (funciÃ³n personalizada). Aplica a: Cells Range"
 Attribute GetPrintHeightMultiLine.VB_ProcData.VB_Invoke_Func = " \n21"
     Dim hdc As LongPtr, hFont As LongPtr, hOldFont As LongPtr
     Dim r As RECT
@@ -472,7 +472,7 @@ Attribute GetPrintHeightMultiLine.VB_ProcData.VB_Invoke_Func = " \n21"
     printerName = GetCleanPrinterName()
     
     ' Crear el contexto de dispositivo (HDC)
-    ' "WINSPOOL" es el driver est�ndar para impresoras en Win32
+    ' "WINSPOOL" es el driver estÃ¡ndar para impresoras en Win32
     hdc = CreateDC("WINSPOOL", printerName, vbNullString, 0)
     If hdc = 0 Then hdc = CreateDC("DISPLAY", vbNullString, vbNullString, 0)
     
@@ -481,47 +481,47 @@ Attribute GetPrintHeightMultiLine.VB_ProcData.VB_Invoke_Func = " \n21"
     
     angulo = c.Orientation * 10
     bVert = (c.Orientation = xlVertical Or Abs(c.Orientation) = 90)
-    ' 1. Detectar si es celda combinada y obtener el �rea total
+    ' 1. Detectar si es celda combinada y obtener el Ã¡rea total
     If c.MergeCells Then
         Set c = c.MergeArea
     Else
-        ' queda como est�
+        ' queda como estÃ¡
     End If
     
-    ' 2. Calcular ancho de columna en p�xeles de impresi�n
-    ' Excel c.Width est� en puntos. Convertimos a pulgadas y luego a p�xeles del dispositivo.
-    ' Restamos un peque�o margen para los bordes internos de la celda (aprox 5 pts)
+    ' 2. Calcular ancho de columna en pÃ­xeles de impresiÃ³n
+    ' Excel c.Width estÃ¡ en puntos. Convertimos a pulgadas y luego a pÃ­xeles del dispositivo.
+    ' Restamos un pequeÃ±o margen para los bordes internos de la celda (aprox 5 pts)
     colWidthPts = c.Width - 4
     colWidthPx = (colWidthPts * dpiX) / 72
     
     ' 3. Configurar Fuente
     fontSizePx = -(c.Cells(1, 1).Font.SIZE * dpiY) / 72
-    ' CreateFont permite especificar el �ngulo en el 3er y 4� par�metro (Escapement y Orientation)
+    ' CreateFont permite especificar el Ã¡ngulo en el 3er y 4Âº parÃ¡metro (Escapement y Orientation)
     hFont = CreateFont(fontSizePx, 0, angulo, angulo, IIf(c.Cells(1, 1).Font.Bold, 700, 400), _
                        IIf(c.Cells(1, 1).Font.Italic, 1, 0), 0, 0, 0, OUT_TT_ONLY_PRECIS, 0, 0, 0, c.Cells(1, 1).Font.Name)
     hOldFont = SelectObject(hdc, hFont)
     
     If c.WrapText = False And Abs(angulo) <> 900 Then
         GetTextExtentPoint32 hdc, c.Cells(1, 1).value, Len(c.Cells(1, 1).value), sz
-        GetPrintHeightMultiLine = (sz.cy * 72) / dpiY ' Altura de una sola l�nea
+        GetPrintHeightMultiLine = (sz.cy * 72) / dpiY ' Altura de una sola lÃ­nea
     ElseIf bVert Then
-        ' Si es puramente vertical, medimos la extensi�n de una sola l�nea pero
-        ' el valor de 'ancho' de esa l�nea ser� el 'alto' de nuestra fila.
+        ' Si es puramente vertical, medimos la extensiÃ³n de una sola lÃ­nea pero
+        ' el valor de 'ancho' de esa lÃ­nea serÃ¡ el 'alto' de nuestra fila.
         GetTextExtentPoint32 hdc, c.Cells(1, 1).value, Len(c.Cells(1, 1).value), sz
         ' En vertical, el ancho del texto (sz.cx) se convierte en la altura de la fila
         GetPrintHeightMultiLine = (sz.cx * 72) / dpiY
     Else
-        ' 4.2. Definir rect�ngulo de c�lculo (ancho fijo, alto variable)
+        ' 4.2. Definir rectÃ¡ngulo de cÃ¡lculo (ancho fijo, alto variable)
         r.Left = 0
         r.Top = 0
         r.Right = colWidthPx
         r.Bottom = 0
         
         ' 5. Ejecutar DrawText con DT_CALCRECT para que calcule el alto (r.Bottom)
-        ' DT_WORDBREAK permite el ajuste de l�nea como en Excel
+        ' DT_WORDBREAK permite el ajuste de lÃ­nea como en Excel
         DrawText hdc, c.Cells(1, 1).value, Len(c.Cells(1, 1).value), r, DT_CALCRECT Or DT_WORDBREAK Or DT_EDITCONTROL
         
-        ' 6. Convertir el alto calculado de p�xeles a Puntos de Excel
+        ' 6. Convertir el alto calculado de pÃ­xeles a Puntos de Excel
         GetPrintHeightMultiLine = (r.Bottom * 72) / dpiY
     End If
     
@@ -531,17 +531,17 @@ Attribute GetPrintHeightMultiLine.VB_ProcData.VB_Invoke_Func = " \n21"
 End Function
 
 Function GetAbsoluteUsedRange(ws As Worksheet) As Range
-Attribute GetAbsoluteUsedRange.VB_Description = "[modMACROWbkEditableFormatting] Get Absolute Used Range (funci�n personalizada). Aplica a: Cells Range"
+Attribute GetAbsoluteUsedRange.VB_Description = "[modMACROWbkEditableFormatting] Get Absolute Used Range (funciÃ³n personalizada). Aplica a: Cells Range"
 Attribute GetAbsoluteUsedRange.VB_ProcData.VB_Invoke_Func = " \n21"
     Dim ultFila As Long
     Dim ultCol As Long
     
-    ' Asegurar que haya �rea de impresi�n definida
+    ' Asegurar que haya Ã¡rea de impresiÃ³n definida
     If ws.PageSetup.PrintArea = "" Then
-        Debug.Print "[WARN] No hay �rea de impresi�n definida en la hoja '" & ws.Name & "'."
+        Debug.Print "[WARN] No hay Ã¡rea de impresiÃ³n definida en la hoja '" & ws.Name & "'."
     End If
 
-    ' 1. Resetear temporalmente el �rea de impresi�n para que .Find vea todo
+    ' 1. Resetear temporalmente el Ã¡rea de impresiÃ³n para que .Find vea todo
     Dim areaActual As Range, area
     For Each area In Split(ws.PageSetup.PrintArea, ";")
         If areaActual Is Nothing Then
@@ -553,8 +553,8 @@ Attribute GetAbsoluteUsedRange.VB_ProcData.VB_Invoke_Func = " \n21"
 
     ws.PageSetup.PrintArea = ""
 
-    ' 2. Buscar la �ltima columna con datos reales en TODA la hoja
-    ' Al usar LookIn:=xlFormulas incluimos celdas con valores y con f�rmulas (aunque den "")
+    ' 2. Buscar la Ãºltima columna con datos reales en TODA la hoja
+    ' Al usar LookIn:=xlFormulas incluimos celdas con valores y con fÃ³rmulas (aunque den "")
     On Error Resume Next
     ultCol = ws.Cells.Find(What:="*", _
                            After:=ws.Cells(1, 1), _
@@ -562,7 +562,7 @@ Attribute GetAbsoluteUsedRange.VB_ProcData.VB_Invoke_Func = " \n21"
                            SearchOrder:=xlByColumns, _
                            SearchDirection:=xlPrevious).Column
     
-    ' 3. Buscar la �ltima fila con datos reales
+    ' 3. Buscar la Ãºltima fila con datos reales
     ultFila = ws.Cells.Find(What:="*", _
                             After:=ws.Cells(1, 1), _
                             LookIn:=xlFormulas, _
@@ -570,10 +570,10 @@ Attribute GetAbsoluteUsedRange.VB_ProcData.VB_Invoke_Func = " \n21"
                             SearchDirection:=xlPrevious).Row
     On Error GoTo 0
 
-    ' 4. Restaurar el �rea previa si fuera necesario o dejar que el macro la actualice
+    ' 4. Restaurar el Ã¡rea previa si fuera necesario o dejar que el macro la actualice
     ws.PageSetup.PrintArea = areaActual.Address
 
-    ' 5. Devolver el rango desde A1 hasta el l�mite absoluto detectado
+    ' 5. Devolver el rango desde A1 hasta el lÃ­mite absoluto detectado
     If ultFila = 0 Then ultFila = 1
     If ultCol = 0 Then ultCol = 1
     
@@ -581,12 +581,12 @@ Attribute GetAbsoluteUsedRange.VB_ProcData.VB_Invoke_Func = " \n21"
 End Function
 
 Function GetRealUsedRange(ws As Worksheet) As Range
-Attribute GetRealUsedRange.VB_Description = "[modMACROWbkEditableFormatting] Get Real Used Range (funci�n personalizada). Aplica a: Cells Range"
+Attribute GetRealUsedRange.VB_Description = "[modMACROWbkEditableFormatting] Get Real Used Range (funciÃ³n personalizada). Aplica a: Cells Range"
 Attribute GetRealUsedRange.VB_ProcData.VB_Invoke_Func = " \n21"
     Dim ultimaFila As Long
     Dim ultimaCol As Long
     
-    ' Buscar la �ltima fila con datos (independientemente de la columna)
+    ' Buscar la Ãºltima fila con datos (independientemente de la columna)
     On Error Resume Next
     ultimaFila = ws.Cells.Find(What:="*", _
                                After:=ws.Cells(1, 1), _
@@ -595,7 +595,7 @@ Attribute GetRealUsedRange.VB_ProcData.VB_Invoke_Func = " \n21"
                                SearchOrder:=xlByRows, _
                                SearchDirection:=xlPrevious).Row
                                
-    ' Buscar la �ltima columna con datos (independientemente de la fila)
+    ' Buscar la Ãºltima columna con datos (independientemente de la fila)
     ultimaCol = ws.Cells.Find(What:="*", _
                               After:=ws.Cells(1, 1), _
                               LookAt:=xlPart, _
@@ -604,18 +604,18 @@ Attribute GetRealUsedRange.VB_ProcData.VB_Invoke_Func = " \n21"
                               SearchDirection:=xlPrevious).Column
     On Error GoTo 0
     
-    ' Si la hoja est� totalmente vac�a, devolvemos A1 para evitar errores
+    ' Si la hoja estÃ¡ totalmente vacÃ­a, devolvemos A1 para evitar errores
     If ultimaFila = 0 Then ultimaFila = 1
     If ultimaCol = 0 Then ultimaCol = 1
     
-    ' Retornar el rango desde A1 hasta el l�mite real encontrado
+    ' Retornar el rango desde A1 hasta el lÃ­mite real encontrado
     Set GetRealUsedRange = ws.Range(ws.Cells(1, 1), ws.Cells(ultimaFila, ultimaCol))
 End Function
 
 Function GetPhysicalPaperHeight(ws As Worksheet) As Double
-Attribute GetPhysicalPaperHeight.VB_Description = "[modMACROWbkEditableFormatting] Get Physical Paper Height (funci�n personalizada)"
+Attribute GetPhysicalPaperHeight.VB_Description = "[modMACROWbkEditableFormatting] Get Physical Paper Height (funciÃ³n personalizada)"
 Attribute GetPhysicalPaperHeight.VB_ProcData.VB_Invoke_Func = " \n21"
-    ' Altura f�sica total del papel en puntos (1 pulgada = 72 pts)
+    ' Altura fÃ­sica total del papel en puntos (1 pulgada = 72 pts)
     Select Case ws.PageSetup.PaperSize
         Case xlPaperA4:      GetPhysicalPaperHeight = 841.89 ' (210mm x 297mm)
         Case xlPaperLetter:  GetPhysicalPaperHeight = 792     ' (8.5" x 11")
@@ -625,13 +625,13 @@ Attribute GetPhysicalPaperHeight.VB_ProcData.VB_Invoke_Func = " \n21"
 End Function
 
 Function GetUsablePrintHeight(ws As Worksheet) As Double
-Attribute GetUsablePrintHeight.VB_Description = "[modMACROWbkEditableFormatting] Get Usable Print Height (funci�n personalizada)"
+Attribute GetUsablePrintHeight.VB_Description = "[modMACROWbkEditableFormatting] Get Usable Print Height (funciÃ³n personalizada)"
 Attribute GetUsablePrintHeight.VB_ProcData.VB_Invoke_Func = " \n21"
     Dim totalHeight As Double
     totalHeight = GetPhysicalPaperHeight(ws)
     
     With ws.PageSetup
-        ' Restamos m�rgenes f�sicos y �reas de encabezado/pie
+        ' Restamos mÃ¡rgenes fÃ­sicos y Ã¡reas de encabezado/pie
         GetUsablePrintHeight = totalHeight - (.TopMargin + .BottomMargin)
     End With
 End Function
@@ -647,24 +647,24 @@ Attribute ConfigurarSaltosDePagina.VB_ProcData.VB_Invoke_Func = " \n0"
     Application.ScreenUpdating = False
     On Error GoTo CleanUp
     
-    ' --- 1. Asegurar que los saltos autom�ticos est�n actualizados ---
+    ' --- 1. Asegurar que los saltos automÃ¡ticos estÃ©n actualizados ---
     ws.ResetAllPageBreaks
-    Application.Calculate  ' ? clave: fuerza que Excel genere HPageBreaks autom�ticos
+    Application.Calculate  ' ? clave: fuerza que Excel genere HPageBreaks automÃ¡ticos
     
     npb = ws.HPageBreaks.Count
     If npb = 0 Then
-        Debug.Print "[WARN] ConfigurarSaltosDePagina: no hay saltos autom�ticos en '" & ws.Name & "'. �Rango imprimible vac�o?"
+        Debug.Print "[WARN] ConfigurarSaltosDePagina: no hay saltos automÃ¡ticos en '" & ws.Name & "'. Â¿Rango imprimible vacÃ­o?"
         GoTo CleanUp
     End If
     
-    Debug.Print "=== AJUSTE DE SALTOS (basado en " & npb & " saltos autom�ticos) ==="
+    Debug.Print "=== AJUSTE DE SALTOS (basado en " & npb & " saltos automÃ¡ticos) ==="
     
-    ' --- 2. Procesar cada p�gina (de arriba a abajo) ---
+    ' --- 2. Procesar cada pÃ¡gina (de arriba a abajo) ---
     Dim pagina As Long
-    For pagina = 1 To npb + 1  ' +1 para incluir la �ltima p�gina (despu�s del �ltimo salto)
+    For pagina = 1 To npb + 1  ' +1 para incluir la Ãºltima pÃ¡gina (despuÃ©s del Ãºltimo salto)
         Dim filaInicio As Long, filaFin As Long
         
-        ' Determinar rango de la p�gina actual
+        ' Determinar rango de la pÃ¡gina actual
         If pagina = 1 Then
             filaInicio = 1
         Else
@@ -677,36 +677,36 @@ Attribute ConfigurarSaltosDePagina.VB_ProcData.VB_Invoke_Func = " \n0"
             filaFin = ultimaFila
         End If
         
-        ' Acotar al rango �til
+        ' Acotar al rango Ãºtil
         If filaInicio > ultimaFila Then Exit For
         If filaFin > ultimaFila Then filaFin = ultimaFila
         
-        ' --- 3. Buscar el mejor marcador DENTRO de esta p�gina ---
+        ' --- 3. Buscar el mejor marcador DENTRO de esta pÃ¡gina ---
         Dim mejorDistancia As Double, mejorFilaMarcador As Long, mejorFactorF As Double
         mejorDistancia = 999999
         mejorFilaMarcador = 0
         mejorFactorF = 1#
         
-        ' Explorar factores de compresi�n/estiramiento de filas vac�as
+        ' Explorar factores de compresiÃ³n/estiramiento de filas vacÃ­as
         Dim factorF As Double
         For factorF = 0.8 To 1.2 Step 0.05
             Dim offsetAcumulado As Double
             offsetAcumulado = 0
             
-            ' Recorrer filas *dentro de la p�gina*, de abajo hacia arriba (m�s eficiente)
+            ' Recorrer filas *dentro de la pÃ¡gina*, de abajo hacia arriba (mÃ¡s eficiente)
             For i = filaFin To filaInicio Step -1
                 If ws.Rows(i).Hidden Then
                     ' ignorar
                 ElseIf IsEmptyRow(ws.Rows(i)) Then
                     offsetAcumulado = offsetAcumulado + (ws.Rows(i).RowHeight * (1 - factorF))
-                    ' (1 - f) > 0 ? compresi�n; < 0 ? estiramiento
+                    ' (1 - f) > 0 ? compresiÃ³n; < 0 ? estiramiento
                 End If
                 
                 If EsMarcador(ws.Cells(i, 1)) Then
-                    ' Distancia vertical desde el marcador al final de la p�gina
-                    ' (sin recalcular alturas: usamos el offset acumulado por filas vac�as ajustadas)
+                    ' Distancia vertical desde el marcador al final de la pÃ¡gina
+                    ' (sin recalcular alturas: usamos el offset acumulado por filas vacÃ­as ajustadas)
                     Dim distancia As Double
-                    distancia = Abs(offsetAcumulado)  ' cuanto m�s cerca de 0, mejor (marcador al final)
+                    distancia = Abs(offsetAcumulado)  ' cuanto mÃ¡s cerca de 0, mejor (marcador al final)
                     
                     If distancia < mejorDistancia Then
                         mejorDistancia = distancia
@@ -717,25 +717,25 @@ Attribute ConfigurarSaltosDePagina.VB_ProcData.VB_Invoke_Func = " \n0"
             Next i
         Next factorF
         
-        ' --- 4. Aplicar ajuste si se encontr� un marcador ---
-        If mejorFilaMarcador > 0 And mejorDistancia < 15 Then  ' umbral: <15 pts � 0.2 cm
-            ' Ajustar filas vac�as *solo en esta p�gina*
+        ' --- 4. Aplicar ajuste si se encontrÃ³ un marcador ---
+        If mejorFilaMarcador > 0 And mejorDistancia < 15 Then  ' umbral: <15 pts Â 0.2 cm
+            ' Ajustar filas vacÃ­as *solo en esta pÃ¡gina*
             For j = filaInicio To mejorFilaMarcador - 1
                 If IsEmptyRow(ws.Rows(j)) Then
                     ws.Rows(j).RowHeight = ws.Rows(j).RowHeight * mejorFactorF
                 End If
             Next j
             
-            ' Insertar salto *justo antes* del marcador (reemplazando el autom�tico)
+            ' Insertar salto *justo antes* del marcador (reemplazando el automÃ¡tico)
             If pagina <= npb Then
-                ws.HPageBreaks(pagina).DragOff Direction:=xlToRight, RegionIndex:=1  ' eliminar salto autom�tico
+                ws.HPageBreaks(pagina).DragOff Direction:=xlToRight, RegionIndex:=1  ' eliminar salto automÃ¡tico
             End If
             ws.HPageBreaks.Add before:=ws.Rows(mejorFilaMarcador)
             
-            Debug.Print "[OK] P�gina " & pagina & ": salto ajustado a fila " & mejorFilaMarcador & _
+            Debug.Print "[OK] PÃ¡gina " & pagina & ": salto ajustado a fila " & mejorFilaMarcador & _
                         " (f=" & Round(mejorFactorF, 2) & ", d=" & Round(mejorDistancia, 1) & " pts)"
         Else
-            Debug.Print "[INFO] P�gina " & pagina & ": sin marcador �ptimo (rango " & filaInicio & "-" & filaFin & ")"
+            Debug.Print "[INFO] PÃ¡gina " & pagina & ": sin marcador Ã³ptimo (rango " & filaInicio & "-" & filaFin & ")"
         End If
     Next pagina
     
@@ -774,11 +774,11 @@ Attribute ConfigurarSaltosDePagina_v2.VB_ProcData.VB_Invoke_Func = " \n0"
     filaInicioPagina = 1
     
     Do While filaInicioPagina <= ultimaFila
-        minimaDistancia = altoPaginaReal * 0.15  ' L�mite de b�squeda (15% del alto)
+        minimaDistancia = altoPaginaReal * 0.15  ' LÃ­mite de bÃºsqueda (15% del alto)
         mejorF = 1#
         filaMarcador = 0
         
-        ' --- 2. SIMULACI�N: buscar marcador �ptimo con ajuste de filas vac�as ---
+        ' --- 2. SIMULACIÃN: buscar marcador Ã³ptimo con ajuste de filas vacÃ­as ---
         ' Probamos variando f de 0.8 a 1.2 en pasos de 0.05
         For factorF = 0.8 To 1.2 Step 0.05
             altoAcumulado = 0
@@ -792,12 +792,12 @@ Attribute ConfigurarSaltosDePagina_v2.VB_ProcData.VB_Invoke_Func = " \n0"
                     altoAcumulado = altoAcumulado + ws.Rows(i).RowHeight
                 End If
                 
-                ' Si encontramos un marcador (T�tulo/Encabezado) dentro del rango de inter�s
+                ' Si encontramos un marcador (TÃ­tulo/Encabezado) dentro del rango de interÃ©s
                 If EsMarcador(ws.Cells(i, 1)) Then
                     Dim distancia As Double
                     distancia = Abs(altoPaginaReal - altoAcumulado)
                     
-                    ' Si este marcador con este 'f' es el m�s cercano al borde inferior
+                    ' Si este marcador con este 'f' es el mÃ¡s cercano al borde inferior
                     If distancia < minimaDistancia Then
                         minimaDistancia = distancia
                         mejorF = factorF
@@ -805,18 +805,18 @@ Attribute ConfigurarSaltosDePagina_v2.VB_ProcData.VB_Invoke_Func = " \n0"
                     End If
                 End If
                 
-                ' Si nos pasamos mucho del alto de p�gina, dejamos de simular este 'f'
+                ' Si nos pasamos mucho del alto de pÃ¡gina, dejamos de simular este 'f'
                 If altoAcumulado > altoPaginaReal * 1.1 Then Exit For
             Next i
         Next factorF
         
-        ' --- 2. APLICACI�N DE LOS RESULTADOS ---
+        ' --- 2. APLICACIÃN DE LOS RESULTADOS ---
         If filaMarcador > 0 Then
-            ' Retroceder hasta la primera fila no vac�a/marcador
+            ' Retroceder hasta la primera fila no vacÃ­a/marcador
             Do While j > filaInicioPagina And (EsMarcador(ws.Cells(filaMarcador - 1, 1)) Or IsEmptyRow(ws.Rows(filaMarcador - 1)))
                 filaMarcador = filaMarcador - 1
             Loop
-            ' Aplicamos el factor 'mejorF' a las filas en blanco de esta p�gina
+            ' Aplicamos el factor 'mejorF' a las filas en blanco de esta pÃ¡gina
             altoAcumulado = 0
             For j = filaInicioPagina To filaMarcador - 1
                 If IsEmptyRow(ws.Rows(j)) Then
@@ -825,16 +825,16 @@ Attribute ConfigurarSaltosDePagina_v2.VB_ProcData.VB_Invoke_Func = " \n0"
                 End If
             Next j
             
-            ' Insertar salto manual justo antes del marcador �ptimo
+            ' Insertar salto manual justo antes del marcador Ã³ptimo
             ws.HPageBreaks.Add before:=ws.Rows(filaMarcador)
             npb = npb + 1
             filaInicioPagina = filaMarcador
-            Debug.Print "[OK] Salto insertado antes de fila " & filaMarcador & " (posici�n de marcador)"
+            Debug.Print "[OK] Salto insertado antes de fila " & filaMarcador & " (posiciÃ³n de marcador)"
         Else
-            ' Forzar c�lculo de saltos autom�ticos (por si estaban desactivados)
-            Application.Calculate  ' asegura que los saltos autom�ticos est�n actualizados
+            ' Forzar cÃ¡lculo de saltos automÃ¡ticos (por si estaban desactivados)
+            Application.Calculate  ' asegura que los saltos automÃ¡ticos estÃ©n actualizados
             
-            ' Contar cu�ntos saltos autom�ticos hay *desde filaInicioPagina*
+            ' Contar cuÃ¡ntos saltos automÃ¡ticos hay *desde filaInicioPagina*
             Dim autoBreakCount As Long, k As Long
             autoBreakCount = 0
             For k = 1 To ws.HPageBreaks.Count
@@ -844,27 +844,27 @@ Attribute ConfigurarSaltosDePagina_v2.VB_ProcData.VB_Invoke_Func = " \n0"
             Next k
             
             If autoBreakCount > 0 Then
-                ' Tomar el primer salto autom�tico v�lido
+                ' Tomar el primer salto automÃ¡tico vÃ¡lido
                 For k = 1 To ws.HPageBreaks.Count
                     If ws.HPageBreaks(k).Location.Row > filaInicioPagina Then
                         j = ws.HPageBreaks(k).Location.Row
                         ws.HPageBreaks.Add before:=ws.Rows(j)
                         npb = npb + 1
                         filaInicioPagina = j
-                        Debug.Print "[OK] Salto autom�tico adoptado en fila " & j
+                        Debug.Print "[OK] Salto automÃ¡tico adoptado en fila " & j
                         Exit For
                     End If
                 Next k
             Else
-                ' �ltimo recurso: avanzar una p�gina "ciega" (poco probable)
-                filaInicioPagina = filaInicioPagina + 40  ' � una p�gina est�ndar
-                Debug.Print "[WARN] Sin saltos autom�ticos ni marcadores: avance forzado a fila " & filaInicioPagina
+                ' Ãltimo recurso: avanzar una pÃ¡gina "ciega" (poco probable)
+                filaInicioPagina = filaInicioPagina + 40  ' Â una pÃ¡gina estÃ¡ndar
+                Debug.Print "[WARN] Sin saltos automÃ¡ticos ni marcadores: avance forzado a fila " & filaInicioPagina
             End If
         End If
         
         ' Evitar bucle infinito si algo falla
         If filaInicioPagina > ultimaFila Or i > ultimaFila Then Exit Do
-        ' Protecci�n contra bucle infinito (solo por si acaso)
+        ' ProtecciÃ³n contra bucle infinito (solo por si acaso)
         If npb > 100 Then Exit Do
     Loop
     
@@ -888,15 +888,15 @@ Attribute ConfigurarSaltosDePagina_old.VB_ProcData.VB_Invoke_Func = " \n0"
     
     'Application.ScreenUpdating = False
     ws.ResetAllPageBreaks
-    altoPaginaReal = GetUsablePrintHeight(ws) ' Funci�n definida anteriormente
+    altoPaginaReal = GetUsablePrintHeight(ws) ' FunciÃ³n definida anteriormente
     filaInicioPagina = 1
     
     Do While filaInicioPagina <= ultimaFila
-        minimaDistancia = altoPaginaReal * 0.15  ' L�mite de b�squeda (15% del alto)
+        minimaDistancia = altoPaginaReal * 0.15  ' LÃ­mite de bÃºsqueda (15% del alto)
         mejorF = 1#
         filaMarcador = 0
         
-        ' --- 1. SIMULACI�N DE OPTIMIZACI�N ---
+        ' --- 1. SIMULACIÃN DE OPTIMIZACIÃN ---
         ' Probamos variando f de 0.8 a 1.2 en pasos de 0.05
         For factorF = 0.8 To 1.2 Step 0.05
             altoAcumulado = 0
@@ -913,12 +913,12 @@ Attribute ConfigurarSaltosDePagina_old.VB_ProcData.VB_Invoke_Func = " \n0"
                     altoAcumulado = altoAcumulado + altoBase
                 End If
                 
-                ' Si encontramos un marcador (T�tulo/Encabezado) dentro del rango de inter�s
+                ' Si encontramos un marcador (TÃ­tulo/Encabezado) dentro del rango de interÃ©s
                 If EsMarcador(ws.Cells(i, 1)) Then
                     Dim distancia As Double
                     distancia = Abs(altoPaginaReal - altoAcumulado)
                     
-                    ' Si este marcador con este 'f' es el m�s cercano al borde inferior
+                    ' Si este marcador con este 'f' es el mÃ¡s cercano al borde inferior
                     If distancia < minimaDistancia Then
                         minimaDistancia = distancia
                         mejorF = factorF
@@ -926,17 +926,17 @@ Attribute ConfigurarSaltosDePagina_old.VB_ProcData.VB_Invoke_Func = " \n0"
                     End If
                 End If
                 
-                ' Si nos pasamos mucho del alto de p�gina, dejamos de simular este 'f'
+                ' Si nos pasamos mucho del alto de pÃ¡gina, dejamos de simular este 'f'
                 If altoAcumulado > altoPaginaReal * 1.1 Then Exit For
             Next i
         Next factorF
         
-        ' --- 2. APLICACI�N DE LOS RESULTADOS ---
+        ' --- 2. APLICACIÃN DE LOS RESULTADOS ---
         If filaMarcador > 0 Then
             Do While EsMarcador(ws.Cells(filaMarcador - 1, 1)) Or IsEmptyRow(ws.Rows(filaMarcador - 1))
                 filaMarcador = filaMarcador - 1
             Loop
-            ' Aplicamos el factor 'mejorF' a las filas en blanco de esta p�gina
+            ' Aplicamos el factor 'mejorF' a las filas en blanco de esta pÃ¡gina
             altoAcumulado = 0
             For j = filaInicioPagina To filaMarcador - 1
                 If IsEmptyRow(ws.Rows(j)) Then
@@ -944,7 +944,7 @@ Attribute ConfigurarSaltosDePagina_old.VB_ProcData.VB_Invoke_Func = " \n0"
                 End If
             Next j
             
-            ' Insertar salto manual justo antes del marcador �ptimo
+            ' Insertar salto manual justo antes del marcador Ã³ptimo
             ws.HPageBreaks.Add before:=ws.Rows(filaMarcador)
             npb = npb + 1
             filaInicioPagina = filaMarcador
@@ -971,35 +971,35 @@ Attribute ConfigurarSaltosDePagina_old.VB_ProcData.VB_Invoke_Func = " \n0"
     Loop
     
     Application.ScreenUpdating = True
-    'MsgBox "Paginaci�n optimizada aplicada.", vbInformation
+    'MsgBox "PaginaciÃ³n optimizada aplicada.", vbInformation
 End Sub
 Function SaltoVerticalCortaRango(ws As Worksheet, targetRange As Range) As Boolean
-Attribute SaltoVerticalCortaRango.VB_Description = "[modMACROWbkEditableFormatting] Salto Vertical Corta Rango (funci�n personalizada). Aplica a: Cells Range"
+Attribute SaltoVerticalCortaRango.VB_Description = "[modMACROWbkEditableFormatting] Salto Vertical Corta Rango (funciÃ³n personalizada). Aplica a: Cells Range"
 Attribute SaltoVerticalCortaRango.VB_ProcData.VB_Invoke_Func = " \n21"
-    ' Devuelve True si el rango excede el primer salto de p�gina vertical
+    ' Devuelve True si el rango excede el primer salto de pÃ¡gina vertical
     
     Dim primerSaltoColumna As Long
     Dim rangoFinColumna As Long
     
     SaltoVerticalCortaRango = False
     
-    ' 1. Determinar d�nde est� el primer salto de p�gina vertical
+    ' 1. Determinar dÃ³nde estÃ¡ el primer salto de pÃ¡gina vertical
     If ws.VPageBreaks.Count > 0 Then
-        ' Obtiene el n�mero de columna donde se produce el salto
+        ' Obtiene el nÃºmero de columna donde se produce el salto
         primerSaltoColumna = ws.VPageBreaks(1).Location.Column
     Else
         ' Si no hay saltos manuales, no hay nada que cortar
         Exit Function
     End If
     
-    ' 2. Determinar hasta d�nde llega el rango de datos
-    ' Obtenemos el n�mero de la �ltima columna del rango
+    ' 2. Determinar hasta dÃ³nde llega el rango de datos
+    ' Obtenemos el nÃºmero de la Ãºltima columna del rango
     rangoFinColumna = targetRange.Column + targetRange.Columns.Count - 1
     
-    ' 3. Comparar: �El final del rango est� despu�s del salto de p�gina?
+    ' 3. Comparar: Â¿El final del rango estÃ¡ despuÃ©s del salto de pÃ¡gina?
     If rangoFinColumna >= primerSaltoColumna Then
-        ' El rango de datos es m�s ancho que el �rea de impresi�n definida por el salto.
-        ' Se imprimir� en varias p�ginas.
+        ' El rango de datos es mÃ¡s ancho que el Ã¡rea de impresiÃ³n definida por el salto.
+        ' Se imprimirÃ¡ en varias pÃ¡ginas.
         SaltoVerticalCortaRango = True
     End If
 End Function
@@ -1015,12 +1015,12 @@ Attribute CompactarAreaDeImpresion.VB_ProcData.VB_Invoke_Func = " \n0"
     
     On Error GoTo ErrorHandler
     
-    ' --- Inicializar estado como inv�lido (por seguridad) ---
+    ' --- Inicializar estado como invÃ¡lido (por seguridad) ---
     estado.EsValido = False
     
-    ' --- 1. Verificar �rea de impresi�n ---
+    ' --- 1. Verificar Ã¡rea de impresiÃ³n ---
     If ws.PageSetup.PrintArea = "" Then
-        Debug.Print "[WARN] CompactarAreaDeImpresion: no hay �rea de impresi�n en '" & ws.Name & "'."
+        Debug.Print "[WARN] CompactarAreaDeImpresion: no hay Ã¡rea de impresiÃ³n en '" & ws.Name & "'."
         Exit Sub
     End If
     
@@ -1032,13 +1032,13 @@ Attribute CompactarAreaDeImpresion.VB_ProcData.VB_Invoke_Func = " \n0"
     
     If Not hayMultiples Then
         Debug.Print "[OK] CompactarAreaDeImpresion: solo un rango. Nada que hacer."
-        estado.EsValido = True  ' a�n as�, marcamos como v�lido (restaurable)
+        estado.EsValido = True  ' aÃºn asÃ­, marcamos como vÃ¡lido (restaurable)
         Exit Sub
     End If
     
     Debug.Print "=== CompactarAreaDeImpresion: " & (UBound(printAreas) + 1) & " rangos en '" & ws.Name & "' ==="
     
-    ' --- 3. Construir rango total y l�mites ---
+    ' --- 3. Construir rango total y lÃ­mites ---
     Set totalRange = Nothing
     minRow = 1048576: maxRow = 1
     minCol = 16384:   maxCol = 1
@@ -1114,17 +1114,17 @@ Attribute CompactarAreaDeImpresion.VB_ProcData.VB_Invoke_Func = " \n0"
         End If
     Next j
     
-    ' --- 6. Unificar �rea de impresi�n ---
+    ' --- 6. Unificar Ã¡rea de impresiÃ³n ---
     Dim unifiedRange As Range
     Set unifiedRange = ws.Range(ws.Cells(minRow, minCol), ws.Cells(maxRow, maxCol))
     ws.PageSetup.PrintArea = unifiedRange.Address
     
-    ' --- 7. Marcar estado como v�lido ---
+    ' --- 7. Marcar estado como vÃ¡lido ---
     estado.EsValido = True
     
     Debug.Print "[OK] Filas ocultas (huecos): " & filasOcultas
     Debug.Print "[OK] Columnas ocultas (huecos): " & colsOcultas
-    Debug.Print "[OK] �rea unificada: " & unifiedRange.Address
+    Debug.Print "[OK] Ãrea unificada: " & unifiedRange.Address
     Debug.Print "[OK] CompactarAreaDeImpresion: finalizado."
     
     Exit Sub
@@ -1139,11 +1139,11 @@ Attribute RestaurarAreaDeImpresion.VB_ProcData.VB_Invoke_Func = " \n0"
     On Error GoTo ErrorHandler
     
     If Not estado.EsValido Then
-        Debug.Print "[WARN] RestaurarAreaDeImpresion: estado no v�lido. Nada restaurado."
+        Debug.Print "[WARN] RestaurarAreaDeImpresion: estado no vÃ¡lido. Nada restaurado."
         Exit Sub
     End If
     
-    ' --- 1. Restaurar �rea de impresi�n original ---
+    ' --- 1. Restaurar Ã¡rea de impresiÃ³n original ---
     If estado.PrintAreaOriginal = "" Then
         ws.PageSetup.PrintArea = ""
     Else
@@ -1168,7 +1168,7 @@ Attribute RestaurarAreaDeImpresion.VB_ProcData.VB_Invoke_Func = " \n0"
         End If
     Next j
     
-    Debug.Print "[OK] RestaurarAreaDeImpresion: �rea original = '" & estado.PrintAreaOriginal & "'"
+    Debug.Print "[OK] RestaurarAreaDeImpresion: Ã¡rea original = '" & estado.PrintAreaOriginal & "'"
     Debug.Print "[OK] Filas restauradas a visible: " & filasRestauradas
     Debug.Print "[OK] Columnas restauradas a visible: " & colsRestauradas
     
