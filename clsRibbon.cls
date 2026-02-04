@@ -347,6 +347,13 @@ Private Sub mChartMgr_ChartDeactivated(cht As Chart)
     InvalidarControl "btnInvertirSeries"
 End Sub
 
+Private Sub mCtxMgr_WorkbookActivated(ByVal wb As Workbook)
+    ' Necesario para re-evaluar btnCGASING cuando una hoja se copia a otro libro
+    ' (WorkbookActivated se dispara al activar el libro destino)
+    InvalidarControl "btnGenerarGraficos"
+    InvalidarControl "btnCGASING"
+End Sub
+
 Private Sub mCtxMgr_SheetActivated(ByVal sh As Object)
     InvalidarControl "btnGenerarGraficos"
     InvalidarControl "btnCGASING"

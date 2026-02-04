@@ -161,7 +161,12 @@ Public Function actualizarColeccionOportunidades()
     End If
 
 Salida:
-    p_CurrOpportunity = IIf(p_CurrOpportunity > 0, p_CurrOpportunity, IIf(p_ColOpportunities.Count > 0, 0, -1))
+    ' Ajustar Ã­ndice si la colecciÃ³n se acortÃ³ y el Ã­ndice quedÃ³ fuera de rango
+    If p_CurrOpportunity >= p_ColOpportunities.Count Then
+        p_CurrOpportunity = IIf(p_ColOpportunities.Count > 0, p_ColOpportunities.Count - 1, -1)
+    ElseIf p_CurrOpportunity < 0 And p_ColOpportunities.Count > 0 Then
+        p_CurrOpportunity = 0
+    End If
     RaiseEvent OpportunityCollectionUpdate("refresh")
     actualizarColeccionOportunidades = arr
 End Function
