@@ -21,6 +21,7 @@ Private p_wbinf As mod_ConstantsGlobals.T_InfoArchivo
 Private p_ObjectKey As Double
 Private p_PrivSheetsCol As Collection ' ColecciÃ³n de NOMBRES de hojas PRIVADAS (solo para uso interno)
 Private p_PublSheetsCol As Collection ' ColecciÃ³n de NOMBRES de hojas PUBLICAS (SE PUEDEN COMPARTIR COMO DOCUMENTO EDITABLE)
+Private p_RibbonBookState As T_RibbonBookState ' Estado del ribbon especÃ­fico para este libro
 
 ' ==================================================================
 ' IMPLEMENTA LA INTERFAZ IFile
@@ -42,6 +43,33 @@ End Property
 
 Private Property Get IFile_Name() As String
     IFile_Name = Me.Name
+End Property
+
+'--------------------------------------------------------------
+' InicializaciÃ³n y estado del ribbon por libro
+'--------------------------------------------------------------
+Private Sub Class_Initialize()
+    ' Estado por defecto del ribbon para este libro
+    p_RibbonBookState.Modo = Ribbon_OpportunityOnly
+    p_RibbonBookState.Visible = True
+End Sub
+
+'@Description: Estado del ribbon especÃ­fico para este libro
+Public Property Get RibbonBookState() As T_RibbonBookState
+    RibbonBookState = p_RibbonBookState
+End Property
+
+Public Property Let RibbonBookState(state As T_RibbonBookState)
+    p_RibbonBookState = state
+End Property
+
+'@Description: Acceso directo al modo del ribbon para este libro
+Public Property Get RibbonMode() As eRibbonMode
+    RibbonMode = p_RibbonBookState.Modo
+End Property
+
+Public Property Let RibbonMode(mode As eRibbonMode)
+    p_RibbonBookState.Modo = mode
 End Property
 
 '--------------------------------------------------------------

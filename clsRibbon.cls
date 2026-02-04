@@ -133,6 +133,18 @@ Public Sub ToggleModo()
         mStateRibbon.Modo = Ribbon_OpportunityOnly
     End Select
 
+    ' Guardar el nuevo estado de vuelta al libro activo
+    On Error Resume Next
+    Dim f As clsFileXLS
+    If Not mFileMgr Is Nothing Then
+        If Not mFileMgr.State.CurrentFile Is Nothing Then
+            Set f = mFileMgr.State.CurrentFile
+            f.RibbonMode = mStateRibbon.Modo
+            LogDebug MODULE_NAME, "[ToggleModo] Estado guardado en libro: " & f.Name & " -> " & mStateRibbon.Description
+        End If
+    End If
+    On Error GoTo 0
+
     ' El Mgr invalida el ribbon despues de cambiar estado
     InvalidarRibbon
 
@@ -333,10 +345,19 @@ Private Sub mOpportunities_currOpportunityChanged(ByVal Index As Long, ByVal Pat
 End Sub
 
 Private Sub mFileMgr_ActiveFileChanged(f As clsFileXLS)
+    ' Sincronizar estado del ribbon desde el libro activo
+    If Not f Is Nothing Then
+        mStateRibbon.SyncFromBookState f.RibbonBookState
+        LogDebug MODULE_NAME, "[mFileMgr_ActiveFileChanged] Sincronizado estado ribbon desde libro: " & f.Name
+    End If
+
     InvalidarControl "btnGenerarGraficos"
     InvalidarControl "btnExportarPDF"
     InvalidarControl "btnLimpiarFormato"
     InvalidarControl "btnAjustarFilas"
+
+    ' Invalidar todo el ribbon para reflejar el nuevo estado
+    InvalidarRibbon
 End Sub
 
 Private Sub mChartMgr_ChartActivated(cht As Chart)

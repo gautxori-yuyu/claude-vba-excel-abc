@@ -54,3 +54,62 @@ Public Function IsAdminGroupVisible() As Boolean
     IsAdminGroupVisible = (mModoRibbon = Ribbon_Admin)
 End Function
 
+' ==================================================================
+' METODOS DE UTILIDAD PARA T_RibbonBookState (estado por libro)
+' ==================================================================
+' Estos mÃ©todos operan sobre el UDT sin modificar el estado interno de la clase.
+' Permiten evaluar el estado del ribbon para cualquier libro.
+
+'@Description: Obtiene descripciÃ³n del modo para un estado de libro especÃ­fico
+Public Function GetDescriptionForBook(bookState As T_RibbonBookState) As String
+    Select Case bookState.Modo
+    Case Ribbon_Admin
+        GetDescriptionForBook = "Admin"
+    Case Ribbon_Hidden
+        GetDescriptionForBook = "(oculto)"
+    Case Ribbon_OpportunityOnly
+        GetDescriptionForBook = "Fich. oportunidad"
+    Case Ribbon_User
+        GetDescriptionForBook = "User"
+    Case Else
+        GetDescriptionForBook = "Fich. oportunidad"
+    End Select
+End Function
+
+'@Description: Verifica si el grupo admin es visible para un estado de libro especÃ­fico
+Public Function IsAdminGroupVisibleForBook(bookState As T_RibbonBookState) As Boolean
+    IsAdminGroupVisibleForBook = (bookState.Modo = Ribbon_Admin)
+End Function
+
+'@Description: Verifica si el ribbon debe estar visible para un estado de libro especÃ­fico
+Public Function IsVisibleForBook(bookState As T_RibbonBookState, isOpportunityFile As Boolean) As Boolean
+    If Not bookState.Visible Then
+        IsVisibleForBook = False
+        Exit Function
+    End If
+
+    Select Case bookState.Modo
+    Case Ribbon_Admin, Ribbon_User
+        IsVisibleForBook = True
+    Case Ribbon_OpportunityOnly
+        IsVisibleForBook = isOpportunityFile
+    Case Ribbon_Hidden
+        IsVisibleForBook = False
+    Case Else
+        IsVisibleForBook = isOpportunityFile
+    End Select
+End Function
+
+'@Description: Sincroniza el estado interno con un T_RibbonBookState
+'@Note: Ãtil cuando se cambia de libro activo
+Public Sub SyncFromBookState(bookState As T_RibbonBookState)
+    mModoRibbon = bookState.Modo
+    mVisible = bookState.Visible
+End Sub
+
+'@Description: Obtiene el estado actual como T_RibbonBookState
+Public Function ToBookState() As T_RibbonBookState
+    ToBookState.Modo = mModoRibbon
+    ToBookState.Visible = mVisible
+End Function
+

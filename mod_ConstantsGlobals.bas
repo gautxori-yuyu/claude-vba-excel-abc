@@ -249,6 +249,16 @@ Public Enum eRibbonMode
 End Enum
 
 '--------------------------------------------------------------
+' @Description: Estado del Ribbon especÃ­fico por libro
+' @Note: Se vincula a cada clsFileXLS para gestionar el ribbon por libro
+'--------------------------------------------------------------
+Public Type T_RibbonBookState
+    Modo As eRibbonMode                          ' Modo del ribbon para este libro
+    Visible As Boolean                           ' Visibilidad del ribbon para este libro
+    ' Extensible: aÃ±adir mÃ¡s atributos por libro segÃºn necesidad futura
+End Type
+
+'--------------------------------------------------------------
 ' @Description: Tipos de archivo soportados
 '--------------------------------------------------------------
 Public Enum TipoArchivo
