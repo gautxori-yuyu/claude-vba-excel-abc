@@ -1,8 +1,8 @@
 Attribute VB_Name = "modCALLBACKSRibbon"
-' MÃ³dulo de integraciÃ³n con la Ribbon: gestiona visibilidad y ejecuciÃ³n de macros para grÃ¡ficos de sensibilidad
+' M�dulo de integraci�n con la Ribbon: gestiona visibilidad y ejecuci�n de macros para gr�ficos de sensibilidad
 
-'FIXME: DETECCIÃN Y RECUPERACIÃN DE OBJETOS RIBBON; en ocasiones el ribbon se pierde. Es necesario revisar que lo causa
-'  Creo que casi siempre tiene que ver con que se desactive el XLAM, o se suspende la ejecuciÃ³n de VBA mediante STOP
+'FIXME: DETECCI�N Y RECUPERACI�N DE OBJETOS RIBBON; en ocasiones el ribbon se pierde. Es necesario revisar que lo causa
+'  Creo que casi siempre tiene que ver con que se desactive el XLAM, o se suspende la ejecuci�n de VBA mediante STOP
 
 '@Folder "2-Infraestructura.Excel.Ribbon"
 '@IgnoreModule ProcedureNotUsed
@@ -18,7 +18,7 @@ Sub RibbonOnLoad(xlRibbon As IRibbonUI)
 Attribute RibbonOnLoad.VB_ProcData.VB_Invoke_Func = " \n0"
     LogInfo MODULE_NAME, "[callback: RibbonOnLoad] - Inicio"
     On Error GoTo ErrorHandler
-    ' inicializamos la referencia al ribbon en la aplicaciÃ³n
+    ' inicializamos la referencia al ribbon en la aplicaci�n
     Dim mApp As clsApplication
     Set mApp = App
     mApp.ribbon.Init xlRibbon
@@ -82,8 +82,8 @@ End Sub
 
 Public Sub OnVBABackup(control As IRibbonControl)
     App.Dispatcher.Dispatch (control.id)
-    LogInfo MODULE_NAME, "[callback: OnVBABackup] - Creada copia de seguridad del cÃ³digo en " & ThisWorkbook.Path & "\Backups"
-    MsgBox "Creada copia de seguridad del cÃ³digo en " & _
+    LogInfo MODULE_NAME, "[callback: OnVBABackup] - Creada copia de seguridad del c�digo en " & ThisWorkbook.Path & "\Backups"
+    MsgBox "Creada copia de seguridad del c�digo en " & _
             ThisWorkbook.Path & "\Backups", vbInformation, "Copia de seguridad"
 End Sub
 
@@ -126,10 +126,10 @@ Public Sub OnReplaceWithNamesInValidations(control As IRibbonControl)
 End Sub
 
 '--------------------------------------------------------------
-' CALLBACKS DE CONFIGURACIÃN
+' CALLBACKS DE CONFIGURACI�N
 '--------------------------------------------------------------
 
-' Callback del botÃ³n de configuraciÃ³n
+' Callback del bot�n de configuraci�n
 Sub OnConfigurador(control As IRibbonControl)
     App.Dispatcher.Dispatch (control.id)
     LogInfo MODULE_NAME, "[callback: OnConfigurador]"
@@ -140,17 +140,17 @@ End Sub
 '--------------------------------------------------------------
 
 'FIXME: revisar la secuencia de eventos con el dropdown / box!!:
-'  actualmente la sucesiÃ³n de eventos relacionados con ese drop down no estÃ¡ bien coordinada.
-'  revisar los eventosÂ OpportunityChanged y su relaciÃ³n con CurrOpportunity y ProcesarCambiosEnOportunidades,
+'  actualmente la sucesi�n de eventos relacionados con ese drop down no est� bien coordinada.
+'  revisar los eventos�OpportunityChanged y su relaci�n con CurrOpportunity y ProcesarCambiosEnOportunidades,
 '  y el resto de eventos relacionados
 
 '--------------------------------------------------------------
-' @Description: Callback del botÃ³n de refresco de oportunidades.
+' @Description: Callback del bot�n de refresco de oportunidades.
 ' Callback for btnOpRefresh CallbackRefrescarOportunidades
 ' Refresca el listado de subcarpetas y actualiza el desplegable
 ' del Ribbon.
 '--------------------------------------------------------------
-' @Category: InformaciÃ³n de archivo
+' @Category: Informaci�n de archivo
 ' @ArgumentDescriptions: control: control del Ribbon que dispara el evento
 '--------------------------------------------------------------
 Public Sub CallbackRefrescarOportunidades(control As IRibbonControl)
@@ -159,10 +159,10 @@ Public Sub CallbackRefrescarOportunidades(control As IRibbonControl)
 End Sub
 
 '--------------------------------------------------------------
-' @Description: Devuelve el nÃºmero de oportunidades disponibles (nÃºmero de elementos del desplegable).
+' @Description: Devuelve el n�mero de oportunidades disponibles (n�mero de elementos del desplegable).
 ' Callback for ddlOportunidades getItemCount
 '--------------------------------------------------------------
-' @Category: InformaciÃ³n de archivo
+' @Category: Informaci�n de archivo
 ' @ArgumentDescriptions: control: control del Ribbon|getItemCount: valor devuelto
 '--------------------------------------------------------------
 Sub GetOportunidadesCount(control As IRibbonControl, ByRef returnedVal)
@@ -174,20 +174,20 @@ End Sub
 ' desplegable del Ribbon.
 ' Callback for ddlOportunidades getItemLabel
 '--------------------------------------------------------------
-' @Category: InformaciÃ³n de archivo
-' @ArgumentDescriptions: control: control del Ribbon|index: Ã­ndice (base 0)|label: texto mostrado
+' @Category: Informaci�n de archivo
+' @ArgumentDescriptions: control: control del Ribbon|index: �ndice (base 0)|label: texto mostrado
 '--------------------------------------------------------------
 Sub GetOportunidadesLabel(control As IRibbonControl, Index As Integer, ByRef Label)
     Label = App.Dispatcher.GetRibbonItemLabel(control.id, Index)
 End Sub
 
 '--------------------------------------------------------------
-' @Description: Gestiona el evento de selecciÃ³n de oportunidad.
+' @Description: Gestiona el evento de selecci�n de oportunidad.
 ' Dispara el evento OpportunityChanged de la clase clsOpportunitiesMgr.
 ' Callback for ddlOportunidades onAction
 '--------------------------------------------------------------
-' @Category: InformaciÃ³n de archivo
-' @ArgumentDescriptions: control: control del Ribbon|id: identificador del control|index: Ã­ndice seleccionado
+' @Category: Informaci�n de archivo
+' @ArgumentDescriptions: control: control del Ribbon|id: identificador del control|index: �ndice seleccionado
 '--------------------------------------------------------------
 Sub OnOportunidadesSeleccionada(control As IRibbonControl, id As String, Index As Integer)
     ' supongo que el id es el texto de la opcion...
@@ -199,7 +199,7 @@ End Sub
 ' TODO: falta pasar al dispatcher el resto de callbacks
 
 'Callback for ddlOportunidades getSelectedItemIndex
-' Ãndice del elemento seleccionado
+' �ndice del elemento seleccionado
 Sub GetSelectedOportunidadIndex(control As IRibbonControl, ByRef Index)
 Attribute GetSelectedOportunidadIndex.VB_ProcData.VB_Invoke_Func = " \n0"
     Index = App.OpportunitiesMgr.CurrOpportunity
@@ -208,27 +208,27 @@ End Sub
 ' ==========================================
 ' CALLBACKS GetEnabled (habilitar/deshabilitar controles)
 ' ==========================================
-' Habilita el botÃ³n de grÃ¡fico si el fichero es vÃ¡lido y cumple condiciones internas
+' Habilita el bot�n de gr�fico si el fichero es v�lido y cumple condiciones internas
 Public Sub GetGraficoEnabled(control As IRibbonControl, ByRef enabled)
     enabled = App.Dispatcher.GetRibbonControlEnabled(control.id)
 End Sub
 
-' Habilita el botÃ³n de inversiÃ³n de ejes si hay grÃ¡fico vÃ¡lido en contexto
+' Habilita el bot�n de inversi�n de ejes si hay gr�fico v�lido en contexto
 Public Sub GetInvertirEjesEnabled(control As IRibbonControl, ByRef enabled)
     enabled = App.Dispatcher.GetRibbonControlEnabled(control.id)
 End Sub
 
-' Habilita el botÃ³n de procesado C-GAS-ING si hoja vÃ¡lida en contexto
+' Habilita el bot�n de procesado C-GAS-ING si hoja v�lida en contexto
 Public Sub GetCGASINGEnabled(control As IRibbonControl, ByRef enabled)
     enabled = App.Dispatcher.GetRibbonControlEnabled(control.id)
 End Sub
 
-' Habilita el botÃ³n de creaciÃ³n de nuevas oportunidades
+' Habilita el bot�n de creaci�n de nuevas oportunidades
 Public Sub GetNuevaOportunidadEnabled(control As IRibbonControl, ByRef enabled)
     enabled = App.Dispatcher.GetRibbonControlEnabled(control.id)
 End Sub
 
-' Habilita el botÃ³n de cumplimentaciÃ³n de oferta FULL si hoja vÃ¡lida en contexto
+' Habilita el bot�n de cumplimentaci�n de oferta FULL si hoja v�lida en contexto
 Public Sub GetOfertaFullEnabled(control As IRibbonControl, ByRef enabled)
     enabled = True                               ' EsValidoRellenarOferta()
 End Sub
@@ -237,7 +237,7 @@ Public Sub GetOpenLogEnabled(control As IRibbonControl, ByRef enabled)
     enabled = GetLogFilePath <> ""
 End Sub
 
-' Habilita el botÃ³n del menÃº contextual del Ribbon si el fichero tiene nombre vÃ¡lido
+' Habilita el bot�n del men� contextual del Ribbon si el fichero tiene nombre v�lido
 Public Sub GetMenuEnabled(control As IRibbonControl, ByRef enabled)
     enabled = EsFicheroOportunidad()
     enabled = True
@@ -245,7 +245,7 @@ Public Sub GetMenuEnabled(control As IRibbonControl, ByRef enabled)
 End Sub
 
 ' ==========================================
-' CALLBACKS DE SUPERTIPS DINÃMICOS
+' CALLBACKS DE SUPERTIPS DIN�MICOS
 ' ==========================================
 Sub GetSupertipRutaBaseOportunidades(control As IRibbonControl, ByRef returnedVal)
 Attribute GetSupertipRutaBaseOportunidades.VB_ProcData.VB_Invoke_Func = " \n0"
@@ -272,7 +272,7 @@ Attribute GetSupertipRutaBaseCalcTmpl.VB_ProcData.VB_Invoke_Func = " \n0"
     returnedVal = GetSupertipRutaBase(App.OpportunitiesMgr.Conf.RutaExcelCalcTempl)
 End Sub
 
-' Para mostrar la ruta actual en el supertip (dinÃ¡mico)
+' Para mostrar la ruta actual en el supertip (din�mico)
 Function GetSupertipRutaBase(ByVal strSettingRuta As String)
 Attribute GetSupertipRutaBase.VB_ProcData.VB_Invoke_Func = " \n0"
     If strSettingRuta = "" Then strSettingRuta = "No configurada"
@@ -299,7 +299,7 @@ End Sub
 ' ==========================================
 ' CALLBACKS getVisible
 ' ==========================================
-'@Description: Callback getVisible de la pestaÃ±a "ABC"
+'@Description: Callback getVisible de la pesta�a "ABC"
 Public Sub GetTabABCVisible(control As IRibbonControl, ByRef Visible)
 Attribute GetTabABCVisible.VB_ProcData.VB_Invoke_Func = " \n0"
     On Error GoTo ErrHandler

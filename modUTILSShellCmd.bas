@@ -42,7 +42,7 @@ End Sub
 
 Public Sub ExtraerScriptVBScript(strScript As String, rutaDestino As String, Optional bB64 As Boolean)
 Attribute ExtraerScriptVBScript.VB_ProcData.VB_Invoke_Func = " \n0"
-    ' el script estÃ¡ almacenado como cadena Base64, PENDIENTE aÃ±adir encriptacion RC4
+    ' el script est� almacenado como cadena Base64, PENDIENTE a�adir encriptacion RC4
     Dim fso As Object, archivo As Object
     Set fso = CreateObject("Scripting.FileSystemObject")
     Set archivo = fso.CreateTextFile(rutaDestino, True)
@@ -57,7 +57,7 @@ End Sub
 '@Description: Comprime una carpeta completa en un archivo ZIP usando 7-Zip o Shell.Application (fallback)
 '@Scope: Privado
 '@ArgumentDescriptions: rutaCarpeta: Carpeta a comprimir | rutaZipDestino: Ruta completa del ZIP a crear
-'@Returns: Boolean | True si se creÃ³ correctamente
+'@Returns: Boolean | True si se cre� correctamente
 Function ComprimirCarpetaAZip(rutaCarpeta As String, rutaZipDestino As String) As Boolean
 Attribute ComprimirCarpetaAZip.VB_Description = "[modUTILSShellCmd] Comprime una carpeta completa en un archivo ZIP usando 7-Zip o Shell.Application (fallback)"
 Attribute ComprimirCarpetaAZip.VB_ProcData.VB_Invoke_Func = " \n21"
@@ -66,14 +66,14 @@ Attribute ComprimirCarpetaAZip.VB_ProcData.VB_Invoke_Func = " \n21"
     
     On Error GoTo ErrorHandler
     
-    ' MÃTODO 1: Intentar con 7-Zip (mÃ¡s rÃ¡pido y robusto)
+    ' M�TODO 1: Intentar con 7-Zip (m�s r�pido y robusto)
     resultado = ComprimirCon7Zip(rutaCarpeta, rutaZipDestino)
     
     If resultado Then
         metodo = "7-Zip"
         ComprimirCarpetaAZip = True
     Else
-        ' MÃTODO 2: Fallback a Shell.Application (mÃ©todo nativo mejorado)
+        ' M�TODO 2: Fallback a Shell.Application (m�todo nativo mejorado)
         resultado = ComprimirConShellApplication(rutaCarpeta, rutaZipDestino)
         
         If resultado Then
@@ -85,7 +85,7 @@ Attribute ComprimirCarpetaAZip.VB_ProcData.VB_Invoke_Func = " \n21"
         End If
     End If
     
-    Debug.Print "[ComprimirCarpetaAZip] - CompresiÃ³n exitosa usando: " & metodo
+    Debug.Print "[ComprimirCarpetaAZip] - Compresi�n exitosa usando: " & metodo
     Exit Function
     
 ErrorHandler:
@@ -94,15 +94,15 @@ ErrorHandler:
 End Function
 
 ' ==========================================
-' MÃTODO 1: COMPRESIÃN CON 7-ZIP
+' M�TODO 1: COMPRESI�N CON 7-ZIP
 ' ==========================================
 
-'@Description: Intenta comprimir usando 7-Zip si estÃ¡ instalado
+'@Description: Intenta comprimir usando 7-Zip si est� instalado
 '@Scope: Privado
 '@ArgumentDescriptions: rutaCarpeta: Carpeta a comprimir | rutaZipDestino: Ruta del ZIP
-'@Returns: Boolean | True si 7-Zip funcionÃ³ correctamente
+'@Returns: Boolean | True si 7-Zip funcion� correctamente
 Function ComprimirCon7Zip(rutaCarpeta As String, rutaZipDestino As String) As Boolean
-Attribute ComprimirCon7Zip.VB_Description = "[modUTILSShellCmd] MÃTODO 1: COMPRESIÃN CON 7-ZIP Intenta comprimir usando 7-Zip si estÃ¡ instalado"
+Attribute ComprimirCon7Zip.VB_Description = "[modUTILSShellCmd] M�TODO 1: COMPRESI�N CON 7-ZIP Intenta comprimir usando 7-Zip si est� instalado"
 Attribute ComprimirCon7Zip.VB_ProcData.VB_Invoke_Func = " \n21"
     Dim ruta7Zip As String
     Dim comando As String
@@ -131,16 +131,16 @@ Attribute ComprimirCon7Zip.VB_ProcData.VB_Invoke_Func = " \n21"
     ' Sintaxis: 7z.exe a -tzip "destino.zip" "carpeta\*" -r
     comando = """" & ruta7Zip & """ a -tzip """ & rutaZipDestino & """ """ & rutaCarpeta & "\*"" -r"
     
-    ' Ejecutar 7-Zip de forma sincrÃ³nica
+    ' Ejecutar 7-Zip de forma sincr�nica
     Set wsh = CreateObject("WScript.Shell")
     exitCode = wsh.Run(comando, 0, True)  ' 0 = ventana oculta, True = esperar
     
     ' Verificar resultado
     If exitCode = 0 And fso.FileExists(rutaZipDestino) Then
         ' Verificar que el archivo tiene contenido
-        If fso.GetFile(rutaZipDestino).SIZE > 100 Then  ' MÃ¡s de 100 bytes (cabecera mÃ­nima)
+        If fso.GetFile(rutaZipDestino).SIZE > 100 Then  ' M�s de 100 bytes (cabecera m�nima)
             ComprimirCon7Zip = True
-            Debug.Print "[ComprimirCon7Zip] - CompresiÃ³n exitosa con 7-Zip"
+            Debug.Print "[ComprimirCon7Zip] - Compresi�n exitosa con 7-Zip"
         Else
             ComprimirCon7Zip = False
         End If
@@ -181,7 +181,7 @@ Private Function Buscar7Zip() As String
         "C:\Program Files (x86)\7-Zip\7z.exe" _
     )
     
-    ' Buscar en cada ubicaciÃ³n
+    ' Buscar en cada ubicaci�n
     For i = LBound(rutas) To UBound(rutas)
         ruta = CStr(rutas(i))
         If fso.FileExists(ruta) Then
@@ -195,15 +195,15 @@ Private Function Buscar7Zip() As String
 End Function
 
 ' ==========================================
-' MÃTODO 2: COMPRESIÃN CON SHELL.APPLICATION (MEJORADO)
+' M�TODO 2: COMPRESI�N CON SHELL.APPLICATION (MEJORADO)
 ' ==========================================
 
-'@Description: Comprime usando Shell.Application con sincronizaciÃ³n robusta (basado en cÃ³digo de Gustav Brock)
+'@Description: Comprime usando Shell.Application con sincronizaci�n robusta (basado en c�digo de Gustav Brock)
 '@Scope: Privado
 '@ArgumentDescriptions: rutaCarpeta: Carpeta a comprimir | rutaZipDestino: Ruta del ZIP
-'@Returns: Boolean | True si la compresiÃ³n funcionÃ³
+'@Returns: Boolean | True si la compresi�n funcion�
 Function ComprimirConShellApplication(rutaCarpeta As String, rutaZipDestino As String) As Boolean
-Attribute ComprimirConShellApplication.VB_Description = "[modUTILSShellCmd] MÃTODO 2: COMPRESIÃN CON SHELL.APPLICATION (MEJORADO) Comprime usando Shell.Application con sincronizaciÃ³n robusta (basado en cÃ³digo de Gustav Brock)"
+Attribute ComprimirConShellApplication.VB_Description = "[modUTILSShellCmd] M�TODO 2: COMPRESI�N CON SHELL.APPLICATION (MEJORADO) Comprime usando Shell.Application con sincronizaci�n robusta (basado en c�digo de Gustav Brock)"
 Attribute ComprimirConShellApplication.VB_ProcData.VB_Invoke_Func = " \n21"
     Dim fso As Object
     Dim shellApp As Object
@@ -246,7 +246,7 @@ Attribute ComprimirConShellApplication.VB_ProcData.VB_Invoke_Func = " \n21"
         fso.DeleteFile rutaZipDestino, True
     End If
     
-    ' Crear archivo ZIP vacÃ­o con cabecera correcta
+    ' Crear archivo ZIP vac�o con cabecera correcta
     ' Header proporcionado por Stuart McLachlan
     zipHeader = Chr$(80) & Chr$(75) & Chr$(5) & Chr$(6) & String$(18, vbNullChar)
     
@@ -256,7 +256,7 @@ Attribute ComprimirConShellApplication.VB_ProcData.VB_Invoke_Func = " \n21"
     Put #fileNum, , zipHeader
     Close #fileNum
     
-    ' PequeÃ±a pausa para asegurar que el archivo se creÃ³
+    ' Peque�a pausa para asegurar que el archivo se cre�
     Sleep 200
     DoEvents
     
@@ -267,18 +267,18 @@ Attribute ComprimirConShellApplication.VB_ProcData.VB_Invoke_Func = " \n21"
     ' Contar archivos en carpeta origen (recursivamente)
     numArchivosOrigen = ContarArchivosRecursivo(carpetaOrigen)
     
-    Debug.Print "[ComprimirConShellApplication] - Iniciando compresiÃ³n de " & numArchivosOrigen & " archivos..."
+    Debug.Print "[ComprimirConShellApplication] - Iniciando compresi�n de " & numArchivosOrigen & " archivos..."
     
     ' Copiar archivos al ZIP usando Shell.Application
     On Error Resume Next
-    shellApp.Namespace(CVar(zipTemp)).CopyHere shellApp.Namespace(CVar(rutaCarpeta)).Items, 16  ' 16 = Responder SÃ­ a todo
+    shellApp.Namespace(CVar(zipTemp)).CopyHere shellApp.Namespace(CVar(rutaCarpeta)).Items, 16  ' 16 = Responder S� a todo
     On Error GoTo ErrorHandler
     
     DoEvents
     
-    ' SINCRONIZACIÃN ROBUSTA: Esperar hasta que todos los archivos estÃ©n en el ZIP
+    ' SINCRONIZACI�N ROBUSTA: Esperar hasta que todos los archivos est�n en el ZIP
     contador = 0
-    maxIntentos = 200  ' 200 * 250ms = 50 segundos mÃ¡ximo
+    maxIntentos = 200  ' 200 * 250ms = 50 segundos m�ximo
     
     On Error Resume Next  ' Ignorar errores al consultar el ZIP mientras se crea
     
@@ -291,7 +291,7 @@ Attribute ComprimirConShellApplication.VB_ProcData.VB_Invoke_Func = " \n21"
         
         ' Verificar si ya tenemos todos los archivos
         If numArchivosZip > 0 And numArchivosZip >= numArchivosOrigen Then
-            ' Esperar un poco mÃ¡s para asegurar que terminÃ³
+            ' Esperar un poco m�s para asegurar que termin�
             Sleep 500
             Exit Do
         End If
@@ -306,17 +306,17 @@ Attribute ComprimirConShellApplication.VB_ProcData.VB_Invoke_Func = " \n21"
     
     On Error GoTo ErrorHandler
     
-    ' VerificaciÃ³n final
+    ' Verificaci�n final
     numArchivosZip = ContarItemsEnZip(shellApp, zipTemp)
     
     If numArchivosZip < numArchivosOrigen Then
         Debug.Print "[ComprimirConShellApplication] - ADVERTENCIA: ZIP incompleto (" & numArchivosZip & "/" & numArchivosOrigen & ")"
     Else
-        Debug.Print "[ComprimirConShellApplication] - CompresiÃ³n completada (" & numArchivosZip & " archivos)"
+        Debug.Print "[ComprimirConShellApplication] - Compresi�n completada (" & numArchivosZip & " archivos)"
     End If
     
     ' Mover/Renombrar ZIP temporal al destino final
-    ' Usar bucle robusto como en cÃ³digo de Gustav Brock
+    ' Usar bucle robusto como en c�digo de Gustav Brock
     Const ErrorFileNotFound As Long = 53
     Const ErrorFileExists As Long = 58
     Const ErrorNoPermission As Long = 70
@@ -333,10 +333,10 @@ Attribute ComprimirConShellApplication.VB_ProcData.VB_Invoke_Func = " \n21"
                 ' Continuar intentando
                 Debug.Print "[ComprimirConShellApplication] - Reintentando mover archivo..."
             Case 0
-                ' Ãxito
+                ' �xito
                 Exit Do
             Case ErrorFileNotFound
-                ' El archivo ya se moviÃ³
+                ' El archivo ya se movi�
                 Exit Do
             Case Else
                 ' Error inesperado
@@ -347,7 +347,7 @@ Attribute ComprimirConShellApplication.VB_ProcData.VB_Invoke_Func = " \n21"
     
     On Error GoTo ErrorHandler
     
-    ' Verificar que el archivo final existe y tiene tamaÃ±o razonable
+    ' Verificar que el archivo final existe y tiene tama�o razonable
     If fso.FileExists(rutaZipDestino) Then
         If fso.GetFile(rutaZipDestino).SIZE > 100 Then
             ComprimirConShellApplication = True
@@ -368,7 +368,7 @@ End Function
 '@Description: Cuenta archivos en una carpeta recursivamente
 '@Scope: Privado
 '@ArgumentDescriptions: carpeta: Objeto Folder
-'@Returns: Long | NÃºmero total de archivos
+'@Returns: Long | N�mero total de archivos
 Private Function ContarArchivosRecursivo(carpeta As Object) As Long
     Dim archivo As Object
     Dim subcarpeta As Object
@@ -396,7 +396,7 @@ End Function
 '@Description: Cuenta items en un archivo ZIP usando Shell.Application
 '@Scope: Privado
 '@ArgumentDescriptions: shellApp: Objeto Shell.Application | rutaZip: Ruta al ZIP
-'@Returns: Long | NÃºmero de items en el ZIP (0 si error)
+'@Returns: Long | N�mero de items en el ZIP (0 si error)
 Private Function ContarItemsEnZip(shellApp As Object, rutaZip As String) As Long
     On Error Resume Next
     

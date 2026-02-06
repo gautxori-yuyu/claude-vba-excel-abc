@@ -5,12 +5,12 @@ Option Explicit
 
 Private Const MODULE_NAME As String = "UDFs_CGASING"
 
-' Variable global para evitar mÃºltiples mensajes
+' Variable global para evitar m�ltiples mensajes
 Private bMessageGases As Boolean
 
 '@UDF
 '@Description: Comprueba si la hoja activa tiene el formato C-GAS-ING por defecto (sin modificar)
-'@Category: ComprobaciÃ³n de formato de ficheros
+'@Category: Comprobaci�n de formato de ficheros
 '@ArgumentDescriptions: (sin argumentos)
 Public Function IsDefaultCGasIngSheet() As Boolean
 Attribute IsDefaultCGasIngSheet.VB_Description = "[UDFs_CGASING] Comprueba si la hoja activa tiene el formato C-GAS-ING por defecto (sin modificar). Aplica a: ActiveSheet|Cells Range"
@@ -28,7 +28,7 @@ Attribute IsDefaultCGasIngSheet.VB_ProcData.VB_Invoke_Func = " \n21"
     If UCase(Trim(ws.Cells(60, 1).Value)) <> "STAGES" Then GoTo NoSheet
     If UCase(Trim(ws.Cells(85, 1).Value)) <> "COOLERS" Then GoTo NoSheet
     
-    ' Verificar celdas especÃ­ficas del formato por defecto
+    ' Verificar celdas espec�ficas del formato por defecto
     If Trim(ws.Cells(24, 1).Value) <> "Specific weight in normal conditions:" Or _
        Trim(ws.Cells(35, 7).Value) <> "Water temperature :" Or _
        Trim(ws.Cells(46, 8).Value) = "Factor =" Or _
@@ -42,11 +42,11 @@ NoSheet:
 End Function
 
 '@UDF
-'@Description: Verifica si una hoja tiene el formato C-GAS-ING estÃ¡ndar (modificado)
-'@Category: ComprobaciÃ³n de formato de ficheros
+'@Description: Verifica si una hoja tiene el formato C-GAS-ING est�ndar (modificado)
+'@Category: Comprobaci�n de formato de ficheros
 '@ArgumentDescriptions: Hoja de excel a verificar
 Public Function IsCGASING(ws As Worksheet) As Boolean
-Attribute IsCGASING.VB_Description = "[UDFs_CGASING] Verifica si una hoja tiene el formato C-GAS-ING estÃ¡ndar (modificado). Aplica a: Cells Range"
+Attribute IsCGASING.VB_Description = "[UDFs_CGASING] Verifica si una hoja tiene el formato C-GAS-ING est�ndar (modificado). Aplica a: Cells Range"
 Attribute IsCGASING.VB_ProcData.VB_Invoke_Func = " \n21"
     On Error GoTo NoSheet
     
@@ -64,7 +64,7 @@ End Function
 
 '@UDF
 '@Description: Extrae y concatena nombres de gases con sus porcentajes, identificando tipos comunes (SYNGAS, BIOGAS, NATURAL GAS)
-'@Category: AnÃ¡lisis de Gases
+'@Category: An�lisis de Gases
 '@ArgumentDescriptions: Rango de celdas con nombres de gases|Separador entre gases (por defecto ", ")|Hoja C-GAS-ING (opcional)
 Public Function Gases(r As Range, Optional d As String = ", ", Optional CGASINGSheet As Worksheet) As String
 Attribute Gases.VB_Description = "[UDFs_CGASING] Extrae y concatena nombres de gases con sus porcentajes, identificando tipos comunes (SYNGAS, BIOGAS, NATURAL GAS). Aplica a: Cells Range"
@@ -105,7 +105,7 @@ Attribute Gases.VB_ProcData.VB_Invoke_Func = " \n21"
     ' Procesar cada gas
     For Each c In r
         If Len(c.Text) > 0 Then
-            ' ValidaciÃ³n de coherencia (solo mostrar una vez)
+            ' Validaci�n de coherencia (solo mostrar una vez)
             If Not bMessageGases Then
                 If InStr(LCase(c.Text), "air") > 0 And _
                    InStr(fileName, "LT") > 0 And _
@@ -115,7 +115,7 @@ Attribute Gases.VB_ProcData.VB_Invoke_Func = " \n21"
                 
                 If Trim(LCase(Replace(c.Text, ":", ""))) = "h2" And _
                    InStr(fileName(), "LGT") = 0 Then
-                    MsgBox "La referencia del compresor debe terminar en 'LGT', por ser compresor de HIDRÃGENO - requiere distanciador largo"
+                    MsgBox "La referencia del compresor debe terminar en 'LGT', por ser compresor de HIDR�GENO - requiere distanciador largo"
                 End If
                 
                 bMessageGases = True
@@ -161,11 +161,11 @@ ErrorHandler:
 End Function
 
 '@UDF
-'@Description: Genera el nombre del modelo de compresor basado en configuraciÃ³n de cilindros y presiones
-'@Category: InformaciÃ³n del compresor
+'@Description: Genera el nombre del modelo de compresor basado en configuraci�n de cilindros y presiones
+'@Category: Informaci�n del compresor
 '@ArgumentDescriptions: Hoja C-GAS-ING con los datos del compresor (opcional)
 Public Function strModelName(Optional CGASINGSheet As Worksheet = Nothing) As String
-Attribute strModelName.VB_Description = "[UDFs_CGASING] Genera el nombre del modelo de compresor basado en configuraciÃ³n de cilindros y presiones. Aplica a: ActiveSheet|Cells Range"
+Attribute strModelName.VB_Description = "[UDFs_CGASING] Genera el nombre del modelo de compresor basado en configuraci�n de cilindros y presiones. Aplica a: ActiveSheet|Cells Range"
 Attribute strModelName.VB_ProcData.VB_Invoke_Func = " \n21"
     Dim strCils As String, nEtapa As Long
     Dim c As Long, d As String, i As Long
@@ -213,22 +213,22 @@ Attribute strModelName.VB_ProcData.VB_Invoke_Func = " \n21"
         ' Determinar si requiere forjado
         bEtapaReqForjado = (oCell_Stage_Pout.Value > 80)
         
-        ' DiÃ¡metros pequeÃ±os requieren forjado
+        ' Di�metros peque�os requieren forjado
         bEtapaReqForjado = bEtapaReqForjado Or _
                            (CDbl(Replace(Split(UCase(oCell_Stage_CilsDiam.Value), " X ")(1), "T", "")) <= 75)
         
         bEtapaConvieneCamisa = bEtapaReqForjado
         
-        ' ATEX requiere forjado desde presiones mÃ¡s bajas
+        ' ATEX requiere forjado desde presiones m�s bajas
         bEtapaReqForjado = bEtapaReqForjado Or _
                            (bATEX_Inflamable And oCell_Stage_Pout.Value > 80 * 0.85)
-        ' compresores HP o HX, DE DIAMETROS GRANDES, Y A ALTAS PRESIONES (ya incluso inferiores a 80 bar)... convendrÃ­a que fuesen encamisados
-        ' (se hace en fundicion nodular o acero fundido el cuerpo, y el liner aÃ±ade proteccion)
+        ' compresores HP o HX, DE DIAMETROS GRANDES, Y A ALTAS PRESIONES (ya incluso inferiores a 80 bar)... convendr�a que fuesen encamisados
+        ' (se hace en fundicion nodular o acero fundido el cuerpo, y el liner a�ade proteccion)
         bEtapaReqForjado = bEtapaReqForjado Or _
                            (CDbl(Replace(Split(UCase(oCell_Stage_CilsDiam.Value), " X ")(1), "T", "")) >= 450 _
                             And oCell_Stage_Pout.Value > 65)
         
-        ' AÃ±adir sufijos de construcciÃ³n
+        ' A�adir sufijos de construcci�n
         If bEtapaReqForjado Then
             strCils = strCils & "FC"
             'ElseIf bNACE_Corrosivo Then ' EN ESTE CONTEXTO NO ME COMPENSA DETERMINAR SI se aplica NACE
@@ -264,7 +264,7 @@ End Function
 
 '@UDF
 '@Description: Devuelve un array con los nombres de todas las hojas C-GAS-ING del libro activo
-'@Category: ComprobaciÃ³n de formato de ficheros
+'@Category: Comprobaci�n de formato de ficheros
 '@ArgumentDescriptions: Libro de excel al que se aplica (opcional)
 Public Function HojasCGASING(Optional Wb As Workbook = Nothing) As Variant
 Attribute HojasCGASING.VB_Description = "[UDFs_CGASING] Devuelve un array con los nombres de todas las hojas C-GAS-ING del libro activo. Aplica a: ActiveWorkbook"
@@ -298,11 +298,11 @@ ErrorHandler:
 End Function
 
 '@UDF
-'@Description: Devuelve el mÃ¡ximo valor de potencia encontrado en todas las hojas C-GAS-ING del libro
-'@Category: AnÃ¡lisis de Gases
+'@Description: Devuelve el m�ximo valor de potencia encontrado en todas las hojas C-GAS-ING del libro
+'@Category: An�lisis de Gases
 '@ArgumentDescriptions: Celda donde buscar el valor de potencia
 Public Function MaximaPotencia(ByVal CeldaBuscada As Range) As Variant
-Attribute MaximaPotencia.VB_Description = "[UDFs_CGASING] Devuelve el mÃ¡ximo valor de potencia encontrado en todas las hojas C-GAS-ING del libro. Aplica a: Cells Range"
+Attribute MaximaPotencia.VB_Description = "[UDFs_CGASING] Devuelve el m�ximo valor de potencia encontrado en todas las hojas C-GAS-ING del libro. Aplica a: Cells Range"
 Attribute MaximaPotencia.VB_ProcData.VB_Invoke_Func = " \n21"
     Dim strHoja As Variant
     Dim maxVal As Double, val As Variant
@@ -317,7 +317,7 @@ Attribute MaximaPotencia.VB_ProcData.VB_Invoke_Func = " \n21"
         If CStr(strHoja) <> "" Then
             val = Wb.Worksheets(CStr(strHoja)).Range(CeldaBuscada.Address).Value
             
-            ' Extraer valor numÃ©rico del formato "xxx / yyy HP/kW"
+            ' Extraer valor num�rico del formato "xxx / yyy HP/kW"
             valorTexto = CStr(val)
             If InStr(valorTexto, "/") > 0 Then
                 valorTexto = Mid(valorTexto, InStr(valorTexto, "/") + 1)

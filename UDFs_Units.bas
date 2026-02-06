@@ -5,14 +5,14 @@ Option Explicit
 Private Const MODULE_NAME As String = "UDFs_Units"
 
 '==========================================
-' FUNCIÃN PRINCIPAL - UDF para Excel
+' FUNCI�N PRINCIPAL - UDF para Excel
 '==========================================
 Public Function ConvertirUnidad(valor As Double, unidadOrigen As String, unidadBase As String) As Variant
-Attribute ConvertirUnidad.VB_Description = "[UDFs_Units] FUNCIÃN PRINCIPAL - UDF para Excel"
+Attribute ConvertirUnidad.VB_Description = "[UDFs_Units] FUNCI�N PRINCIPAL - UDF para Excel"
 Attribute ConvertirUnidad.VB_ProcData.VB_Invoke_Func = " \n21"
     On Error GoTo ErrorHandler
     
-    ' ValidaciÃ³n de entrada
+    ' Validaci�n de entrada
     If Trim(unidadOrigen) = "" Or Trim(unidadBase) = "" Then
         ConvertirUnidad = CVErr(xlErrValue)
         Exit Function
@@ -44,7 +44,7 @@ Attribute ConvertirUnidad.VB_ProcData.VB_Invoke_Func = " \n21"
     Set visitados = CreateObject("Scripting.Dictionary")
     visitados.CompareMode = vbBinaryCompare      ' Case-sensitive
     
-    ' Llamar a la funciÃ³n recursiva interna
+    ' Llamar a la funci�n recursiva interna
     ConvertirUnidad = ConvertirUnidadRecursivo(valor, unidadOrigen, unidadBase, visitados)
     Exit Function
     
@@ -53,7 +53,7 @@ ErrorHandler:
 End Function
 
 '==========================================
-' FUNCIÃN RECURSIVA INTERNA (no expuesta)
+' FUNCI�N RECURSIVA INTERNA (no expuesta)
 '==========================================
 Private Function ConvertirUnidadRecursivo(valor As Double, unidadOrigen As String, unidadBase As String, visitados As Object) As Variant
     Static dicConversiones As Object
@@ -68,10 +68,10 @@ Private Function ConvertirUnidadRecursivo(valor As Double, unidadOrigen As Strin
     
     On Error GoTo ErrorHandler
     
-    ' Inicializar Ã­ndice solo en primera llamada (usando Is Nothing)
+    ' Inicializar �ndice solo en primera llamada (usando Is Nothing)
     If dicConversiones Is Nothing Then
         Set dicConversiones = CreateObject("Scripting.Dictionary")
-        dicConversiones.CompareMode = vbBinaryCompare ' Case-sensitive: MPa ? mPa
+        dicConversiones.CompareMode = vbBinaryCompare ' Case-sensitive: MPa -> mPa
         
         Set hoja = ThisWorkbook.Sheets("Unidades")
         lastRow = hoja.Cells(hoja.Rows.Count, 1).End(xlUp).Row
@@ -109,7 +109,7 @@ Private Function ConvertirUnidadRecursivo(valor As Double, unidadOrigen As Strin
     End If
     visitados(unidadOrigen) = True
     
-    ' BÃSQUEDA 1: ConversiÃ³n directa (B->E)
+    ' B�SQUEDA 1: Conversi�n directa (B->E)
     clave = unidadOrigen & "|" & unidadBase
     If dicConversiones.Exists(clave) Then
         pend = dicConversiones(clave)(0)
@@ -119,19 +119,19 @@ Private Function ConvertirUnidadRecursivo(valor As Double, unidadOrigen As Strin
         Exit Function
     End If
     
-    ' BÃSQUEDA 2: ConversiÃ³n inversa (E->B)
+    ' B�SQUEDA 2: Conversi�n inversa (E->B)
     clave = unidadBase & "|" & unidadOrigen
     If dicConversiones.Exists(clave) Then
         pend = dicConversiones(clave)(0)
         ord = dicConversiones(clave)(1)
-        ' FÃ³rmula inversa: si valor_destino = valor_origen * pend + ord
+        ' F�rmula inversa: si valor_destino = valor_origen * pend + ord
         ' entonces valor_origen = (valor_destino - ord) / pend
         ConvertirUnidadRecursivo = (valor - ord) / pend
         visitados.Remove unidadOrigen            ' Desmarcar antes de salir
         Exit Function
     End If
     
-    ' BÃSQUEDA 3: Conversiones indirectas (recursivas)
+    ' B�SQUEDA 3: Conversiones indirectas (recursivas)
     ' Recorrer todas las claves del diccionario buscando caminos
     Dim todasClaves As Variant
     todasClaves = dicConversiones.Keys
@@ -148,7 +148,7 @@ Private Function ConvertirUnidadRecursivo(valor As Double, unidadOrigen As Strin
         origen = partes(0)
         destino = partes(1)
         
-        ' DirecciÃ³n B->E: si origen coincide con unidadOrigen
+        ' Direcci�n B->E: si origen coincide con unidadOrigen
         If origen = unidadOrigen Then
             unidadIntermedia = destino
             
@@ -163,13 +163,13 @@ Private Function ConvertirUnidadRecursivo(valor As Double, unidadOrigen As Strin
                 
                 If Not IsError(resultado) Then
                     ConvertirUnidadRecursivo = resultado
-                    visitados.Remove unidadOrigen ' Desmarcar antes de salir con Ã©xito
+                    visitados.Remove unidadOrigen ' Desmarcar antes de salir con �xito
                     Exit Function
                 End If
             End If
         End If
         
-        ' DirecciÃ³n E->B: si destino coincide con unidadOrigen
+        ' Direcci�n E->B: si destino coincide con unidadOrigen
         If destino = unidadOrigen Then
             unidadIntermedia = origen
             
@@ -184,7 +184,7 @@ Private Function ConvertirUnidadRecursivo(valor As Double, unidadOrigen As Strin
                 
                 If Not IsError(resultado) Then
                     ConvertirUnidadRecursivo = resultado
-                    visitados.Remove unidadOrigen ' Desmarcar antes de salir con Ã©xito
+                    visitados.Remove unidadOrigen ' Desmarcar antes de salir con �xito
                     Exit Function
                 End If
             End If
@@ -193,7 +193,7 @@ Private Function ConvertirUnidadRecursivo(valor As Double, unidadOrigen As Strin
 SiguienteIteracion:
     Next i
     
-    ' No se encontrÃ³ conversiÃ³n
+    ' No se encontr� conversi�n
     visitados.Remove unidadOrigen                ' Desmarcar antes de salir con error
     ConvertirUnidadRecursivo = CVErr(xlErrNA)
     Exit Function
@@ -220,7 +220,7 @@ Private Function ObtenerTipoUnidad(unidad As String) As String
     
     On Error GoTo ErrorHandler
     
-    ' Inicializar Ã­ndice de tipos solo en primera llamada (usando Is Nothing)
+    ' Inicializar �ndice de tipos solo en primera llamada (usando Is Nothing)
     If dicTipos Is Nothing Then
         Set dicTipos = CreateObject("Scripting.Dictionary")
         dicTipos.CompareMode = vbBinaryCompare   ' Case-sensitive
@@ -263,10 +263,10 @@ ErrorHandler:
 End Function
 
 '==========================================
-' FUNCIÃN PARA VALIDACIONES EN EXCEL
+' FUNCI�N PARA VALIDACIONES EN EXCEL
 '==========================================
 Public Function UdsPorTipo(ByVal strTipo As String) As Variant
-Attribute UdsPorTipo.VB_Description = "[UDFs_Units] FUNCIÃN PARA VALIDACIONES EN EXCEL. Aplica a: ThisWorkbook|Cells Range"
+Attribute UdsPorTipo.VB_Description = "[UDFs_Units] FUNCI�N PARA VALIDACIONES EN EXCEL. Aplica a: ThisWorkbook|Cells Range"
 Attribute UdsPorTipo.VB_ProcData.VB_Invoke_Func = " \n21"
     Dim ws As Worksheet
     Dim i As Long, lastRow As Long
@@ -284,7 +284,7 @@ Attribute UdsPorTipo.VB_ProcData.VB_Invoke_Func = " \n21"
     Set ws = ThisWorkbook.Sheets("Unidades")
     lastRow = ws.Cells(ws.Rows.Count, 1).End(xlUp).Row
     
-    ' Recopilar todas las unidades Ãºnicas del tipo solicitado
+    ' Recopilar todas las unidades �nicas del tipo solicitado
     For i = 2 To lastRow
         If Trim(ws.Cells(i, 1).Value) = Trim(strTipo) Then
             unidad = Trim(ws.Cells(i, 2).Value)
@@ -314,29 +314,29 @@ ErrorHandler:
 End Function
 
 '==========================================
-' FUNCIÃN PARA LIMPIAR ÃNDICES MANUALMENTE
+' FUNCI�N PARA LIMPIAR �NDICES MANUALMENTE
 '==========================================
 Public Sub ActualizarTablasConversion()
 Attribute ActualizarTablasConversion.VB_ProcData.VB_Invoke_Func = " \n0"
-    ' Llama esta funciÃ³n despuÃ©s de modificar la hoja "Unidades"
-    ' para forzar la reconstrucciÃ³n de los Ã­ndices internos
+    ' Llama esta funci�n despu�s de modificar la hoja "Unidades"
+    ' para forzar la reconstrucci�n de los �ndices internos
     
-    ' Forzar reinicializaciÃ³n llamando con valores dummy
-    ' Esto limpiarÃ¡ los diccionarios estÃ¡ticos
+    ' Forzar reinicializaci�n llamando con valores dummy
+    ' Esto limpiar� los diccionarios est�ticos
     On Error Resume Next
     Dim dummy As Variant
     dummy = ConvertirUnidad(0, "Pa", "Pa")
     
-    ' Mostrar mensaje de confirmaciÃ³n
-    MsgBox "Tablas de conversiÃ³n actualizadas." & vbCrLf & _
-           "Los Ã­ndices se reconstruirÃ¡n en la prÃ³xima conversiÃ³n.", _
-           vbInformation, "ActualizaciÃ³n completada"
+    ' Mostrar mensaje de confirmaci�n
+    MsgBox "Tablas de conversi�n actualizadas." & vbCrLf & _
+           "Los �ndices se reconstruir�n en la pr�xima conversi�n.", _
+           vbInformation, "Actualizaci�n completada"
 End Sub
 
 Function ConvertirCaudalNormal(valor As Double, p1 As Double, T1 As Double, unidadOrigen As String, unidadBase As String) As Variant
-Attribute ConvertirCaudalNormal.VB_Description = "[UDFs_Units] Convertir Caudal Normal (funciÃ³n personalizada)"
+Attribute ConvertirCaudalNormal.VB_Description = "[UDFs_Units] Convertir Caudal Normal (funci�n personalizada)"
 Attribute ConvertirCaudalNormal.VB_ProcData.VB_Invoke_Func = " \n21"
-    ' P1: PresiÃ³n en Pa
+    ' P1: Presi�n en Pa
     ' T1: Temperatura en K
     ' Convierte caudales: teniendo en cuenta los normalizados (Nm3, SCF), para pasarlos a condiciones reales
     Dim unidadesNormalizadas As Object
@@ -356,16 +356,16 @@ Attribute ConvertirCaudalNormal.VB_ProcData.VB_Invoke_Func = " \n21"
     unidadesNormalizadas.CompareMode = 1
     
     ' Mapeo de unidades normalizadas a condiciones [Pn, Tn]
-    ' PresiÃ³n en Pa, Temperatura en K
+    ' Presi�n en Pa, Temperatura en K
     unidadesNormalizadas.Add "nm3/h", Array(101325, 273.15)
     unidadesNormalizadas.Add "nm3/min", Array(101325, 273.15)
-    unidadesNormalizadas.Add "scfh", Array(101325, 288.7056) ' 60 Â°F = 288.7056 K
+    unidadesNormalizadas.Add "scfh", Array(101325, 288.7056) ' 60 �F = 288.7056 K
     unidadesNormalizadas.Add "scfmin", Array(101325, 288.7056)
-    unidadesNormalizadas.Add "scf/h", Array(101325, 288.7056) ' 60 Â°F = 288.7056 K
+    unidadesNormalizadas.Add "scf/h", Array(101325, 288.7056) ' 60 �F = 288.7056 K
     unidadesNormalizadas.Add "scf/min", Array(101325, 288.7056)
     unidadesNormalizadas.Add "mmscfd", Array(101325, 288.7056)
     
-    unidadOrigen = (Replace(unidadOrigen, "Â³", "3")) ' Normaliza 'Â³'
+    unidadOrigen = (Replace(unidadOrigen, "�", "3")) ' Normaliza '�'
     
     If unidadesNormalizadas.Exists(unidadOrigen) Then
         esUnidadNormal = True
@@ -375,7 +375,7 @@ Attribute ConvertirCaudalNormal.VB_ProcData.VB_Invoke_Func = " \n21"
         esUnidadNormal = False
     End If
 
-    ' Aplicar correcciÃ³n gas ideal si es necesario
+    ' Aplicar correcci�n gas ideal si es necesario
     If esUnidadNormal Then
         valorReal = valor * (Pn / p1) * (T1 / Tn)
     Else

@@ -1,6 +1,6 @@
 Attribute VB_Name = "modMACROGraficoSensibilidad"
 
-'@Folder "6-DOMINIO-Oportunidades y compresores.b-Calculos tÃ©cnicos"
+'@Folder "6-DOMINIO-Oportunidades y compresores.b-Calculos t�cnicos"
 Option Explicit
 
 Private Const MODULE_NAME As String = "modMACROGraficoSensibilidad"
@@ -8,10 +8,10 @@ Private Const MODULE_NAME As String = "modMACROGraficoSensibilidad"
 Dim iSeriesNr As Integer
 
 Public Function EsFicheroOportunidad() As Boolean
-Attribute EsFicheroOportunidad.VB_Description = "[modMACROGraficoSensibilidad] Es Fichero Oportunidad (funciÃ³n personalizada). Aplica a: ActiveWorkbook"
+Attribute EsFicheroOportunidad.VB_Description = "[modMACROGraficoSensibilidad] Es Fichero Oportunidad (funci�n personalizada). Aplica a: ActiveWorkbook"
 Attribute EsFicheroOportunidad.VB_ProcData.VB_Invoke_Func = " \n21"
     Dim re As Object: Set re = CreateObject("VBScript.RegExp")
-    re.Pattern = "^[A-Z]{3}\d{5}_\d{2}"          ' patrÃ³n esperado en el nombre del fichero
+    re.Pattern = "^[A-Z]{3}\d{5}_\d{2}"          ' patr�n esperado en el nombre del fichero
     re.IgnoreCase = True
     Select Case True
     Case ActiveWindow Is Nothing, ActiveWindow.Visible = False, ActiveWorkbook Is Nothing
@@ -21,7 +21,7 @@ Attribute EsFicheroOportunidad.VB_ProcData.VB_Invoke_Func = " \n21"
 End Function
 
 Public Function EsValidoGenerarGrafico() As Boolean
-Attribute EsValidoGenerarGrafico.VB_Description = "[modMACROGraficoSensibilidad] Es Valido Generar Grafico (funciÃ³n personalizada). Aplica a: ActiveWorkbook|Cells Range"
+Attribute EsValidoGenerarGrafico.VB_Description = "[modMACROGraficoSensibilidad] Es Valido Generar Grafico (funci�n personalizada). Aplica a: ActiveWorkbook|Cells Range"
 Attribute EsValidoGenerarGrafico.VB_ProcData.VB_Invoke_Func = " \n21"
     'On Error GoTo ErrorHandler
     Dim hoja As Worksheet
@@ -51,7 +51,7 @@ Attribute EsValidoGenerarGrafico.VB_ProcData.VB_Invoke_Func = " \n21"
         formula = "SUMPRODUCT(--ISNUMBER(SEARCH(""("", " & encabezados.Address(External:=True) & ")))"
         If Evaluate(formula) <> encabezados.Columns.Count Then GoTo ErrorHandler
         
-        ' Validar datos numÃ©ricos (todo menos la primera fila y primera columna)
+        ' Validar datos num�ricos (todo menos la primera fila y primera columna)
         Set datos = r.Offset(1, 1).Resize(r.Rows.Count - 1, r.Columns.Count - 1)
         formula = "SUMPRODUCT(--ISNUMBER(" & datos.Address(External:=True) & "))"
         If Evaluate(formula) <> datos.Cells.Count Then GoTo ErrorHandler
@@ -65,9 +65,9 @@ ErrorHandler:
     EsValidoGenerarGrafico = False
 End Function
 
-' Comprueba si el grÃ¡fico activo es vÃ¡lido para invertir ejes
+' Comprueba si el gr�fico activo es v�lido para invertir ejes
 Public Function EsValidoInvertirEjes() As Boolean
-Attribute EsValidoInvertirEjes.VB_Description = "[modMACROGraficoSensibilidad] Comprueba si el grÃ¡fico activo es vÃ¡lido para invertir ejes. Aplica a: Selection|ActiveWorkbook|ActiveSheet"
+Attribute EsValidoInvertirEjes.VB_Description = "[modMACROGraficoSensibilidad] Comprueba si el gr�fico activo es v�lido para invertir ejes. Aplica a: Selection|ActiveWorkbook|ActiveSheet"
 Attribute EsValidoInvertirEjes.VB_ProcData.VB_Invoke_Func = " \n21"
     'On Error Resume Next
     Dim Ch As Chart
@@ -77,14 +77,14 @@ Attribute EsValidoInvertirEjes.VB_ProcData.VB_Invoke_Func = " \n21"
     End Select
     Set Ch = ActiveChart
     If Ch Is Nothing Then Exit Function
-    ' 3. Caso de hoja de grÃ¡fico activa (ChartSheet)
+    ' 3. Caso de hoja de gr�fico activa (ChartSheet)
     If Not Application.ActiveChart Is Nothing Then
         ' Validar que la hoja activa es de tipo Chart
         If TypeName(Application.ActiveSheet) = "Chart" Then
             EsValidoInvertirEjes = True
         End If
     End If
-    ' 4. Caso de grÃ¡fico incrustado en hoja de cÃ¡lculo (ChartObject)
+    ' 4. Caso de gr�fico incrustado en hoja de c�lculo (ChartObject)
     Dim sel
     Set sel = Application.Selection
     If Not sel Is Nothing Then
@@ -93,10 +93,10 @@ Attribute EsValidoInvertirEjes.VB_ProcData.VB_Invoke_Func = " \n21"
             ' No tengo nada claro que en este tipo de objetos se puedan invertir los ejes; en todo caso, NO son los que yo creo
             EsValidoInvertirEjes = True
         Case "DrawingObjects", "Picture", "Shape", "GroupObject", "OLEObject", "TextBox"
-            ' ExplÃ­citamente NO es un grÃ¡fico
+            ' Expl�citamente NO es un gr�fico
             EsValidoInvertirEjes = False
         Case Else
-            ' Otras selecciones no vÃ¡lidas
+            ' Otras selecciones no v�lidas
             EsValidoInvertirEjes = False
         End Select
     End If
@@ -117,16 +117,16 @@ Attribute EsValidoInvertirEjes.VB_ProcData.VB_Invoke_Func = " \n21"
     EsValidoInvertirEjes = tienePrimario And tieneSecundario
 End Function
 
-' Ejecuta la macro para cada hoja vÃ¡lida del libro activo
+' Ejecuta la macro para cada hoja v�lida del libro activo
 Public Sub EjecutarGraficoEnLibroActivo()
     On Error GoTo ErrHandler
     Const SHEET_NAME As String = "Graficos"
     Const A4_WIDTH_POINTS As Double = 595        ' Aproximado a A4 horizontal en puntos
-    Const GRAPH_ASPECT_RATIO As Double = 3 / 2   ' ProporciÃ³n ancho/alto (3:2)
+    Const GRAPH_ASPECT_RATIO As Double = 3 / 2   ' Proporci�n ancho/alto (3:2)
 
     ' Validaciones iniciales (ANTES de modificar estado)
     If Not EsValidoGenerarGrafico Then
-        MsgBox "El libro no cumple los requisitos para generar el grÃ¡fico.", vbExclamation
+        MsgBox "El libro no cumple los requisitos para generar el gr�fico.", vbExclamation
         Exit Sub
     End If
 
@@ -138,7 +138,7 @@ Public Sub EjecutarGraficoEnLibroActivo()
         Exit Sub
     End If
 
-    ' Determinar hojas de datos vÃ¡lidas
+    ' Determinar hojas de datos v�lidas
     Dim hojasProcesar As Collection
     Set hojasProcesar = New Collection
 
@@ -176,16 +176,16 @@ Public Sub EjecutarGraficoEnLibroActivo()
         Dim msg As String
 
         If totalShapes > hojasProcesar.Count Then
-            msg = "La hoja '" & SHEET_NAME & "' ya contiene " & totalShapes & " grÃ¡ficos." & vbCrLf & _
-                  "Esto incluye grÃ¡ficos personalizados aÃ±adidos manualmente." & vbCrLf & _
-                  "Â¿Deseas eliminar todos los grÃ¡ficos y generar nuevos?"
+            msg = "La hoja '" & SHEET_NAME & "' ya contiene " & totalShapes & " gr�ficos." & vbCrLf & _
+                  "Esto incluye gr�ficos personalizados a�adidos manualmente." & vbCrLf & _
+                  "�Deseas eliminar todos los gr�ficos y generar nuevos?"
         Else
             msg = "La hoja '" & SHEET_NAME & "' ya existe." & vbCrLf & _
-                  "Â¿Deseas eliminar sus grÃ¡ficos y generar nuevos?"
+                  "�Deseas eliminar sus gr�ficos y generar nuevos?"
         End If
 
         Dim respuesta As VbMsgBoxResult
-        respuesta = MsgBox(msg, vbQuestion + vbYesNoCancel, "Reemplazar grÃ¡ficos")
+        respuesta = MsgBox(msg, vbQuestion + vbYesNoCancel, "Reemplazar gr�ficos")
 
         If respuesta = vbCancel Then Exit Sub
         If respuesta = vbYes Then
@@ -206,7 +206,7 @@ Public Sub EjecutarGraficoEnLibroActivo()
     DoEvents
     Application.ScreenUpdating = False
 
-    ' Configurar impresiÃ³n de la hoja de grÃ¡ficos
+    ' Configurar impresi�n de la hoja de gr�ficos
     With chartSheet.PageSetup
         .PaperSize = xlPaperA4
         .Orientation = xlPortrait
@@ -217,7 +217,7 @@ Public Sub EjecutarGraficoEnLibroActivo()
         .FitToPagesTall = False
     End With
 
-    ' Crear grÃ¡ficos en la hoja "Graficos"
+    ' Crear gr�ficos en la hoja "Graficos"
     Dim topOffset As Double: topOffset = 20
     Dim graficoAltura As Double: graficoAltura = (A4_WIDTH_POINTS - 40) / GRAPH_ASPECT_RATIO
     Dim espacio As Double: espacio = 30
@@ -240,10 +240,10 @@ Public Sub EjecutarGraficoEnLibroActivo()
     chartSheet.ExportAsFixedFormat Type:=xlTypePDF, fileName:=rutaArchivo, Quality:=xlQualityStandard
     On Error GoTo ErrHandler
 
-    ' Mostrar mensaje de Ã©xito (solo si no hubo error)
-    MsgBox "Se han generado " & hojasProcesar.Count & " grÃ¡ficos en la hoja '" & SHEET_NAME & "'." & vbCrLf & _
-           "AdemÃ¡s, se ha guardado un PDF en la carpeta del fichero Excel, con el nombre:" & vbCrLf & Mid(rutaArchivo, InStrRev(rutaArchivo, "\") + 1) & vbCrLf & vbCrLf & _
-           "(si se hacen cambios en la hoja de grÃ¡ficos, para preservar su contenido basta con cambiar su nombre)", vbInformation
+    ' Mostrar mensaje de �xito (solo si no hubo error)
+    MsgBox "Se han generado " & hojasProcesar.Count & " gr�ficos en la hoja '" & SHEET_NAME & "'." & vbCrLf & _
+           "Adem�s, se ha guardado un PDF en la carpeta del fichero Excel, con el nombre:" & vbCrLf & Mid(rutaArchivo, InStrRev(rutaArchivo, "\") + 1) & vbCrLf & vbCrLf & _
+           "(si se hacen cambios en la hoja de gr�ficos, para preservar su contenido basta con cambiar su nombre)", vbInformation
 
 CleanUp:
     ' === RESTAURAR ESTADO ORIGINAL ===
@@ -268,11 +268,11 @@ Private Sub GenerarGraficoSensibilidad(ws As Worksheet, chartObj As ChartObject)
     ReDim variableCols(1 To lastCol - 1)
     Dim countVar As Long: countVar = 0
     
-    ' Identificar columnas con valores que varÃ­an (excepto encabezados)
+    ' Identificar columnas con valores que var�an (excepto encabezados)
     For col = 1 To lastCol
         If InStr(ws.Cells(1, col).value, "Agua") = 0 Then
             Dim firstVal As Variant
-            ' Buscar el primer valor numÃ©rico en la columna para usar como referencia
+            ' Buscar el primer valor num�rico en la columna para usar como referencia
             firstVal = Empty
             Dim filaTemp As Long
             For filaTemp = 2 To ws.Cells(ws.Rows.Count, col).End(xlUp).Row
@@ -282,7 +282,7 @@ Private Sub GenerarGraficoSensibilidad(ws As Worksheet, chartObj As ChartObject)
                 End If
             Next filaTemp
             
-            ' Si no hay valores numÃ©ricos, pasamos a la siguiente columna
+            ' Si no hay valores num�ricos, pasamos a la siguiente columna
             If IsEmpty(firstVal) Then GoTo SiguienteColumna
             
             For i = filaTemp + 1 To ws.Cells(ws.Rows.Count, col).End(xlUp).Row
@@ -316,15 +316,15 @@ SiguienteColumna:
         Exit Sub                                 ' No hay columnas para representar
     End If
     
-    ' Agrupar columnas por variaciÃ³n y etiquetas de eje
+    ' Agrupar columnas por variaci�n y etiquetas de eje
     Call AgruparColumnasPorVariacion(ws, dataCols, group1, group2)
     If IsEmpty(group1) Then group1 = group2: group2 = Empty
     
-    ' Formatear columnas como nÃºmero con dos decimales
+    ' Formatear columnas como n�mero con dos decimales
     If Not IsEmpty(group1) Then Call FormatColumnsAsDecimal(ws, group1)
     If Not IsEmpty(group2) Then Call FormatColumnsAsDecimal(ws, group2)
     
-    ' modificar grÃ¡fico
+    ' modificar gr�fico
     With chartObj.Chart
         .ChartType = xlLineMarkers
         .HasLegend = True
@@ -335,7 +335,7 @@ SiguienteColumna:
     Dim palette() As Long
     palette = GetColorPalette()
     
-    ' AÃ±adir series
+    ' A�adir series
     iSeriesNr = 0
     If Not IsEmpty(group1) Then Call AddGroupSeriesToChart(chartObj.Chart, ws, xCol, group1, False, palette)
     If Not IsEmpty(group2) Then Call AddGroupSeriesToChart(chartObj.Chart, ws, xCol, group2, True, palette)
@@ -348,7 +348,7 @@ SiguienteColumna:
         Call AjustarEjeDesdeDatos(chartObj.Chart.Axes(xlValue, xlSecondary), ws, group2)
     End If
     
-    ' TÃ­tulos de ejes
+    ' T�tulos de ejes
     With chartObj.Chart
         .HasTitle = True
         .ChartTitle.Text = "Correlation to " & Trim(Split(ws.Cells(1, xCol).value, "(")(0))
@@ -373,8 +373,8 @@ ManejoErrores:
     MsgBox "Error en GenerarGraficoSensibilidad para la hoja '" & ws.Name & "': " & Err.Description, vbCritical
 End Sub
 
-' Intercambia ejes primario/secundario en el grÃ¡fico activo
-' Preserva tÃ­tulos, rangos, propiedades, y extiende los ejes temporalmente para evitar desapariciÃ³n de series
+' Intercambia ejes primario/secundario en el gr�fico activo
+' Preserva t�tulos, rangos, propiedades, y extiende los ejes temporalmente para evitar desaparici�n de series
 Public Sub InvertirEjesDelGraficoActivo()
 Attribute InvertirEjesDelGraficoActivo.VB_ProcData.VB_Invoke_Func = " \n0"
     On Error GoTo SinGrafico
@@ -404,17 +404,17 @@ Attribute InvertirEjesDelGraficoActivo.VB_ProcData.VB_Invoke_Func = " \n0"
     Next s
     
     If seriesPrimarias.Count = 0 And seriesSecundarias.Count = 0 Then
-        MsgBox "El grÃ¡fico no contiene series con ejes diferenciados.", vbExclamation
+        MsgBox "El gr�fico no contiene series con ejes diferenciados.", vbExclamation
         Exit Sub
     End If
     
-    ' Capturar propiedades de ejes (valores, tÃ­tulos, etc.)
+    ' Capturar propiedades de ejes (valores, t�tulos, etc.)
     Dim propsPrimario As Object, propsSecundario As Object
     Set propsPrimario = CapturarPropiedadesDeEje(chrt.Axes(xlValue, xlPrimary))
     If chrt.HasAxis(xlValue, xlSecondary) Then
         Set propsSecundario = CapturarPropiedadesDeEje(chrt.Axes(xlValue, xlSecondary))
     Else
-        Set propsSecundario = CreateObject("Scripting.Dictionary") ' vacÃ­o
+        Set propsSecundario = CreateObject("Scripting.Dictionary") ' vac�o
     End If
     
     ' Expandir temporalmente el rango de ambos ejes para contener todos los valores
@@ -455,16 +455,16 @@ Attribute InvertirEjesDelGraficoActivo.VB_ProcData.VB_Invoke_Func = " \n0"
     
 SinGrafico:
     Application.ScreenUpdating = True
-    MsgBox "Selecciona un grÃ¡fico vÃ¡lido antes de ejecutar este comando.", vbCritical
+    MsgBox "Selecciona un gr�fico v�lido antes de ejecutar este comando.", vbCritical
 End Sub
 
 Private Sub TraducirEncabezados(ws As Worksheet)
     Dim reemplazos As Variant
     reemplazos = Array( _
-                 Array("PresiÃ³n AspiraciÃ³n", "Suction Pressure"), _
+                 Array("Presi�n Aspiraci�n", "Suction Pressure"), _
                  Array("Metros", "Meters"), _
-                 Array("PresiÃ³n Escape", "Exhaust Pressure"), _
-                 Array("Temperatura AspiraciÃ³n", "Suction Temperature"), _
+                 Array("Presi�n Escape", "Exhaust Pressure"), _
+                 Array("Temperatura Aspiraci�n", "Suction Temperature"), _
                  Array("Temperatura Agua", "Water Temperature"), _
                  Array("Temperatura Ambiente", "Ambient Temperature"), _
                  Array("Caudal", "Flow Rate"), _
@@ -486,7 +486,7 @@ Private Sub TraducirEncabezados(ws As Worksheet)
     Next col
 End Sub
 
-' Formato numÃ©rico a dos decimales
+' Formato num�rico a dos decimales
 Private Sub FormatColumnsAsDecimal(ws As Worksheet, cols() As Long)
     Dim colIndex As Variant, lastRow As Long
     lastRow = ws.Cells(ws.Rows.Count, 1).End(xlUp).Row
@@ -495,7 +495,7 @@ Private Sub FormatColumnsAsDecimal(ws As Worksheet, cols() As Long)
     Next colIndex
 End Sub
 
-' Agrupa columnas por variaciÃ³n y etiquetas sin solapamiento
+' Agrupa columnas por variaci�n y etiquetas sin solapamiento
 Private Sub AgruparColumnasPorVariacion(ws As Worksheet, columnas() As Long, ByRef grupo1() As Long, ByRef grupo2() As Long)
     On Error GoTo ManejoErrores
     Dim i As Long, r As Long, lastRow As Long
@@ -523,7 +523,7 @@ Private Sub AgruparColumnasPorVariacion(ws As Worksheet, columnas() As Long, ByR
         etiquetas(i) = ExtraerTextoEnParentesis(ws.Cells(1, columnas(i)).value)
     Next i
     
-    ' Agrupar por etiquetas idÃ©nticas
+    ' Agrupar por etiquetas id�nticas
     Dim temp1() As Long, temp2() As Long
     Dim e1 As String
     Dim g1 As Long: g1 = -1
@@ -556,7 +556,7 @@ ManejoErrores:
     MsgBox "Error en AgruparColumnasPorVariacion: " & Err.Description, vbCritical
 End Sub
 
-' AÃ±ade series al grÃ¡fico desde un grupo
+' A�ade series al gr�fico desde un grupo
 Private Sub AddGroupSeriesToChart(chartObj As Chart, ws As Worksheet, xCol As Long, groupCols() As Long, useSecondaryAxis As Boolean, palette() As Long)
     On Error GoTo ManejoErrores
     Dim i As Long, lastRow As Long
@@ -585,7 +585,7 @@ ManejoErrores:
     MsgBox "Error en AddGroupSeriesToChart: " & Err.Description, vbCritical
 End Sub
 
-' Ajusta el eje vertical basÃ¡ndose en los valores reales de las series
+' Ajusta el eje vertical bas�ndose en los valores reales de las series
 Private Sub AjustarEjeDesdeDatos(axis As axis, ws As Worksheet, cols() As Long)
     On Error GoTo ManejoErrores
     Dim minVal As Double: minVal = WorksheetFunction.Max(ws.Cells.Rows.Count, 1)
@@ -603,7 +603,7 @@ Private Sub AjustarEjeDesdeDatos(axis As axis, ws As Worksheet, cols() As Long)
         Next r
     Next i
     
-    ' Ajustes segÃºn mÃºltiplos de 5 y 10
+    ' Ajustes seg�n m�ltiplos de 5 y 10
     Dim minScale As Double, maxScale As Double
     minScale = RoundDown(minVal, 5)
     maxScale = RoundUp(maxVal, 5)
@@ -613,7 +613,7 @@ Private Sub AjustarEjeDesdeDatos(axis As axis, ws As Worksheet, cols() As Long)
     
     If minScale = 5 Then minScale = 0
     
-    ' AlineaciÃ³n con mÃºltiplos de 10 si uno lo es
+    ' Alineaci�n con m�ltiplos de 10 si uno lo es
     If (minScale Mod 10 = 0) Xor (maxScale Mod 10 = 0) Then
         If minScale Mod 10 = 0 Then maxScale = RoundUp(maxScale, 10)
         If maxScale Mod 10 = 0 Then minScale = RoundDown(minScale, 10)
@@ -631,7 +631,7 @@ ManejoErrores:
 End Sub
 
 ' ================================
-' Genera tÃ­tulo del eje vertical concatenando todos los textos entre parÃ©ntesis (sin repetir)
+' Genera t�tulo del eje vertical concatenando todos los textos entre par�ntesis (sin repetir)
 Private Function GenerarTituloEjeVertical(ws As Worksheet, cols() As Long) As String
     Dim dict As Object
     Set dict = CreateObject("Scripting.Dictionary")
@@ -729,7 +729,7 @@ Private Sub AplicarPropiedadesAEje(ax As axis, dict As Object)
     End If
 End Sub
 
-' Texto dentro de parÃ©ntesis del encabezado
+' Texto dentro de par�ntesis del encabezado
 Private Function ExtraerTextoEnParentesis(texto As String) As String
     Dim re As Object, matches As Object, Match As Object
     Set re = CreateObject("VBScript.RegExp")
@@ -751,7 +751,7 @@ Private Function ExtraerTextoEnParentesis(texto As String) As String
     ExtraerTextoEnParentesis = resultado
 End Function
 
-' Concatena textos entre parÃ©ntesis en primera fila para un grupo de columnas
+' Concatena textos entre par�ntesis en primera fila para un grupo de columnas
 Private Function ConcatenarTextosEntreParentesis(ws As Worksheet, cols() As Long) As String
     Dim i As Long
     Dim texto As String
@@ -779,7 +779,7 @@ Private Function ConcatenarTextosEntreParentesis(ws As Worksheet, cols() As Long
     ConcatenarTextosEntreParentesis = Join(dictUniq.Keys, ", ")
 End Function
 
-' Redondeos a mÃºltiplos de cinco
+' Redondeos a m�ltiplos de cinco
 Private Function RoundDown(value As Double, base As Long) As Double
     RoundDown = base * Int(value / base)
 End Function

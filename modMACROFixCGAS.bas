@@ -1,7 +1,7 @@
 Attribute VB_Name = "modMACROFixCGAS"
-' ===== MÃ³dulo: modFixCGAS =====
+' ===== M�dulo: modFixCGAS =====
 
-'@Folder "6-DOMINIO-Oportunidades y compresores.b-Calculos tÃ©cnicos"
+'@Folder "6-DOMINIO-Oportunidades y compresores.b-Calculos t�cnicos"
 Option Explicit
 
 Private Const MODULE_NAME As String = "modMACROFixCGAS"
@@ -46,21 +46,21 @@ Attribute FixCGASING.VB_ProcData.VB_Invoke_Func = " \n0"
     ' Reemplazos en la hoja
     Call ReplaceInAllCells(ws.Cells, "Vapor de agua", "Water vapor", bSave)
     Call ReplaceInAllCells(ws.Cells, "Agua", "Water", bSave)
-    Call ReplaceInAllCells(ws.Cells, "LÃ­mite RPM", "RPM Limit", bSave)
+    Call ReplaceInAllCells(ws.Cells, "L�mite RPM", "RPM Limit", bSave)
     Call ReplaceInAllCells(ws.Cells, " / 0 ( 0 )", "", bSave)
     Call ReplaceInAllCells(ws.Cells, "Seco-LT", "Dry-LT", bSave)
     Call ReplaceInAllCells(ws.Cells, "o Dry-LT", "or Dry-LT", bSave)
-    Call ReplaceInAllCells(ws.Cells, "AtmosfÃ©rico (Normal)", "Atmospheric (Standard)", bSave)
+    Call ReplaceInAllCells(ws.Cells, "Atmosf�rico (Normal)", "Atmospheric (Standard)", bSave)
     Call ReplaceInAllCells(ws.Cells, "Metros", "Meters", bSave)
-    Call ReplaceInAllCells(ws.Cells, "ComposiciÃ³n del gas en Volumen :", "Gas composition by volume :", bSave)
+    Call ReplaceInAllCells(ws.Cells, "Composici�n del gas en Volumen :", "Gas composition by volume :", bSave)
     Call ReplaceInAllCells(ws.Cells, "Aire seco", "Dry air", bSave)
     Call ReplaceInAllCells(ws.Cells, "Aire", "Air", bSave)
-    Call ReplaceInAllCells(ws.Cells, "MonÃ³xido de Carbono", "Carbon monoxide", bSave)
-    Call ReplaceInAllCells(ws.Cells, "AnhÃ­drido CarbÃ³nico, DiÃ³xido de Carbono", "Carbon dioxide", bSave)
-    Call ReplaceInAllCells(ws.Cells, "Acido SulfhÃ­drico, Sulfuro de HidrÃ³geno", "Hydrogen sulfide", bSave)
-    Call ReplaceInAllCells(ws.Cells, "NitrÃ³geno", "Nitrogen", bSave)
-    Call ReplaceInAllCells(ws.Cells, "HidrÃ³geno", "Hydrogen", bSave)
-    Call ReplaceInAllCells(ws.Cells, "OxÃ­geno", "Oxygen", bSave)
+    Call ReplaceInAllCells(ws.Cells, "Mon�xido de Carbono", "Carbon monoxide", bSave)
+    Call ReplaceInAllCells(ws.Cells, "Anh�drido Carb�nico, Di�xido de Carbono", "Carbon dioxide", bSave)
+    Call ReplaceInAllCells(ws.Cells, "Acido Sulfh�drico, Sulfuro de Hidr�geno", "Hydrogen sulfide", bSave)
+    Call ReplaceInAllCells(ws.Cells, "Nitr�geno", "Nitrogen", bSave)
+    Call ReplaceInAllCells(ws.Cells, "Hidr�geno", "Hydrogen", bSave)
+    Call ReplaceInAllCells(ws.Cells, "Ox�geno", "Oxygen", bSave)
     Call ReplaceInAllCells(ws.Cells, "Metano", "Methane", bSave)
     Call ReplaceInAllCells(ws.Cells, "Etano", "Ethane", bSave)
     Call ReplaceInAllCells(ws.Cells, "Propano", "Propane", bSave)
@@ -71,7 +71,7 @@ Attribute FixCGASING.VB_ProcData.VB_Invoke_Func = " \n0"
     Call ReplaceInAllCells(ws.Cells, "butano", "buthane", bSave)
     Call ReplaceInAllCells(ws.Cells, "Metil", "Methyl", bSave)
     Call ReplaceInAllCells(ws.Cells, "metil", "methyl", bSave)
-    Call ReplaceInAllCells(ws.Cells, "ArgÃ³n", "Argon", bSave)
+    Call ReplaceInAllCells(ws.Cells, "Arg�n", "Argon", bSave)
     Call ReplaceInAllCells(ws.Cells, "Pentano", "Penthane", bSave)
     Call ReplaceInAllCells(ws.Cells, "pentano", "penthane", bSave)
     Call ReplaceInAllCells(ws.Cells, "Hexano", "Hexane", bSave)
@@ -124,7 +124,7 @@ Attribute FixCGASING.VB_ProcData.VB_Invoke_Func = " \n0"
         If ws.Cells.Find("Motor at max.  : ") Is Nothing Or ws.Cells.Find("Isothermal efficiency : ") Is Nothing Then
             'Stop
         Else
-            'xlShiftUp = -4162' CÃMO SE DESPLAZAN LAS CELDAS PARA SUSTITUIR A LAS ELIMINADAS
+            'xlShiftUp = -4162' C�MO SE DESPLAZAN LAS CELDAS PARA SUSTITUIR A LAS ELIMINADAS
             ws.Rows("52:53").Delete
             ws.Rows("53:55").Delete
             ws.Rows("63:64").Delete
@@ -151,7 +151,7 @@ Attribute FixCGASING.VB_ProcData.VB_Invoke_Func = " \n0"
         Application.CutCopyMode = False
         bSave = True
     Else
-        'Stop ' serÃ¡ que la hoja estÃ¡ en un fichero ya modificado... pero asegurarse
+        'Stop ' ser� que la hoja est� en un fichero ya modificado... pero asegurarse
     End If
     
     
@@ -217,7 +217,7 @@ Attribute FixCGASING.VB_ProcData.VB_Invoke_Func = " \n0"
     If ws.Range("F29").value = "" And ws.Range("A24").value = "Specific weight in normal conditions:" _
        And ws.Range("A30").value = "Compressor series: " And ws.Range("G30").value = "Suction pressure :" Then
         ' SI NO SE CUMPLE ws.range ("F29").value = ""... LAS CELDAS A MOVER SE HABRIAN REEMPLAZADO POR NOMBRES DE GASES!!!
-        '       me aseguro ademÃ¡s de que el resto de la hoja no se haya modificado, que sea "la original"; por si acaso
+        '       me aseguro adem�s de que el resto de la hoja no se haya modificado, que sea "la original"; por si acaso
         ' PRESENTACION ALTERNATIVA: RECOLOCA LAS FILAS ORDENANDO MEJOR LOS CONCEPTOS DE ENTRADA.. OJO!!, ESTO AFECTA A LAS OFERTAS GENERADAS
         ' ASEGURARSE DE CAMBIAR LAS PLANTILLAS DE OFERTAS, LAS QUE HACEN REF A C-GAS-ING, AL HACER ESTE CAMBIO!!
         ws.Range("A24:C26").Cut ws.Range("F37")
@@ -315,7 +315,7 @@ Attribute FixCGASING.VB_ProcData.VB_Invoke_Func = " \n0"
         If ws.Range("F29").value = "" Then
             ws.Range("F37:F39").Cut ws.Range("F30")
         Else
-            ' si no son blancos... primero reajustar la lista de gases, luego se actualizarÃ­a estas celdas
+            ' si no son blancos... primero reajustar la lista de gases, luego se actualizar�a estas celdas
         End If
         
         ws.Range("G37:H39").Cut ws.Range("I30")
@@ -343,10 +343,10 @@ Attribute FixCGASING.VB_ProcData.VB_Invoke_Func = " \n0"
         cell.Offset(0, 1).value = regEx.Execute(strModelName()).Item(0).value
     End If
     
-    ' AÃ±ado unas conversiones de unidades...
-    If InStr(ws.Range("B25:B25").value, "ÂºF") > 0 Then
-        ws.Range("A53:A53").value = Replace(ws.Range("A53:A53").value, "ÂºC", "ÂºF")
-        ws.Range("A54:A54").value = Replace(ws.Range("A54:A54").value, "ÂºC", "ÂºF")
+    ' A�ado unas conversiones de unidades...
+    If InStr(ws.Range("B25:B25").value, "�F") > 0 Then
+        ws.Range("A53:A53").value = Replace(ws.Range("A53:A53").value, "�C", "�F")
+        ws.Range("A54:A54").value = Replace(ws.Range("A54:A54").value, "�C", "�F")
         For c = Asc("B") To Asc("G")
             If ws.Range(Chr(c) & "53:" & Chr(c) & "53").value <> "" Then
                 ws.Range(Chr(c) & "53:" & Chr(c) & "53").value = ws.Range(Chr(c) & "53:" & Chr(c) & "53").value * 9 / 5 + 32
@@ -362,7 +362,7 @@ Attribute FixCGASING.VB_ProcData.VB_Invoke_Func = " \n0"
     
     ' (Opcional) Formatear encabezados principales en negrita
     With ws
-        .Range("B2").Font.Bold = True            ' TÃ­tulo CALCULATION - GAS
+        .Range("B2").Font.Bold = True            ' T�tulo CALCULATION - GAS
         .Range("A15,A35,A47,F17").Font.Bold = True ' INPUT DATA, OUTPUT DATA, STAGES, Coolers
         '.Range("F18,G18").Font.Bold = True   ' Encabezados Gas/Percentage
     End With
@@ -381,7 +381,7 @@ CleanUp:
     Application.EnableEvents = prevEvents
     Application.DisplayAlerts = prevAlerts
     
-    If bSave Then If MsgBox("Â¿Guardar los cambios?", vbYesNo Or vbDefaultButton2 Or vbQuestion) = 6 Then ActiveWorkbook.Save
+    If bSave Then If MsgBox("�Guardar los cambios?", vbYesNo Or vbDefaultButton2 Or vbQuestion) = 6 Then ActiveWorkbook.Save
     Exit Sub
     
 ErrHandler:

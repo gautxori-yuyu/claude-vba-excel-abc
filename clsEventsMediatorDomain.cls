@@ -36,7 +36,7 @@ Private mCtxState As clsExecutionContextState
 Private mFileMgr As clsFileManager   ' Referencia sin WithEvents (solo para consultas)
 
 '--------------------------------------------------------------
-' InicializaciÃ³n
+' Inicializaci�n
 '--------------------------------------------------------------
 Private Sub Class_Initialize()
     LogInfo MODULE_NAME, "[Class_Initialize]"

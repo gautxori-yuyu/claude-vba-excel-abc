@@ -7,9 +7,9 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = True
-' Representa un Workbook abierto en el contexto de la aplicaciÃ³n.
-' Es la Ãºnica capa que conoce directamente al Workbook.
-' Todas las operaciones que requieran wb deben pasar por aquÃ­.
+' Representa un Workbook abierto en el contexto de la aplicaci�n.
+' Es la �nica capa que conoce directamente al Workbook.
+' Todas las operaciones que requieran wb deben pasar por aqu�.
 
 '@Folder "4-Servicios.Archivos.Tipos de archivos"
 Option Explicit
@@ -19,9 +19,9 @@ Private Const MODULE_NAME As String = "clsFileXLS"
 Private p_wb As Workbook
 Private p_wbinf As mod_ConstantsGlobals.T_InfoArchivo
 Private p_ObjectKey As Double
-Private p_PrivSheetsCol As Collection ' ColecciÃ³n de NOMBRES de hojas PRIVADAS (solo para uso interno)
-Private p_PublSheetsCol As Collection ' ColecciÃ³n de NOMBRES de hojas PUBLICAS (SE PUEDEN COMPARTIR COMO DOCUMENTO EDITABLE)
-Private p_RibbonBookState As T_RibbonBookState ' Estado del ribbon especÃ­fico para este libro
+Private p_PrivSheetsCol As Collection ' Colecci�n de NOMBRES de hojas PRIVADAS (solo para uso interno)
+Private p_PublSheetsCol As Collection ' Colecci�n de NOMBRES de hojas PUBLICAS (SE PUEDEN COMPARTIR COMO DOCUMENTO EDITABLE)
+Private p_RibbonBookState As T_RibbonBookState ' Estado del ribbon espec�fico para este libro
 
 ' ==================================================================
 ' IMPLEMENTA LA INTERFAZ IFile
@@ -29,9 +29,9 @@ Private p_RibbonBookState As T_RibbonBookState ' Estado del ribbon especÃ­fico
 Implements IFile
 
 '--------------------------------------------------------------
-' Estas propiedades Private son generadas automÃ¡ticamente por VBA
+' Estas propiedades Private son generadas autom�ticamente por VBA
 ' cuando escribes "Implements IFile"
-' Delegan a las propiedades pÃºblicas
+' Delegan a las propiedades p�blicas
 '--------------------------------------------------------------
 Private Property Get IFile_ObjectKey() As Double
     IFile_ObjectKey = Me.ObjectKey
@@ -46,7 +46,7 @@ Private Property Get IFile_Name() As String
 End Property
 
 '--------------------------------------------------------------
-' InicializaciÃ³n y estado del ribbon por libro
+' Inicializaci�n y estado del ribbon por libro
 '--------------------------------------------------------------
 Private Sub Class_Initialize()
     ' Estado por defecto del ribbon para este libro
@@ -54,7 +54,7 @@ Private Sub Class_Initialize()
     p_RibbonBookState.Visible = True
 End Sub
 
-'@Description: Estado del ribbon especÃ­fico para este libro
+'@Description: Estado del ribbon espec�fico para este libro
 Public Property Get RibbonBookState() As T_RibbonBookState
     RibbonBookState = p_RibbonBookState
 End Property
@@ -78,7 +78,7 @@ End Property
 '--------------------------------------------------------------
 Public Static Sub BindTo(wb As Workbook)
     If Not p_wb Is Nothing Then
-        Err.Raise vbObjectError + 570, TypeName(Me), "La instancia ya estÃ¡ asociada a un Workbook."
+        Err.Raise vbObjectError + 570, TypeName(Me), "La instancia ya est� asociada a un Workbook."
     End If
     If wb Is Nothing Then
         Err.Raise vbObjectError + 571, TypeName(Me), "No se puede asociar a Nothing."
@@ -87,7 +87,7 @@ Public Static Sub BindTo(wb As Workbook)
     p_ObjectKey = ObjPtr(p_wb)
     LogInfo MODULE_NAME, "[BindTo] Asociado a: " & Me.Path & " (key: " & p_ObjectKey & ")"
 End Sub
-' Factory Method estÃ¡tico: "Creador especializado"
+' Factory Method est�tico: "Creador especializado"
 Public Static Function CreateFromWorkbook(wb As Workbook) As clsFileXLS
     Dim instance As clsFileXLS
     Set instance = New clsFileXLS
@@ -96,7 +96,7 @@ Public Static Function CreateFromWorkbook(wb As Workbook) As clsFileXLS
 End Function
 
 ' ==================================================================
-' PROPIEDADES PÃBLICAS (API pÃºblica de la clase)
+' PROPIEDADES P�BLICAS (API p�blica de la clase)
 ' ==================================================================
 
 Friend Property Get ObjectKey() As Double
@@ -128,17 +128,17 @@ End Property
 
 '--------------------------------------------------------------
 ' @Description: Acceso seguro al Workbook subyacente.
-'               Lanza error si el wb ya no es vÃ¡lido.
+'               Lanza error si el wb ya no es v�lido.
 '--------------------------------------------------------------
 Public Property Get wb() As Workbook
     If p_ObjectKey = 0 Then
-        Err.Raise vbObjectError + 572, TypeName(Me), "Workbook ya no estÃ¡ disponible (cerrado o invÃ¡lido)."
+        Err.Raise vbObjectError + 572, TypeName(Me), "Workbook ya no est� disponible (cerrado o inv�lido)."
     End If
     Set wb = p_wb
 End Property
 
 '--------------------------------------------------------------
-' @Description: Tipo detectado (con anÃ¡lisis bajo demanda).
+' @Description: Tipo detectado (con an�lisis bajo demanda).
 '--------------------------------------------------------------
 Public Property Get tipo() As TipoArchivo
     If p_ObjectKey = 0 Then Exit Property
@@ -154,7 +154,7 @@ Public Function Equals(f As clsFileXLS) As Boolean
 End Function
 
 '--------------------------------------------------------------
-' @Description: Realiza el anÃ¡lisis completo del Workbook.
+' @Description: Realiza el an�lisis completo del Workbook.
 '               Actualiza internamente `p_wbinf`.
 '--------------------------------------------------------------
 Public Function AnalizarWorkBook(Optional ByVal wb As Workbook = Nothing) As mod_ConstantsGlobals.T_InfoArchivo
@@ -166,10 +166,10 @@ Public Function AnalizarWorkBook(Optional ByVal wb As Workbook = Nothing) As mod
         ' El libro ya estaba definido y se intenta analizar uno distinto
         LogError MODULE_NAME, "[AnalizarWorkBook] - Intentando analizar un libro diferente al asociado"
         Err.Raise vbObjectError + 573, MODULE_NAME, _
-                  "Esta instancia ya esta asociada a un Workbook diferente. (no deberÃ­a pasar, revisa tu codigo)"
+                  "Esta instancia ya esta asociada a un Workbook diferente. (no deber�a pasar, revisa tu codigo)"
     End If
     
-    ' Extraer informaciÃ³n del nombre DE LA CARPETA DE OPORTUNIDAD, ... o de otros ficheros en ella!!!
+    ' Extraer informaci�n del nombre DE LA CARPETA DE OPORTUNIDAD, ... o de otros ficheros en ella!!!
     p_wbinf.Customer = Customer(p_wb)
     'p_wbinf.OpportunityNr = OpportunityNr(p_wb)
     
@@ -181,10 +181,10 @@ Public Function AnalizarWorkBook(Optional ByVal wb As Workbook = Nothing) As mod
 End Function
 
 '--------------------------------------------------------------
-' @Description: InformaciÃ³n analizada (estructura T_InfoArchivo).
+' @Description: Informaci�n analizada (estructura T_InfoArchivo).
 '--------------------------------------------------------------
 Public Property Get info() As mod_ConstantsGlobals.T_InfoArchivo
-    ' Forzar anÃ¡lisis si no se ha hecho
+    ' Forzar an�lisis si no se ha hecho
     If p_wbinf.TipoDetectado = TipoArchivo.UnDef Then
         Call Me.AnalizarWorkBook
     End If
@@ -194,7 +194,7 @@ End Property
 '--------------------------------------------------------------
 ' @Description: Determina si este libro debe moverse a una oportunidad dada.
 '               Solo depende de su estado interno y la ruta objetivo.
-'               NOTA: de momento usa funciones globales (futuro: encapsular aquÃ­).
+'               NOTA: de momento usa funciones globales (futuro: encapsular aqu�).
 '--------------------------------------------------------------
 Public Function DebeMoverseAOp(rutaOportunidadRelativa As String, rutaBaseOportunidades As String) As Boolean
     ' Usa Me.Path, Me.AnalizarWorkBook, OpportunityNr(Me.WB), etc.
@@ -202,16 +202,16 @@ Public Function DebeMoverseAOp(rutaOportunidadRelativa As String, rutaBaseOportu
     rutaOportunidad = rutaBaseOportunidades & "\" & rutaOportunidadRelativa
     Set wb = p_wb
     
-    ' 1. Verificar si es un fichero de oportunidad vÃ¡lido
+    ' 1. Verificar si es un fichero de oportunidad v�lido
     If Not EsFicheroOportunidad() Then Exit Function
     
-    ' 2. Verificar si ya estÃ¡ en la carpeta correcta
+    ' 2. Verificar si ya est� en la carpeta correcta
     If InStr(1, wb.Path, rutaOportunidad, vbTextCompare) > 0 Then
-        ' Ya estÃ¡ en la carpeta correcta
+        ' Ya est� en la carpeta correcta
         Exit Function
     End If
     
-    ' 3. Si tiene un nÃºmero de oportunidad vÃ¡lido pero no estÃ¡ en la carpeta correcta
+    ' 3. Si tiene un n�mero de oportunidad v�lido pero no est� en la carpeta correcta
     ' DE MOMENTO ESTA RESTRICCION SE ELIMINA: HAY QUE PERFECCIONAR LA IDENTIFICACION DE LOS FICHEROS DE OPORTUNIDAD.
 '    Dim nrOportunidad As String
 '    nrOportunidad = QuoteNr(Wb)
@@ -221,20 +221,20 @@ Public Function DebeMoverseAOp(rutaOportunidadRelativa As String, rutaBaseOportu
 End Function
 
 '--------------------------------------------------------------
-' @Description: Mueve fÃ­sicamente el libro abierto a la oportunidad indicada.
+' @Description: Mueve f�sicamente el libro abierto a la oportunidad indicada.
 '               Usa SaveCopyAs + borrado del original (sin cerrar wb).
-'               Usa lÃ³gica robusta de backup/truncado.
+'               Usa l�gica robusta de backup/truncado.
 '--------------------------------------------------------------
 Public Sub MoverAOp(rutaOportunidadRelativa As String, rutaBaseOportunidades As String)
-    ' Usa toda la lÃ³gica robusta (SaveCopyAs + backup + truncado...)
-    ' Actualiza internamente `Me.m_wb` (el path no cambia en VBA, pero sabemos que estÃ¡ en nueva ubicaciÃ³n)
+    ' Usa toda la l�gica robusta (SaveCopyAs + backup + truncado...)
+    ' Actualiza internamente `Me.m_wb` (el path no cambia en VBA, pero sabemos que est� en nueva ubicaci�n)
     ' Opcional: invalidar cache en FileManager
     If p_ObjectKey = 0 Then Exit Sub
     
     Dim nombreArchivo As String
     nombreArchivo = p_wb.Name
     Dim respuesta As VbMsgBoxResult
-    respuesta = MsgBox("Â¿Deseas mover el archivo '" & nombreArchivo & "' a la carpeta de la oportunidad seleccionada?", _
+    respuesta = MsgBox("�Deseas mover el archivo '" & nombreArchivo & "' a la carpeta de la oportunidad seleccionada?", _
                        vbQuestion + vbYesNo, "Mover archivo a oportunidad")
     
     If respuesta <> vbYes Then Exit Sub
@@ -271,7 +271,7 @@ Public Sub MoverAOp(rutaOportunidadRelativa As String, rutaBaseOportunidades As 
     
     ' === 3.2 Verificar longitud de ruta (MAX_PATH = 260 en Windows sin \\?\) ===
     If Len(nuevaRuta) > 259 Then
-        ' Acortar nombre de archivo manteniendo extensiÃ³n y sufijo "_trunc"
+        ' Acortar nombre de archivo manteniendo extensi�n y sufijo "_trunc"
         Dim maxNombreLen As Long
         maxNombreLen = 259 - Len(rutaDestinoBase) - 1 ' -1 por barra
         If maxNombreLen < 6 Then
@@ -283,7 +283,7 @@ Public Sub MoverAOp(rutaOportunidadRelativa As String, rutaBaseOportunidades As 
         nuevoNombre = Left(fso.GetBaseName(nombreArchivo), maxNombreLen - Len(fso.GetExtensionName(nombreArchivo)) - 8) _
                     & fso.GetExtensionName(nombreArchivo)
         nuevaRuta = fso.BuildPath(rutaDestinoBase, nuevoNombre)
-        MsgBox "Nombre de archivo truncado para cumplir con lÃ­mite de ruta de Windows: " & vbCrLf & nuevoNombre, vbExclamation
+        MsgBox "Nombre de archivo truncado para cumplir con l�mite de ruta de Windows: " & vbCrLf & nuevoNombre, vbExclamation
     End If
     
     ' === 4. Guardar copia en destino ===
@@ -297,12 +297,12 @@ Public Sub MoverAOp(rutaOportunidadRelativa As String, rutaBaseOportunidades As 
         LogInfo MODULE_NAME, "[MoverAOp] Original eliminado: " & rutaOrigen
     Else
         Err.Raise vbObjectError + 575, "MoverAOp", _
-                  "No se pudo verificar la copia en destino. OperaciÃ³n cancelada."
+                  "No se pudo verificar la copia en destino. Operaci�n cancelada."
     End If
     
-    ' === 6. Reasignar .Path y .FullName (simbÃ³licamente, VBA no lo permite directamente) ===
+    ' === 6. Reasignar .Path y .FullName (simb�licamente, VBA no lo permite directamente) ===
     ' El libro sigue abierto, pero su ruta "efectiva" ahora es la nueva.
-    ' Excel lo manejarÃ¡ correctamente al guardar de nuevo.
+    ' Excel lo manejar� correctamente al guardar de nuevo.
     
     MsgBox "El archivo '" & nombreArchivo & "' se ha movido a la carpeta de la oportunidad.", vbInformation
     
@@ -311,11 +311,11 @@ Public Sub MoverAOp(rutaOportunidadRelativa As String, rutaBaseOportunidades As 
 ErrorHandler:
     LogCurrentError MODULE_NAME, "Error al mover el archivo"
     Err.Raise Err.Number, MODULE_NAME & " [MoverAOp]", Err.Description
-    ' No hacer nada mÃ¡s: el libro sigue abierto y seguro en su ubicaciÃ³n original
+    ' No hacer nada m�s: el libro sigue abierto y seguro en su ubicaci�n original
 End Sub
 
 '--------------------------------------------------------------
-' @Description: Determina el tipo de archivo segÃºn nombre y contenido
+' @Description: Determina el tipo de archivo seg�n nombre y contenido
 '--------------------------------------------------------------
 Private Function DeterminarTipoArchivo() As TipoArchivo
     Dim nombreArchivo As String
@@ -332,7 +332,7 @@ Private Function DeterminarTipoArchivo() As TipoArchivo
            InStr(1, nombreArchivo, "Plantilla", vbTextCompare) > 0 Then
         DeterminarTipoArchivo = TipoArchivo.PlantillaOferta
     Else
-        ' Verificar si tiene el patrÃ³n de oportunidad
+        ' Verificar si tiene el patr�n de oportunidad
         If QuoteNr(p_wb) <> "" And Customer(p_wb) <> "" Then
             DeterminarTipoArchivo = TipoArchivo.oportunidad
         Else
@@ -347,7 +347,7 @@ End Function
 
 Private Function EsFicheroGasVBNet() As Boolean
     Dim re As Object: Set re = CreateObject("VBScript.RegExp")
-    re.Pattern = "^[A-Z]{3}\d{5}_\d{2}"          ' patrÃ³n esperado en el nombre del fichero
+    re.Pattern = "^[A-Z]{3}\d{5}_\d{2}"          ' patr�n esperado en el nombre del fichero
     re.IgnoreCase = True
     EsFicheroGasVBNet = re.Test(p_wb.Name)
 End Function
@@ -376,7 +376,7 @@ Private Function EsLibroDeTablasCurvasRto() As Boolean
         formula = "SUMPRODUCT(--ISNUMBER(SEARCH(""("", " & encabezados.Address(External:=True) & ")))"
         If Evaluate(formula) <> encabezados.Columns.Count Then GoTo ErrorHandler
         
-        ' Validar datos numÃ©ricos (todo menos la primera fila y primera columna)
+        ' Validar datos num�ricos (todo menos la primera fila y primera columna)
         Set datos = r.Offset(1, 1).Resize(r.Rows.Count - 1, r.Columns.Count - 1)
         formula = "SUMPRODUCT(--ISNUMBER(" & datos.Address(External:=True) & "))"
         If Evaluate(formula) <> datos.Cells.Count Then GoTo ErrorHandler

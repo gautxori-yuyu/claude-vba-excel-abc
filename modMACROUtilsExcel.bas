@@ -12,14 +12,14 @@ Attribute AplicarDirtyATodasLasHojasConFormulas.VB_ProcData.VB_Invoke_Func = " \
     ' Recorrer todas las hojas del libro actual
     For Each ws In ActiveWorkbook.Worksheets
         ws.UsedRange.Calculate
-        ' Establecer el rango con fÃ³rmulas en la hoja activa
+        ' Establecer el rango con f�rmulas en la hoja activa
         On Error Resume Next
         Set rFormulas = ws.UsedRange.SpecialCells(xlCellTypeFormulas)
         On Error GoTo 0
         
-        ' Verificar si se encontrÃ³ un rango con fÃ³rmulas
+        ' Verificar si se encontr� un rango con f�rmulas
         If Not rFormulas Is Nothing Then
-            ' Aplicar el mÃ©todo Dirty para marcar las celdas para su recÃ¡lculo
+            ' Aplicar el m�todo Dirty para marcar las celdas para su rec�lculo
             rFormulas.Dirty
         End If
         
@@ -27,11 +27,11 @@ Attribute AplicarDirtyATodasLasHojasConFormulas.VB_ProcData.VB_Invoke_Func = " \
         Set rFormulas = Nothing
     Next ws
 
-    ' Desactivar las alertas para evitar errores si no hay fÃ³rmulas en una hoja
+    ' Desactivar las alertas para evitar errores si no hay f�rmulas en una hoja
     ' On Error Resume Next
     FullRecalc
 
-    MsgBox "El mÃ©todo Dirty se ha aplicado a todos los rangos con fÃ³rmulas en este libro.", vbInformation
+    MsgBox "El m�todo Dirty se ha aplicado a todos los rangos con f�rmulas en este libro.", vbInformation
 End Sub
 
 Sub FullRecalc()
@@ -46,12 +46,12 @@ Attribute FullRecalc.VB_ProcData.VB_Invoke_Func = " \n0"
     prevEnableEvents = Application.EnableEvents
     prevScreenUpdating = Application.ScreenUpdating
     
-    ' === 1. Configurar entorno para recÃ¡lculo fiable ===
+    ' === 1. Configurar entorno para rec�lculo fiable ===
     Application.Calculation = xlCalculationAutomatic
     Application.EnableEvents = True
     Application.ScreenUpdating = False
     
-    ' === 2. RecÃ¡lculo TOTAL con reconstrucciÃ³n de dependencias ===
+    ' === 2. Rec�lculo TOTAL con reconstrucci�n de dependencias ===
     Application.CalculateFullRebuild
 
     ' === 5. Restaurar estado original ===
@@ -63,7 +63,7 @@ Finish:
     Exit Sub
 
 ErrorHandler:
-    Debug.Print "[ERR] ExcepciÃ³n en FullRecalc: " & Err.Description
+    Debug.Print "[ERR] Excepci�n en FullRecalc: " & Err.Description
     Resume Finish
 End Sub
 
@@ -76,10 +76,10 @@ Attribute ReemplazarUDFsEnFormulas.VB_ProcData.VB_Invoke_Func = " \n0"
     Dim f As Variant, strFPattern As String
     Dim formula As String, nuevaFormula As String
     
-    ' 1. CONFIGURACIÃN
+    ' 1. CONFIGURACI�N
     Set oDicUDFs = ParsearUDFsDeTodosLosProyectos()
     
-    ' 2. OPTIMIZACIÃN EXTREMA
+    ' 2. OPTIMIZACI�N EXTREMA
     On Error GoTo CleanUp
     With Application
         .ScreenUpdating = False
@@ -105,7 +105,7 @@ Attribute ReemplazarUDFsEnFormulas.VB_ProcData.VB_Invoke_Func = " \n0"
                 
                 If bReplaceIndirectionsInAllFormula Then nuevaFormula = ResolverIndirecciones(nuevaFormula, celda)
                 
-                ' 3. PROCESO DE EVALUACIÃN "DENTRO HACIA FUERA"
+                ' 3. PROCESO DE EVALUACI�N "DENTRO HACIA FUERA"
                 ' Repetimos hasta que no queden nombres de nuestras UDFs
                 Dim huboCambio As Boolean
                 Do
@@ -128,7 +128,7 @@ Attribute ReemplazarUDFsEnFormulas.VB_ProcData.VB_Invoke_Func = " \n0"
                         
                             If Not EstaEnComillas(nuevaFormula, startPos) Then
                                 Dim endPos As Long
-                                ' Buscamos el parÃ©ntesis de cierre balanceado desde el primer "("
+                                ' Buscamos el par�ntesis de cierre balanceado desde el primer "("
                                 endPos = BuscarParentesisCierreRobusto(nuevaFormula, primerParentesis)
                                 
                                 If endPos > 0 Then
@@ -137,7 +137,7 @@ Attribute ReemplazarUDFsEnFormulas.VB_ProcData.VB_Invoke_Func = " \n0"
                                     
                                     If Not bReplaceIndirectionsInAllFormula Then llamadaUDF = ResolverIndirecciones(llamadaUDF, celda)
                                     
-                                    ' --- LÃGICA DE REDUCCIÃN DE CARACTERES ---
+                                    ' --- L�GICA DE REDUCCI�N DE CARACTERES ---
                                     ' Si la llamada es > 255, intentamos resolver lo que hay DENTRO primero
                                     If Len(llamadaUDF) > 255 Then
                                         llamadaUDF = ReducirArgumentosInternos(llamadaUDF)
@@ -174,13 +174,13 @@ CleanUp:
     If Err.Number <> 0 Then MsgBox "Error: " & Err.Description
 End Sub
 
-' FunciÃ³n que intenta evaluar partes internas de una cadena larga para acortarla
+' Funci�n que intenta evaluar partes internas de una cadena larga para acortarla
 Private Function ReducirArgumentosInternos(ByVal textoUDF As String) As String
-    ' Buscamos funciones anidadas dentro de los parÃ©ntesis de la UDF principal
-    ' Si detectamos una funciÃ³n interna, la evaluamos y reemplazamos su texto por el valor
+    ' Buscamos funciones anidadas dentro de los par�ntesis de la UDF principal
+    ' Si detectamos una funci�n interna, la evaluamos y reemplazamos su texto por el valor
     ' Esto reduce la longitud de la cadena total "hacia afuera".
     
-    ' Por simplicidad, esta funciÃ³n puede llamar recursivamente a un evaluador
+    ' Por simplicidad, esta funci�n puede llamar recursivamente a un evaluador
     ' de funciones nativas de Excel o simplemente devolver el texto si es irreducible.
     ReducirArgumentosInternos = textoUDF ' (Estrategia base de seguridad)
 End Function
@@ -188,7 +188,7 @@ End Function
 Private Function ConvertirAStringFormula(ByVal valor As Variant) As String
     ' 1. Manejo de Errores de Excel (#N/A, #VALOR!, etc.)
     If IsError(valor) Then
-        ' Si la UDF devolviÃ³ un error, lo mantenemos como literal de error
+        ' Si la UDF devolvi� un error, lo mantenemos como literal de error
         ConvertirAStringFormula = CVErrToText(valor)
         Exit Function
     End If
@@ -205,18 +205,18 @@ Private Function ConvertirAStringFormula(ByVal valor As Variant) As String
             ConvertirAStringFormula = """" & """"
             
         Case vbString
-            ' Duplicamos comillas internas para no romper la fÃ³rmula
+            ' Duplicamos comillas internas para no romper la f�rmula
             ConvertirAStringFormula = """" & Replace(valor, """", """""") & """"
             
         Case vbBoolean
             ConvertirAStringFormula = IIf(valor, "TRUE", "FALSE")
             
         Case vbDate
-            ' Excel trata las fechas como nÃºmeros en las fÃ³rmulas
+            ' Excel trata las fechas como n�meros en las f�rmulas
             ConvertirAStringFormula = CDbl(valor)
             
         Case vbObject
-            ' Si la UDF devolviÃ³ un objeto Range, tomamos su valor
+            ' Si la UDF devolvi� un objeto Range, tomamos su valor
             If TypeOf valor Is Range Then
                 ConvertirAStringFormula = ConvertirAStringFormula(valor.value)
             Else
@@ -224,18 +224,18 @@ Private Function ConvertirAStringFormula(ByVal valor As Variant) As String
             End If
             
         Case Else
-            ' Para nÃºmeros (Double, Integer, etc.), asegurar punto decimal
+            ' Para n�meros (Double, Integer, etc.), asegurar punto decimal
             ConvertirAStringFormula = Replace(CStr(valor), ",", ".")
     End Select
 End Function
 
-' FunciÃ³n auxiliar para convertir arrays en formato {a,b;c,d}
+' Funci�n auxiliar para convertir arrays en formato {a,b;c,d}
 Private Function ConvertirMatrizAString(ByVal arr As Variant) As String
     Dim res As String, r As Long, c As Long
     Dim vTmp As String
     
     res = "{"
-    On Error Resume Next ' Por si es una matriz de una sola dimensiÃ³n
+    On Error Resume Next ' Por si es una matriz de una sola dimensi�n
     For r = LBound(arr, 1) To UBound(arr, 1)
         For c = LBound(arr, 2) To UBound(arr, 2)
             vTmp = ConvertirAStringFormula(arr(r, c))
@@ -252,7 +252,7 @@ Private Function ConvertirMatrizAString(ByVal arr As Variant) As String
     ConvertirMatrizAString = res & "}"
 End Function
 
-' Convierte cÃ³digos de error internos en texto de fÃ³rmula (#N/A...)
+' Convierte c�digos de error internos en texto de f�rmula (#N/A...)
 Private Function CVErrToText(ByVal errVal As Variant) As String
     Select Case CLng(errVal)
         Case -2146826281: CVErrToText = "#DIV/0!"
@@ -276,19 +276,19 @@ Private Function ResolverIndirecciones(ByVal textoUDF As String, ByVal rContexto
     With regInd
         .Global = True
         .IgnoreCase = True
-        ' Busca el patrÃ³n INDIRECT(...)
+        ' Busca el patr�n INDIRECT(...)
         .Pattern = "\bINDIRECT\(([^()]*(\([^()]*\)[^()]*)*)\)"
     End With
     
     Set matches = regInd.Execute(textoUDF)
     
-    ' Procesamos de atrÃ¡s hacia adelante
+    ' Procesamos de atr�s hacia adelante
     For i = matches.Count - 1 To 0 Step -1
         Set m = matches(i)
-        ' Extraemos lo que hay dentro de los parÃ©ntesis de INDIRECT
+        ' Extraemos lo que hay dentro de los par�ntesis de INDIRECT
         interiorIndireccion = Mid(m.value, 10, Len(m.value) - 10)
         
-        ' Evaluamos solo el interior para obtener la cadena de texto de la direcciÃ³n
+        ' Evaluamos solo el interior para obtener la cadena de texto de la direcci�n
         direccionResuelta = rContexto.Parent.Evaluate(interiorIndireccion)
         
         If Not IsError(direccionResuelta) Then
@@ -300,16 +300,16 @@ Private Function ResolverIndirecciones(ByVal textoUDF As String, ByVal rContexto
     ResolverIndirecciones = textoUDF
 End Function
 
-' Determina si una posiciÃ³n en la fÃ³rmula estÃ¡ dentro de comillas dobles o simples (hojas)
+' Determina si una posici�n en la f�rmula est� dentro de comillas dobles o simples (hojas)
 Private Function EstaEnComillas(ByVal texto As String, ByVal pos As Long) As Boolean
     Dim i As Long, enDoble As Boolean, enSimple As Boolean
     For i = 1 To pos - 1
         Dim char As String: char = Mid(texto, i, 1)
         If char = """" And Not enSimple Then enDoble = Not enDoble
         ' If char = "'" And Not enDoble Then enSimple = Not enSimple
-        ' ajusta la lÃ³gica del char = "'"
+        ' ajusta la l�gica del char = "'"
         If char = "'" And Not enDoble Then
-            ' Si el siguiente carÃ¡cter tras el cierre de comilla simple no es "!", es una cadena real
+            ' Si el siguiente car�cter tras el cierre de comilla simple no es "!", es una cadena real
             If i < Len(texto) Then
                 If Mid(texto, InStr(i + 1, texto, "'") + 1, 1) <> "!" Then
                     enSimple = Not enSimple
@@ -320,7 +320,7 @@ Private Function EstaEnComillas(ByVal texto As String, ByVal pos As Long) As Boo
     EstaEnComillas = enDoble Or enSimple
 End Function
 
-' Busca el parÃ©ntesis de cierre ignorando lo que hay entre comillas (evita error en nombres de hojas)
+' Busca el par�ntesis de cierre ignorando lo que hay entre comillas (evita error en nombres de hojas)
 Private Function BuscarParentesisCierreRobusto(ByVal texto As String, ByVal posApertura As Long) As Long
     Dim nivel As Integer: nivel = 0
     Dim i As Long, enDoble As Boolean, enSimple As Boolean
@@ -328,7 +328,7 @@ Private Function BuscarParentesisCierreRobusto(ByVal texto As String, ByVal posA
     For i = posApertura To Len(texto)
         Dim char As String: char = Mid(texto, i, 1)
         
-        ' Si encontramos comillas, invertimos estado y no contamos parÃ©ntesis dentro
+        ' Si encontramos comillas, invertimos estado y no contamos par�ntesis dentro
         If char = """" And Not enSimple Then enDoble = Not enDoble
         If char = "'" And Not enDoble Then enSimple = Not enSimple
         

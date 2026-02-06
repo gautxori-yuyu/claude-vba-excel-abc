@@ -7,8 +7,8 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
-'@Description: Manager del contexto de ejecuciÃ³n Excel. Recibe eventos del Listener (ThisWorkbook),
-'              actualiza State, emite eventos semÃ³nticos de infraestructura.
+'@Description: Manager del contexto de ejecuci�n Excel. Recibe eventos del Listener (ThisWorkbook),
+'              actualiza State, emite eventos sem�nticos de infraestructura.
 '@Category: Manager
 '@Folder "2-Infraestructura"
 Option Explicit
@@ -16,7 +16,7 @@ Option Explicit
 Private Const MODULE_NAME As String = "clsExecutionContextMgr"
 
 ' ==========================================
-' EVENTOS SEMÃ³NTICOS DE INFRAESTRUCTURA
+' EVENTOS SEM�NTICOS DE INFRAESTRUCTURA
 ' ==========================================
 Public Event WorkbookOpened(ByVal wb As Workbook)
 Public Event WorkbookActivated(ByVal wb As Workbook)
@@ -31,7 +31,7 @@ Public Event ContextReinitialized()
 Private mState As clsExecutionContextState
 
 ' ==========================================
-' INICIALIZACIÃ³N
+' INICIALIZACI�N
 ' ==========================================
 
 Public Sub Initialize(oState As clsExecutionContextState)
@@ -50,7 +50,7 @@ Private Sub Class_Terminate()
 End Sub
 
 ' ==========================================
-' MÃ³TODOS DEL LISTENER (llamados por ThisWorkbook)
+' M�TODOS DEL LISTENER (llamados por ThisWorkbook)
 ' ==========================================
 
 Public Sub OnWorkbookOpened(ByVal wb As Workbook)
@@ -99,7 +99,7 @@ End Sub
 Public Sub Shutdown()
     LogInfo MODULE_NAME, "[Shutdown]"
     mState.InvalidateContext
-    RaiseEvent ContextInvalidated()
+    RaiseEvent ContextInvalidated
 End Sub
 
 '@Description: Reinicializa el contexto tras un reset de VBA/Excel.
@@ -107,10 +107,10 @@ End Sub
 '       Reconstruye State desde el estado real de Excel y notifica a consumidores.
 Public Sub ReInitializeContext()
     mState.InvalidateContext
-    RaiseEvent ContextInvalidated()
+    RaiseEvent ContextInvalidated
     RefreshContextState
     mState.ValidateContext
-    RaiseEvent ContextReinitialized()
+    RaiseEvent ContextReinitialized
     LogInfo MODULE_NAME, "[ReInitializeContext] - Contexto reinicializado tras reset"
 End Sub
 
@@ -186,7 +186,7 @@ Private Sub RefreshContextState()
 End Sub
 
 ' ==========================================
-' ELECCIÃ³N DE CHART (lÃ³gica privada del Mgr)
+' ELECCI�N DE CHART (l�gica privada del Mgr)
 ' ==========================================
 
 Private Sub DetectChart()

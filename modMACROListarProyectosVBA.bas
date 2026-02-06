@@ -7,7 +7,7 @@ Private Const MODULE_NAME As String = "modMACROListarProyectosVBA"
 
 Sub ListarProyectosAlternativo()
 Attribute ListarProyectosAlternativo.VB_ProcData.VB_Invoke_Func = " \n0"
-    ' Este mÃ©todo intenta acceder de forma indirecta
+    ' Este m�todo intenta acceder de forma indirecta
     Dim i As Integer
     Dim projName As String, vbap As Object
     
@@ -26,7 +26,7 @@ Attribute ListarProyectosAlternativo.VB_ProcData.VB_Invoke_Func = " \n0"
     
 ErrorHandler:
     Debug.Print "ERROR: No se puede acceder a los proyectos VBA directamente"
-    Debug.Print "SoluciÃ³n: Habilitar la referencia VBE Extensibility"
+    Debug.Print "Soluci�n: Habilitar la referencia VBE Extensibility"
     Debug.Print "1. Ir al Editor VBA (ALT + F11)"
     Debug.Print "2. Tools > References"
     Debug.Print "3. Buscar 'Microsoft Visual Basic for Applications Extensibility 5.3'"
@@ -38,7 +38,7 @@ Attribute ListarProyectosVBAAuto.VB_ProcData.VB_Invoke_Func = " \n0"
     Dim vbProj As Object
     Dim contador As Integer
     
-    ' Intentar habilitar la referencia automÃ¡ticamente
+    ' Intentar habilitar la referencia autom�ticamente
     On Error Resume Next
     ThisWorkbook.VBProject.References.AddFromGuid _
         "{0002E157-0000-0000-C000-000000000046}", 5, 3 ' VBE Extensibility
@@ -93,7 +93,7 @@ Attribute ListarProyectosVBAIncluyendoXLAM.VB_ProcData.VB_Invoke_Func = " \n0"
         End Select
         
         Debug.Print contador & ". " & vbProj.Name
-        Debug.Print "   DescripciÃ³n: " & vbProj.Description
+        Debug.Print "   Descripci�n: " & vbProj.Description
         Debug.Print "   Tipo: " & tipoProyecto
         Debug.Print "   Archivo: " & vbProj.fileName
         Debug.Print "   HelpFile: " & vbProj.HelpFile

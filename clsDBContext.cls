@@ -35,7 +35,7 @@ Public Sub Conectar(ByVal RutaBD As String)
     Exit Sub
 ErrorHandler:
     Err.Raise Err.Number, , _
-        "Error ADO al abrir conexiÃ³n a DB: " & vbCrLf & _
+        "Error ADO al abrir conexi�n a DB: " & vbCrLf & _
         Err.Description
 End Sub
 Public Function EstaConectado() As Boolean

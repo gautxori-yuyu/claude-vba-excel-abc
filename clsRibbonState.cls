@@ -7,7 +7,7 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = True
-'@Description: Estado lÃ³gico del Ribbon
+'@Description: Estado l�gico del Ribbon
 '@Category: State
 
 '@Folder "3-UI.Excel.Ribbon"
@@ -22,8 +22,8 @@ Public Property Get Modo() As eRibbonMode
     Modo = mModoRibbon
 End Property
 
-Friend Property Let Modo(value As eRibbonMode)
-    mModoRibbon = value
+Friend Property Let Modo(Value As eRibbonMode)
+    mModoRibbon = Value
 End Property
 
 
@@ -46,8 +46,8 @@ Public Property Get Visible() As Boolean
     Visible = mVisible
 End Property
 
-Friend Property Let Visible(value As Boolean)
-    mVisible = value
+Friend Property Let Visible(Value As Boolean)
+    mVisible = Value
 End Property
 
 Public Function IsAdminGroupVisible() As Boolean
@@ -57,10 +57,10 @@ End Function
 ' ==================================================================
 ' METODOS DE UTILIDAD PARA T_RibbonBookState (estado por libro)
 ' ==================================================================
-' Estos mÃ©todos operan sobre el UDT sin modificar el estado interno de la clase.
+' Estos m�todos operan sobre el UDT sin modificar el estado interno de la clase.
 ' Permiten evaluar el estado del ribbon para cualquier libro.
 
-'@Description: Obtiene descripciÃ³n del modo para un estado de libro especÃ­fico
+'@Description: Obtiene descripci�n del modo para un estado de libro espec�fico
 Public Function GetDescriptionForBook(bookState As T_RibbonBookState) As String
     Select Case bookState.Modo
     Case Ribbon_Admin
@@ -76,12 +76,12 @@ Public Function GetDescriptionForBook(bookState As T_RibbonBookState) As String
     End Select
 End Function
 
-'@Description: Verifica si el grupo admin es visible para un estado de libro especÃ­fico
+'@Description: Verifica si el grupo admin es visible para un estado de libro espec�fico
 Public Function IsAdminGroupVisibleForBook(bookState As T_RibbonBookState) As Boolean
     IsAdminGroupVisibleForBook = (bookState.Modo = Ribbon_Admin)
 End Function
 
-'@Description: Verifica si el ribbon debe estar visible para un estado de libro especÃ­fico
+'@Description: Verifica si el ribbon debe estar visible para un estado de libro espec�fico
 Public Function IsVisibleForBook(bookState As T_RibbonBookState, isOpportunityFile As Boolean) As Boolean
     If Not bookState.Visible Then
         IsVisibleForBook = False
@@ -101,7 +101,7 @@ Public Function IsVisibleForBook(bookState As T_RibbonBookState, isOpportunityFi
 End Function
 
 '@Description: Sincroniza el estado interno con un T_RibbonBookState
-'@Note: Ãtil cuando se cambia de libro activo
+'@Note: �til cuando se cambia de libro activo
 Public Sub SyncFromBookState(bookState As T_RibbonBookState)
     mModoRibbon = bookState.Modo
     mVisible = bookState.Visible

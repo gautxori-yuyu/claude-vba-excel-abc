@@ -1,9 +1,9 @@
 Attribute VB_Name = "modMACROProceduresToWorksheet"
 ' ==========================================
-' EXTENSIÃN PARA modUTILSProcedureParsing.bas
-' SINCRONIZACIÃN BIDIRECCIONAL CON HOJA EXCEL "PROCEDIMIENTOS"
+' EXTENSIÓN PARA modUTILSProcedureParsing.bas
+' SINCRONIZACIÓN BIDIRECCIONAL CON HOJA EXCEL "PROCEDIMIENTOS"
 ' ==========================================
-' Reutiliza completamente la funciÃ³n ParsearProcsDelProyecto() existente
+' Reutiliza completamente la función ParsearProcsDelProyecto() existente
 ' y todas las propiedades de clsVBAProcedure
 ' ==========================================
 
@@ -15,8 +15,8 @@ Private Const MODULE_NAME As String = "modMACROProceduresToWorksheet"
 Private Const SHEET_NAME As String = "PROCEDIMIENTOS"
 
 '@Description: Sincroniza procedimientos del proyecto con hoja Excel "PROCEDIMIENTOS". Crea la hoja si no existe, o sincroniza cambios bidireccionales si existe.
-'@Scope: PÃºblico
-'@Category: SincronizaciÃ³n
+'@Scope: Público
+'@Category: Sincronización
 Public Sub WriteProcedimientosSheet()
 Attribute WriteProcedimientosSheet.VB_ProcData.VB_Invoke_Func = " \n0"
     Dim ws As Worksheet
@@ -53,12 +53,12 @@ ErrorHandler:
 End Sub
 
 ' ==========================================
-' FUNCIÃN 4: MODIFICACIÃN DE WriteProcedimientosSheet
+' FUNCIÓN 4: MODIFICACIÓN DE WriteProcedimientosSheet
 ' ==========================================
 
-'@Description: VERSIÃN MODIFICADA que usa SincronizarConHoja_ConBackup en lugar de SincronizarConHoja
-'@Scope: PÃºblico
-'@Category: SincronizaciÃ³n
+'@Description: VERSIÓN MODIFICADA que usa SincronizarConHoja_ConBackup en lugar de SincronizarConHoja
+'@Scope: Público
+'@Category: Sincronización
 Public Sub WriteProcedimientosSheet_ConBackup()
 Attribute WriteProcedimientosSheet_ConBackup.VB_ProcData.VB_Invoke_Func = " \n0"
     Dim ws As Worksheet
@@ -80,7 +80,7 @@ Attribute WriteProcedimientosSheet_ConBackup.VB_ProcData.VB_Invoke_Func = " \n0"
     If bSheetExisted Then
         ' Leer hoja existente y comparar (CON BACKUP)
         Set ws = ThisWorkbook.Worksheets(SHEET_NAME)
-        Call SincronizarConHoja_ConBackup(ws, funciones)  ' ? CAMBIO AQUÃ
+        Call SincronizarConHoja_ConBackup(ws, funciones)  ' ? CAMBIO AQUÍ
     Else
         ' Crear hoja nueva y volcar datos (sin backup necesario)
         Set ws = CrearHojaProcedimientos(ThisWorkbook, SHEET_NAME)
@@ -113,7 +113,7 @@ End Function
 '@ArgumentDescriptions: ws: Worksheet donde crear encabezados
 Private Sub CrearEncabezadosHoja(ws As Worksheet)
     With ws
-        .Cells(1, 1).value = "MÃ³dulo"
+        .Cells(1, 1).value = "Módulo"
         .Cells(1, 2).value = "Firma del procedimiento"
         .Cells(1, 3).value = "Description"
         .Cells(1, 4).value = "Category"
@@ -130,7 +130,7 @@ Private Sub CrearEncabezadosHoja(ws As Worksheet)
         End With
         
         ' Ajustar anchos
-        .Columns("A:A").ColumnWidth = 20  ' MÃ³dulo
+        .Columns("A:A").ColumnWidth = 20  ' Módulo
         .Columns("B:B").ColumnWidth = 50  ' Firma
         .Columns("C:C").ColumnWidth = 70  ' Description
         .Columns("D:D").ColumnWidth = 25  ' Category
@@ -154,7 +154,7 @@ Private Sub VolcarProcedimientosAHoja(ws As Worksheet, funciones As Object)
     Dim i As Long, col As Long, fila As Long
     Dim proc As clsVBAProcedure
     
-    fila = 2 ' Fila inicial (despuÃ©s de encabezados)
+    fila = 2 ' Fila inicial (después de encabezados)
     
     For i = 0 To funciones.Count - 1
         Set proc = funciones(i)
@@ -197,17 +197,17 @@ Private Sub VolcarProcedimientosAHoja(ws As Worksheet, funciones As Object)
     End With
 End Sub
 
-'@Description: Gestiona la sincronizaciÃ³n bidireccional entre hoja Excel y cÃ³digo VBA
+'@Description: Gestiona la sincronización bidireccional entre hoja Excel y código VBA
 '@Scope: Privado
-'@ArgumentDescriptions: ws: Worksheet con datos existentes | funciones: Dictionary con procedimientos actuales del cÃ³digo
+'@ArgumentDescriptions: ws: Worksheet con datos existentes | funciones: Dictionary con procedimientos actuales del código
 Private Sub SincronizarConHoja(ws As Worksheet, funciones As Object)
-    Dim dictHoja As Object ' Dictionary con clave compuesta: MÃ³dulo + "|" + Firma -> array de metadatos
-    Dim dictCodigo As Object ' Dictionary con clave compuesta: MÃ³dulo + "|" + Firma -> objeto clsVBAProcedure
+    Dim dictHoja As Object ' Dictionary con clave compuesta: Módulo + "|" + Firma -> array de metadatos
+    Dim dictCodigo As Object ' Dictionary con clave compuesta: Módulo + "|" + Firma -> objeto clsVBAProcedure
     Dim hayDiferencias As Boolean
     Dim respuesta As VbMsgBoxResult
     Dim mensaje As String
     
-    ' Crear diccionarios para comparaciÃ³n
+    ' Crear diccionarios para comparación
     Set dictHoja = LeerMetadatosDeHoja(ws)
     Set dictCodigo = CrearDiccionarioProcedimientos(funciones)
     
@@ -215,29 +215,29 @@ Private Sub SincronizarConHoja(ws As Worksheet, funciones As Object)
     hayDiferencias = HayDiferenciasEnMetadatos(dictHoja, dictCodigo, mensaje)
     
     If Not hayDiferencias Then
-        MsgBox "No hay diferencias entre la hoja y el cÃ³digo." & vbCrLf & vbCrLf & _
-               "Total procedimientos: " & funciones.Count, vbInformation, "SincronizaciÃ³n"
+        MsgBox "No hay diferencias entre la hoja y el código." & vbCrLf & vbCrLf & _
+               "Total procedimientos: " & funciones.Count, vbInformation, "Sincronización"
         Exit Sub
     End If
     
-    ' Preguntar al usuario quÃ© hacer
-    respuesta = MsgBox("Se encontraron diferencias entre la hoja PROCEDIMIENTOS y el cÃ³digo VBA:" & vbCrLf & vbCrLf & _
+    ' Preguntar al usuario qué hacer
+    respuesta = MsgBox("Se encontraron diferencias entre la hoja PROCEDIMIENTOS y el código VBA:" & vbCrLf & vbCrLf & _
                        mensaje & vbCrLf & vbCrLf & _
-                       "Â¿Desea actualizar el CÃDIGO con los datos de la hoja?" & vbCrLf & vbCrLf & _
-                       "SÃ­ = Actualizar cÃ³digo VBA desde Excel" & vbCrLf & _
-                       "No = Actualizar hoja Excel desde cÃ³digo" & vbCrLf & _
+                       "¿Desea actualizar el CÓDIGO con los datos de la hoja?" & vbCrLf & vbCrLf & _
+                       "Sí = Actualizar código VBA desde Excel" & vbCrLf & _
+                       "No = Actualizar hoja Excel desde código" & vbCrLf & _
                        "Cancelar = No hacer nada", _
                        vbYesNoCancel + vbQuestion, "Sincronizar Metadatos")
     
     Select Case respuesta
         Case vbYes
-            ' Actualizar cÃ³digo VBA
-            If MsgBox("ADVERTENCIA: Se modificarÃ¡n los archivos de cÃ³digo VBA." & vbCrLf & _
-                     "Â¿EstÃ¡ seguro de continuar?", vbExclamation + vbYesNo, "ConfirmaciÃ³n") = vbYes Then
+            ' Actualizar código VBA
+            If MsgBox("ADVERTENCIA: Se modificarán los archivos de código VBA." & vbCrLf & _
+                     "¿Está seguro de continuar?", vbExclamation + vbYesNo, "Confirmación") = vbYes Then
                 Stop
                 Call ActualizarCodigoVBA(dictHoja, dictCodigo)
-                MsgBox "CÃ³digo VBA actualizado correctamente." & vbCrLf & _
-                       "Se recomienda revisar los cambios.", vbInformation, "ActualizaciÃ³n completada"
+                MsgBox "Código VBA actualizado correctamente." & vbCrLf & _
+                       "Se recomienda revisar los cambios.", vbInformation, "Actualización completada"
             End If
             
         Case vbNo
@@ -246,21 +246,21 @@ Private Sub SincronizarConHoja(ws As Worksheet, funciones As Object)
             Call CrearEncabezadosHoja(ws)
             Call VolcarProcedimientosAHoja(ws, funciones)
             MsgBox "Hoja Excel actualizada correctamente con " & funciones.Count & " procedimientos.", _
-                   vbInformation, "ActualizaciÃ³n completada"
+                   vbInformation, "Actualización completada"
             
         Case vbCancel
             ' No hacer nada
-            MsgBox "OperaciÃ³n cancelada. No se realizaron cambios.", vbInformation, "OperaciÃ³n cancelada"
+            MsgBox "Operación cancelada. No se realizaron cambios.", vbInformation, "Operación cancelada"
     End Select
 End Sub
 
 ' ==========================================
-' FUNCIÃN 3: MODIFICACIÃN DE SincronizarConHoja
+' FUNCIÓN 3: MODIFICACIÓN DE SincronizarConHoja
 ' ==========================================
 
-'@Description: VersiÃ³n MODIFICADA de SincronizarConHoja que crea backups antes de modificar
+'@Description: Versión MODIFICADA de SincronizarConHoja que crea backups antes de modificar
 '@Scope: Privado
-'@ArgumentDescriptions: ws: Worksheet con datos existentes | funciones: Dictionary con procedimientos actuales del cÃ³digo
+'@ArgumentDescriptions: ws: Worksheet con datos existentes | funciones: Dictionary con procedimientos actuales del código
 Private Sub SincronizarConHoja_ConBackup(ws As Worksheet, funciones As Object)
     Dim dictHoja As Object
     Dim dictCodigo As Object
@@ -270,7 +270,7 @@ Private Sub SincronizarConHoja_ConBackup(ws As Worksheet, funciones As Object)
     Dim rutaBackupVBA As String
     Dim backupHojaOK As Boolean
     
-    ' Crear diccionarios para comparaciÃ³n
+    ' Crear diccionarios para comparación
     Set dictHoja = LeerMetadatosDeHoja(ws)
     Set dictCodigo = CrearDiccionarioProcedimientos(funciones)
     
@@ -278,48 +278,48 @@ Private Sub SincronizarConHoja_ConBackup(ws As Worksheet, funciones As Object)
     hayDiferencias = HayDiferenciasEnMetadatos(dictHoja, dictCodigo, mensaje)
     
     If Not hayDiferencias Then
-        MsgBox "No hay diferencias entre la hoja y el cÃ³digo." & vbCrLf & vbCrLf & _
-               "Total procedimientos: " & funciones.Count, vbInformation, "SincronizaciÃ³n"
+        MsgBox "No hay diferencias entre la hoja y el código." & vbCrLf & vbCrLf & _
+               "Total procedimientos: " & funciones.Count, vbInformation, "Sincronización"
         Exit Sub
     End If
     
-    ' Preguntar al usuario quÃ© hacer
-    respuesta = MsgBox("Se encontraron diferencias entre la hoja PROCEDIMIENTOS y el cÃ³digo VBA:" & vbCrLf & vbCrLf & _
+    ' Preguntar al usuario qué hacer
+    respuesta = MsgBox("Se encontraron diferencias entre la hoja PROCEDIMIENTOS y el código VBA:" & vbCrLf & vbCrLf & _
                        mensaje & vbCrLf & vbCrLf & _
-                       "Â¿Desea actualizar el CÃDIGO con los datos de la hoja?" & vbCrLf & vbCrLf & _
-                       "SÃ­ = Actualizar cÃ³digo VBA desde Excel" & vbCrLf & _
-                       "No = Actualizar hoja Excel desde cÃ³digo" & vbCrLf & _
+                       "¿Desea actualizar el CÓDIGO con los datos de la hoja?" & vbCrLf & vbCrLf & _
+                       "Sí = Actualizar código VBA desde Excel" & vbCrLf & _
+                       "No = Actualizar hoja Excel desde código" & vbCrLf & _
                        "Cancelar = No hacer nada", _
                        vbYesNoCancel + vbQuestion, "Sincronizar Metadatos")
     
     Select Case respuesta
         Case vbYes
             ' ============================================
-            ' ACTUALIZAR CÃDIGO VBA (con backup)
+            ' ACTUALIZAR CÓDIGO VBA (con backup)
             ' ============================================
             
-            ' 1. CREAR BACKUP DE CÃDIGO VBA
-            MsgBox "Creando copia de seguridad del cÃ³digo VBA...", vbInformation, "Backup en proceso"
+            ' 1. CREAR BACKUP DE CÓDIGO VBA
+            MsgBox "Creando copia de seguridad del código VBA...", vbInformation, "Backup en proceso"
             rutaBackupVBA = CrearBackupCodigoVBA()
             
             If rutaBackupVBA = "" Then
-                If MsgBox("ADVERTENCIA: No se pudo crear la copia de seguridad del cÃ³digo VBA." & vbCrLf & vbCrLf & _
-                         "Â¿Desea continuar SIN backup?", vbExclamation + vbYesNo, "Error de Backup") = vbNo Then
+                If MsgBox("ADVERTENCIA: No se pudo crear la copia de seguridad del código VBA." & vbCrLf & vbCrLf & _
+                         "¿Desea continuar SIN backup?", vbExclamation + vbYesNo, "Error de Backup") = vbNo Then
                     Exit Sub
                 End If
             Else
-                MsgBox "Backup de cÃ³digo VBA creado:" & vbCrLf & rutaBackupVBA, vbInformation, "Backup creado"
+                MsgBox "Backup de código VBA creado:" & vbCrLf & rutaBackupVBA, vbInformation, "Backup creado"
             End If
             
             ' 2. CONFIRMAR Y ACTUALIZAR
-            If MsgBox("ADVERTENCIA: Se modificarÃ¡n los archivos de cÃ³digo VBA." & vbCrLf & _
+            If MsgBox("ADVERTENCIA: Se modificarán los archivos de código VBA." & vbCrLf & _
                      "Backup guardado en: " & IIf(rutaBackupVBA <> "", rutaBackupVBA, "NO DISPONIBLE") & vbCrLf & vbCrLf & _
-                     "Â¿EstÃ¡ seguro de continuar?", vbExclamation + vbYesNo, "ConfirmaciÃ³n") = vbYes Then
+                     "¿Está seguro de continuar?", vbExclamation + vbYesNo, "Confirmación") = vbYes Then
                 Stop
                 Call ActualizarCodigoVBA(dictHoja, dictCodigo)
                 
-                MsgBox "CÃ³digo VBA actualizado correctamente." & vbCrLf & _
-                       "Backup guardado en: " & rutaBackupVBA, vbInformation, "ActualizaciÃ³n completada"
+                MsgBox "Código VBA actualizado correctamente." & vbCrLf & _
+                       "Backup guardado en: " & rutaBackupVBA, vbInformation, "Actualización completada"
             End If
             
         Case vbNo
@@ -331,7 +331,7 @@ Private Sub SincronizarConHoja_ConBackup(ws As Worksheet, funciones As Object)
             backupHojaOK = CrearBackupHojaExcel(ws)
             
             If Not backupHojaOK Then
-                MsgBox "OperaciÃ³n cancelada. No se pudo crear backup de la hoja.", vbExclamation, "Cancelado"
+                MsgBox "Operación cancelada. No se pudo crear backup de la hoja.", vbExclamation, "Cancelado"
                 Exit Sub
             End If
             
@@ -341,17 +341,17 @@ Private Sub SincronizarConHoja_ConBackup(ws As Worksheet, funciones As Object)
             Call VolcarProcedimientosAHoja(ws, funciones)
             
             MsgBox "Hoja Excel actualizada correctamente con " & funciones.Count & " procedimientos." & vbCrLf & _
-                   "Backup guardado como: '" & ws.Name & "_bkp'", vbInformation, "ActualizaciÃ³n completada"
+                   "Backup guardado como: '" & ws.Name & "_bkp'", vbInformation, "Actualización completada"
             
         Case vbCancel
-            MsgBox "OperaciÃ³n cancelada. No se realizaron cambios.", vbInformation, "OperaciÃ³n cancelada"
+            MsgBox "Operación cancelada. No se realizaron cambios.", vbInformation, "Operación cancelada"
     End Select
 End Sub
 
 '@Description: Lee los metadatos de procedimientos desde la hoja Excel
 '@Scope: Privado
 '@ArgumentDescriptions: ws: Worksheet de origen
-'@Returns: Object | Dictionary con clave compuesta MÃ³dulo|Firma -> array(1 To 5) de metadatos
+'@Returns: Object | Dictionary con clave compuesta Módulo|Firma -> array(1 To 5) de metadatos
 Private Function LeerMetadatosDeHoja(ws As Worksheet) As Object
     Dim dict As Object
     Set dict = CreateObject("Scripting.Dictionary")
@@ -386,7 +386,7 @@ Private Function LeerMetadatosDeHoja(ws As Worksheet) As Object
     Set LeerMetadatosDeHoja = dict
 End Function
 
-'@Description: Crea un diccionario de procedimientos indexado por clave compuesta MÃ³dulo|Firma
+'@Description: Crea un diccionario de procedimientos indexado por clave compuesta Módulo|Firma
 '@Scope: Privado
 '@ArgumentDescriptions: funciones: Dictionary de ParsearProcsDelProyecto
 '@Returns: Object | Dictionary con clave compuesta -> clsVBAProcedure
@@ -412,9 +412,9 @@ Private Function CrearDiccionarioProcedimientos(funciones As Object) As Object
     Set CrearDiccionarioProcedimientos = dict
 End Function
 
-'@Description: Compara metadatos de hoja vs cÃ³digo y detecta diferencias
+'@Description: Compara metadatos de hoja vs código y detecta diferencias
 '@Scope: Privado
-'@ArgumentDescriptions: dictHoja: Dictionary de Excel | dictCodigo: Dictionary del cÃ³digo | mensaje: String de salida con resumen
+'@ArgumentDescriptions: dictHoja: Dictionary de Excel | dictCodigo: Dictionary del código | mensaje: String de salida con resumen
 '@Returns: Boolean | True si hay diferencias
 Private Function HayDiferenciasEnMetadatos(dictHoja As Object, dictCodigo As Object, ByRef mensaje As String) As Boolean
     Dim claveCompuesta As Variant
@@ -429,11 +429,11 @@ Private Function HayDiferenciasEnMetadatos(dictHoja As Object, dictCodigo As Obj
     contadorNuevos = 0
     contadorEliminados = 0
     
-    ' Verificar cada procedimiento en el cÃ³digo
+    ' Verificar cada procedimiento en el código
     For Each claveCompuesta In dictCodigo.Keys
         Set proc = dictCodigo(claveCompuesta)
         
-        ' Si el procedimiento no estÃ¡ en la hoja, es nuevo
+        ' Si el procedimiento no está en la hoja, es nuevo
         If Not dictHoja.Exists(claveCompuesta) Then
             HayDiferenciasEnMetadatos = True
             contadorNuevos = contadorNuevos + 1
@@ -441,7 +441,7 @@ Private Function HayDiferenciasEnMetadatos(dictHoja As Object, dictCodigo As Obj
             ' Comparar metadatos
             metadatos = dictHoja(claveCompuesta)
             
-            ' Normalizar valores para comparaciÃ³n
+            ' Normalizar valores para comparación
             Dim descCode As String, descHoja As String
             Dim catCode As String, catHoja As String
             Dim scopeCode As String, scopeHoja As String
@@ -475,7 +475,7 @@ Private Function HayDiferenciasEnMetadatos(dictHoja As Object, dictCodigo As Obj
         End If
     Next claveCompuesta
     
-    ' Verificar si hay procedimientos en la hoja que ya no existen en el cÃ³digo
+    ' Verificar si hay procedimientos en la hoja que ya no existen en el código
     For Each claveCompuesta In dictHoja.Keys
         If Not dictCodigo.Exists(claveCompuesta) Then
             HayDiferenciasEnMetadatos = True
@@ -487,22 +487,22 @@ Private Function HayDiferenciasEnMetadatos(dictHoja As Object, dictCodigo As Obj
     If HayDiferenciasEnMetadatos Then
         mensaje = "Diferencias detectadas:" & vbCrLf
         If contadorNuevos > 0 Then
-            mensaje = mensaje & "Â " & contadorNuevos & " procedimiento(s) nuevo(s) en cÃ³digo" & vbCrLf
+            mensaje = mensaje & " " & contadorNuevos & " procedimiento(s) nuevo(s) en código" & vbCrLf
         End If
         If contadorEliminados > 0 Then
-            mensaje = mensaje & "Â " & contadorEliminados & " procedimiento(s) eliminado(s) del cÃ³digo" & vbCrLf
+            mensaje = mensaje & " " & contadorEliminados & " procedimiento(s) eliminado(s) del código" & vbCrLf
         End If
         If contadorDiferencias > 0 Then
-            mensaje = mensaje & "Â " & contadorDiferencias & " procedimiento(s) con metadatos diferentes" & vbCrLf
+            mensaje = mensaje & " " & contadorDiferencias & " procedimiento(s) con metadatos diferentes" & vbCrLf
         End If
     Else
         mensaje = ""
     End If
 End Function
 
-'@Description: Actualiza los archivos de cÃ³digo VBA con los metadatos de la hoja Excel
+'@Description: Actualiza los archivos de código VBA con los metadatos de la hoja Excel
 '@Scope: Privado
-'@ArgumentDescriptions: dictHoja: Dictionary de Excel | dictCodigo: Dictionary del cÃ³digo
+'@ArgumentDescriptions: dictHoja: Dictionary de Excel | dictCodigo: Dictionary del código
 Private Sub ActualizarCodigoVBA(dictHoja As Object, dictCodigo As Object)
     Dim claveCompuesta As Variant
     Dim proc As clsVBAProcedure
@@ -537,18 +537,18 @@ Private Sub ActualizarCodigoVBA(dictHoja As Object, dictCodigo As Object)
         End If
     Next claveCompuesta
     
-    Debug.Print "[ActualizarCodigoVBA] - " & actualizados & " procedimiento(s) actualizado(s) en cÃ³digo"
+    Debug.Print "[ActualizarCodigoVBA] - " & actualizados & " procedimiento(s) actualizado(s) en código"
     
     Exit Sub
 ErrorHandler:
     Debug.Print "[ActualizarCodigoVBA] - Error: " & Err.Description
-    MsgBox "Error al actualizar cÃ³digo VBA: " & Err.Description & vbCrLf & _
+    MsgBox "Error al actualizar código VBA: " & Err.Description & vbCrLf & _
            "Procedimiento: " & proc.Module & "." & proc.Name, vbCritical, "Error"
 End Sub
 
-'@Description: Actualiza los metadatos de un procedimiento especÃ­fico en su mÃ³dulo de cÃ³digo
+'@Description: Actualiza los metadatos de un procedimiento específico en su módulo de código
 '@Scope: Privado
-'@ArgumentDescriptions: CodeModule: MÃ³dulo VBA donde estÃ¡ el procedimiento | proc: Objeto clsVBAProcedure con nuevos metadatos
+'@ArgumentDescriptions: CodeModule: Módulo VBA donde está el procedimiento | proc: Objeto clsVBAProcedure con nuevos metadatos
 Private Sub ActualizarMetadatosEnCodigo(CodeModule As VBIDE.CodeModule, proc As clsVBAProcedure)
     Dim i As Long
     Dim lineText As String
@@ -564,7 +564,7 @@ Private Sub ActualizarMetadatosEnCodigo(CodeModule As VBIDE.CodeModule, proc As 
     finMetadatos = proc.procSignatureLine - 1
     lineasEliminadas = 0
     
-    ' Eliminar metadatos antiguos de abajo hacia arriba para no desplazar Ã­ndices
+    ' Eliminar metadatos antiguos de abajo hacia arriba para no desplazar índices
     For i = finMetadatos To inicioMetadatos Step -1
         lineText = Trim$(CodeModule.Lines(i, 1))
         If Left$(lineText, 1) = "'" And InStr(lineText, "@") > 0 Then
@@ -577,7 +577,7 @@ Private Sub ActualizarMetadatosEnCodigo(CodeModule As VBIDE.CodeModule, proc As 
     nuevosMetadatos = GenerarMetadatosFormateados(proc)
     
     ' Insertar nuevos metadatos antes de la firma del procedimiento
-    ' (ajustando la lÃ­nea por las eliminaciones)
+    ' (ajustando la línea por las eliminaciones)
     If nuevosMetadatos <> "" Then
         Dim lineaInsercion As Long
         lineaInsercion = proc.procSignatureLine - lineasEliminadas
@@ -589,7 +589,7 @@ ErrorHandler:
     Debug.Print "[ActualizarMetadatosEnCodigo] - Error en " & proc.Module & "." & proc.Name & ": " & Err.Description
 End Sub
 
-'@Description: Genera el texto formateado de los metadatos para insertar en el cÃ³digo
+'@Description: Genera el texto formateado de los metadatos para insertar en el código
 '@Scope: Privado
 '@ArgumentDescriptions: proc: Objeto clsVBAProcedure con metadatos
 '@Returns: String | Texto con metadatos formateados (incluye vbCrLf al final)
@@ -598,12 +598,12 @@ Private Function GenerarMetadatosFormateados(proc As clsVBAProcedure) As String
     
     resultado = ""
     
-    ' Description (siempre incluir si no estÃ¡ vacÃ­o)
+    ' Description (siempre incluir si no está vacío)
     If proc.Description <> "" Then
         resultado = resultado & "'@Description: " & proc.Description & vbCrLf
     End If
     
-    ' Category (omitir si es la categorÃ­a por defecto)
+    ' Category (omitir si es la categoría por defecto)
     If proc.Category <> "" And proc.Category <> DEFAULT_CATEGORY Then
         resultado = resultado & "'@Category: " & proc.Category & vbCrLf
     End If
@@ -613,7 +613,7 @@ Private Function GenerarMetadatosFormateados(proc As clsVBAProcedure) As String
         resultado = resultado & "'@Scope: " & proc.Scope & vbCrLf
     End If
     
-    ' ArgumentDescriptions (omitir si es "(sin parÃ¡metros)")
+    ' ArgumentDescriptions (omitir si es "(sin parámetros)")
     If proc.ArgumentDescriptions <> "" And proc.ArgumentDescriptions <> DEFAULT_NOPARAMS Then
         resultado = resultado & "'@ArgumentDescriptions: " & proc.ArgumentDescriptions & vbCrLf
     End If
@@ -627,32 +627,32 @@ Private Function GenerarMetadatosFormateados(proc As clsVBAProcedure) As String
 End Function
 
 ' ==========================================
-' FIN DE EXTENSIÃN
+' FIN DE EXTENSIÓN
 ' ==========================================
 '
 ' RESUMEN DE FUNCIONES CREADAS:
 '
-' 1. WriteProcedimientosSheet() - Procedimiento principal pÃºblico
+' 1. WriteProcedimientosSheet() - Procedimiento principal público
 ' 2. SheetExists() - Verifica existencia de hoja
 ' 3. CrearHojaProcedimientos() - Crea hoja nueva
 ' 4. CrearEncabezadosHoja() - Formatea encabezados
 ' 5. VolcarProcedimientosAHoja() - Vuelca datos a Excel
-' 6. SincronizarConHoja() - Gestiona sincronizaciÃ³n bidireccional
+' 6. SincronizarConHoja() - Gestiona sincronización bidireccional
 ' 7. LeerMetadatosDeHoja() - Lee desde Excel
-' 8. CrearDiccionarioProcedimientos() - Crea diccionario del cÃ³digo
+' 8. CrearDiccionarioProcedimientos() - Crea diccionario del código
 ' 9. HayDiferenciasEnMetadatos() - Detecta y reporta diferencias
 ' 10. ActualizarCodigoVBA() - Actualiza archivos VBA
-' 11. ActualizarMetadatosEnCodigo() - Modifica metadatos en cÃ³digo
+' 11. ActualizarMetadatosEnCodigo() - Modifica metadatos en código
 ' 12. GenerarMetadatosFormateados() - Genera formato de metadatos
 '
-' MEJORAS RESPECTO A LA VERSIÃN ORIGINAL:
-' Â Clave compuesta MÃ³dulo|Firma para evitar conflictos
-' Â Columna adicional "MÃ³dulo" en Excel
-' Â Mensajes mÃ¡s informativos con contadores
-' Â Mejor formato visual en hoja Excel (colores alternados, bordes)
-' Â ConfirmaciÃ³n adicional antes de modificar cÃ³digo
-' Â NormalizaciÃ³n de valores para comparaciÃ³n correcta
-' Â Manejo de duplicados con advertencias en Debug
-' Â Anchos de columna optimizados
+' MEJORAS RESPECTO A LA VERSIÓN ORIGINAL:
+'  Clave compuesta Módulo|Firma para evitar conflictos
+'  Columna adicional "Módulo" en Excel
+'  Mensajes más informativos con contadores
+'  Mejor formato visual en hoja Excel (colores alternados, bordes)
+'  Confirmación adicional antes de modificar código
+'  Normalización de valores para comparación correcta
+'  Manejo de duplicados con advertencias en Debug
+'  Anchos de columna optimizados
 '
 ' ==========================================

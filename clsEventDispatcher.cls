@@ -109,7 +109,7 @@ Public Function GetRibbonControlEnabled(controlID As String) As Boolean
     End Select
     GetRibbonControlEnabled = enabled
     'InvalidarControl controlID ' esto ESTA DE SOBRA!!
-    LogDebug MODULE_NAME, "[GetRibbonControlEnabled] - Ã³" & controlID & "?: " & CBool(enabled)
+    LogDebug MODULE_NAME, "[GetRibbonControlEnabled] - �" & controlID & "?: " & CBool(enabled)
 End Function
 
 ' TODO: PTE PASAR EL RESTO DE LLAMADAS DE CALLBACKS DE RIBBON, supertips, fijar item sel en dropbox, etc
