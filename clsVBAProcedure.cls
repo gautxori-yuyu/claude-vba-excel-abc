@@ -28,9 +28,9 @@ Public PKind As ProcKind
 Public NormalizedSignature As String
 Public ProcedureType As ProcType                 ' Macro (Sub sin params), UDF (Function no Private), Function, Sub con params
 
-Public Scope As String                           ' ambito al que se aplica: selecciï¿½n, hoja activa, libro activo, argumentos de la funcion, ...
+Public Scope As String                           ' ambito al que se aplica: selección, hoja activa, libro activo, argumentos de la funcion, ...
 Public ArgumentDescriptions As String            ' Separado por "|"
-Public Returns As String                         ' Quï¿½ devuelve
+Public Returns As String                         ' Qué devuelve
 
 Public HasMetadata As Boolean                    ' TRUE si tiene comentarios @UDF
 Public Description As String
@@ -39,7 +39,7 @@ Public Example As String                         ' Ejemplo de uso
 Public Raises As String                          ' Errores que puede lanzar
 Public Dependencies As String                    ' Dependencias de otros procedimientos
 
-' Constructor para fï¿½cil inicializaciï¿½n
+' Constructor para fácil inicialización
 'TODO: revisar el codigo para evitar las restricciones en el orden de las llamadas
 Public Sub Init(ByVal modl As String, ByVal bModuloPrivado_ As Boolean, ByVal ContainerType_ As ProcContainerType, _
                 ByVal PKind_ As ProcKind, ByVal procName As String, CodeBlock As T_CodeBlock)
@@ -80,7 +80,7 @@ Public Sub Init(ByVal modl As String, ByVal bModuloPrivado_ As Boolean, ByVal Co
     End Select
     Description = arrMetadata(0)
     If Left(Description, Len(procTypeTag)) <> procTypeTag Then Description = procTypeTag & Description
-    ' Si no hay descripciï¿½n del procedimiento, generar una bï¿½sica
+    ' Si no hay descripción del procedimiento, generar una básica
     If Description = "" Then
         Description = GenerarDescripcionAutomatica(Name)
     End If
@@ -107,7 +107,7 @@ ErrorHandler:
     Err.Raise Err.Number, MODULE_NAME & " [Init]", Err.Description
 End Sub
 
-'@Description: Determina si una funciï¿½n es visible para excel como macro o udf, o si es "interna",
+'@Description: Determina si una función es visible para excel como macro o udf, o si es "interna",
 ' a partir de NormalizedSignature,PKind,ContainerType,bModuloPrivado,...
 Private Function TipoProcedimiento(ByVal firmaNormalizada As String) As ProcType
     Dim tipo As String, acceso As String
@@ -130,7 +130,7 @@ Private Function TipoProcedimiento(ByVal firmaNormalizada As String) As ProcType
     
     If InStr(m.SubMatches(2), "_") > 0 Then
         TipoProcedimiento = ProcType.eventHandler
-        ' Normalmente deberï¿½an ser privados, dentro de una clase que instancie un objeto de otra clase que implemente eventos
+        ' Normalmente deberían ser privados, dentro de una clase que instancie un objeto de otra clase que implemente eventos
         'If acceso <> "private" Then Stop
         ' y no se si puede llegar a haber manejadores que sean funciones... por si acaso:
         'If tipo <> "sub" Then Stop
@@ -180,7 +180,7 @@ ErrorHandler:
     Err.Raise Err.Number, MODULE_NAME & " [TipoProcedimiento]", Err.Description
 End Function
 
-'@Description: Determina si una funciï¿½n es visible para excel como macro o udf, o si es "interna",
+'@Description: Determina si una función es visible para excel como macro o udf, o si es "interna",
 ' a partir de NormalizedSignature,PKind,ContainerType,bModuloPrivado,...
 Private Function ParsearCodeParaDeducirContexto(CodeText As String) As String
     Dim re As Object
@@ -188,7 +188,7 @@ Private Function ParsearCodeParaDeducirContexto(CodeText As String) As String
     re.Global = True
     re.IgnoreCase = True
     re.Pattern = "\bThisWorkBook\b"
-    ' lo siguiente serï¿½a una 'condicion de error' muy probable: no deberï¿½a, en general, manipular el XLAM
+    ' lo siguiente sería una 'condicion de error' muy probable: no debería, en general, manipular el XLAM
     If re.Test(CodeText) Then
         If ParsearCodeParaDeducirContexto <> "" Then _
                 ParsearCodeParaDeducirContexto = ParsearCodeParaDeducirContexto & "|"
@@ -220,9 +220,9 @@ Private Function ParsearCodeParaDeducirContexto(CodeText As String) As String
     End If
 End Function
 
-'@Description: Normaliza firma del procedimiento: elimina continuaciones "_" y deja la firma en una sola lï¿½nea
+'@Description: Normaliza firma del procedimiento: elimina continuaciones "_" y deja la firma en una sola línea
 Private Function NormalizarLineasFirma(ByVal raw As String, ByVal SignatureLine As Long) As String
-    ' raw: texto del codio, con cabecera de procedimiento, e incluso varias lï¿½neas que conforman la firma (puede contener vbCrLf y "_" al final de lï¿½neas)
+    ' raw: texto del codio, con cabecera de procedimiento, e incluso varias lineas que conforman la firma (puede contener vbCrLf y "_" al final de lineas)
     Dim s As String
     s = raw
     ' eliminar vbCrLf que tienen _ al final, y unir
@@ -234,13 +234,13 @@ Private Function NormalizarLineasFirma(ByVal raw As String, ByVal SignatureLine 
     re.Pattern = "^(?:.*(?:\r\n|\n|\r)){" & SignatureLine - 1 & "}" _
                & "(.+(?:_\s*(?:\r\n|\n|\r).+)*\))"
     s = re.Execute(s).Item(0).SubMatches(0)
-    ' Quitar secuencias de continuation: " _" al final de lï¿½nea + CRLF -> vacï¿½o
+    ' Quitar secuencias de continuation: " _" al final de linea + CRLF -> vac?o
     re.Pattern = "_\s*(\r\n|\n|\r)"
     s = re.Replace(s, " ")
-    ' ahora sustituir saltos de lï¿½nea sobrantes por espacio y normalizar espacios
+    ' ahora sustituir saltos de linea sobrantes por espacio y normalizar espacios
     re.Pattern = "(\r\n|\n|\r)"
     s = re.Replace(s, " ")
-    ' colapsar mï¿½ltiples espacios
+    ' colapsar múltiples espacios
     re.Pattern = "\s+"
     s = Trim$(re.Replace(s, " "))
     NormalizarLineasFirma = s
@@ -250,7 +250,7 @@ ErrHandler:
     Err.Raise Err.Number, MODULE_NAME & " [NormalizarLineasFirma]", Err.Description
 End Function
 
-'@Description: Extrae contenido entre parï¿½ntesis de una firma normalizada y reemplaza comas por "|"
+'@Description: Extrae contenido entre paréntesis de una firma normalizada y reemplaza comas por "|"
 Private Function ComponerArgumentDescriptions(ByVal firmaNormalizada As String) As String
     Dim re As Object: Set re = CreateObject("VBScript.RegExp")
     re.Pattern = "^[^'\(]+\((.*?)\)\s*(?:'.+)?$"
@@ -261,7 +261,7 @@ Private Function ComponerArgumentDescriptions(ByVal firmaNormalizada As String) 
             ComponerArgumentDescriptions = DEFAULT_NOARGS
         Else
             ' remplazar "," por "|", respetando que pueda haber comas dentro de literales (caso raro en VBA)
-            ' asumimos que no hay comas embebidas; si las hubiera, se necesitarï¿½a parsing mï¿½s sofisticado.
+            ' asumimos que no hay comas embebidas; si las hubiera, se necesitaría parsing más sofisticado.
             re.Pattern = "\s*,\s*"
             ComponerArgumentDescriptions = re.Replace(args, "|")
         End If
@@ -377,14 +377,14 @@ Private Function ParsearMetadataCompleta(CodeText As String)
     ParsearMetadataCompleta = Array(sDescription, sCategory, sArgumentDescriptions, sScope, sReturns)
 End Function
 
-'@Description: Genera descripciï¿½n automï¿½tica basada en el nombre de la funciï¿½n
+'@Description: Genera descripción automática basada en el nombre de la función
 Private Function GenerarDescripcionAutomatica(ByVal nombreFuncion As String) As String
     If InStr(nombreFuncion, "_") > 0 Then GenerarDescripcionAutomatica = "(manejador de evento " & nombreFuncion & ")": Exit Function
     Dim re As Object: Set re = CreateObject("VBScript.RegExp")
     re.Global = True
     re.IgnoreCase = False
     re.Pattern = "([A-Z]+[a-z]*)"
-    GenerarDescripcionAutomatica = Trim$(re.Replace(nombreFuncion, " $1")) & " (funciï¿½n personalizada)"
+    GenerarDescripcionAutomatica = Trim$(re.Replace(nombreFuncion, " $1")) & " (función personalizada)"
     Select Case PKind
         Case PropGet: GenerarDescripcionAutomatica = "Get " & GenerarDescripcionAutomatica
         Case PropLet: GenerarDescripcionAutomatica = "Let " & GenerarDescripcionAutomatica
@@ -406,12 +406,12 @@ Private Function dumpProcedimiento()
     End Select
     strdbg = "en "
     Select Case ContainerType
-        Case StdModule: strdbg = strdbg & "mï¿½dulo estandar": strGen = "o"
-        Case ClassModule: strdbg = strdbg & "mï¿½dulo de clase": strGen = "o"
+        Case StdModule: strdbg = strdbg & "módulo estandar": strGen = "o"
+        Case ClassModule: strdbg = strdbg & "módulo de clase": strGen = "o"
         Case Form: strdbg = strdbg & "formulario": strGen = "o"
         Case Sheet: strdbg = strdbg & "hoja de excel": strGen = "a"
     End Select
-    strdbg = strdbg & " " & IIf(bPrivateModule, "privad", "pï¿½blic") & strGen
+    strdbg = strdbg & " " & IIf(bPrivateModule, "privad", "públic") & strGen
  
     strdbg = IIf(ProcedureType = Macro, "Macro", IIf(ProcedureType = udf, "UDF", "interno a VBA")) & " (" & strdbg & ")"
     dumpProcedimiento = dumpProcedimiento & "Tipo:" & strdbg & vbCrLf & vbTab

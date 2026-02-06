@@ -217,7 +217,7 @@ Private Sub mFileMgr_ActiveFileChanged(f As clsFileXLS)
         filePath = ""
         isOpp = False
     Else
-        filePath = f.FullName
+        filePath = f.Path
         isOpp = mFileMgr.State.isOpportunityFile
     End If
 
