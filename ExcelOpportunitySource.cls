@@ -100,11 +100,6 @@ End Function
 
 Private Function IOpportunity_ReadTechnicalData() As Variant
     ' Devuelve la info del archivo como datos tecnicos
-    If mFileXLS Is Nothing Then
-        IOpportunity_ReadTechnicalData = Empty
-    Else
-        IOpportunity_ReadTechnicalData = mFileXLS.info
-    End If
 End Function
 
 ' ==================================================================
@@ -176,3 +171,4 @@ Public Function CreateFrom(f As clsFileXLS) As ExcelOpportunitySource
     adapter.Initialize f
     Set CreateFrom = adapter
 End Function
+
