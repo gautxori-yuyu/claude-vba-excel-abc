@@ -80,7 +80,7 @@ Attribute CrearBackupCodigoVBA.VB_ProcData.VB_Invoke_Func = " \n21"
     Exit Function
     
 ErrorHandler:
-    Debug.Print "[CrearBackupCodigoVBA] - Error: " & Err.Description
+    LogError MODULE_NAME, "[CrearBackupCodigoVBA] Error", Err.Number, Err.Description
     CrearBackupCodigoVBA = ""
 End Function
 
@@ -141,7 +141,7 @@ Attribute CrearBackupHojaExcel.VB_ProcData.VB_Invoke_Func = " \n21"
     ' Si es un Add-in, desactivarlo temporalmente para permitir copiar hojas
     If esAddin Then
         ws.Parent.IsAddin = False
-        Debug.Print "[CrearBackupHojaExcel] - XLAM detectado, IsAddin desactivado temporalmente"
+        LogDebug MODULE_NAME, "[CrearBackupHojaExcel] XLAM detectado, IsAddin desactivado temporalmente"
     End If
     
     ' Crear nueva copia de la hoja
@@ -171,7 +171,7 @@ Attribute CrearBackupHojaExcel.VB_ProcData.VB_Invoke_Func = " \n21"
     ' ========================================
     If esAddin Then
         ws.Parent.IsAddin = True
-        Debug.Print "[CrearBackupHojaExcel] - IsAddin restaurado"
+        LogDebug MODULE_NAME, "[CrearBackupHojaExcel] IsAddin restaurado"
     End If
     
     CrearBackupHojaExcel = True
@@ -180,13 +180,13 @@ Attribute CrearBackupHojaExcel.VB_ProcData.VB_Invoke_Func = " \n21"
 ErrorHandlerRestaurar:
     ' Error durante la copia, pero debemos restaurar IsAddin
     errorOcurrido = True
-    Debug.Print "[CrearBackupHojaExcel] - Error al copiar: " & Err.Description
-    
+    LogError MODULE_NAME, "[CrearBackupHojaExcel] Error al copiar", Err.Number, Err.Description
+
     ' Restaurar IsAddin antes de salir
     If esAddin Then
         On Error Resume Next
         ws.Parent.IsAddin = True
-        Debug.Print "[CrearBackupHojaExcel] - IsAddin restaurado tras error"
+        LogDebug MODULE_NAME, "[CrearBackupHojaExcel] IsAddin restaurado tras error"
         On Error GoTo 0
     End If
     
@@ -194,7 +194,7 @@ ErrorHandlerRestaurar:
     Exit Function
     
 ErrorHandler:
-    Debug.Print "[CrearBackupHojaExcel] - Error: " & Err.Description
+    LogError MODULE_NAME, "[CrearBackupHojaExcel] Error", Err.Number, Err.Description
     CrearBackupHojaExcel = False
 End Function
 
@@ -268,12 +268,12 @@ Private Function CrearBackupHojaExcel_V2(ws As Worksheet) As Boolean
 ErrorConRestauracion:
     ' Error, pero restaurar IsAddin antes de salir
     Call RestaurarModoAddin
-    Debug.Print "[CrearBackupHojaExcel_V2] - Error: " & Err.Description
+    LogError MODULE_NAME, "[CrearBackupHojaExcel_V2] Error con restauracion", Err.Number, Err.Description
     CrearBackupHojaExcel_V2 = False
     Exit Function
-    
+
 ErrorHandler:
-    Debug.Print "[CrearBackupHojaExcel_V2] - Error: " & Err.Description
+    LogError MODULE_NAME, "[CrearBackupHojaExcel_V2] Error", Err.Number, Err.Description
     CrearBackupHojaExcel_V2 = False
 End Function
 

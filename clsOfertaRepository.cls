@@ -40,7 +40,7 @@ Public Function LeerTodas() As Collection
 
     Do While Not rs.EOF
         OferID = NormalizarGUID(rs("OFER_ID"))
-        ' 2 Reutilizamos el método ya probado
+        ' 2 Reutilizamos el mï¿½todo ya probado
         Set of = LeerPorOferID(OferID)
 
         col.Add of
@@ -59,7 +59,7 @@ End Function
 Public Function LeerPorOferID(ByVal OferID As String) As clsOferta
     Select Case True
         Case OferID = "", Not isGUID(OferID)
-            Err.Raise Err.Number, , "Error LeerPorOferID. OferID inválido."
+            Err.Raise Err.Number, , "Error LeerPorOferID. OferID invï¿½lido."
             Exit Function
     End Select
     
@@ -93,7 +93,7 @@ Private Sub CargarDatosGenerales(ByVal Oferta As clsOferta, ByVal OferID As Stri
 
     With dg
         .OFER_ID = NormalizarGUID(rs("OFER_ID"))
-        Debug.Print .OFER_ID
+        LogDebug MODULE_NAME, "[CargarDatosGenerales] OFER_ID: " & .OFER_ID
         .OFER_NUM_OFERTA = NzVBA(rs("OFER_NUM_OFERTA"))
         .OFER_FECHA = NzVBA(rs("OFER_FECHA"))
         .OFER_CLIENTE = NzVBA(rs("OFER_CLIENTE"))

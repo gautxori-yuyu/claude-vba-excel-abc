@@ -25,7 +25,7 @@ Private mChartMgr As clsChartMgr
 ' Propiedad para asociar al gestor
 '--------------------------------------------------------------
 '@Description: Asigna el gestor padre al que notificar los eventos de activacion/desactivacion
-'@Category: Gráficos
+'@Category: Grï¿½ficos
 '@Scope: interna, auxiliar
 '@ArgumentDescriptions: p As clsChartMgr
 Public Property Set ParentManager(oEvMgrChart As clsChartMgr)
@@ -37,7 +37,7 @@ End Property
 ' Asignacion segura de mChart (con diagnostico)
 '--------------------------------------------------------------
 '@Description: Vincula el receptor de eventos con un grafico de Excel
-'@Category: Gráficos
+'@Category: Grï¿½ficos
 '@Scope: interna, auxiliar
 '@ArgumentDescriptions: cht As Chart
 Public Property Set Chart(oChart As Chart)
@@ -45,8 +45,7 @@ Public Property Set Chart(oChart As Chart)
     On Error GoTo ErrHandler
     
     If Not mChart Is Nothing Then
-        LogWarning MODULE_NAME, " - Reasignando mChart"
-        Debug.Print "[clsChartEvents] [!] Reasignando mChart"
+        LogWarning MODULE_NAME, "[Chart Set] Reasignando mChart"
         Set mChart = Nothing
     End If
     Set mChart = oChart

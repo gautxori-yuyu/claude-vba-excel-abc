@@ -66,7 +66,7 @@ End Property
 ' ==========================================
 
 Public Function App() As clsApplication
-Attribute App.VB_Description = "[modMACROAppLifecycle] App (función personalizada). Aplica a: ThisWorkbook"
+Attribute App.VB_Description = "[modMACROAppLifecycle] App (funciï¿½n personalizada). Aplica a: ThisWorkbook"
 Attribute App.VB_ProcData.VB_Invoke_Func = " \n21"
     Set App = ThisWorkbook.App
 End Function
@@ -78,7 +78,7 @@ Attribute ReiniciarAplicacion.VB_ProcData.VB_Invoke_Func = " \n0"
 
     result = MsgBox("Esto reiniciara completamente el complemento ABC." & vbCrLf & vbCrLf & _
                     "Se cerrara y volvera a inicializar la aplicacion." & vbCrLf & _
-                    "¿Desea continuar?", _
+                    "ï¿½Desea continuar?", _
                     vbQuestion + vbYesNo, "Reiniciar Aplicacion")
 
     If result <> vbYes Then Exit Sub
@@ -103,10 +103,10 @@ Attribute ReiniciarAplicacion.VB_ProcData.VB_Invoke_Func = " \n0"
 
     ' Verificar estado
     If IsRibbonAvailable() Then
-        MsgBox "Aplicación reiniciada correctamente." & vbCrLf & vbCrLf & _
+        MsgBox "Aplicaciï¿½n reiniciada correctamente." & vbCrLf & vbCrLf & _
                App.ribbon.GetQuickDiagnostics(), vbInformation, "Reinicio Exitoso"
     Else
-        MsgBox "Aplicación reiniciada, pero el Ribbon puede requerir atención adicional." & vbCrLf & _
+        MsgBox "Aplicaciï¿½n reiniciada, pero el Ribbon puede requerir atenciï¿½n adicional." & vbCrLf & _
                "Ejecute 'RecuperarRibbon' si es necesario.", _
                vbExclamation, "Reinicio Parcial"
     End If
@@ -118,7 +118,7 @@ End Sub
 ' ==========================================
 
 '@Description: Activa temporalmente la visibilidad del XLAM para operaciones de copia
-'              Muestra el libro que contiene este XLAM, hacióndolo visible en la interfaz de Excel.
+'              Muestra el libro que contiene este XLAM, haciï¿½ndolo visible en la interfaz de Excel.
 '@Scope: Manipula el libro host del complemento XLAM cargado.
 '@ArgumentDescriptions: (no tiene argumentos)
 '@Returns: (ninguno)
@@ -128,7 +128,7 @@ Attribute DesactivarModoAddin.VB_ProcData.VB_Invoke_Func = " \n0"
     On Error GoTo ErrHandler
     If ThisWorkbook.IsAddin Then
         ThisWorkbook.IsAddin = False     ' Hace que el libro se muestre
-        Debug.Print "[DesactivarModoAddin] - XLAM visible temporalmente"
+        LogInfo MODULE_NAME, "[DesactivarModoAddin] XLAM visible temporalmente"
     End If
 ErrHandler:
     Err.Raise Err.Number, "modMACROBackups.DesactivarModoAddin", _
@@ -145,7 +145,7 @@ Sub RestaurarModoAddin()
 Attribute RestaurarModoAddin.VB_ProcData.VB_Invoke_Func = " \n0"
     On Error GoTo ErrHandler
     ThisWorkbook.IsAddin = True
-    Debug.Print "[RestaurarModoAddin] - XLAM restaurado como Add-in"
+    LogInfo MODULE_NAME, "[RestaurarModoAddin] XLAM restaurado como Add-in"
 ErrHandler:
     Err.Raise Err.Number, "modMACROBackups.DesactivarModoAddin", _
               "Error desactivando el modo de AddIn: " & Err.Description
@@ -165,7 +165,7 @@ Attribute ToggleRibbonTab.VB_ProcData.VB_Invoke_Func = " \n0"
 
     Exit Sub
 ErrHandler:
-    Debug.Print "[ToggleRibbonTab] Error: " & Err.Description
+    LogError MODULE_NAME, "[ToggleRibbonTab] Error", Err.Number, Err.Description
     MsgBox "Error al cambiar modo del Ribbon: " & Err.Description, vbExclamation
 End Sub
 
@@ -176,8 +176,8 @@ Public Sub RecuperarRibbon()
 Attribute RecuperarRibbon.VB_ProcData.VB_Invoke_Func = " \n0"
     Dim result As VbMsgBoxResult
 
-    LogInfo MODULE_NAME, "[RecuperarRibbon] - Solicitado por usuario"
-    Debug.Print GetRibbonDiagnostics()
+    LogInfo MODULE_NAME, "[RecuperarRibbon] Solicitado por usuario"
+    LogDebug MODULE_NAME, "[RecuperarRibbon] Diagnosticos: " & GetRibbonDiagnostics()
 
     ' Si ya esta disponible, no hacer nada
     If IsRibbonAvailable() Then
@@ -449,7 +449,7 @@ Private Function RecoverByAddinToggle() As Boolean
     LogDebug MODULE_NAME, "RecoverByAddinToggle - Desactivando add-in..."
     targetAddin.Installed = False
 
-    ' Pequeóa pausa
+    ' Pequeï¿½a pausa
     DoEvents
     Application.Wait Now + TimeSerial(0, 0, 1)
     DoEvents
