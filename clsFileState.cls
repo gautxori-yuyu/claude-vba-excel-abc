@@ -1,4 +1,4 @@
-VERSION 1.0 CLASS
+ï»¿VERSION 1.0 CLASS
 BEGIN
   MultiUse = -1  'True
 END
@@ -21,7 +21,7 @@ Private mCurrentFile As clsFileXLS
 Private mIsOpportunityFile As Boolean
 
 ' ==========================================
-' INICIALIZACIÓN
+' INICIALIZACIÃ“N
 ' ==========================================
 
 Private Sub Class_Initialize()
@@ -34,7 +34,7 @@ Private Sub Class_Terminate()
 End Sub
 
 ' ==========================================
-' PROPIEDADES PÚBLICAS
+' PROPIEDADES PÃšBLICAS
 ' ==========================================
 
 '@Description: Obtiene o establece el archivo Excel activo actual
@@ -52,8 +52,8 @@ Public Property Get isOpportunityFile() As Boolean
     isOpportunityFile = mIsOpportunityFile
 End Property
 
-Friend Property Let isOpportunityFile(value As Boolean)
-    mIsOpportunityFile = value
+Friend Property Let isOpportunityFile(Value As Boolean)
+    mIsOpportunityFile = Value
 End Property
 
 ' ==========================================
@@ -81,7 +81,7 @@ Public Function GetCurrentFileName() As String
 End Function
 
 '@Description: Obtiene el path completo del archivo actual
-'@Returns: String con el path o cadena vacía
+'@Returns: String con el path o cadena vacÃ­a
 Public Function GetCurrentFilePath() As String
     If mCurrentFile Is Nothing Then
         GetCurrentFilePath = ""

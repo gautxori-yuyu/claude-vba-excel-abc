@@ -1,14 +1,14 @@
-Attribute VB_Name = "modMACROComparadorHojas"
+ï»¿Attribute VB_Name = "modMACROComparadorHojas"
 ' ==============================================================================================================
-' MÓDULO: modMACROComparadorHojas
-' DESCRIPCIÓN: Módulo para comparar dos hojas de Excel mostrándolas en paralelo y resaltando las diferencias
-'              encontradas entre los rangos seleccionados. Incluye funcionalidad para deshacer la comparación
+' MÃ“DULO: modMACROComparadorHojas
+' DESCRIPCIÃ“N: MÃ³dulo para comparar dos hojas de Excel mostrÃ¡ndolas en paralelo y resaltando las diferencias
+'              encontradas entre los rangos seleccionados. Incluye funcionalidad para deshacer la comparaciÃ³n
 '              y restaurar los colores originales de las celdas.
 ' ==============================================================================================================
-'TODO: QUE Al hacer la comparación **permita seleccionar una columna de los rangos de comparación**, y en tal caso
-' las comparaciones no se hagan "línea a línea" sino identificando Los pares de líneas a comparar Por los elementos iguales En esa columna
-' (Obviamente en tal caso para mostrar los resultados de la comparación Habría que generar Una nueva hoja Que permita emparejar las fila;
-' Esa nueva hoja, La que establece el orden de las hilas en comparación, Será una copia de aquella en la que no se haya seleccionado
+'TODO: QUE Al hacer la comparaciÃ³n **permita seleccionar una columna de los rangos de comparaciÃ³n**, y en tal caso
+' las comparaciones no se hagan "lÃ­nea a lÃ­nea" sino identificando Los pares de lÃ­neas a comparar Por los elementos iguales En esa columna
+' (Obviamente en tal caso para mostrar los resultados de la comparaciÃ³n HabrÃ­a que generar Una nueva hoja Que permita emparejar las fila;
+' Esa nueva hoja, La que establece el orden de las hilas en comparaciÃ³n, SerÃ¡ una copia de aquella en la que no se haya seleccionado
 ' "Marcar las diferencias con un color" )
 
 '@Folder "MACROS"
@@ -16,15 +16,15 @@ Option Explicit
 
 Private Const MODULE_NAME As String = "modMACROComparadorHojas"
 
-' Diccionario para guardar: clave = dirección celda, valor = color original
-' Si una celda está en este diccionario, significa que fue modificada
+' Diccionario para guardar: clave = direcciÃ³n celda, valor = color original
+' Si una celda estÃ¡ en este diccionario, significa que fue modificada
 Private dictCeldasModificadas As Object
 
 ' Variable a nivel de modulo para mantener referencia al formulario no modal
 Private mFrmComparador As frmComparadorHojas
 
 ' -------------------------------------------------------------------------------------------------------------
-' INICIALIZACIÓN Y CONFIGURACIÓN
+' INICIALIZACIÃ“N Y CONFIGURACIÃ“N
 ' -------------------------------------------------------------------------------------------------------------
 
 '@Description: Inicializa el diccionario de celdas modificadas y muestra el formulario comparador
@@ -33,7 +33,7 @@ Private mFrmComparador As frmComparadorHojas
 '@ArgumentDescriptions: (sin argumentos)
 '@Returns: (ninguno)
 '@Dependencies: frmComparadorHojas (formulario)
-'@Note: El diccionario se usa para rastrear las celdas cuyo color fue modificado durante la comparación
+'@Note: El diccionario se usa para rastrear las celdas cuyo color fue modificado durante la comparaciÃ³n
 '        Usa instanciacion explicita para evitar problemas de memoria con la instancia predeterminada.
 '        La referencia se mantiene a nivel de modulo para formularios no modales.
 Sub MostrarComparador()
@@ -53,11 +53,11 @@ Attribute MostrarComparador.VB_ProcData.VB_Invoke_Func = " \n0"
     mFrmComparador.Show vbModeless
 End Sub
 ' -------------------------------------------------------------------------------------------------------------
-' FUNCIONES DE COMPARACIÓN Y VISUALIZACIÓN
+' FUNCIONES DE COMPARACIÃ“N Y VISUALIZACIÃ“N
 ' -------------------------------------------------------------------------------------------------------------
 
-'@Description: Compara dos rangos celda por celda y colorea las diferencias encontradas según los
-'              parámetros especificados
+'@Description: Compara dos rangos celda por celda y colorea las diferencias encontradas segÃºn los
+'              parÃ¡metros especificados
 '@Scope: Public
 '@ArgumentDescriptions: rango1 (Range): Primer rango a comparar
 '   | colorear1 (Boolean): Indica si se deben colorear las diferencias en el rango1
@@ -67,7 +67,7 @@ End Sub
 '   | soloFondoBlanco (Boolean): Si es True, solo colorea celdas con fondo blanco o sin color
 '@Returns: (ninguno)
 '@Dependencies: EsFondoBlanco, GuardarYModificar
-'@Note: Compara solo la intersección de ambos rangos (menor dimensión). Los colores originales
+'@Note: Compara solo la intersecciÃ³n de ambos rangos (menor dimensiÃ³n). Los colores originales
 '        se guardan en dictCeldasModificadas para poder deshacerlos posteriormente.
 Sub CompararRangos(rango1 As Range, colorear1 As Boolean, _
                    rango2 As Range, colorear2 As Boolean, _
@@ -82,19 +82,19 @@ Attribute CompararRangos.VB_ProcData.VB_Invoke_Func = " \n0"
     ' Limpiar diccionario previo
     dictCeldasModificadas.RemoveAll
     
-    ' Calcular la intersección (menor dimensión de ambos rangos)
+    ' Calcular la intersecciÃ³n (menor dimensiÃ³n de ambos rangos)
     maxFilas = Application.Min(rango1.Rows.Count, rango2.Rows.Count)
     maxCols = Application.Min(rango1.Columns.Count, rango2.Columns.Count)
     
-    ' Recorrer la intersección
+    ' Recorrer la intersecciÃ³n
     For fila = 1 To maxFilas
         For col = 1 To maxCols
             Set celda1 = rango1.Cells(fila, col)
             Set celda2 = rango2.Cells(fila, col)
             
             ' Obtener valores
-            valor1 = celda1.value
-            valor2 = celda2.value
+            valor1 = celda1.Value
+            valor2 = celda2.Value
             
             ' Si son diferentes
             If valor1 <> valor2 Then
@@ -137,7 +137,7 @@ End Sub
 '@Returns: (ninguno)
 '@Dependencies: Windows.CompareSideBySideWith, Sleep (API)
 '@Note: Si ambas hojas pertenecen al mismo libro, crea una nueva ventana. Activa el desplazamiento
-'        sincronizado para facilitar la comparación visual.
+'        sincronizado para facilitar la comparaciÃ³n visual.
 Sub VerHojasEnParalelo(Hoja1 As Worksheet, Hoja2 As Worksheet, rango1 As Range, rango2 As Range)
 Attribute VerHojasEnParalelo.VB_ProcData.VB_Invoke_Func = " \n0"
     Dim win1 As Window, win2 As Window
@@ -146,7 +146,7 @@ Attribute VerHojasEnParalelo.VB_ProcData.VB_Invoke_Func = " \n0"
     ' Activar primera hoja y crear/obtener su ventana
     Hoja1.Activate
     rango1.Cells(1, 1).Select                    ' Seleccionar primera celda del rango
-    Application.GoTo rango1.Cells(1, 1), True    ' Asegurar que está visible
+    Application.GoTo rango1.Cells(1, 1), True    ' Asegurar que estÃ¡ visible
     Set win1 = ActiveWindow
     
     ' Si son del mismo libro, crear segunda ventana
@@ -155,7 +155,7 @@ Attribute VerHojasEnParalelo.VB_ProcData.VB_Invoke_Func = " \n0"
     End If
     Hoja2.Activate
     rango2.Cells(1, 1).Select                    ' Seleccionar primera celda del rango
-    Application.GoTo rango2.Cells(1, 1), True    ' Asegurar que está visible
+    Application.GoTo rango2.Cells(1, 1), True    ' Asegurar que estÃ¡ visible
     Set win2 = ActiveWindow
     
     ' Asegurarse de que hay ventanas disponibles
@@ -170,9 +170,9 @@ Attribute VerHojasEnParalelo.VB_ProcData.VB_Invoke_Func = " \n0"
     Windows.CompareSideBySideWith win2.Caption
     Windows.ResetPositionsSideBySide
     
-    ' Verificar si ya está en modo comparación
+    ' Verificar si ya estÃ¡ en modo comparaciÃ³n
     yaSincronizado = Windows.SyncScrollingSideBySide
-    ' Solo activar si no está ya sincronizado
+    ' Solo activar si no estÃ¡ ya sincronizado
     If Not yaSincronizado Then
         'Windows.SyncScrollingSideBySide = True
         Sleep 200
@@ -193,7 +193,7 @@ End Sub
 '@Note: xlNone tiene valor -4142. RGB blanco tiene valor 16777215
 Function EsFondoBlanco(celda As Range) As Boolean
 Attribute EsFondoBlanco.VB_Description = "[modMACROComparadorHojas] FUNCIONES AUXILIARES DE FORMATO Y COLOR Verifica si una celda tiene fondo blanco o sin color (xlNone) xlNone tiene valor -4142. RGB blanco tiene valor 16777215. Aplica a: Cells Range\r\nM.D.:Public"
-Attribute EsFondoBlanco.VB_ProcData.VB_Invoke_Func = " \n21"
+Attribute EsFondoBlanco.VB_ProcData.VB_Invoke_Func = " \n23"
     Dim colorInterior As Long
     colorInterior = celda.Interior.Color
     
@@ -207,7 +207,7 @@ End Function
 '@ArgumentDescriptions: celda (Range): Celda a modificar
 '   | nuevoColor (Long): Color RGB a aplicar
 '@Returns: (ninguno)
-'@Dependencies: dictCeldasModificadas (variable privada del módulo)
+'@Dependencies: dictCeldasModificadas (variable privada del mÃ³dulo)
 '@Note: Solo guarda el color si la celda no existe previamente en el diccionario, para preservar
 '        el color original inicial
 Sub GuardarYModificar(celda As Range, nuevoColor As Long)
@@ -215,7 +215,7 @@ Attribute GuardarYModificar.VB_ProcData.VB_Invoke_Func = " \n0"
     Dim clave As String
     clave = celda.Address(External:=True)
     
-    ' Solo guardar si no está ya en el diccionario
+    ' Solo guardar si no estÃ¡ ya en el diccionario
     If Not dictCeldasModificadas.Exists(clave) Then
         dictCeldasModificadas.Add clave, celda.Interior.Color
     End If
@@ -225,16 +225,16 @@ Attribute GuardarYModificar.VB_ProcData.VB_Invoke_Func = " \n0"
 End Sub
 
 ' -------------------------------------------------------------------------------------------------------------
-' FUNCIONES DE RESTAURACIÓN Y CONSULTA DE ESTADO
+' FUNCIONES DE RESTAURACIÃ“N Y CONSULTA DE ESTADO
 ' -------------------------------------------------------------------------------------------------------------
 
-'@Description: Deshace la última comparación realizada, restaurando los colores originales de todas
+'@Description: Deshace la Ãºltima comparaciÃ³n realizada, restaurando los colores originales de todas
 '              las celdas modificadas y cierra la vista en paralelo
 '@Scope: Public
 '@ArgumentDescriptions: (sin argumentos)
 '@Returns: (ninguno)
-'@Dependencies: dictCeldasModificadas (variable privada del módulo)
-'@Note: Si no hay comparación activa muestra un mensaje informativo. Limpia el diccionario al finalizar
+'@Dependencies: dictCeldasModificadas (variable privada del mÃ³dulo)
+'@Note: Si no hay comparaciÃ³n activa muestra un mensaje informativo. Limpia el diccionario al finalizar
 Sub DeshacerComparacion()
 Attribute DeshacerComparacion.VB_ProcData.VB_Invoke_Func = " \n0"
     
@@ -242,7 +242,7 @@ Attribute DeshacerComparacion.VB_ProcData.VB_Invoke_Func = " \n0"
     Dim colorOriginal As Long
     
     If dictCeldasModificadas.Count = 0 Then
-        MsgBox "No hay comparación activa para deshacer.", vbInformation
+        MsgBox "No hay comparaciÃ³n activa para deshacer.", vbInformation
         Exit Sub
     End If
     
@@ -262,14 +262,14 @@ Attribute DeshacerComparacion.VB_ProcData.VB_Invoke_Func = " \n0"
     Windows.BreakSideBySide
 End Sub
 
-'@Description: Verifica si existe una comparación activa en este momento
+'@Description: Verifica si existe una comparaciÃ³n activa en este momento
 '@Scope: Public
 '@ArgumentDescriptions: (sin argumentos)
 '@Returns: Boolean - True si hay celdas modificadas pendientes de restaurar, False en caso contrario
-'@Dependencies: dictCeldasModificadas (variable privada del módulo)
-'@Note: Útil para deshabilitar/habilitar botones en la interfaz según el estado de comparación
+'@Dependencies: dictCeldasModificadas (variable privada del mÃ³dulo)
+'@Note: Ãštil para deshabilitar/habilitar botones en la interfaz segÃºn el estado de comparaciÃ³n
 Public Function HayComparacionActiva() As Boolean
-Attribute HayComparacionActiva.VB_Description = "[modMACROComparadorHojas] Verifica si existe una comparación activa en este momento Útil para deshabilitar/habilitar botones en la interfaz según el estado de comparación"
-Attribute HayComparacionActiva.VB_ProcData.VB_Invoke_Func = " \n21"
+Attribute HayComparacionActiva.VB_Description = "[modMACROComparadorHojas] Verifica si existe una comparaciÃ³n activa en este momento Ãštil para deshabilitar/habilitar botones en la interfaz segÃºn el estado de comparaciÃ³n"
+Attribute HayComparacionActiva.VB_ProcData.VB_Invoke_Func = " \n23"
     HayComparacionActiva = (dictCeldasModificadas.Count > 0)
 End Function

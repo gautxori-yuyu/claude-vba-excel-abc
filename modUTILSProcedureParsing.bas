@@ -1,4 +1,4 @@
-Attribute VB_Name = "modUTILSProcedureParsing"
+锘緼ttribute VB_Name = "modUTILSProcedureParsing"
 ' ==========================================
 ' FUNCIONES DE PARSING
 ' ==========================================
@@ -11,7 +11,7 @@ Private Const MODULE_NAME As String = "modUTILSProcedureParsing"
 ' Requiere referencia a: Microsoft Visual Basic for Applications Extensibility 5.3
 Public Function ParsearUDFsDeTodosLosProyectos() As Object
 Attribute ParsearUDFsDeTodosLosProyectos.VB_Description = "[modUTILSProcedureParsing] Requiere referencia a: Microsoft Visual Basic for Applications Extensibility 5.3"
-Attribute ParsearUDFsDeTodosLosProyectos.VB_ProcData.VB_Invoke_Func = " \n21"
+Attribute ParsearUDFsDeTodosLosProyectos.VB_ProcData.VB_Invoke_Func = " \n23"
     Dim vbeProj As Object ' VBIDE.VBProject
     Dim oDicUDFs As Object
     Dim oDicProcs As Object, key
@@ -24,10 +24,10 @@ Attribute ParsearUDFsDeTodosLosProyectos.VB_ProcData.VB_Invoke_Func = " \n21"
         If vbeProj Is Nothing Then
         ElseIf vbeProj.Protection = 0 Then ' 1 = vbext_pp_locked
             ' Acceder al contenido
-            LogInfo "modUTILSProcedureParsing", "[ProcesarTodosLosProyectos] - Procesando proyecto: " & vbeProj.Name & " [" & vbeProj.fileName & "]"
+            LogInfo "modUTILSProcedureParsing", "[ProcesarTodosLosProyectos] Procesando proyecto: " & vbeProj.Name & " [" & vbeProj.fileName & "]"
             
-            ' Llamamos a tu funci髇 de parseo pasando el proyecto actual
-            ' Suponiendo que tu funci髇 ahora acepta el argumento: ParsearProcsDelProyecto(vbProj As Object)
+            ' Llamamos a tu funci贸n de parseo pasando el proyecto actual
+            ' Suponiendo que tu funci贸n ahora acepta el argumento: ParsearProcsDelProyecto(vbProj As Object)
             Set oDicProcs = ParsearProcs(vbeProj)
         
             oDicUDFs.Add vbeProj.fileName, CreateObject("Scripting.Dictionary")
@@ -43,19 +43,19 @@ Attribute ParsearUDFsDeTodosLosProyectos.VB_ProcData.VB_Invoke_Func = " \n21"
     Set ParsearUDFsDeTodosLosProyectos = oDicUDFs
 End Function
 Public Function ParsearProcsDelProyecto() As Object
-Attribute ParsearProcsDelProyecto.VB_Description = "[modUTILSProcedureParsing] Parsear Procs Del Proyecto (funci髇 personalizada). Aplica a: ThisWorkbook"
-Attribute ParsearProcsDelProyecto.VB_ProcData.VB_Invoke_Func = " \n21"
+Attribute ParsearProcsDelProyecto.VB_Description = "[modUTILSProcedureParsing] Parsear Procs Del Proyecto (funci贸n personalizada). Aplica a: ThisWorkbook"
+Attribute ParsearProcsDelProyecto.VB_ProcData.VB_Invoke_Func = " \n23"
     On Error GoTo ErrorHandler
     
     Set ParsearProcsDelProyecto = ParsearProcs(ThisWorkbook.VBProject)
     Exit Function
 ErrorHandler:
-    LogError "modUTILSProcedureParsing", "[ParsearProcsDelProyecto] - Error al parsear procedimientos", , Err.Description
+    LogError "modUTILSProcedureParsing", "[ParsearProcsDelProyecto] Error al parsear procedimientos", , Err.Description
 End Function
 ' Parsea todos los procedimientos del proyecto VBA (CON Y SIN metadatos)
 Public Function ParsearProcs(ByVal vbProj As Object) As Object
 Attribute ParsearProcs.VB_Description = "[modUTILSProcedureParsing] Parsea todos los procedimientos del proyecto VBA (CON Y SIN metadatos)"
-Attribute ParsearProcs.VB_ProcData.VB_Invoke_Func = " \n21"
+Attribute ParsearProcs.VB_ProcData.VB_Invoke_Func = " \n23"
     Dim vbComp As VBIDE.VBComponent
     
     Dim procName As String
@@ -72,14 +72,14 @@ Attribute ParsearProcs.VB_ProcData.VB_Invoke_Func = " \n21"
     On Error GoTo ErrorHandler
     
     If vbProj Is Nothing Then
-        LogInfo "modUTILSProcedureParsing", "[ParsearProcs] - No hay acceso al VBA Project."
+        LogInfo "modUTILSProcedureParsing", "[ParsearProcs] No hay acceso al VBA Project."
         LogInfo "modUTILSProcedureParsing", "  -> Habilita 'Confiar en el acceso al modelo de objetos de proyectos de VBA'"
-        LogInfo "modUTILSProcedureParsing", "  -> En: Archivo > Opciones > Centro de confianza > Configuraci髇"
+        LogInfo "modUTILSProcedureParsing", "  -> En: Archivo > Opciones > Centro de confianza > Configuraci贸n"
         Set ParsearProcs = Nothing
         Exit Function
     End If
     
-    ' Recorrer todos los m骴ulos est醤dar
+    ' Recorrer todos los m贸dulos est谩ndar
     For Each vbComp In vbProj.VBComponents
         With vbComp
             ' Usar Members para enumerar todos los procedimientos
@@ -113,12 +113,12 @@ Attribute ParsearProcs.VB_ProcData.VB_Invoke_Func = " \n21"
     Set ParsearProcs = funciones
     
     If funciones.Count > 0 Then
-        LogInfo "modUTILSProcedureParsing", "[ParsearProcs] - " & funciones.Count & " procedimientos encontrados."
+        LogInfo "modUTILSProcedureParsing", "[ParsearProcs] " & funciones.Count & " procedimientos encontrados."
     End If
     
     Exit Function
 ErrorHandler:
-    LogError "modUTILSProcedureParsing", "[ParsearProcs] - Error al parsear procedimientos", , Err.Description
+    LogError "modUTILSProcedureParsing", "[ParsearProcs] Error al parsear procedimientos", , Err.Description
 End Function
 
 '@Description: Corrige los desplazamientos erroneos en los modulos de codigo detectados por las funciones
@@ -136,7 +136,7 @@ Private Function getProcCode(CodeModule As Object, procName As String, PKind As 
         .procNumLines = CodeModule.ProcCountLines(procName, PKind)
         .procSignatureLine = CodeModule.ProcBodyLine(procName, PKind)
         
-        ' se reajusta el comienzo del bloque de c骴igo, VBE no lo pone bien
+        ' se reajusta el comienzo del bloque de c贸digo, VBE no lo pone bien
         re.Pattern = "^\s*'.+"
         On Error GoTo ErrorHandler
         Do While .procStartLine > 1
@@ -145,9 +145,9 @@ Private Function getProcCode(CodeModule As Object, procName As String, PKind As 
             .procStartLine = .procStartLine - 1
         Loop
         
-        ' ... y hay que corregir el final, tampoco termina bien los bloques de funci髇
+        ' ... y hay que corregir el final, tampoco termina bien los bloques de funci贸n
         re.Pattern = "\bFunction|Sub|Property\b"
-        re.Pattern = "^\s*End\s+" & re.Execute(CodeModule.Lines(.procSignatureLine, 1)).Item(0).value
+        re.Pattern = "^\s*End\s+" & re.Execute(CodeModule.Lines(.procSignatureLine, 1)).Item(0).Value
         i = .procStartLine
         .strCode = CodeModule.Lines(i, 1)
         Do
@@ -163,10 +163,10 @@ Private Function getProcCode(CodeModule As Object, procName As String, PKind As 
     getProcCode = CodeBlock
     Exit Function
 ErrorHandler:
-    LogError "modUTILSProcedureParsing", "[getProcCode] - Error", , Err.Description
+    LogCurrentError "modUTILSProcedureParsing", "[getProcCode]"
 End Function
 
-' Verifica si un m骴ulo tiene Option Private Module
+' Verifica si un m贸dulo tiene Option Private Module
 Private Function EsModuloPrivado(CodeModule As Object) As Boolean
     EsModuloPrivado = False
     Dim i As Long, lineText As String
@@ -181,11 +181,11 @@ Private Function EsModuloPrivado(CodeModule As Object) As Boolean
                Left$(lineText, 1) <> "'" And _
                InStr(1, lineText, "Option", vbTextCompare) = 0 And _
                InStr(1, lineText, "Attribute", vbTextCompare) = 0 Then
-            ' Si encontramos c骴igo (no opciones/comentarios), dejar de buscar
+            ' Si encontramos c贸digo (no opciones/comentarios), dejar de buscar
             Exit For
         End If
     Next i
     Exit Function
 ErrorHandler:
-    LogError "modUTILSProcedureParsing", "[EsModuloPrivado] - Error", , Err.Description
+    LogCurrentError "modUTILSProcedureParsing", "[EsModuloPrivado]"
 End Function

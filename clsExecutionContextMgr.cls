@@ -1,4 +1,4 @@
-VERSION 1.0 CLASS
+锘縑ERSION 1.0 CLASS
 BEGIN
   MultiUse = -1  'True
 END
@@ -7,8 +7,8 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
-'@Description: Manager del contexto de ejecuci髇 Excel. Recibe eventos del Listener (ThisWorkbook),
-'              actualiza State, emite eventos sem髇ticos de infraestructura.
+'@Description: Manager del contexto de ejecuci贸n Excel. Recibe eventos del Listener (ThisWorkbook),
+'              actualiza State, emite eventos sem贸nticos de infraestructura.
 '@Category: Manager
 '@Folder "2-Infraestructura"
 Option Explicit
@@ -16,28 +16,32 @@ Option Explicit
 Private Const MODULE_NAME As String = "clsExecutionContextMgr"
 
 ' ==========================================
-' EVENTOS SEM驨TICOS DE INFRAESTRUCTURA
+' EVENTOS SEM贸NTICOS DE INFRAESTRUCTURA
 ' ==========================================
-Public Event WorkbookOpened(ByVal wb As Workbook)
-Public Event WorkbookActivated(ByVal wb As Workbook)
-Public Event WorkbookBeforeClose(ByVal wb As Workbook, ByRef Cancel As Boolean)
+Public Event WorkbookOpened(ByVal Wb As Workbook)
+Public Event WorkbookActivated(ByVal Wb As Workbook)
+Public Event WorkbookBeforeClose(ByVal Wb As Workbook, ByRef Cancel As Boolean)
 Public Event WorksheetActivated(ByVal ws As Worksheet)
 Public Event WorksheetDeactivated(ByVal ws As Worksheet)
-Public Event SheetActivated(ByVal sh As Object)
-Public Event SheetDeactivated(ByVal sh As Object)
+Public Event SheetActivated(ByVal Sh As Object)
+Public Event SheetDeactivated(ByVal Sh As Object)
 Public Event ContextInvalidated()
 Public Event ContextReinitialized()
 
 Private mState As clsExecutionContextState
 
 ' ==========================================
-' INICIALIZACI驨
+' INICIALIZACI贸N
 ' ==========================================
 
-Public Sub Initialize(oState As clsExecutionContextState)
-    Set mState = oState
+Private Sub Class_Initialize()
+    Set mState = New clsExecutionContextState
     RefreshContextState
-    LogInfo MODULE_NAME, "[Initialize] - Contexto inicializado"
+    LogInfo MODULE_NAME, "[Initialize] Contexto inicializado"
+End Sub
+
+Private Sub Class_Terminate()
+    Set mState = Nothing
 End Sub
 
 '@Description: Expone el State para lectura por consumidores
@@ -45,50 +49,69 @@ Public Property Get State() As clsExecutionContextState
     Set State = mState
 End Property
 
-Private Sub Class_Terminate()
-    Set mState = Nothing
-End Sub
-
 ' ==========================================
-' M骉ODOS DEL LISTENER (llamados por ThisWorkbook)
+' M贸TODOS DE ESTADO DE CONVENIENCIA
+' ==========================================
+'@Description: Expone el State para lectura por consumidores
+Public Property Get ActiveWorkbook() As Workbook
+    Set ActiveWorkbook = mState.Workbook
+End Property
+
+Public Property Get ActiveWorksheet() As Worksheet
+    Set ActiveWorksheet = mState.Worksheet
+End Property
+
+Public Property Get Selection() As Object
+    Set Selection = mState.Selection
+End Property
+
+Public Property Get Application() As Application
+    Set Application = mState.Application
+End Property
+
+Public Property Get ActiveChart() As Chart
+    Set ActiveChart = mState.Chart
+End Property
+' ==========================================
+' M贸TODOS DEL LISTENER (llamados por ThisWorkbook)
 ' ==========================================
 
-Public Sub OnWorkbookOpened(ByVal wb As Workbook)
-    LogDebug MODULE_NAME, "[OnWorkbookOpened] " & wb.Name
-    RaiseEvent WorkbookOpened(wb)
+Public Sub OnWorkbookOpened(ByVal Wb As Workbook)
+    LogDebug MODULE_NAME, "[OnWorkbookOpened] " & Wb.Name
+    RaiseEvent WorkbookOpened(Wb)
 End Sub
 
-Public Sub OnWorkbookActivated(ByVal wb As Workbook)
-    LogDebug MODULE_NAME, "[OnWorkbookActivated] " & wb.Name
-    mState.UpdateWorkbook wb
-    RaiseEvent WorkbookActivated(wb)
+Public Sub OnWorkbookActivated(ByVal Wb As Workbook)
+    LogDebug MODULE_NAME, "[OnWorkbookActivated] " & Wb.Name
+    mState.UpdateWorkbook Wb
+    RaiseEvent WorkbookActivated(Wb)
 End Sub
 
-Public Sub OnWorkbookBeforeClose(ByVal wb As Workbook, ByRef Cancel As Boolean)
-    LogDebug MODULE_NAME, "[OnWorkbookBeforeClose] " & wb.Name
-    RaiseEvent WorkbookBeforeClose(wb, Cancel)
+Public Sub OnWorkbookBeforeClose(ByVal Wb As Workbook, ByRef Cancel As Boolean)
+    LogDebug MODULE_NAME, "[OnWorkbookBeforeClose] " & Wb.Name
+    RaiseEvent WorkbookBeforeClose(Wb, Cancel)
 End Sub
 
-Public Sub OnSheetActivated(ByVal sh As Object)
-    LogDebug MODULE_NAME, "[OnSheetActivated] " & TypeName(sh) & " '" & sh.Name & "'"
+Public Sub OnSheetActivated(ByVal Sh As Object)
+    LogDebug MODULE_NAME, "[OnSheetActivated] " & TypeName(Sh) & " '" & Sh.Name & "'"
     ' Invalidar cache de chart al cambiar de hoja
     mState.InvalidateChart
-    If TypeOf sh Is Worksheet Then
-        mState.UpdateWorksheet sh
-        RaiseEvent WorksheetActivated(sh)
+    If TypeOf Sh Is Worksheet Then
+        mState.UpdateWorksheet Sh
+        RaiseEvent WorksheetActivated(Sh)
     End If
     ' Detectar chart en la nueva hoja
     DetectChart
-    RaiseEvent SheetActivated(sh)
+    RaiseEvent SheetActivated(Sh)
 End Sub
 
-Public Sub OnSheetDeactivated(ByVal sh As Object)
-    LogDebug MODULE_NAME, "[OnSheetDeactivated] " & sh.Name
+Public Sub OnSheetDeactivated(ByVal Sh As Object)
+    LogDebug MODULE_NAME, "[OnSheetDeactivated] " & Sh.Name
     mState.InvalidateChart
-    If TypeOf sh Is Worksheet Then
-        RaiseEvent WorksheetDeactivated(sh)
+    If TypeOf Sh Is Worksheet Then
+        RaiseEvent WorksheetDeactivated(Sh)
     End If
-    RaiseEvent SheetDeactivated(sh)
+    RaiseEvent SheetDeactivated(Sh)
 End Sub
 
 ' ==========================================
@@ -111,7 +134,7 @@ Public Sub ReInitializeContext()
     RefreshContextState
     mState.ValidateContext
     RaiseEvent ContextReinitialized
-    LogInfo MODULE_NAME, "[ReInitializeContext] - Contexto reinicializado tras reset"
+    LogInfo MODULE_NAME, "[ReInitializeContext] Contexto reinicializado tras reset"
 End Sub
 
 '@Description: Verifica si el contexto completo es valido (referencias COM vivas)
@@ -165,16 +188,16 @@ Private Sub RefreshContextState()
     mState.SetApplication Excel.Application
 
     On Error Resume Next
-    Dim wb As Workbook
-    Set wb = Excel.Application.ActiveWorkbook
+    Dim Wb As Workbook
+    Set Wb = Excel.Application.ActiveWorkbook
     On Error GoTo 0
 
-    If Not wb Is Nothing Then
-        mState.UpdateWorkbook wb
+    If Not Wb Is Nothing Then
+        mState.UpdateWorkbook Wb
 
         On Error Resume Next
         Dim ws As Worksheet
-        Set ws = wb.ActiveSheet   ' Falla si es Chart sheet
+        Set ws = Wb.ActiveSheet   ' Falla si es Chart sheet
         On Error GoTo 0
 
         If Not ws Is Nothing Then
@@ -186,7 +209,7 @@ Private Sub RefreshContextState()
 End Sub
 
 ' ==========================================
-' ELECCI覰 DE CHART (l骻ica privada del Mgr)
+' ELECCI脫N DE CHART (l贸gica privada del Mgr)
 ' ==========================================
 
 Private Sub DetectChart()
@@ -239,4 +262,5 @@ Private Sub DetectChart()
 ErrHandler:
     LogCurrentError MODULE_NAME, "[DetectChart]"
 End Sub
+
 

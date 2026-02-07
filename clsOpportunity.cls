@@ -1,4 +1,4 @@
-VERSION 1.0 CLASS
+锘縑ERSION 1.0 CLASS
 BEGIN
   MultiUse = -1  'True
 END
@@ -21,10 +21,10 @@ Private mLabel As String        ' Nombre completo de la oportunidad (ej: "412601
 Private mName As String         ' Nombre corto (ej: "412601015")
 Private mPath As String         ' Ruta completa a la carpeta
 Private mCustomer As String     ' Nombre del cliente
-Private mQuoteNumber As String  ' N鷐ero de cotizaci髇
-Private mCreatedDate As Date    ' Fecha de creaci髇
+Private mQuoteNumber As String  ' N煤mero de cotizaci贸n
+Private mCreatedDate As Date    ' Fecha de creaci贸n
 
-' Componentes futuros (no implementados a鷑):
+' Componentes futuros (no implementados a煤n):
 'Private mFiles As clsOpportunityFileCollection
 'Private mCompressors As clsCompressorCollection
 'Private mOffers As clsOfferCollection
@@ -32,7 +32,7 @@ Private mCreatedDate As Date    ' Fecha de creaci髇
 'Private mStatus As OpportunityStatus
 
 ' ==========================================
-' INICIALIZACI覰
+' INICIALIZACI脫N
 ' ==========================================
 
 Private Sub Class_Initialize()
@@ -49,7 +49,7 @@ Private Sub Class_Terminate()
 End Sub
 
 ' ==========================================
-' PROPIEDADES P贐LICAS
+' PROPIEDADES P脷BLICAS
 ' ==========================================
 
 '@Description: Obtiene o establece el label completo de la oportunidad
@@ -57,8 +57,8 @@ Public Property Get Label() As String
     Label = mLabel
 End Property
 
-Public Property Let Label(value As String)
-    mLabel = value
+Public Property Let Label(Value As String)
+    mLabel = Value
 End Property
 
 '@Description: Obtiene o establece el nombre corto de la oportunidad
@@ -66,8 +66,8 @@ Public Property Get Name() As String
     Name = mName
 End Property
 
-Public Property Let Name(value As String)
-    mName = value
+Public Property Let Name(Value As String)
+    mName = Value
 End Property
 
 '@Description: Obtiene o establece la ruta completa a la carpeta
@@ -75,8 +75,8 @@ Public Property Get Path() As String
     Path = mPath
 End Property
 
-Public Property Let Path(value As String)
-    mPath = value
+Public Property Let Path(Value As String)
+    mPath = Value
 End Property
 
 '@Description: Obtiene o establece el nombre del cliente
@@ -84,30 +84,30 @@ Public Property Get Customer() As String
     Customer = mCustomer
 End Property
 
-Public Property Let Customer(value As String)
-    mCustomer = value
+Public Property Let Customer(Value As String)
+    mCustomer = Value
 End Property
 
-'@Description: Obtiene o establece el n鷐ero de cotizaci髇
+'@Description: Obtiene o establece el n煤mero de cotizaci贸n
 Public Property Get QuoteNumber() As String
     QuoteNumber = mQuoteNumber
 End Property
 
-Public Property Let QuoteNumber(value As String)
-    mQuoteNumber = value
+Public Property Let QuoteNumber(Value As String)
+    mQuoteNumber = Value
 End Property
 
-'@Description: Obtiene o establece la fecha de creaci髇
+'@Description: Obtiene o establece la fecha de creaci贸n
 Public Property Get CreatedDate() As Date
     CreatedDate = mCreatedDate
 End Property
 
-Public Property Let CreatedDate(value As Date)
-    mCreatedDate = value
+Public Property Let CreatedDate(Value As Date)
+    mCreatedDate = Value
 End Property
 
 ' ==========================================
-' M蒚ODOS P贐LICOS
+' M脡TODOS P脷BLICOS
 ' ==========================================
 Public Function Equals(op As clsOpportunity) As Boolean
     If op Is Nothing Then
@@ -117,24 +117,24 @@ Public Function Equals(op As clsOpportunity) As Boolean
     End If
 End Function
 
-'@Description: Valida si la oportunidad tiene datos m韓imos requeridos
+'@Description: Valida si la oportunidad tiene datos m铆nimos requeridos
 Public Function IsValid() As Boolean
     IsValid = Len(mLabel) > 0 And Len(mPath) > 0
 End Function
 
-'@Description: Genera la estructura de carpetas para la oportunidad (pendiente implementaci髇)
+'@Description: Genera la estructura de carpetas para la oportunidad (pendiente implementaci贸n)
 Public Sub GenerateFolderStructure()
-    ' TODO: Implementar creaci髇 de estructura de carpetas
+    ' TODO: Implementar creaci贸n de estructura de carpetas
 End Sub
 
-'@Description: Obtiene la plantilla de presupuesto (pendiente implementaci髇)
+'@Description: Obtiene la plantilla de presupuesto (pendiente implementaci贸n)
 Public Function GetBudgetTemplate() As clsFileXLS
-    ' TODO: Implementar obtenci髇 de plantilla
+    ' TODO: Implementar obtenci贸n de plantilla
     Set GetBudgetTemplate = Nothing
 End Function
 
-'@Description: Sincroniza con el repositorio (pendiente implementaci髇)
+'@Description: Sincroniza con el repositorio (pendiente implementaci贸n)
 Public Sub SyncWithRepository()
-    ' TODO: Implementar sincronizaci髇
+    ' TODO: Implementar sincronizaci贸n
 End Sub
 

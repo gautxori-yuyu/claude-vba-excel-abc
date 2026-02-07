@@ -1,4 +1,4 @@
-Attribute VB_Name = "modMACROAppLifecycle"
+ï»¿Attribute VB_Name = "modMACROAppLifecycle"
 Option Private Module
 ' ==========================================
 ' CICLO DE VIDA DE LA APLICACION
@@ -27,6 +27,7 @@ Private mLastInitTime As Double    ' Timestamp de ultima inicializacion
 '@Note: Esta funcion usa una variable Static que sobrevive entre llamadas
 '       pero se reinicia si VBA hace reset. El patron detecta ese reset.
 Public Function DetectVBAResetOccurred() As Boolean
+Attribute DetectVBAResetOccurred.VB_ProcData.VB_Invoke_Func = " \n0"
     Static sInitFlag As Boolean
 
     If Not sInitFlag Then
@@ -66,8 +67,7 @@ End Property
 ' ==========================================
 
 Public Function App() As clsApplication
-Attribute App.VB_Description = "[modMACROAppLifecycle] App (función personalizada). Aplica a: ThisWorkbook"
-Attribute App.VB_ProcData.VB_Invoke_Func = " \n21"
+Attribute App.VB_ProcData.VB_Invoke_Func = " \n0"
     Set App = ThisWorkbook.App
 End Function
 
@@ -78,12 +78,12 @@ Attribute ReiniciarAplicacion.VB_ProcData.VB_Invoke_Func = " \n0"
 
     result = MsgBox("Esto reiniciara completamente el complemento ABC." & vbCrLf & vbCrLf & _
                     "Se cerrara y volvera a inicializar la aplicacion." & vbCrLf & _
-                    "¿Desea continuar?", _
+                    "Â¿Desea continuar?", _
                     vbQuestion + vbYesNo, "Reiniciar Aplicacion")
 
     If result <> vbYes Then Exit Sub
 
-    LogInfo MODULE_NAME, "[ReiniciarAplicacion] - Reinicio solicitado por usuario"
+    LogInfo MODULE_NAME, "[ReiniciarAplicacion] Reinicio solicitado por usuario"
 
     On Error Resume Next
 
@@ -103,10 +103,10 @@ Attribute ReiniciarAplicacion.VB_ProcData.VB_Invoke_Func = " \n0"
 
     ' Verificar estado
     If IsRibbonAvailable() Then
-        MsgBox "Aplicación reiniciada correctamente." & vbCrLf & vbCrLf & _
+        MsgBox "AplicaciÃ³n reiniciada correctamente." & vbCrLf & vbCrLf & _
                App.ribbon.GetQuickDiagnostics(), vbInformation, "Reinicio Exitoso"
     Else
-        MsgBox "Aplicación reiniciada, pero el Ribbon puede requerir atención adicional." & vbCrLf & _
+        MsgBox "AplicaciÃ³n reiniciada, pero el Ribbon puede requerir atenciÃ³n adicional." & vbCrLf & _
                "Ejecute 'RecuperarRibbon' si es necesario.", _
                vbExclamation, "Reinicio Parcial"
     End If
@@ -118,7 +118,7 @@ End Sub
 ' ==========================================
 
 '@Description: Activa temporalmente la visibilidad del XLAM para operaciones de copia
-'              Muestra el libro que contiene este XLAM, haci?ndolo visible en la interfaz de Excel.
+'              Muestra el libro que contiene este XLAM, haciÃ©ndolo visible en la interfaz de Excel.
 '@Scope: Manipula el libro host del complemento XLAM cargado.
 '@ArgumentDescriptions: (no tiene argumentos)
 '@Returns: (ninguno)
@@ -176,8 +176,8 @@ Public Sub RecuperarRibbon()
 Attribute RecuperarRibbon.VB_ProcData.VB_Invoke_Func = " \n0"
     Dim result As VbMsgBoxResult
 
-    LogInfo MODULE_NAME, "[RecuperarRibbon] - Solicitado por usuario"
-    LogDebug MODULE_NAME, "[RecuperarRibbon] - Diagnosticos: " & GetRibbonDiagnostics()
+    LogInfo MODULE_NAME, "[RecuperarRibbon] Solicitado por usuario"
+    LogDebug MODULE_NAME, "[RecuperarRibbon] Diagnosticos: " & GetRibbonDiagnostics()
 
     ' Si ya esta disponible, no hacer nada
     If IsRibbonAvailable() Then
@@ -223,8 +223,7 @@ End Sub
 '@Description: Obtiene informacion de diagnostico del estado del Ribbon
 '@Returns: String | Descripcion del estado actual
 Public Function GetRibbonDiagnostics() As String
-Attribute GetRibbonDiagnostics.VB_Description = "[modMACROAppLifecycle] FUNCIONES DE DIAGNOSTICO Obtiene informacion de diagnostico del estado del Ribbon"
-Attribute GetRibbonDiagnostics.VB_ProcData.VB_Invoke_Func = " \n21"
+Attribute GetRibbonDiagnostics.VB_ProcData.VB_Invoke_Func = " \n0"
     Dim info As String
 
     info = "=== DIAGNOSTICO DEL RIBBON ===" & vbCrLf
@@ -278,8 +277,7 @@ End Function
 '    DESDE EL CONTEXTO GLOBAL
 '@Returns: Boolean | True si el Ribbon esta operativo
 Public Function IsRibbonAvailable() As Boolean
-Attribute IsRibbonAvailable.VB_Description = "[modMACROAppLifecycle] Verifica si el Ribbon esta disponible y funcional DESDE EL CONTEXTO GLOBAL"
-Attribute IsRibbonAvailable.VB_ProcData.VB_Invoke_Func = " \n21"
+Attribute IsRibbonAvailable.VB_ProcData.VB_Invoke_Func = " \n0"
     On Error Resume Next
     Dim mApp As clsApplication
     ' Verificar que App existe
@@ -326,8 +324,7 @@ End Function
 '@Description: Intenta recuperar el Ribbon automaticamente
 '@Returns: Boolean | True si la recuperacion fue exitosa
 Public Function TryRecoverRibbon() As Boolean
-Attribute TryRecoverRibbon.VB_Description = "[modMACROAppLifecycle] FUNCIONES DE RECUPERACION Intenta recuperar el Ribbon automaticamente"
-Attribute TryRecoverRibbon.VB_ProcData.VB_Invoke_Func = " \n21"
+Attribute TryRecoverRibbon.VB_ProcData.VB_Invoke_Func = " \n0"
     On Error GoTo ErrHandler
 
     LogInfo MODULE_NAME, "TryRecoverRibbon - Iniciando recuperacion..."
@@ -449,7 +446,7 @@ Private Function RecoverByAddinToggle() As Boolean
     LogDebug MODULE_NAME, "RecoverByAddinToggle - Desactivando add-in..."
     targetAddin.Installed = False
 
-    ' Pequeña pausa
+    ' PequeÃ±a pausa
     DoEvents
     Application.Wait Now + TimeSerial(0, 0, 1)
     DoEvents

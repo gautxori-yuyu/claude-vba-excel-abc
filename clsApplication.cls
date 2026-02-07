@@ -1,4 +1,4 @@
-VERSION 1.0 CLASS
+ï»¿VERSION 1.0 CLASS
 BEGIN
   MultiUse = -1  'True
 END
@@ -14,7 +14,6 @@ Option Explicit
 Private Const MODULE_NAME As String = "clsApplication"
 
 Private mChartManager As clsChartMgr
-Private mCtxState As clsExecutionContextState
 Private mCtxMgr As clsExecutionContextMgr
 
 Private mEventDispatcher As clsEventDispatcher
@@ -28,7 +27,7 @@ Private mEvMediatorDomain As clsEventsMediatorDomain
 
 Private mRibbon As clsRibbon
 
-' Estado centralizado de la aplicación
+' Estado centralizado de la aplicaciÃ³n
 Private mApplicationState As clsApplicationState
 
 Public Property Get ChartManager() As clsChartMgr
@@ -59,32 +58,30 @@ Public Property Get OpportunitiesMgr() As clsOpportunitiesMgr
     Set OpportunitiesMgr = mOpportunities
 End Property
 
-'@Description: Obtiene el gestor de estado centralizado de la aplicación
+'@Description: Obtiene el gestor de estado centralizado de la aplicaciÃ³n
 Public Property Get AppState() As clsApplicationState
     Set AppState = mApplicationState
 End Property
 
 ' -------------------------------------------------------------
-' Class_Initialize: SOLO inicialización mínima (ligera y segura)
+' Class_Initialize: SOLO inicializaciÃ³n mÃ­nima (ligera y segura)
 ' NO debe hacer trabajo pesado ni depender de App
 ' -------------------------------------------------------------
 Private Sub Class_Initialize()
     On Error GoTo ErrHandler
 
-    LogInfo MODULE_NAME, "[Class_Initialize] - Iniciando aplicacion"
+    LogInfo MODULE_NAME, "[Class_Initialize] Iniciando aplicacion"
 
     ' INFRAESTRUCTURA
-    Set mCtxState = New clsExecutionContextState
     Set mCtxMgr = New clsExecutionContextMgr
-    mCtxMgr.Initialize mCtxState
     ' TODO: creo que es mejor UNIFICARLO, o HACER COMPOSICION, de clsChartMgr, dentro de clsExecutionContext (ChartMgr PERTENECE al exec context,
-    ' mas que depender de él; actualmente parece que la relación está invertida, está asi para minimizar los cambios al resto del codigo...)
+    ' mas que depender de Ã©l; actualmente parece que la relaciÃ³n estÃ¡ invertida, estÃ¡ asi para minimizar los cambios al resto del codigo...)
     Set mChartManager = New clsChartMgr
-    mChartManager.Initialize mCtxState
+    mChartManager.Initialize mCtxMgr.State
     Set mEventDispatcher = New clsEventDispatcher
 
     Set mFileMgr = New clsFileManager
-    mFileMgr.Init mCtxState.Application.Workbooks
+    mFileMgr.Init mCtxMgr.Application.Workbooks
 
     ' DOMINIO - Crear managers (ellos crean sus estados internamente)
     Set mOpportunities = New clsOpportunitiesMgr
@@ -106,7 +103,7 @@ Private Sub Class_Initialize()
                                  OpportunityState:=mOpportunities.State, _
                                  FileState:=mFileMgr.State, _
                                  ChartState:=mChartManager.State, _
-                                 CtxState:=mCtxState
+                                 CtxState:=mCtxMgr.State
     ' GESTOR DE EVENTOS DE INFRAESTRUCTURA
     Set mEvMgrInfrastructure = New clsEventsMgrInfrastructure
     Call mEvMgrInfrastructure.Initialize(mFileMgr, mChartManager, mCtxMgr)
@@ -114,28 +111,28 @@ Private Sub Class_Initialize()
     ' MEDIADOR DE EVENTOS DE DOMINIO
     ' Escucha eventos SEMANTICOS del mediador de infraestructura (no directamente de mCtxMgr)
     Set mEvMediatorDomain = New clsEventsMediatorDomain
-    Call mEvMediatorDomain.Initialize(mCtxState, _
+    Call mEvMediatorDomain.Initialize(mCtxMgr.State, _
                                     mEvMgrInfrastructure, _
                                     mFSMonitoringCoord, _
                                     mOpportunities, _
                                     mFileMgr)
 
-    LogInfo MODULE_NAME, "[Class_Initialize] - inicialización completada"
+    LogInfo MODULE_NAME, "[Class_Initialize] inicializaciÃ³n completada"
     
     Exit Sub
 ErrHandler:
     LogCurrentError MODULE_NAME, "[Class_Initialize]"
     Err.Raise Err.Number, MODULE_NAME & "[Class_Initialize]", _
-              "Error inicializando aplicación: " & Err.Description
+              "Error inicializando aplicaciÃ³n: " & Err.Description
 End Sub
 
 ' -------------------------------------------------------------
 ' Class_Terminate: limpieza
 ' -------------------------------------------------------------
 Private Sub Class_Terminate()
-    LogInfo MODULE_NAME, "[Terminate] - Iniciando limpieza de la aplicacion"
+    LogInfo MODULE_NAME, "[Terminate] Iniciando limpieza de la aplicacion"
 
-    On Error Resume Next  ' Asegurar que la limpieza continúa aunque haya errores
+    On Error Resume Next  ' Asegurar que la limpieza continÃºa aunque haya errores
     
     ' 2. Liberar Ribbon events
     If Not mRibbon Is Nothing Then
@@ -161,11 +158,12 @@ Private Sub Class_Terminate()
     ' Liberar estado centralizado
     Set mApplicationState = Nothing
 
-    ' Liberar contexto de ejecución
+    ' Liberar contexto de ejecuciÃ³n
     Set mCtxMgr = Nothing
-    Set mCtxState = Nothing
 
-    LogInfo MODULE_NAME, "[Terminate] - Limpieza completada"
+    LogInfo MODULE_NAME, "[Terminate] Limpieza completada"
 End Sub
+
+
 
 

@@ -1,4 +1,4 @@
-VERSION 1.0 CLASS
+﻿VERSION 1.0 CLASS
 BEGIN
   MultiUse = -1  'True
 END
@@ -88,7 +88,7 @@ Private Function IOpportunity_CanGenerateQuote() As Boolean
     End If
 
     ' Verificar que el workbook esta disponible
-    If mFileXLS.wb Is Nothing Then
+    If mFileXLS.Wb Is Nothing Then
         IOpportunity_CanGenerateQuote = False
         Exit Function
     End If

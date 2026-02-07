@@ -1,4 +1,4 @@
-Attribute VB_Name = "modMACROUtilsExcelCheckbox"
+ÔªøAttribute VB_Name = "modMACROUtilsExcelCheckbox"
 '@Folder "Funciones auxiliares"
 Option Explicit
 
@@ -15,45 +15,45 @@ Attribute InsertarCheckbox.VB_ProcData.VB_Invoke_Func = " \n0"
     
     '----------------------------------------------------------------------
     ' PROCEDIMIENTO: InsertarCheckbox
-    ' DESCRIPCI”N:   Inserta un checkbox vinculado a una celda de datos
+    ' DESCRIPCI√ìN:   Inserta un checkbox vinculado a una celda de datos
     '                con validaciones completas y manejo robusto de errores
     '
-    ' PAR¡METROS OPCIONALES:
+    ' PAR√ÅMETROS OPCIONALES:
     '   - HojaDestino: Nombre de la hoja donde guardar el estado (por defecto "C.DATA")
     '   - ColumnaVinculo: Columna donde guardar TRUE/FALSE (por defecto "B")
     '   - MostrarCaption: Si muestra el texto del checkbox (por defecto False)
     '   - BuscarTextoIzquierda: Si busca texto en celdas a la izquierda (por defecto True)
     '   - ValorInicial: Estado inicial del checkbox (por defecto desmarcado)
-    '   - TextoPersonalizado: Texto especÌfico para el checkbox (anula b˙squeda autom·tica)
+    '   - TextoPersonalizado: Texto espec√≠fico para el checkbox (anula b√∫squeda autom√°tica)
     '
     ' USO: Llamar desde la celda donde se quiere insertar el checkbox
     '----------------------------------------------------------------------
     
     On Error GoTo ManejoError
     
-    '--- VALIDACI”N 1: VERIFICAR QUE EXISTA UNA APLICACI”N ACTIVA ---
+    '--- VALIDACI√ìN 1: VERIFICAR QUE EXISTA UNA APLICACI√ìN ACTIVA ---
     If Application Is Nothing Then
-        MsgBox "No hay una instancia de Excel activa.", vbCritical, "Error de aplicaciÛn"
+        MsgBox "No hay una instancia de Excel activa.", vbCritical, "Error de aplicaci√≥n"
         Exit Sub
     End If
     
-    '--- VALIDACI”N 2: VERIFICAR QUE HAY UNA HOJA ACTIVA ---
+    '--- VALIDACI√ìN 2: VERIFICAR QUE HAY UNA HOJA ACTIVA ---
     If ActiveSheet Is Nothing Then
-        MsgBox "No hay ninguna hoja de c·lculo activa.", vbExclamation, "Seleccione una hoja"
+        MsgBox "No hay ninguna hoja de c√°lculo activa.", vbExclamation, "Seleccione una hoja"
         Exit Sub
     End If
     
     Dim checkboxSheet As Worksheet
     Set checkboxSheet = ActiveSheet
     
-    '--- VALIDACI”N 3: VERIFICAR QUE EL ELEMENTO ACTIVO ES UNA CELDA ---
+    '--- VALIDACI√ìN 3: VERIFICAR QUE EL ELEMENTO ACTIVO ES UNA CELDA ---
     If TypeName(Selection) <> "Range" Then
         MsgBox "Por favor, seleccione una celda antes de insertar el checkbox.", _
-               vbExclamation, "SelecciÛn requerida"
+               vbExclamation, "Selecci√≥n requerida"
         Exit Sub
     End If
     
-    '--- VALIDACI”N 4: VERIFICAR QUE EXISTE LA HOJA DESTINO ---
+    '--- VALIDACI√ìN 4: VERIFICAR QUE EXISTE LA HOJA DESTINO ---
     Dim HojaExiste As Boolean
     HojaExiste = False
     Dim ws As Worksheet
@@ -65,12 +65,12 @@ Attribute InsertarCheckbox.VB_ProcData.VB_Invoke_Func = " \n0"
     Next ws
     
     If ws Is checkboxSheet Then
-        MsgBox "El checkbox no se puede insertar en la misma hoja en que se guarda el estado.", vbExclamation, "OperaciÛn cancelada"
+        MsgBox "El checkbox no se puede insertar en la misma hoja en que se guarda el estado.", vbExclamation, "Operaci√≥n cancelada"
         Exit Sub
     ElseIf Not HojaExiste Then
         Dim respuesta As VbMsgBoxResult
         respuesta = MsgBox("La hoja '" & HojaDestino & "' no existe." & vbCrLf & _
-                           "øDesea crearla?", vbYesNo + vbQuestion, "Hoja no encontrada")
+                           "¬øDesea crearla?", vbYesNo + vbQuestion, "Hoja no encontrada")
         
         If respuesta = vbYes Then
             With Worksheets.Add(After:=Worksheets(Worksheets.Count))
@@ -78,41 +78,41 @@ Attribute InsertarCheckbox.VB_ProcData.VB_Invoke_Func = " \n0"
             End With
             checkboxSheet.Activate
             ' Crear encabezado en la primera fila
-            Worksheets(HojaDestino).Range(ColumnaVinculo & "1").value = "Checkbox_States"
+            Worksheets(HojaDestino).Range(ColumnaVinculo & "1").Value = "Checkbox_States"
         Else
-            MsgBox "No se puede continuar sin la hoja de destino.", vbExclamation, "OperaciÛn cancelada"
+            MsgBox "No se puede continuar sin la hoja de destino.", vbExclamation, "Operaci√≥n cancelada"
             Exit Sub
         End If
     End If
     
-    '--- VALIDACI”N 5: VERIFICAR COLUMNA V¡LIDA ---
+    '--- VALIDACI√ìN 5: VERIFICAR COLUMNA V√ÅLIDA ---
     If Len(ColumnaVinculo) = 0 Or Not EsColumnaValida(ColumnaVinculo) Then
-        MsgBox "La columna '" & ColumnaVinculo & "' no es v·lida.", vbExclamation, "Columna inv·lida"
+        MsgBox "La columna '" & ColumnaVinculo & "' no es v√°lida.", vbExclamation, "Columna inv√°lida"
         Exit Sub
     End If
     
-    '--- ENCONTRAR PR”XIMA CELDA DISPONIBLE ---
+    '--- ENCONTRAR PR√ìXIMA CELDA DISPONIBLE ---
     Dim FilaSiguiente As Long
     With Worksheets(HojaDestino)
         Dim RangoBusqueda As Range
         Set RangoBusqueda = .Range(ColumnaVinculo & "2:" & ColumnaVinculo & .Rows.Count)
         
-        ' Manejar caso donde no hay celdas vacÌas
+        ' Manejar caso donde no hay celdas vac√≠as
         On Error Resume Next
         Dim CeldaVacia As Range
         Set CeldaVacia = RangoBusqueda.Cells.SpecialCells(xlCellTypeBlanks).Cells(1)
         On Error GoTo ManejoError
         
         If CeldaVacia Is Nothing Then
-            ' Si no hay celdas vacÌas, usar la ˙ltima fila + 1
+            ' Si no hay celdas vac√≠as, usar la √∫ltima fila + 1
             FilaSiguiente = .Cells(.Rows.Count, ColumnaVinculo).End(xlUp).Row + 1
         Else
             FilaSiguiente = CeldaVacia.Row
         End If
         
-        ' Verificar que la fila no exceda el lÌmite de Excel
+        ' Verificar que la fila no exceda el l√≠mite de Excel
         If FilaSiguiente > .Rows.Count Then
-            MsgBox "No hay espacio disponible en la hoja '" & HojaDestino & "'.", vbExclamation, "LÌmite alcanzado"
+            MsgBox "No hay espacio disponible en la hoja '" & HojaDestino & "'.", vbExclamation, "L√≠mite alcanzado"
             Exit Sub
         End If
     End With
@@ -125,29 +125,29 @@ Attribute InsertarCheckbox.VB_ProcData.VB_Invoke_Func = " \n0"
         ' Usar texto personalizado si se proporciona
         TextoCheckbox = TextoPersonalizado
     Else
-        ' Buscar texto autom·ticamente
+        ' Buscar texto autom√°ticamente
         Dim CeldaTexto As Range
         Set CeldaTexto = ActiveCell
         
         If BuscarTextoIzquierda Then
-            ' Buscar texto hacia la izquierda hasta encontrar celda no vacÌa
+            ' Buscar texto hacia la izquierda hasta encontrar celda no vac√≠a
             Dim ColumnaOriginal As Long
             ColumnaOriginal = CeldaTexto.Column
             
-            Do While CeldaTexto.value = "" And CeldaTexto.Column > 1
+            Do While CeldaTexto.Value = "" And CeldaTexto.Column > 1
                 Set CeldaTexto = CeldaTexto.Offset(0, -1)
             Loop
             
-            ' Si no se encontrÛ texto despuÈs de buscar, usar texto genÈrico
-            If CeldaTexto.value = "" Then
+            ' Si no se encontr√≥ texto despu√©s de buscar, usar texto gen√©rico
+            If CeldaTexto.Value = "" Then
                 TextoCheckbox = "Checkbox_" & FilaSiguiente
             Else
-                TextoCheckbox = CStr(CeldaTexto.value)
+                TextoCheckbox = CStr(CeldaTexto.Value)
             End If
         Else
             ' Usar el texto de la celda actual
-            If CeldaTexto.value <> "" Then
-                TextoCheckbox = CStr(CeldaTexto.value)
+            If CeldaTexto.Value <> "" Then
+                TextoCheckbox = CStr(CeldaTexto.Value)
             Else
                 TextoCheckbox = "Checkbox_" & FilaSiguiente
             End If
@@ -157,9 +157,9 @@ Attribute InsertarCheckbox.VB_ProcData.VB_Invoke_Func = " \n0"
     '--- INSERTAR Y CONFIGURAR CHECKBOX ---
     Dim CheckboxActual As CheckBox
     
-    ' Verificar que la celda activa es v·lida para insertar
+    ' Verificar que la celda activa es v√°lida para insertar
     If ActiveCell.Width = 0 Or ActiveCell.Height = 0 Then
-        MsgBox "La celda seleccionada no tiene dimensiones v·lidas.", vbExclamation, "Celda inv·lida"
+        MsgBox "La celda seleccionada no tiene dimensiones v√°lidas.", vbExclamation, "Celda inv√°lida"
         Exit Sub
     End If
     
@@ -176,17 +176,17 @@ Attribute InsertarCheckbox.VB_ProcData.VB_Invoke_Func = " \n0"
             .Caption = ""
         End If
         .LinkedCell = HojaDestino & "!" & ColumnaVinculo & FilaSiguiente
-        .value = ValorInicial
+        .Value = ValorInicial
         .Display3DShading = False
-        .Name = "CheckBox_" & HojaDestino & "_" & FilaSiguiente ' Nombre ˙nico
+        .Name = "CheckBox_" & HojaDestino & "_" & FilaSiguiente ' Nombre √∫nico
         .Placement = xlMoveAndSize               ' Se mueve y redimensiona con las celdas
     End With
     
     '--- INICIALIZAR VALOR EN HOJA DE DATOS ---
-    Worksheets(HojaDestino).Range(ColumnaVinculo & FilaSiguiente).value = (ValorInicial = True)
-    Worksheets(HojaDestino).Range(ColumnaVinculo & FilaSiguiente).Offset(0, -1).value = TextoCheckbox
+    Worksheets(HojaDestino).Range(ColumnaVinculo & FilaSiguiente).Value = (ValorInicial = True)
+    Worksheets(HojaDestino).Range(ColumnaVinculo & FilaSiguiente).Offset(0, -1).Value = TextoCheckbox
     
-    '--- CONFIRMACI”N DE …XITO ---
+    '--- CONFIRMACI√ìN DE √âXITO ---
     Dim MensajeExito As String
     MensajeExito = "Checkbox insertado correctamente:" & vbCrLf & _
                    " Vinculado a: " & HojaDestino & "!" & ColumnaVinculo & FilaSiguiente & vbCrLf & _
@@ -199,7 +199,7 @@ Attribute InsertarCheckbox.VB_ProcData.VB_Invoke_Func = " \n0"
     '--- SELECCIONAR CELDA ORIGINAL ---
     ActiveCell.Select
     
-    ' Mostrar mensaje de Èxito (opcional)
+    ' Mostrar mensaje de √©xito (opcional)
     ' MsgBox MensajeExito, vbInformation, "Checkbox insertado"
     
     Exit Sub
@@ -207,12 +207,12 @@ Attribute InsertarCheckbox.VB_ProcData.VB_Invoke_Func = " \n0"
 ManejoError:
     Select Case Err.Number
     Case 1004                                    ' Error general de Excel
-        MsgBox "Error al acceder a la hoja de c·lculo: " & Err.Description, _
+        MsgBox "Error al acceder a la hoja de c√°lculo: " & Err.Description, _
                vbCritical, "Error de acceso"
-    Case 9                                       ' SubÌndice fuera de intervalo
-        MsgBox "Error: Referencia a hoja o rango no v·lida.", vbCritical, "Error de referencia"
+    Case 9                                       ' Sub√≠ndice fuera de intervalo
+        MsgBox "Error: Referencia a hoja o rango no v√°lida.", vbCritical, "Error de referencia"
     Case 13                                      ' Tipo no coincide
-        MsgBox "Error de tipo de dato en los par·metros.", vbCritical, "Error de tipo"
+        MsgBox "Error de tipo de dato en los par√°metros.", vbCritical, "Error de tipo"
     Case Else
         MsgBox "Error inesperado (" & Err.Number & "): " & Err.Description, _
                vbCritical, "Error"
@@ -224,9 +224,9 @@ ManejoError:
     Set RangoBusqueda = Nothing
 End Sub
 
-'--- FUNCI”N AUXILIAR PARA VALIDAR COLUMNAS ---
+'--- FUNCI√ìN AUXILIAR PARA VALIDAR COLUMNAS ---
 Private Function EsColumnaValida(ByVal Columna As String) As Boolean
-    ' Verificar que la columna es v·lida (A-XFD)
+    ' Verificar que la columna es v√°lida (A-XFD)
     On Error GoTo ErrorHandler
     
     If Len(Columna) = 0 Then
@@ -234,11 +234,11 @@ Private Function EsColumnaValida(ByVal Columna As String) As Boolean
         Exit Function
     End If
     
-    ' Intentar convertir a n˙mero de columna
+    ' Intentar convertir a n√∫mero de columna
     Dim NumeroColumna As Long
     NumeroColumna = Range(Columna & "1").Column
     
-    ' Si llegÛ aquÌ, la columna es v·lida
+    ' Si lleg√≥ aqu√≠, la columna es v√°lida
     EsColumnaValida = True
     Exit Function
     
@@ -246,7 +246,7 @@ ErrorHandler:
     EsColumnaValida = False
 End Function
 
-'--- PROCEDIMIENTOS DE EJEMPLO PARA USO R¡PIDO ---
+'--- PROCEDIMIENTOS DE EJEMPLO PARA USO R√ÅPIDO ---
 Sub InsertarCheckboxConTexto()
 Attribute InsertarCheckboxConTexto.VB_ProcData.VB_Invoke_Func = " \n0"
     ' Ejemplo: Checkbox con texto visible
@@ -262,7 +262,7 @@ End Sub
 Sub InsertarCheckboxPersonalizado()
 Attribute InsertarCheckboxPersonalizado.VB_ProcData.VB_Invoke_Func = " \n0"
     ' Ejemplo: Checkbox con texto personalizado
-    Call InsertarCheckbox(TextoPersonalizado:="OpciÛn Personalizada", _
+    Call InsertarCheckbox(TextoPersonalizado:="Opci√≥n Personalizada", _
                           MostrarCaption:=True, _
                           HojaDestino:="CONFIG")
 End Sub

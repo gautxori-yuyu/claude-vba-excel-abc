@@ -1,7 +1,7 @@
-Attribute VB_Name = "modMACROBase64Encoding"
+ï»¿Attribute VB_Name = "modMACROBase64Encoding"
 ' ==========================================
-' Módulo de codificación/decodificación Base64
-' Usado internamente por el sistema de instalación
+' MÃ³dulo de codificaciÃ³n/decodificaciÃ³n Base64
+' Usado internamente por el sistema de instalaciÃ³n
 ' ==========================================
 
 '@Folder "Funciones auxiliares"
@@ -13,7 +13,7 @@ Private Const MODULE_NAME As String = "modMACROBase64Encoding"
 ' Decodifica una cadena Base64 a texto plano
 Function Base64Decode(texto As String) As String
 Attribute Base64Decode.VB_Description = "[modMACROBase64Encoding] Decodifica una cadena Base64 a texto plano"
-Attribute Base64Decode.VB_ProcData.VB_Invoke_Func = " \n21"
+Attribute Base64Decode.VB_ProcData.VB_Invoke_Func = " \n23"
     Dim xml As Object
     Dim node As Object
     
@@ -35,7 +35,7 @@ End Function
 ' Codifica un array de bytes en Base64
 Function Base64EncodeFromBytes(bytes() As Byte) As String
 Attribute Base64EncodeFromBytes.VB_Description = "[modMACROBase64Encoding] Codifica un array de bytes en Base64"
-Attribute Base64EncodeFromBytes.VB_ProcData.VB_Invoke_Func = " \n21"
+Attribute Base64EncodeFromBytes.VB_ProcData.VB_Invoke_Func = " \n23"
     Dim xml As Object
     Dim nodo As Object
     
@@ -54,10 +54,10 @@ ErrorHandler:
     Base64EncodeFromBytes = ""
 End Function
 
-' Codifica un archivo en Base64 leyéndolo como binario
+' Codifica un archivo en Base64 leyÃ©ndolo como binario
 Function Base64EncodeFromFile(rutaArchivo As String) As String
-Attribute Base64EncodeFromFile.VB_Description = "[modMACROBase64Encoding] Codifica un archivo en Base64 leyéndolo como binario"
-Attribute Base64EncodeFromFile.VB_ProcData.VB_Invoke_Func = " \n21"
+Attribute Base64EncodeFromFile.VB_Description = "[modMACROBase64Encoding] Codifica un archivo en Base64 leyÃ©ndolo como binario"
+Attribute Base64EncodeFromFile.VB_ProcData.VB_Invoke_Func = " \n23"
     Dim stream As Object
     Dim xml As Object
     Dim nodo As Object
@@ -91,7 +91,7 @@ End Function
 '@Description: Convierte un script VBScript al texto de una funcion que se puede pegar en el VBA
 '@ArgumentDescriptions: rutaInput:ruta del fichero vbscript a convertir (normalmente ext. .vbs)
 ' |rutaOutput: ruta del fichero b64 convertido (normalmente ext. .Base64)
-' |FUNC_NAME: nombre que tendrá la funcion VBA (Function FUNC_NAME() As String)
+' |FUNC_NAME: nombre que tendrÃ¡ la funcion VBA (Function FUNC_NAME() As String)
 Sub ScriptToFunctionBase64RC4(rutaInput As String, rutaOutput As String, FUNC_NAME As String)
 Attribute ScriptToFunctionBase64RC4.VB_ProcData.VB_Invoke_Func = " \n0"
     Dim Salida As String

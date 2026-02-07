@@ -1,4 +1,4 @@
-VERSION 1.0 CLASS
+ï»¿VERSION 1.0 CLASS
 BEGIN
   MultiUse = -1  'True
 END
@@ -10,7 +10,7 @@ Attribute VB_Exposed = False
 ' =====================================================
 ' WRAPPER VBA PARA COMPONENTE COM FolderWatcher
 ' =====================================================
-' Este módulo envuelve el componente COM FolderWatcherCOM.dll
+' Este mÃ³dulo envuelve el componente COM FolderWatcherCOM.dll
 ' escrito en VB.NET (.NET Framework 4.0).
 '
 ' CARGA DEL COM SIN REGISTRO:
@@ -19,14 +19,14 @@ Attribute VB_Exposed = False
 ' Esto permite usar el COM sin registrarlo en Windows (sin permisos admin).
 ' Los archivos necesarios (DLL y manifest) deben estar en la carpeta de AddIns.
 '
-' GESTIÓN DE RECURSOS:
+' GESTIÃ“N DE RECURSOS:
 ' -------------------------------------------------------------------------------------
 ' El COM implementa correctamente IDisposable (ver FolderWatcher.vb):
 ' - Dispose() llama a EnableRaisingEvents = False antes de liberar cada watcher
-' - Finalize() actúa como safety net si Dispose() no se llama
+' - Finalize() actÃºa como safety net si Dispose() no se llama
 ' - GC.SuppressFinalize(Me) evita doble limpieza
 '
-' IMPORTANTE: Desde VBA, llamar siempre a StopWatching o usar el método
+' IMPORTANTE: Desde VBA, llamar siempre a StopWatching o usar el mÃ©todo
 ' Dispose() de esta clase ANTES de hacer Set = Nothing, para garantizar
 ' que el COM libere correctamente los FileSystemWatcher internos.
 '
@@ -87,7 +87,7 @@ Private mDisposed As Boolean                     ' Flag para evitar doble limpie
 Private mWatchedFolders As Object                ' Dictionary de carpetas monitoreadas
 
 ' =====================================================
-' EVENTOS PÚBLICOS (se propagan a clsApplication)
+' EVENTOS PÃšBLICOS (se propagan a clsApplication)
 ' =====================================================
 
 Public Event FileCreated(ByVal folder As String, ByVal fileName As String)
@@ -102,16 +102,16 @@ Public Event SubfolderCreated(ByVal parentFolder As String, ByVal subfolderName 
 Public Event SubfolderDeleted(ByVal parentFolder As String, ByVal subfolderName As String)
 Public Event SubfolderRenamed(ByVal parentFolder As String, ByVal oldName As String, ByVal newName As String)
 
-' Eventos de reconexión automática para carpetas de red
+' Eventos de reconexiÃ³n automÃ¡tica para carpetas de red
 Public Event WatcherReconnected(ByVal folder As String, ByVal attempts As Long)
 Public Event WatcherReconnectionFailed(ByVal folder As String, ByVal reason As String)
 
 ' =====================================================
-' INICIALIZACIÓN Y LIMPIEZA
+' INICIALIZACIÃ“N Y LIMPIEZA
 ' =====================================================
 
 Private Sub Class_Initialize()
-    LogInfo MODULE_NAME, "[Class_Initialize] - Inicializando wrapper VBA para FolderWatcher COM"
+    LogInfo MODULE_NAME, "[Class_Initialize] Inicializando wrapper VBA para FolderWatcher COM"
 
     On Error GoTo ErrHandler
 
@@ -120,28 +120,28 @@ Private Sub Class_Initialize()
 
     If Not CrearCOMConActivationContext() Then
         ' Si falla, intentar con CreateObject normal (COM registrado)
-        LogWarning MODULE_NAME, "Activation Context falló, intentando con COM registrado"
+        LogWarning MODULE_NAME, "Activation Context fallÃ³, intentando con COM registrado"
         On Error GoTo ErrHandlerCOM
         Set fw = CreateObject("FolderWatcher.Monitor")
     End If
 
     If fw Is Nothing Then
-        LogError MODULE_NAME, "[Class_Initialize] - No se pudo crear el objeto COM FolderWatcher"
+        LogError MODULE_NAME, "[Class_Initialize] No se pudo crear el objeto COM FolderWatcher"
         mInitialized = False
         Exit Sub
     End If
 
     mInitialized = True
-    LogDebug MODULE_NAME, "[Class_Initialize] - Componente COM conectado: " & fw.GetConfiguration()
+    LogDebug MODULE_NAME, "[Class_Initialize] Componente COM conectado: " & fw.GetConfiguration()
     Exit Sub
 
 ErrHandlerCOM:
-    LogError MODULE_NAME, "[Class_Initialize] - Error creando COM (ni Activation Context ni registro)", Err.Number, Err.Description
+    LogError MODULE_NAME, "[Class_Initialize] Error creando COM (ni Activation Context ni registro)", Err.Number, Err.Description
     mInitialized = False
     Exit Sub
 
 ErrHandler:
-    LogError MODULE_NAME, "[Class_Initialize] - Error en inicialización COM", Err.Number, Err.Description
+    LogError MODULE_NAME, "[Class_Initialize] Error en inicializaciÃ³n COM", Err.Number, Err.Description
     mInitialized = False
 End Sub
 
@@ -151,7 +151,7 @@ Private Function CrearCOMConActivationContext() As Boolean
 
     ' Verificar si los archivos existen
     If Not ComprobarArchivosCOM() Then
-        LogWarning MODULE_NAME, "[CrearCOMConActivationContext] - Archivos COM no encontrados en: " & Application.UserLibraryPath
+        LogWarning MODULE_NAME, "[CrearCOMConActivationContext] Archivos COM no encontrados en: " & Application.UserLibraryPath
         CrearCOMConActivationContext = False
         Exit Function
     End If
@@ -166,19 +166,19 @@ Private Function CrearCOMConActivationContext() As Boolean
     If fw Is Nothing Then
         CrearCOMConActivationContext = False
     Else
-        LogDebug MODULE_NAME, "[CrearCOMConActivationContext] - COM creado exitosamente con Activation Context"
+        LogDebug MODULE_NAME, "[CrearCOMConActivationContext] COM creado exitosamente con Activation Context"
         CrearCOMConActivationContext = True
     End If
 
     Exit Function
 
 ErrHandler:
-    LogError MODULE_NAME, "[CrearCOMConActivationContext] - Error", Err.Number, Err.Description
+    LogCurrentError MODULE_NAME, "[CrearCOMConActivationContext]"
     CrearCOMConActivationContext = False
 End Function
 
 Private Sub Class_Terminate()
-    LogInfo MODULE_NAME, "[Class_Terminate] - Iniciando limpieza"
+    LogInfo MODULE_NAME, "[Class_Terminate] Iniciando limpieza"
     Dispose
 End Sub
 
@@ -189,11 +189,11 @@ Public Sub Dispose()
 
     ' Evitar doble limpieza
     If mDisposed Then
-        LogDebug MODULE_NAME, "[Dispose] - Ya fue ejecutado, omitiendo"
+        LogDebug MODULE_NAME, "[Dispose] Ya fue ejecutado, omitiendo"
         Exit Sub
     End If
 
-    LogDebug MODULE_NAME, "[Dispose] - Iniciando limpieza de recursos"
+    LogDebug MODULE_NAME, "[Dispose] Iniciando limpieza de recursos"
 
     ' 1. Detener todos los monitoreos activos
     If Not mWatchedFolders Is Nothing Then
@@ -203,18 +203,18 @@ Public Sub Dispose()
 
         For Each carpeta In mWatchedFolders.Keys
             If mInitialized And Not fw Is Nothing Then
-                LogDebug MODULE_NAME, "[Dispose] - Deteniendo monitoreo de: " & CStr(carpeta)
+                LogDebug MODULE_NAME, "[Dispose] Deteniendo monitoreo de: " & CStr(carpeta)
                 fw.StopWatching CStr(carpeta)
             End If
         Next carpeta
 
         mWatchedFolders.RemoveAll
-        LogDebug MODULE_NAME, "[Dispose] - " & countFolders & " carpetas liberadas"
+        LogDebug MODULE_NAME, "[Dispose] " & countFolders & " carpetas liberadas"
     End If
 
     ' 2. Liberar referencia al COM
     If Not fw Is Nothing Then
-        LogDebug MODULE_NAME, "[Dispose] - Liberando referencia COM"
+        LogDebug MODULE_NAME, "[Dispose] Liberando referencia COM"
         Set fw = Nothing
     End If
 
@@ -226,7 +226,7 @@ Public Sub Dispose()
     mInitialized = False
     mDisposed = True
 
-    LogInfo MODULE_NAME, "[Dispose] - Limpieza completada"
+    LogInfo MODULE_NAME, "[Dispose] Limpieza completada"
 End Sub
 
 '@Description: Indica si el objeto ha sido liberado
@@ -240,17 +240,17 @@ Public Property Get IsInitialized() As Boolean
 End Property
 
 ' =====================================================
-' MÉTODOS PRINCIPALES
+' MÃ‰TODOS PRINCIPALES
 ' =====================================================
 
 '@Description: Inicia monitoreo de una carpeta
-'@Scope: público
+'@Scope: pÃºblico
 '@ArgumentDescriptions:
 '   folderPath: ruta completa de la carpeta a monitorear
 '   includeSubdirs: monitorear subcarpetas recursivamente
 '   filterPattern: patrones de archivo separados por ; (ej: "*.xlsx;*.xlsm")
 '   eventsToWatch: array de eventos a monitorear ("Created","Deleted","Changed","Renamed")
-'   inactivityMinutes: tiempo de inactividad antes de reinicio automático
+'   inactivityMinutes: tiempo de inactividad antes de reinicio automÃ¡tico
 '   foldersOnly: TRUE para monitorear solo cambios en subcarpetas, no archivos
 Public Sub IniciarMonitoreo(ByVal folderPath As String, _
                             Optional ByVal includeSubdirs As Boolean = True, _
@@ -272,7 +272,7 @@ Public Sub IniciarMonitoreo(ByVal folderPath As String, _
 
     ' Verificar que la carpeta existe
     If Not RutaExiste(folderPath) Then
-        LogWarning MODULE_NAME, "[IniciarMonitoreo] - Ruta no existe, omitiendo monitoreo: " & folderPath
+        LogWarning MODULE_NAME, "[IniciarMonitoreo] Ruta no existe, omitiendo monitoreo: " & folderPath
         Exit Sub
     End If
 
@@ -292,16 +292,16 @@ Public Sub IniciarMonitoreo(ByVal folderPath As String, _
         mWatchedFolders.Add folderPath, Now
     End If
 
-    LogDebug MODULE_NAME, "[IniciarMonitoreo] - Monitoreo iniciado: " & folderPath & IIf(foldersOnly, " (solo subcarpetas)", "")
+    LogDebug MODULE_NAME, "[IniciarMonitoreo] Monitoreo iniciado: " & folderPath & IIf(foldersOnly, " (solo subcarpetas)", "")
 
     Exit Sub
 
 ErrHandler:
-    LogError MODULE_NAME, "[IniciarMonitoreo] - Error al iniciar monitoreo de: " & folderPath, Err.Number, Err.Description
+    LogError MODULE_NAME, "[IniciarMonitoreo] Error al iniciar monitoreo de: " & folderPath, Err.Number, Err.Description
     RaiseEvent ErrorOccurred(folderPath, Err.Description)
 End Sub
 
-'@Description: Detiene el monitoreo de una carpeta específica
+'@Description: Detiene el monitoreo de una carpeta especÃ­fica
 Public Sub DetenerMonitoreo(ByVal folderPath As String)
     On Error Resume Next
 
@@ -315,15 +315,15 @@ Public Sub DetenerMonitoreo(ByVal folderPath As String)
         End If
     End If
 
-    LogInfo MODULE_NAME, "[DetenerMonitoreo] - Monitoreo detenido: " & folderPath
+    LogInfo MODULE_NAME, "[DetenerMonitoreo] Monitoreo detenido: " & folderPath
 End Sub
 
 ' =====================================================
-' CONFIGURACIÓN DE FILTROS
+' CONFIGURACIÃ“N DE FILTROS
 ' =====================================================
 
-'@Description: Configura filtro por tamaño de archivo
-Public Sub ConfigurarFiltroTamaño(ByVal folderPath As String, _
+'@Description: Configura filtro por tamaÃ±o de archivo
+Public Sub ConfigurarFiltroTamaÃ±o(ByVal folderPath As String, _
                                   ByVal minSize As Long, _
                                   ByVal maxSize As Long)
     On Error GoTo ErrHandler
@@ -331,11 +331,11 @@ Public Sub ConfigurarFiltroTamaño(ByVal folderPath As String, _
     If Not mInitialized Or mDisposed Then Exit Sub
 
     fw.SetFilter folderPath, FileFilterType.FileSize, minSize, maxSize
-    LogDebug MODULE_NAME, "[ConfigurarFiltroTamaño] - Filtro de tamaño: " & folderPath & " [" & minSize & "-" & maxSize & "]"
+    LogDebug MODULE_NAME, "[ConfigurarFiltroTamaÃ±o] Filtro de tamaÃ±o: " & folderPath & " [" & minSize & "-" & maxSize & "]"
 
     Exit Sub
 ErrHandler:
-    LogError MODULE_NAME, "[ConfigurarFiltroTamaño] - Error: " & folderPath, Err.Number, Err.Description
+    LogError MODULE_NAME, "[ConfigurarFiltroTamaÃ±o] Error: " & folderPath, Err.Number, Err.Description
 End Sub
 
 '@Description: Configura filtro por fecha de archivo
@@ -355,11 +355,11 @@ Public Sub ConfigurarFiltroFecha(ByVal folderPath As String, _
         Case ModifiedBefore: strFilt = "modif. < " & compareDate
     End Select
 
-    LogDebug MODULE_NAME, "[ConfigurarFiltroFecha] - Filtro de fecha configurado, " & strFilt & " en: " & folderPath
+    LogDebug MODULE_NAME, "[ConfigurarFiltroFecha] Filtro de fecha configurado, " & strFilt & " en: " & folderPath
 
     Exit Sub
 ErrHandler:
-    LogError MODULE_NAME, "[ConfigurarFiltroFecha] - Error: " & folderPath, Err.Number, Err.Description
+    LogError MODULE_NAME, "[ConfigurarFiltroFecha] Error: " & folderPath, Err.Number, Err.Description
 End Sub
 
 '@Description: Configura filtro para monitorear solo carpetas
@@ -369,11 +369,11 @@ Public Sub ConfigurarFiltroSoloCarpetas(ByVal folderPath As String)
     If Not mInitialized Or mDisposed Then Exit Sub
 
     fw.SetFilter folderPath, FileFilterType.foldersOnly
-    LogDebug MODULE_NAME, "[ConfigurarFiltroSoloCarpetas] - Filtro solo carpetas en: " & folderPath
+    LogDebug MODULE_NAME, "[ConfigurarFiltroSoloCarpetas] Filtro solo carpetas en: " & folderPath
 
     Exit Sub
 ErrHandler:
-    LogError MODULE_NAME, "[ConfigurarFiltroSoloCarpetas] - Error: " & folderPath, Err.Number, Err.Description
+    LogError MODULE_NAME, "[ConfigurarFiltroSoloCarpetas] Error: " & folderPath, Err.Number, Err.Description
 End Sub
 
 '@Description: Limpia todos los filtros de una carpeta
@@ -383,10 +383,10 @@ Public Sub LimpiarFiltros(ByVal folderPath As String)
 End Sub
 
 ' =====================================================
-' CONFIGURACIÓN DE ACCIONES AUTOMÁTICAS
+' CONFIGURACIÃ“N DE ACCIONES AUTOMÃTICAS
 ' =====================================================
 
-'@Description: Configura acción de mover archivos automáticamente
+'@Description: Configura acciÃ³n de mover archivos automÃ¡ticamente
 Public Sub ConfigurarAccionMover(ByVal folderPath As String, _
                                  ByVal targetFolder As String)
     On Error GoTo ErrHandler
@@ -394,14 +394,14 @@ Public Sub ConfigurarAccionMover(ByVal folderPath As String, _
     If Not mInitialized Or mDisposed Then Exit Sub
 
     fw.SetAutoAction folderPath, AutoActionType.MoveFile, targetFolder
-    LogDebug MODULE_NAME, "[ConfigurarAccionMover] - Accion mover configurada: " & folderPath & " -> " & targetFolder
+    LogDebug MODULE_NAME, "[ConfigurarAccionMover] Accion mover configurada: " & folderPath & " -> " & targetFolder
 
     Exit Sub
 ErrHandler:
-    LogError MODULE_NAME, "[ConfigurarAccionMover] - Error", Err.Number, Err.Description
+    LogCurrentError MODULE_NAME, "[ConfigurarAccionMover]"
 End Sub
 
-'@Description: Configura acción de copiar archivos automáticamente
+'@Description: Configura acciÃ³n de copiar archivos automÃ¡ticamente
 Public Sub ConfigurarAccionCopiar(ByVal folderPath As String, _
                                   ByVal targetFolder As String)
     On Error GoTo ErrHandler
@@ -409,14 +409,14 @@ Public Sub ConfigurarAccionCopiar(ByVal folderPath As String, _
     If Not mInitialized Or mDisposed Then Exit Sub
 
     fw.SetAutoAction folderPath, AutoActionType.CopyFile, targetFolder
-    LogDebug MODULE_NAME, "[ConfigurarAccionCopiar] - Accion copiar configurada: " & folderPath & " -> " & targetFolder
+    LogDebug MODULE_NAME, "[ConfigurarAccionCopiar] Accion copiar configurada: " & folderPath & " -> " & targetFolder
 
     Exit Sub
 ErrHandler:
-    LogError MODULE_NAME, "[ConfigurarAccionCopiar] - Error", Err.Number, Err.Description
+    LogCurrentError MODULE_NAME, "[ConfigurarAccionCopiar]"
 End Sub
 
-'@Description: Configura acción de archivar con timestamp
+'@Description: Configura acciÃ³n de archivar con timestamp
 Public Sub ConfigurarAccionArchivar(ByVal folderPath As String, _
                                     ByVal archiveFolder As String)
     On Error GoTo ErrHandler
@@ -424,14 +424,14 @@ Public Sub ConfigurarAccionArchivar(ByVal folderPath As String, _
     If Not mInitialized Or mDisposed Then Exit Sub
 
     fw.SetAutoAction folderPath, AutoActionType.Archive, archiveFolder
-    LogDebug MODULE_NAME, "[ConfigurarAccionArchivar] - Accion archivar configurada: " & folderPath & " -> " & archiveFolder
+    LogDebug MODULE_NAME, "[ConfigurarAccionArchivar] Accion archivar configurada: " & folderPath & " -> " & archiveFolder
 
     Exit Sub
 ErrHandler:
-    LogError MODULE_NAME, "[ConfigurarAccionArchivar] - Error", Err.Number, Err.Description
+    LogCurrentError MODULE_NAME, "[ConfigurarAccionArchivar]"
 End Sub
 
-'@Description: Limpia acciones automáticas de una carpeta
+'@Description: Limpia acciones automÃ¡ticas de una carpeta
 Public Sub LimpiarAcciones(ByVal folderPath As String)
     On Error Resume Next
     If mInitialized And Not mDisposed Then fw.ClearAutoAction folderPath
@@ -496,22 +496,22 @@ End Sub
 ' =====================================================
 
 Private Sub fw_FileCreated(ByVal folder As String, ByVal fileName As String)
-    LogDebug MODULE_NAME, "[callback: FolderWatcher.Monitor FileCreated] - " & fileName & " en " & folder
+    LogDebug MODULE_NAME, "[callback: FolderWatcher.Monitor FileCreated] " & fileName & " en " & folder
     RaiseEvent FileCreated(folder, fileName)
 End Sub
 
 Private Sub fw_FileDeleted(ByVal folder As String, ByVal fileName As String)
-    LogDebug MODULE_NAME, "[callback: FolderWatcher.Monitor FileDeleted] - " & fileName & " en " & folder
+    LogDebug MODULE_NAME, "[callback: FolderWatcher.Monitor FileDeleted] " & fileName & " en " & folder
     RaiseEvent FileDeleted(folder, fileName)
 End Sub
 
 Private Sub fw_FileChanged(ByVal folder As String, ByVal fileName As String)
-    LogDebug MODULE_NAME, "[callback: FolderWatcher.Monitor FileChanged] - " & fileName & " en " & folder
+    LogDebug MODULE_NAME, "[callback: FolderWatcher.Monitor FileChanged] " & fileName & " en " & folder
     RaiseEvent FileChanged(folder, fileName)
 End Sub
 
 Private Sub fw_FileRenamed(ByVal folder As String, ByVal oldName As String, ByVal newName As String)
-    LogDebug MODULE_NAME, "[callback: FolderWatcher.Monitor FileRenamed] - " & oldName & " -> " & newName & " en " & folder
+    LogDebug MODULE_NAME, "[callback: FolderWatcher.Monitor FileRenamed] " & oldName & " -> " & newName & " en " & folder
     RaiseEvent FileRenamed(folder, oldName, newName)
 End Sub
 
@@ -521,34 +521,34 @@ Private Sub fw_Heartbeat(ByVal folder As String, ByVal lastUpdate As Date)
 End Sub
 
 Private Sub fw_ErrorOccurred(ByVal folder As String, ByVal errorMessage As String)
-    LogError MODULE_NAME, "[callback: FolderWatcher.Monitor ErrorOccurred] - Error COM en " & folder & ": " & errorMessage
+    LogError MODULE_NAME, "[callback: FolderWatcher.Monitor ErrorOccurred] Error COM en " & folder & ": " & errorMessage
     RaiseEvent ErrorOccurred(folder, errorMessage)
 End Sub
 
 ' Manejadores para eventos de subcarpetas
 Private Sub fw_SubfolderCreated(ByVal parentFolder As String, ByVal subfolderName As String)
-    LogDebug MODULE_NAME, "[callback: FolderWatcher.Monitor SubfolderCreated] - " & subfolderName & " en " & parentFolder
+    LogDebug MODULE_NAME, "[callback: FolderWatcher.Monitor SubfolderCreated] " & subfolderName & " en " & parentFolder
     RaiseEvent SubfolderCreated(parentFolder, subfolderName)
 End Sub
 
 Private Sub fw_SubfolderDeleted(ByVal parentFolder As String, ByVal subfolderName As String)
-    LogDebug MODULE_NAME, "[callback: FolderWatcher.Monitor SubfolderDeleted] - " & subfolderName & " en " & parentFolder
+    LogDebug MODULE_NAME, "[callback: FolderWatcher.Monitor SubfolderDeleted] " & subfolderName & " en " & parentFolder
     RaiseEvent SubfolderDeleted(parentFolder, subfolderName)
 End Sub
 
 Private Sub fw_SubfolderRenamed(ByVal parentFolder As String, ByVal oldName As String, ByVal newName As String)
-    LogDebug MODULE_NAME, "[callback: FolderWatcher.Monitor SubfolderRenamed] - " & oldName & " -> " & newName & " en " & parentFolder
+    LogDebug MODULE_NAME, "[callback: FolderWatcher.Monitor SubfolderRenamed] " & oldName & " -> " & newName & " en " & parentFolder
     RaiseEvent SubfolderRenamed(parentFolder, oldName, newName)
 End Sub
 
-' Manejadores para eventos de reconexión automática
+' Manejadores para eventos de reconexiÃ³n automÃ¡tica
 Private Sub fw_WatcherReconnected(ByVal folder As String, ByVal attempts As Long)
-    LogDebug MODULE_NAME, "[callback: FolderWatcher.Monitor WatcherReconnected] - " & folder & " (tras " & attempts & " intento(s))"
+    LogDebug MODULE_NAME, "[callback: FolderWatcher.Monitor WatcherReconnected] " & folder & " (tras " & attempts & " intento(s))"
     RaiseEvent WatcherReconnected(folder, attempts)
 End Sub
 
 Private Sub fw_WatcherReconnectionFailed(ByVal folder As String, ByVal reason As String)
-    LogError MODULE_NAME, "[callback: FolderWatcher.Monitor WatcherReconnectionFailed] - " & folder & " - " & reason
+    LogError MODULE_NAME, "[callback: FolderWatcher.Monitor WatcherReconnectionFailed] " & folder & " - " & reason
     RaiseEvent WatcherReconnectionFailed(folder, reason)
 End Sub
 
@@ -556,17 +556,17 @@ End Sub
 ' FUNCIONES DE UTILIDAD
 ' =====================================================
 
-'@Description: Obtiene la ruta donde debería estar el COM (carpeta AddIns)
+'@Description: Obtiene la ruta donde deberÃ­a estar el COM (carpeta AddIns)
 Private Function ObtenerRutaCOM() As String
     ObtenerRutaCOM = Application.UserLibraryPath & FOLDERWATCHERCOM_NAME
 End Function
 
-'@Description: Obtiene la ruta donde debería estar el manifest (carpeta AddIns)
+'@Description: Obtiene la ruta donde deberÃ­a estar el manifest (carpeta AddIns)
 Private Function ObtenerRutaManifest() As String
     ObtenerRutaManifest = Application.UserLibraryPath & FOLDERWATCHERCOM_NAME & ".manifest"
 End Function
 
-'@Description: Verifica si los archivos del COM están presentes
+'@Description: Verifica si los archivos del COM estÃ¡n presentes
 Private Function ComprobarArchivosCOM() As Boolean
     Dim fso As Object
     Set fso = CreateObject("Scripting.FileSystemObject")
@@ -607,8 +607,8 @@ Public Sub TestMonitoreoSubcarpetas()
            "Ahora crea, renombra o elimina subcarpetas para probar.", vbInformation
 End Sub
 
-'@Description: Test de filtros de tamaño
-Public Sub TestFiltroTamaño()
+'@Description: Test de filtros de tamaÃ±o
+Public Sub TestFiltroTamaÃ±o()
     Dim rutaTest As String
     rutaTest = Environ("TEMP") & "\TestFiltros"
     
@@ -624,13 +624,13 @@ Public Sub TestFiltroTamaño()
         eventsToWatch:=Array("Created"), _
         inactivityMinutes:=5
     
-    ConfigurarFiltroTamaño rutaTest, 1024, 999999999
+    ConfigurarFiltroTamaÃ±o rutaTest, 1024, 999999999
     
-    MsgBox "Monitoreo con filtro de tamaño iniciado en:" & vbCrLf & rutaTest & vbCrLf & vbCrLf & _
-           "Solo detectará archivos mayores a 1 KB", vbInformation
+    MsgBox "Monitoreo con filtro de tamaÃ±o iniciado en:" & vbCrLf & rutaTest & vbCrLf & vbCrLf & _
+           "Solo detectarÃ¡ archivos mayores a 1 KB", vbInformation
 End Sub
 
-'@Description: Test de acción automática de mover
+'@Description: Test de acciÃ³n automÃ¡tica de mover
 Public Sub TestAccionMover()
     Dim rutaOrigen As String, rutaDestino As String
     rutaOrigen = Environ("TEMP") & "\TestOrigen"
@@ -640,7 +640,7 @@ Public Sub TestAccionMover()
     If Not RutaExiste(rutaOrigen) Then MkDir rutaOrigen
     If Not RutaExiste(rutaDestino) Then MkDir rutaDestino
     
-    ' Configurar monitoreo con acción de mover
+    ' Configurar monitoreo con acciÃ³n de mover
     IniciarMonitoreo _
         folderPath:=rutaOrigen, _
         includeSubdirs:=False, _
@@ -650,16 +650,16 @@ Public Sub TestAccionMover()
     
     ConfigurarAccionMover rutaOrigen, rutaDestino
     
-    MsgBox "Test de acción automática iniciado:" & vbCrLf & _
+    MsgBox "Test de acciÃ³n automÃ¡tica iniciado:" & vbCrLf & _
            "Origen: " & rutaOrigen & vbCrLf & _
            "Destino: " & rutaDestino & vbCrLf & vbCrLf & _
-           "Los archivos .txt se moverán automáticamente", vbInformation
+           "Los archivos .txt se moverÃ¡n automÃ¡ticamente", vbInformation
 End Sub
 
 '@Description: Test completo del sistema
 Public Sub TestSistemaCompleto()
     Debug.Print "==== TEST COMPLETO FOLDERWATCHER ===="
-    Debug.Print "Configuración: " & Configuracion
+    Debug.Print "ConfiguraciÃ³n: " & Configuracion
     
     Dim carpetas As Variant
     carpetas = CarpetasActivas()
@@ -675,7 +675,7 @@ Public Sub TestSistemaCompleto()
             stats = ObtenerEstadisticas(CStr(carpetas(i)))
             
             If IsArray(stats) Then
-                Debug.Print "     Eventos: " & stats(1) & " | Última actividad: " & stats(6)
+                Debug.Print "     Eventos: " & stats(1) & " | Ãšltima actividad: " & stats(6)
             End If
         Next i
     End If

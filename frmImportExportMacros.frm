@@ -1,4 +1,4 @@
-VERSION 5.00
+ï»¿VERSION 5.00
 Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} frmImportExportMacros 
    Caption         =   "Seleccionar Proyecto de macros"
    ClientHeight    =   1650
@@ -14,10 +14,11 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
+
 ' ==============================================================================================================
 ' FORMULARIO: frmImportExportMacros
-' DESCRIPCIÓN: Formulario modal para seleccionar un libro (Workbook) de entre los abiertos actualmente o
-'              los complementos (Add-ins) instalados. Usado para operaciones de importación/exportación de
+' DESCRIPCIÃ“N: Formulario modal para seleccionar un libro (Workbook) de entre los abiertos actualmente o
+'              los complementos (Add-ins) instalados. Usado para operaciones de importaciÃ³n/exportaciÃ³n de
 '              componentes VBA.
 ' ==============================================================================================================
 
@@ -33,13 +34,13 @@ Private Const MODULE_NAME As String = "frmImportExportMacros"
 Private libroSeleccionado As Workbook
 
 ' -------------------------------------------------------------------------------------------------------------
-' PROPIEDADES PÚBLICAS
+' PROPIEDADES PÃšBLICAS
 ' -------------------------------------------------------------------------------------------------------------
 
 '@Description: Propiedad de solo lectura que devuelve el libro seleccionado por el usuario
 '@Scope: Public
 '@ArgumentDescriptions: (sin argumentos)
-'@Returns: Workbook - El libro seleccionado, o Nothing si no se seleccionó ninguno
+'@Returns: Workbook - El libro seleccionado, o Nothing si no se seleccionÃ³ ninguno
 '@Dependencies: libroSeleccionado (variable privada)
 '@Note: El formulario debe cerrarse antes de acceder a esta propiedad
 Public Property Get WorkbookSeleccionado() As Workbook
@@ -47,7 +48,7 @@ Public Property Get WorkbookSeleccionado() As Workbook
 End Property
 
 ' -------------------------------------------------------------------------------------------------------------
-' INICIALIZACIÓN DEL FORMULARIO
+' INICIALIZACIÃ“N DEL FORMULARIO
 ' -------------------------------------------------------------------------------------------------------------
 
 '@Description: Inicializa el formulario cargando la lista de libros abiertos y complementos disponibles
@@ -56,7 +57,7 @@ End Property
 '@ArgumentDescriptions: (sin argumentos)
 '@Returns: (ninguno)
 '@Dependencies: Application.Workbooks, Application.AddIns
-'@Note: Se ejecuta automáticamente al crear el formulario. Incluye tanto libros normales como Add-ins
+'@Note: Se ejecuta automÃ¡ticamente al crear el formulario. Incluye tanto libros normales como Add-ins
 Private Sub UserForm_Initialize()
     Dim Wb As Workbook, wbaddin As AddIn
     For Each Wb In Application.Workbooks
@@ -71,13 +72,13 @@ End Sub
 ' EVENTOS DE BOTONES
 ' -------------------------------------------------------------------------------------------------------------
 
-'@Description: Maneja el clic en el botón Aceptar, validando y guardando la selección del usuario
+'@Description: Maneja el clic en el botÃ³n Aceptar, validando y guardando la selecciÃ³n del usuario
 '@Scope: Private (evento)
 '@ArgumentDescriptions: (sin argumentos)
 '@Returns: (ninguno)
 '@Dependencies: libroSeleccionado, cmbLibros
-'@Note: Valida que se haya seleccionado un libro y que exista en la colección Workbooks. Oculta el
-'        formulario si la selección es válida
+'@Note: Valida que se haya seleccionado un libro y que exista en la colecciÃ³n Workbooks. Oculta el
+'        formulario si la selecciÃ³n es vÃ¡lida
 Private Sub btnAceptar_Click()
     Dim nombre As String
     nombre = Me.cmbLibros.Value
@@ -102,13 +103,13 @@ End Sub
 '@Description: Maneja el evento de cierre del formulario, interceptando el cierre con la X
 '@Scope: Private (evento)
 '@ArgumentDescriptions: Cancel (Integer): Permite cancelar el cierre
-'   | CloseMode (Integer): Indica el modo de cierre (X, código, etc)
+'   | CloseMode (Integer): Indica el modo de cierre (X, cÃ³digo, etc)
 '@Returns: (ninguno)
 '@Dependencies: Ninguna
 '@Note: Si el usuario cierra con la X, cancela el cierre real y solo oculta el formulario, permitiendo
-'        que el código principal detecte que no se seleccionó ningún libro
+'        que el cÃ³digo principal detecte que no se seleccionÃ³ ningÃºn libro
 Private Sub UserForm_QueryClose(Cancel As Integer, CloseMode As Integer)
-    If CloseMode = vbFormControlMenu Then        ' Cerró con la X
+    If CloseMode = vbFormControlMenu Then        ' CerrÃ³ con la X
         Cancel = True                            ' Evitar cerrar directamente
         Me.hide
     End If

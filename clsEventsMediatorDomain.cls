@@ -1,4 +1,4 @@
-VERSION 1.0 CLASS
+﻿VERSION 1.0 CLASS
 BEGIN
   MultiUse = -1  'True
 END
@@ -36,7 +36,7 @@ Private mCtxState As clsExecutionContextState
 Private mFileMgr As clsFileManager   ' Referencia sin WithEvents (solo para consultas)
 
 '--------------------------------------------------------------
-' Inicializaci�n
+' Inicialización
 '--------------------------------------------------------------
 Private Sub Class_Initialize()
     LogInfo MODULE_NAME, "[Class_Initialize]"
@@ -102,7 +102,7 @@ End Sub
 ' Evento: cambios detectados en oportunidades (desde OpportunitiesMgr)
 ' -------------------------------------------------------------
 Private Sub mOpportunities_OpportunityCollectionUpdate(ByVal cambios As String)
-    LogInfo MODULE_NAME, "[callback: clsOpportunitiesMgr OpportunityCollectionUpdate] - cambios detectados: " & cambios
+    LogInfo MODULE_NAME, "[callback: clsOpportunitiesMgr OpportunityCollectionUpdate] cambios detectados: " & cambios
 End Sub
 'TODO: VIOLACION ARQUITECTONICA - El mediador de dominio no deberia usar clsFileXLS directamente.
 '      Esta logica de "mover archivo a carpeta de oportunidad" deberia:
@@ -110,7 +110,7 @@ End Sub
 '      2. El mediador de infraestructura deberia exponer un evento/metodo semantico
 '      Pendiente de decision cuando se tenga la especificacion de dominio.
 Private Sub mOpportunities_currOpportunityChanged(ByVal Index As Long, ByVal Path As String)
-    LogInfo MODULE_NAME, "[callback: clsOpportunitiesMgr currOpportunityChanged] - Oportunidad seleccionada: " & Path
+    LogInfo MODULE_NAME, "[callback: clsOpportunitiesMgr currOpportunityChanged] Oportunidad seleccionada: " & Path
 
     ' TEMPORAL: Uso directo de clsFileXLS (ver TODO arriba)
     Dim f As clsFileXLS
@@ -144,7 +144,7 @@ Private Sub mInfraMediador_ActiveFileSessionChanged(ByVal filePath As String, By
         End If
     End If
 
-    LogInfo MODULE_NAME, "[InfraMediador_ActiveFileSessionChanged] - File=" & fileName & _
+    LogInfo MODULE_NAME, "[InfraMediador_ActiveFileSessionChanged] File=" & fileName & _
                          ", IsOpportunity=" & isOpportunityFile
 End Sub
 
@@ -214,7 +214,7 @@ End Sub
 '@Description: Evento semantico: el contexto de infraestructura se ha invalidado
 '@Note: Permite al dominio prepararse para la invalidacion sin conocer detalles tecnicos
 Private Sub mInfraMediador_InfraContextInvalidated()
-    LogWarning MODULE_NAME, "[InfraMediador_InfraContextInvalidated] - Contexto invalidado, notificando a dominio"
+    LogWarning MODULE_NAME, "[InfraMediador_InfraContextInvalidated] Contexto invalidado, notificando a dominio"
 
     ' Pausar monitoreo de FS si esta activo (puede tener referencias invalidas)
     On Error Resume Next
@@ -228,7 +228,7 @@ End Sub
 '@Note: Permite al dominio reenganchar sus dependencias y refrescar estado
 Private Sub mInfraMediador_InfraContextReinitialized()
     On Error GoTo ErrHandler
-    LogInfo MODULE_NAME, "[InfraMediador_InfraContextReinitialized] - Reconectando dominio"
+    LogInfo MODULE_NAME, "[InfraMediador_InfraContextReinitialized] Reconectando dominio"
 
     ' Reanudar monitoreo de FS
     If Not mFSMonitoringCoord Is Nothing Then

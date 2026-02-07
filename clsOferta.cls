@@ -1,4 +1,4 @@
-VERSION 1.0 CLASS
+ï»¿VERSION 1.0 CLASS
 BEGIN
   MultiUse = -1  'True
 END
@@ -14,16 +14,16 @@ Private Const MODULE_NAME As String = "clsOferta"
 
 Private m_DatosGenerales As tOfertasDatosGenerales
 Private m_Otros As Collection
-'TODO: implementar métodos para asignar y usar estos campos, de mantenimiento del estado de un registro (¿se ha cambiado? / ¿se ha escrito en db?)
+'TODO: implementar mÃ©todos para asignar y usar estos campos, de mantenimiento del estado de un registro (Â¿se ha cambiado? / Â¿se ha escrito en db?)
 Private m_IsDirty As Boolean
 Private m_IsNew As Boolean
-'TODO: implementar validaciones de los campos a asignar (OFER_FECHA no nula, GASE_ID válido, OFOT_LINEA incremental), antes de escribir a la db
+'TODO: implementar validaciones de los campos a asignar (OFER_FECHA no nula, GASE_ID vÃ¡lido, OFOT_LINEA incremental), antes de escribir a la db
 'TODO:Lectura completa por JOIN, no N recordsets (Como en formulario de Access); Un SQL maestro + subrecordsets en memoria
-'TODO:Catálogos cacheados: GASE_ID -> GASE_DESCRIPCION; Diccionarios cargados una vez
+'TODO:CatÃ¡logos cacheados: GASE_ID -> GASE_DESCRIPCION; Diccionarios cargados una vez
 'TODO:Escritura controlada: Crear oferta desde Excel / Insert + update selectivo / Sin borrar y recrear salvo colecciones
 'TODO:Control de concurrencia
 'TODO:Logs de operaciones
-'TODO:Validación previa a escritura
+'TODO:ValidaciÃ³n previa a escritura
 'TODO:Eventual multiusuario
 
 Private Sub Class_Initialize()

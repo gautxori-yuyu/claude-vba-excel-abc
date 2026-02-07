@@ -1,4 +1,4 @@
-VERSION 1.0 CLASS
+ï»¿VERSION 1.0 CLASS
 BEGIN
   MultiUse = -1  'True
 END
@@ -7,7 +7,7 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
-'@Description: Estado cached del contexto de ejecución Excel (Workbook, Worksheet, Chart)
+'@Description: Estado cached del contexto de ejecuciÃ³n Excel (Workbook, Worksheet, Chart)
 '@Category: State
 '@Folder "2-Infraestructura.Estado"
 Option Explicit
@@ -23,17 +23,17 @@ Private m_xlApp As Application          ' Referencia para lecturas directas (Sel
 
 Private Type T_CachedChartInfo
     Chart As Chart
-    SourceType As String                ' "ActiveChart", "ChartObject", etc.
-    ParentType As String                ' "ChartSheet", "Worksheet"
+    sourceType As String                ' "ActiveChart", "ChartObject", etc.
+    parentType As String                ' "ChartSheet", "Worksheet"
     IsValid As Boolean
 End Type
 Private m_chartInfo As T_CachedChartInfo
 
-' Flag de validez del contexto (protección contra reset)
+' Flag de validez del contexto (protecciÃ³n contra reset)
 Private m_IsContextValid As Boolean
 
 ' ==========================================
-' INICIALIZACIÓN
+' INICIALIZACIÃ“N
 ' ==========================================
 
 Friend Sub SetApplication(oApp As Application)
@@ -50,7 +50,7 @@ Private Sub Class_Terminate()
 End Sub
 
 ' ==========================================
-' CONSULTAS PÜBLICAS (Property Get)
+' CONSULTAS PÃœBLICAS (Property Get)
 ' ==========================================
 
 Public Property Get Workbook() As Workbook
@@ -84,7 +84,7 @@ End Property
 
 Public Property Get Chart() As Chart
     On Error GoTo SafeExit
-    ' Si el cache es válido, devolver valor cached
+    ' Si el cache es vÃ¡lido, devolver valor cached
     If m_chartInfo.IsValid Then
         Set Chart = m_chartInfo.Chart
         Exit Property
@@ -137,19 +137,19 @@ End Function
 ' ACTUALIZADORES (Friend - llamados SOLO por clsExecutionContextMgr)
 ' ==========================================
 
-Friend Sub UpdateWorkbook(wb As Workbook)
-    Set m_Workbook = wb
+Friend Sub UpdateWorkbook(Wb As Workbook)
+    Set m_Workbook = Wb
 End Sub
 
 Friend Sub UpdateWorksheet(ws As Worksheet)
     Set m_Worksheet = ws
 End Sub
 
-Friend Sub UpdateChart(ch As Chart, ByVal sourceType As String, ByVal parentType As String)
-    Set m_chartInfo.Chart = ch
-    m_chartInfo.SourceType = sourceType
-    m_chartInfo.ParentType = parentType
-    m_chartInfo.IsValid = Not (ch Is Nothing)
+Friend Sub UpdateChart(Ch As Chart, ByVal sourceType As String, ByVal parentType As String)
+    Set m_chartInfo.Chart = Ch
+    m_chartInfo.sourceType = sourceType
+    m_chartInfo.parentType = parentType
+    m_chartInfo.IsValid = Not (Ch Is Nothing)
 End Sub
 
 Friend Sub InvalidateChart()
@@ -170,7 +170,7 @@ Friend Sub ValidateContext()
 End Sub
 
 ' ==========================================
-' DIAGNÓSTICO
+' DIAGNÃ“STICO
 ' ==========================================
 
 Public Function Diagnostics() As String
@@ -180,7 +180,7 @@ Public Function Diagnostics() As String
     s = s & "  Worksheet: " & IIf(Me.HasWorksheet, Me.Worksheet.Name, "(ninguna)") & vbCrLf
     s = s & "  Selection: " & IIf(Me.HasSelection, TypeName(Me.Selection), "(nada)") & vbCrLf
     If Me.HasChart Then
-        s = s & "  Chart: Si (" & m_chartInfo.SourceType & " en " & m_chartInfo.ParentType & ")" & vbCrLf
+        s = s & "  Chart: Si (" & m_chartInfo.sourceType & " en " & m_chartInfo.parentType & ")" & vbCrLf
     Else
         s = s & "  Chart: No" & vbCrLf
     End If

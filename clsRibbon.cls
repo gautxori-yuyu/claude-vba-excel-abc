@@ -1,4 +1,4 @@
-VERSION 1.0 CLASS
+﻿VERSION 1.0 CLASS
 BEGIN
   MultiUse = -1  'True
 END
@@ -6,7 +6,7 @@ Attribute VB_Name = "clsRibbon"
 Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = False
-Attribute VB_Exposed = True
+Attribute VB_Exposed = False
 ' ==========================================
 ' CLASE DE EVENTOS DEL RIBBON
 ' ==========================================
@@ -83,13 +83,13 @@ Private Sub Class_Terminate()
 End Sub
 
 Public Sub Init(ByRef ribbonObj As IRibbonUI)
-    LogDebug MODULE_NAME, "[Init] - Recibiendo puntero IRibbonUI"
+    LogDebug MODULE_NAME, "[Init] Recibiendo puntero IRibbonUI"
     Set mribbonUI = ribbonObj
 
     If ribbonObj Is Nothing Then
-        LogWarning MODULE_NAME, "[Init] - Se paso Nothing como puntero"
+        LogWarning MODULE_NAME, "[Init] Se paso Nothing como puntero"
     Else
-        LogDebug MODULE_NAME, "[Init] - Puntero establecido correctamente"
+        LogDebug MODULE_NAME, "[Init] Puntero establecido correctamente"
     End If
     mWasEverInitialized = True
 End Sub
@@ -106,7 +106,7 @@ Public Sub Initialize(oOpportunities As clsOpportunitiesMgr, _
 End Sub
 
 Public Sub StopEvents()
-    LogDebug MODULE_NAME, "[StopEvents] - Liberando puntero"
+    LogDebug MODULE_NAME, "[StopEvents] Liberando puntero"
     Set mribbonUI = Nothing
     Set mOpportunities = Nothing
     Set mFileMgr = Nothing
@@ -154,7 +154,7 @@ Public Sub ToggleModo()
     End If
 End Sub
 
-'@Description: Activa una pesta�a del Ribbon por id
+'@Description: Activa una pestaña del Ribbon por id
 '@Scope: Friend (uso exclusivo desde clsApplication)
 '@ArgumentDescriptions: tabId | id del tab a activar
 '@Category: UI / Ribbon
@@ -259,7 +259,7 @@ Private Function TryAutoRecover() As Boolean
     On Error GoTo ErrHandler
 
     mIsRecovering = True
-    LogInfo MODULE_NAME, "[TryAutoRecover] - Iniciando"
+    LogInfo MODULE_NAME, "[TryAutoRecover] Iniciando"
 
     ' Usar el modulo de recuperacion
     TryAutoRecover = TryRecoverRibbon()
@@ -268,7 +268,7 @@ Private Function TryAutoRecover() As Boolean
     Exit Function
 
 ErrHandler:
-    LogError MODULE_NAME, "[TryAutoRecover] - Error", Err.Number, Err.Description
+    LogCurrentError MODULE_NAME, "[TryAutoRecover]"
     mIsRecovering = False
     TryAutoRecover = False
 End Function
@@ -368,19 +368,19 @@ Private Sub mChartMgr_ChartDeactivated(cht As Chart)
     InvalidarControl "btnInvertirSeries"
 End Sub
 
-Private Sub mCtxMgr_WorkbookActivated(ByVal wb As Workbook)
+Private Sub mCtxMgr_WorkbookActivated(ByVal Wb As Workbook)
     ' Necesario para re-evaluar btnCGASING cuando una hoja se copia a otro libro
     ' (WorkbookActivated se dispara al activar el libro destino)
     InvalidarControl "btnGenerarGraficos"
     InvalidarControl "btnCGASING"
 End Sub
 
-Private Sub mCtxMgr_SheetActivated(ByVal sh As Object)
+Private Sub mCtxMgr_SheetActivated(ByVal Sh As Object)
     InvalidarControl "btnGenerarGraficos"
     InvalidarControl "btnCGASING"
 End Sub
 
-Private Sub mCtxMgr_SheetDeactivated(ByVal sh As Object)
+Private Sub mCtxMgr_SheetDeactivated(ByVal Sh As Object)
     InvalidarControl "btnGenerarGraficos"
     InvalidarControl "btnCGASING"
 End Sub

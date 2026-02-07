@@ -1,4 +1,4 @@
-VERSION 1.0 CLASS
+﻿VERSION 1.0 CLASS
 BEGIN
   MultiUse = -1  'True
 END
@@ -16,4 +16,5 @@ Private Sub Worksheet_Change(ByVal Target As Range)
         Call GenerarListasUnidades
     End If
 End Sub
+
 

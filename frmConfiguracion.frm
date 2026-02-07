@@ -1,6 +1,6 @@
-VERSION 5.00
+ÔªøVERSION 5.00
 Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} frmConfiguracion 
-   Caption         =   "ConfiguraciÛn"
+   Caption         =   "Configuraci√≥n"
    ClientHeight    =   8715.001
    ClientLeft      =   120
    ClientTop       =   465
@@ -13,11 +13,12 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
+
 ' ==============================================================================================================
 ' FORMULARIO: frmConfiguracion
-' DESCRIPCI”N: Formulario para configurar los par·metros de la aplicaciÛn ABC_ofertas. Permite al usuario
-'              establecer rutas de carpetas, configurar n˙meros SAM, seleccionar carpetas de im·genes y
-'              planos de compresores, etc. Todos los cambios se persisten en la configuraciÛn de la aplicaciÛn.
+' DESCRIPCI√ìN: Formulario para configurar los par√°metros de la aplicaci√≥n ABC_ofertas. Permite al usuario
+'              establecer rutas de carpetas, configurar n√∫meros SAM, seleccionar carpetas de im√°genes y
+'              planos de compresores, etc. Todos los cambios se persisten en la configuraci√≥n de la aplicaci√≥n.
 ' ==============================================================================================================
 
 '@Folder "3-UI.Configuracion"
@@ -27,16 +28,16 @@ Private Const MODULE_NAME As String = "frmConfiguracion"
 Private mConf As clsConfiguration
 
 ' -------------------------------------------------------------------------------------------------------------
-' INICIALIZACI”N DEL FORMULARIO
+' INICIALIZACI√ìN DEL FORMULARIO
 ' -------------------------------------------------------------------------------------------------------------
 
-'@Description: Inicializa el formulario cargando la configuraciÛn actual desde la aplicaciÛn
+'@Description: Inicializa el formulario cargando la configuraci√≥n actual desde la aplicaci√≥n
 '@Scope: Private (evento)
 '@ArgumentDescriptions: (sin argumentos)
 '@Returns: (ninguno)
 '@Dependencies: clsApplication (variable App)
-'@Note: Se ejecuta autom·ticamente al abrir el formulario. Carga todos los valores actuales de
-'        configuraciÛn en los controles del formulario
+'@Note: Se ejecuta autom√°ticamente al abrir el formulario. Carga todos los valores actuales de
+'        configuraci√≥n en los controles del formulario
 Private Sub UserForm_Initialize()
 End Sub
 
@@ -44,12 +45,12 @@ Private Sub UserForm_Terminate()
     Unload Me
 End Sub
 
-'@Description: Carga los valores de configuraciÛn actuales desde la aplicaciÛn a los controles del formulario
+'@Description: Carga los valores de configuraci√≥n actuales desde la aplicaci√≥n a los controles del formulario
 '@Scope: Private
 '@ArgumentDescriptions: (sin argumentos)
 '@Returns: (ninguno)
-'@Dependencies: mConf (objeto de configuraciÛn)
-'@Note: Sincroniza todos los TextBox y ListBox con los valores almacenados en la configuraciÛn
+'@Dependencies: mConf (objeto de configuraci√≥n)
+'@Note: Sincroniza todos los TextBox y ListBox con los valores almacenados en la configuraci√≥n
 Public Sub Cargar(oConf As clsConfiguration)
     
     On Error GoTo ErrHandler
@@ -74,11 +75,11 @@ ErrHandler:
 End Sub
 
 ' -------------------------------------------------------------------------------------------------------------
-' EVENTOS DE CAMBIO DE CONTROLES - SINCRONIZACI”N CON CONFIGURACI”N
+' EVENTOS DE CAMBIO DE CONTROLES - SINCRONIZACI√ìN CON CONFIGURACI√ìN
 ' -------------------------------------------------------------------------------------------------------------
 
-'@Description: Maneja el evento de cambio en el TextBox del n˙mero SAM, sincronizando el valor con
-'              la configuraciÛn de la aplicaciÛn
+'@Description: Maneja el evento de cambio en el TextBox del n√∫mero SAM, sincronizando el valor con
+'              la configuraci√≥n de la aplicaci√≥n
 '@Scope: Private (evento)
 '@ArgumentDescriptions: (sin argumentos)
 '@Returns: (ninguno)
@@ -89,131 +90,131 @@ Private Sub TextBoxSAM_AfterUpdate()
     ' Evitar bucle infinito: solo asignar si el valor ha cambiado
     If TextBoxSAM.Text = "" Then Exit Sub
     If Not IsNumeric(TextBoxSAM.Text) Then
-        MsgBox "Valor no v·lido. Introduce un n˙mero entre 0 y 255", vbExclamation
+        MsgBox "Valor no v√°lido. Introduce un n√∫mero entre 0 y 255", vbExclamation
     ElseIf CInt(TextBoxSAM.Text) <> mConf.SAM Then
-        Debug.Print "[frmConfiguracion TextBoxSAM_Change] AsignaciÛn de SAM desde UserForm"
+        LogInfo MODULE_NAME, "[frmConfiguracion TextBoxSAM_Change] Asignaci√≥n de SAM desde UserForm"
         mConf.SAM = CInt(TextBoxSAM.Text)
     End If
 End Sub
 
 ' -------------------------------------------------------------------------------------------------------------
-' EVENTOS DE BOTONES - SELECCI”N DE CARPETAS INDIVIDUALES
+' EVENTOS DE BOTONES - SELECCI√ìN DE CARPETAS INDIVIDUALES
 ' -------------------------------------------------------------------------------------------------------------
 
-'@Description: Maneja el clic en el botÛn de selecciÛn de carpeta para Oportunidades
+'@Description: Maneja el clic en el bot√≥n de selecci√≥n de carpeta para Oportunidades
 '@Scope: Private (evento)
 '@ArgumentDescriptions: (sin argumentos)
 '@Returns: (ninguno)
 '@Dependencies: SeleccionarCarpetaATextBox, mConf.RutaOportunidades
-'@Note: Abre un di·logo de selecciÛn de carpeta y actualiza el TextBox y la configuraciÛn
+'@Note: Abre un di√°logo de selecci√≥n de carpeta y actualiza el TextBox y la configuraci√≥n
 Private Sub CommandButtonSelFldOportunidades_Click()
     SeleccionarCarpetaATextBox TextBoxRutaOportunidades, "Seleccionar carpeta para Oportunidades"
     mConf.RutaOportunidades = TextBoxRutaOportunidades.Text
 End Sub
 
-'@Description: Maneja el clic en el botÛn de selecciÛn de carpeta para Plantillas
+'@Description: Maneja el clic en el bot√≥n de selecci√≥n de carpeta para Plantillas
 '@Scope: Private (evento)
 '@ArgumentDescriptions: (sin argumentos)
 '@Returns: (ninguno)
 '@Dependencies: SeleccionarCarpetaATextBox, mConf.RutaPlantillas
-'@Note: Abre un di·logo de selecciÛn de carpeta y actualiza el TextBox y la configuraciÛn
+'@Note: Abre un di√°logo de selecci√≥n de carpeta y actualiza el TextBox y la configuraci√≥n
 Private Sub CommandButtonSelFldPlantillas_Click()
     SeleccionarCarpetaATextBox TextBoxRutaPlantillas, "Seleccionar carpeta para Plantillas"
     mConf.RutaPlantillas = TextBoxRutaPlantillas.Text
 End Sub
 
-'@Description: Maneja el clic en el botÛn de selecciÛn de carpeta para Ofergas
+'@Description: Maneja el clic en el bot√≥n de selecci√≥n de carpeta para Ofergas
 '@Scope: Private (evento)
 '@ArgumentDescriptions: (sin argumentos)
 '@Returns: (ninguno)
 '@Dependencies: SeleccionarCarpetaATextBox, mConf.RutaOfergas
-'@Note: Abre un di·logo de selecciÛn de carpeta y actualiza el TextBox y la configuraciÛn
+'@Note: Abre un di√°logo de selecci√≥n de carpeta y actualiza el TextBox y la configuraci√≥n
 Private Sub CommandButtonSelFldOfergas_Click()
     SeleccionarCarpetaATextBox TextBoxRutaOfergas, "Seleccionar carpeta para Ofergas"
     mConf.RutaOfergas = TextBoxRutaOfergas.Text
 End Sub
 
-'@Description: Maneja el clic en el botÛn de selecciÛn de carpeta para GasVBNet
+'@Description: Maneja el clic en el bot√≥n de selecci√≥n de carpeta para GasVBNet
 '@Scope: Private (evento)
 '@ArgumentDescriptions: (sin argumentos)
 '@Returns: (ninguno)
 '@Dependencies: SeleccionarCarpetaATextBox, mConf.RutaGasVBNet
-'@Note: Abre un di·logo de selecciÛn de carpeta y actualiza el TextBox y la configuraciÛn
+'@Note: Abre un di√°logo de selecci√≥n de carpeta y actualiza el TextBox y la configuraci√≥n
 Private Sub CommandButtonSelFldGasVBNet_Click()
     SeleccionarCarpetaATextBox TextBoxRutaGasVBNet, "Seleccionar carpeta para GasVBNet"
     mConf.RutaGasVBNet = TextBoxRutaGasVBNet.Text
 End Sub
 
-'@Description: Maneja el clic en el botÛn de selecciÛn de carpeta para plantillas de c·lculos Excel
+'@Description: Maneja el clic en el bot√≥n de selecci√≥n de carpeta para plantillas de c√°lculos Excel
 '@Scope: Private (evento)
 '@ArgumentDescriptions: (sin argumentos)
 '@Returns: (ninguno)
 '@Dependencies: SeleccionarCarpetaATextBox, mConf.RutaExcelCalcTempl
-'@Note: Abre un di·logo de selecciÛn de carpeta y actualiza el TextBox y la configuraciÛn
+'@Note: Abre un di√°logo de selecci√≥n de carpeta y actualiza el TextBox y la configuraci√≥n
 Private Sub CommandButtonSelFldExcelCalcTempl_Click()
     SeleccionarCarpetaATextBox TextBoxRutaExcelCalcTempl, "Seleccionar carpeta para plantillas de calculos"
     mConf.RutaExcelCalcTempl = TextBoxRutaExcelCalcTempl.Text
 End Sub
 
 ' -------------------------------------------------------------------------------------------------------------
-' EVENTOS DE BOTONES - GESTI”N DE LISTAS DE CARPETAS (IM¡GENES Y PLANOS)
+' EVENTOS DE BOTONES - GESTI√ìN DE LISTAS DE CARPETAS (IM√ÅGENES Y PLANOS)
 ' -------------------------------------------------------------------------------------------------------------
 
-'@Description: Maneja el clic en el botÛn para agregar carpetas de im·genes de compresores a la lista
+'@Description: Maneja el clic en el bot√≥n para agregar carpetas de im√°genes de compresores a la lista
 '@Scope: Private (evento)
 '@ArgumentDescriptions: (sin argumentos)
 '@Returns: (ninguno)
 '@Dependencies: SeleccionarCarpetaAListBox, mConf.ListComprImgs
-'@Note: Permite m˙ltiples carpetas de im·genes, se agregan al ListBox y se guardan en la configuraciÛn
+'@Note: Permite m√∫ltiples carpetas de im√°genes, se agregan al ListBox y se guardan en la configuraci√≥n
 Private Sub CommandButtonComprImgs_Click()
-    SeleccionarCarpetaAListBox ListBoxComprImgs, "Seleccionar carpeta de im·genes de compresores"
+    SeleccionarCarpetaAListBox ListBoxComprImgs, "Seleccionar carpeta de im√°genes de compresores"
     mConf.ListComprImgs = ListBoxComprImgs.List
     ListBoxComprImgs.ControlTipText = ListToText(ListBoxComprImgs)
 End Sub
 
-'@Description: Maneja el clic en el botÛn para agregar carpetas de planos PID de compresores a la lista
+'@Description: Maneja el clic en el bot√≥n para agregar carpetas de planos PID de compresores a la lista
 '@Scope: Private (evento)
 '@ArgumentDescriptions: (sin argumentos)
 '@Returns: (ninguno)
 '@Dependencies: SeleccionarCarpetaAListBox, mConf.ListComprDrawPIDs
-'@Note: Permite m˙ltiples carpetas de planos, se agregan al ListBox y se guardan en la configuraciÛn
+'@Note: Permite m√∫ltiples carpetas de planos, se agregan al ListBox y se guardan en la configuraci√≥n
 Private Sub CommandButtonComprDrawPIDs_Click()
     SeleccionarCarpetaAListBox ListBoxComprDrawPIDs, "Seleccionar carpeta de planos de compresores"
     mConf.ListComprDrawPIDs = ListBoxComprDrawPIDs.List
     ListBoxComprDrawPIDs.ControlTipText = ListToText(ListBoxComprDrawPIDs)
 End Sub
 
-'@Description: Maneja el clic en el botÛn para eliminar carpetas seleccionadas de la lista de im·genes
+'@Description: Maneja el clic en el bot√≥n para eliminar carpetas seleccionadas de la lista de im√°genes
 '@Scope: Private (evento)
 '@ArgumentDescriptions: (sin argumentos)
 '@Returns: (ninguno)
 '@Dependencies: BorraItemsListBox, mConf.ListComprImgs
-'@Note: Elimina los items seleccionados del ListBox y actualiza la configuraciÛn
+'@Note: Elimina los items seleccionados del ListBox y actualiza la configuraci√≥n
 Private Sub CommandButtonDelComprImgs_Click()
     Call BorraItemsListBox(ListBoxComprImgs)
     mConf.ListComprImgs = ListBoxComprImgs.List
 End Sub
 
-'@Description: Maneja el clic en el botÛn para eliminar carpetas seleccionadas de la lista de planos
+'@Description: Maneja el clic en el bot√≥n para eliminar carpetas seleccionadas de la lista de planos
 '@Scope: Private (evento)
 '@ArgumentDescriptions: (sin argumentos)
 '@Returns: (ninguno)
 '@Dependencies: BorraItemsListBox, mConf.ListComprDrawPIDs
-'@Note: Elimina los items seleccionados del ListBox y actualiza la configuraciÛn
+'@Note: Elimina los items seleccionados del ListBox y actualiza la configuraci√≥n
 Private Sub CommandButtonDelComprDrawPIDs_Click()
     Call BorraItemsListBox(ListBoxComprDrawPIDs)
     mConf.ListComprDrawPIDs = ListBoxComprDrawPIDs.List
 End Sub
 
 ' -------------------------------------------------------------------------------------------------------------
-' FUNCIONES AUXILIARES - SELECCI”N Y GESTI”N DE CARPETAS
+' FUNCIONES AUXILIARES - SELECCI√ìN Y GESTI√ìN DE CARPETAS
 ' -------------------------------------------------------------------------------------------------------------
 
-'@Description: Muestra un di·logo de selecciÛn de carpeta y devuelve la ruta seleccionada
+'@Description: Muestra un di√°logo de selecci√≥n de carpeta y devuelve la ruta seleccionada
 '@Scope: Private
-'@ArgumentDescriptions: rutaActual (String): Ruta actual para inicializar el di·logo
-'   | titulo (String): TÌtulo del di·logo
-'@Returns: String - Ruta seleccionada, o cadena vacÌa si se cancelÛ
+'@ArgumentDescriptions: rutaActual (String): Ruta actual para inicializar el di√°logo
+'   | titulo (String): T√≠tulo del di√°logo
+'@Returns: String - Ruta seleccionada, o cadena vac√≠a si se cancel√≥
 '@Dependencies: Application.FileDialog, RutaExiste
 '@Note: Valida que la ruta seleccionada exista antes de devolverla
 Private Function SeleccionarCarpeta(rutaActual As String, titulo As String)
@@ -239,11 +240,11 @@ End Function
 
 '@Description: Selecciona una carpeta y actualiza un TextBox con la ruta seleccionada
 '@Scope: Private
-'@ArgumentDescriptions: txtDestino (MSForms.TextBox): TextBox donde se mostrar· la ruta seleccionada
-'   | titulo (String): TÌtulo del di·logo de selecciÛn
+'@ArgumentDescriptions: txtDestino (MSForms.TextBox): TextBox donde se mostrar√° la ruta seleccionada
+'   | titulo (String): T√≠tulo del di√°logo de selecci√≥n
 '@Returns: (ninguno)
 '@Dependencies: SeleccionarCarpeta
-'@Note: Solo actualiza el TextBox si se seleccionÛ una carpeta v·lida
+'@Note: Solo actualiza el TextBox si se seleccion√≥ una carpeta v√°lida
 Private Sub SeleccionarCarpetaATextBox(txtDestino As MSForms.TextBox, titulo As String)
     Dim nuevaRuta As String
     
@@ -253,11 +254,11 @@ End Sub
 
 '@Description: Selecciona una carpeta y la agrega a un ListBox si no existe ya en la lista
 '@Scope: Private
-'@ArgumentDescriptions: LBDestino (MSForms.ListBox): ListBox donde se agregar· la ruta
-'   | titulo (String): TÌtulo del di·logo de selecciÛn
+'@ArgumentDescriptions: LBDestino (MSForms.ListBox): ListBox donde se agregar√° la ruta
+'   | titulo (String): T√≠tulo del di√°logo de selecci√≥n
 '@Returns: (ninguno)
 '@Dependencies: SeleccionarCarpeta
-'@Note: Verifica que la carpeta no estÈ duplicada antes de agregarla. Agrega en posiciÛn 0 (inicio)
+'@Note: Verifica que la carpeta no est√© duplicada antes de agregarla. Agrega en posici√≥n 0 (inicio)
 Private Sub SeleccionarCarpetaAListBox(LBDestino As MSForms.ListBox, titulo As String)
     Dim nuevaRuta As String, i As Integer
     
@@ -275,11 +276,11 @@ End Sub
 '@ArgumentDescriptions: LBDestino (MSForms.ListBox): ListBox del cual eliminar items
 '@Returns: (ninguno)
 '@Dependencies: Ninguna
-'@Note: Muestra mensaje si no hay items seleccionados. Actualiza el tooltip despuÈs de eliminar
+'@Note: Muestra mensaje si no hay items seleccionados. Actualiza el tooltip despu√©s de eliminar
 Private Sub BorraItemsListBox(LBDestino As MSForms.ListBox)
     Dim idx As Long
     If LBDestino.ListIndex = 0 Then
-        MsgBox "Selecciona una carpeta de la lista para borrar.", vbInformation, "InformaciÛn"
+        MsgBox "Selecciona una carpeta de la lista para borrar.", vbInformation, "Informaci√≥n"
         Exit Sub
     End If
     ' Read through each item in the listbox
@@ -293,15 +294,15 @@ Private Sub BorraItemsListBox(LBDestino As MSForms.ListBox)
 End Sub
 
 ' -------------------------------------------------------------------------------------------------------------
-' FUNCIONES AUXILIARES - CONVERSI”N Y VISUALIZACI”N
+' FUNCIONES AUXILIARES - CONVERSI√ìN Y VISUALIZACI√ìN
 ' -------------------------------------------------------------------------------------------------------------
 
-'@Description: Convierte los items de un ListBox a texto separado por saltos de lÌnea
+'@Description: Convierte los items de un ListBox a texto separado por saltos de l√≠nea
 '@Scope: Private
 '@ArgumentDescriptions: LB (MSForms.ListBox): ListBox a convertir
 '@Returns: String - Texto con todos los items separados por vbCrLf
 '@Dependencies: Ninguna
-'@Note: ⁄til para mostrar el contenido completo en tooltips
+'@Note: √ötil para mostrar el contenido completo en tooltips
 Function ListToText(LB As MSForms.ListBox)
     Dim idx As Integer
     For idx = 0 To LB.ListCount - 1
@@ -324,7 +325,7 @@ End Function
 Private Sub MostrarTooltip(Ctrl As control, ByVal texto As String)
     With Me.lblTooltip
         .Caption = texto
-        .Width = 200                             ' ajusta seg˙n necesites
+        .Width = 200                             ' ajusta seg√∫n necesites
         .Top = Ctrl.Top + Ctrl.Height + 2
         .Left = Ctrl.Left
         .Visible = True
@@ -348,10 +349,10 @@ End Sub
 
 '@Description: Maneja el evento MouseMove sobre el ListBox de planos de compresores
 '@Scope: Private (evento)
-'@ArgumentDescriptions: Par·metros est·ndar del evento MouseMove
+'@ArgumentDescriptions: Par√°metros est√°ndar del evento MouseMove
 '@Returns: (ninguno)
 '@Dependencies: Ninguna
-'@Note: CÛdigo comentado - podrÌa usarse para mostrar tooltip con contenido completo del ListBox
+'@Note: C√≥digo comentado - podr√≠a usarse para mostrar tooltip con contenido completo del ListBox
 Private Sub ListBoxComprDrawPIDs_MouseMoveBKP( _
         ByVal Button As Integer, _
         ByVal Shift As Integer, _
@@ -364,10 +365,10 @@ End Sub
 
 '@Description: Maneja el evento MouseMove sobre el UserForm
 '@Scope: Private (evento)
-'@ArgumentDescriptions: Par·metros est·ndar del evento MouseMove
+'@ArgumentDescriptions: Par√°metros est√°ndar del evento MouseMove
 '@Returns: (ninguno)
 '@Dependencies: Ninguna
-'@Note: CÛdigo comentado - podrÌa usarse para ocultar tooltips al mover el mouse fuera de los controles
+'@Note: C√≥digo comentado - podr√≠a usarse para ocultar tooltips al mover el mouse fuera de los controles
 Private Sub UserForm_MouseMoveBKP( _
         ByVal Button As Integer, _
         ByVal Shift As Integer, _

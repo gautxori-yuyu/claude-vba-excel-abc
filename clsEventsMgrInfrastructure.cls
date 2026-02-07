@@ -1,4 +1,4 @@
-VERSION 1.0 CLASS
+﻿VERSION 1.0 CLASS
 BEGIN
   MultiUse = -1  'True
 END
@@ -42,7 +42,7 @@ Private WithEvents mFileMgr As clsFileManager
 Attribute mFileMgr.VB_VarHelpID = -1
 
 '--------------------------------------------------------------
-' Inicializaci�n
+' Inicialización
 '--------------------------------------------------------------
 Private Sub Class_Initialize()
     LogInfo MODULE_NAME, "[Class_Initialize]"
@@ -65,7 +65,7 @@ Public Sub Initialize(oFileMgr As clsFileManager, oChartManager As clsChartMgr, 
 ErrHandler:
     LogCurrentError MODULE_NAME, "[Initialize]"
     Err.Raise Err.Number, MODULE_NAME & " [Initialize]", _
-              "Error inicializando aplicaci�n: " & Err.Description
+              "Error inicializando aplicación: " & Err.Description
 End Sub
 
 Public Sub Terminate()
@@ -81,7 +81,7 @@ Public Sub Terminate()
 ErrHandler:
     LogCurrentError MODULE_NAME, "[Terminate]"
     Err.Raise Err.Number, MODULE_NAME & " [Terminate]", _
-              "Error finalizando aplicaci�n: " & Err.Description
+              "Error finalizando aplicación: " & Err.Description
 End Sub
 
 ' ==================================================================
@@ -93,46 +93,46 @@ End Sub
 ' -------------------------------------------------------------
 
 '@Description: Se dispara cuando se activa un workbook
-'@Category: Gr�ficos
+'@Category: Gráficos
 '@Scope: Grafico seleccionado
 '@ArgumentDescriptions: wb As Workbook
 
-Private Sub mCtxMgr_WorkbookActivated(ByVal wb As Workbook)
-    LogDebug MODULE_NAME, "[mCtx_WorkbookActivated] " & wb.Name
+Private Sub mCtxMgr_WorkbookActivated(ByVal Wb As Workbook)
+    LogDebug MODULE_NAME, "[mCtx_WorkbookActivated] " & Wb.Name
 
     ' Actualizar el archivo activo en FileManager
     ' Esto dispara ActiveFileChanged -> sincroniza estado del ribbon
     Dim f As clsFileXLS
-    Set f = mFileMgr.GetOrTrackWorkbook(wb)
+    Set f = mFileMgr.GetOrTrackWorkbook(Wb)
     mFileMgr.SetActiveFile f
 
     mChartManager.RefreshCurrentSheet
 End Sub
 
 '@Description: Se dispara al activar una hoja; inicia vigilancia de graficos
-'@Category: Gr�ficos
+'@Category: Gráficos
 '@Scope: Grafico seleccionado
 '@ArgumentDescriptions: sh As Object
 
-Private Sub mCtxMgr_SheetActivated(ByVal sh As Object)
+Private Sub mCtxMgr_SheetActivated(ByVal Sh As Object)
     On Error GoTo ErrHandler
 
-    LogDebug MODULE_NAME, "[mCtx_SheetActivated] " & sh.Name & "'"
-    mChartManager.WatchSheet sh
+    LogDebug MODULE_NAME, "[mCtx_SheetActivated] " & Sh.Name & "'"
+    mChartManager.WatchSheet Sh
     Exit Sub
 ErrHandler:
     LogError MODULE_NAME, "[mCtx_SheetActivated] Error", , Err.Description
 End Sub
 
 '@Description: Se dispara al desactivar una hoja; detiene vigilancia de graficos
-'@Category: Gr�ficos
+'@Category: Gráficos
 '@Scope: Grafico seleccionado
 '@ArgumentDescriptions: sh As Object
 
-Private Sub mCtxMgr_SheetDeactivated(ByVal sh As Object)
+Private Sub mCtxMgr_SheetDeactivated(ByVal Sh As Object)
     On Error GoTo ErrHandler
 
-    LogDebug MODULE_NAME, "[mCtx_SheetDeactivated] '" & sh.Name & "'"
+    LogDebug MODULE_NAME, "[mCtx_SheetDeactivated] '" & Sh.Name & "'"
     mChartManager.StopWatching
     Exit Sub
 ErrHandler:
@@ -144,15 +144,15 @@ End Sub
 ' -------------------------------------------------------------
 
 '@Description: Callback cuando se abre un workbook
-Private Sub mCtxMgr_WorkbookOpened(ByVal wb As Workbook)
-    LogDebug MODULE_NAME, "[mCtx_WorkbookOpened] " & wb.Name
-    mFileMgr.GetOrTrackWorkbook wb
+Private Sub mCtxMgr_WorkbookOpened(ByVal Wb As Workbook)
+    LogDebug MODULE_NAME, "[mCtx_WorkbookOpened] " & Wb.Name
+    mFileMgr.GetOrTrackWorkbook Wb
 End Sub
 
 '@Description: Callback cuando se cierra un workbook
-Private Sub mCtxMgr_WorkbookBeforeClose(ByVal wb As Workbook, Cancel As Boolean)
-    LogDebug MODULE_NAME, "[mCtx_WorkbookBeforeClose] " & wb.Name
-    mFileMgr.UntrackWorkbook wb
+Private Sub mCtxMgr_WorkbookBeforeClose(ByVal Wb As Workbook, Cancel As Boolean)
+    LogDebug MODULE_NAME, "[mCtx_WorkbookBeforeClose] " & Wb.Name
+    mFileMgr.UntrackWorkbook Wb
 End Sub
 
 ' -------------------------------------------------------------
@@ -163,7 +163,7 @@ End Sub
 '@Note: Libera referencias que puedan estar corruptas para evitar errores en cascada
 Private Sub mCtxMgr_ContextInvalidated()
     On Error Resume Next
-    LogWarning MODULE_NAME, "[mCtxMgr_ContextInvalidated] - Contexto invalidado, liberando recursos"
+    LogWarning MODULE_NAME, "[mCtxMgr_ContextInvalidated] Contexto invalidado, liberando recursos"
 
     ' Detener vigilancia de charts (pueden tener referencias muertas)
     If Not mChartManager Is Nothing Then
@@ -180,13 +180,13 @@ End Sub
 '@Note: Reconecta los managers que necesitan referencias actualizadas
 Private Sub mCtxMgr_ContextReinitialized()
     On Error GoTo ErrHandler
-    LogInfo MODULE_NAME, "[mCtxMgr_ContextReinitialized] - Re-enganchando consumidores"
+    LogInfo MODULE_NAME, "[mCtxMgr_ContextReinitialized] Re-enganchando consumidores"
 
     ' Re-registrar el workbook activo si existe
-    Dim wb As Workbook
-    Set wb = Excel.Application.ActiveWorkbook
-    If Not wb Is Nothing Then
-        mFileMgr.GetOrTrackWorkbook wb
+    Dim Wb As Workbook
+    Set Wb = Excel.Application.ActiveWorkbook
+    If Not Wb Is Nothing Then
+        mFileMgr.GetOrTrackWorkbook Wb
     End If
 
     ' Refrescar el ChartManager con la hoja actual

@@ -1,4 +1,4 @@
-VERSION 1.0 CLASS
+﻿VERSION 1.0 CLASS
 BEGIN
   MultiUse = -1  'True
 END
@@ -88,7 +88,7 @@ Public Sub SetRibbonSelectionIndex(controlID As String, Index As Integer, id As 
     Select Case controlID
         Case "ddlOportunidades"
             App.OpportunitiesMgr.CurrOpportunity = Index
-            LogInfo MODULE_NAME, "[SetRibbonSelectionIndex] - Cambiada oportunidad activa: " & id
+            LogInfo MODULE_NAME, "[SetRibbonSelectionIndex] Cambiada oportunidad activa: " & id
             ' clsRibbon escucha currOpportunityChanged via WithEvents mOpportunities
     End Select
 End Sub
@@ -109,7 +109,7 @@ Public Function GetRibbonControlEnabled(controlID As String) As Boolean
     End Select
     GetRibbonControlEnabled = enabled
     'InvalidarControl controlID ' esto ESTA DE SOBRA!!
-    LogDebug MODULE_NAME, "[GetRibbonControlEnabled] - �" & controlID & "?: " & CBool(enabled)
+    LogDebug MODULE_NAME, "[GetRibbonControlEnabled] ¿" & controlID & "?: " & CBool(enabled)
 End Function
 
 ' TODO: PTE PASAR EL RESTO DE LLAMADAS DE CALLBACKS DE RIBBON, supertips, fijar item sel en dropbox, etc

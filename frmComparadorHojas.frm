@@ -1,4 +1,4 @@
-VERSION 5.00
+锘縑ERSION 5.00
 Begin {C62A69F0-16DC-11CE-9E98-00AA00574A4F} frmComparadorHojas 
    Caption         =   "UserForm1"
    ClientHeight    =   1785
@@ -13,6 +13,7 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
+
 '@Folder "MACROS"
 Option Explicit
 
@@ -53,7 +54,7 @@ Private Sub UserForm_Initialize()
     colorSeleccionado = RGB(255, 100, 200)
     btnColor.BackColor = colorSeleccionado
     
-    ' Deshabilitar bot髇 deshacer
+    ' Deshabilitar bot贸n deshacer
     btnDeshacer.enabled = False
     
     btnSelRango1.ControlTipText = "Seleccionar rango de celdas a comparar."
@@ -121,7 +122,7 @@ Private Sub ActualizarHojas2()
     End If
 End Sub
 
-' Bot髇 para seleccionar Rango 1
+' Bot贸n para seleccionar Rango 1
 Private Sub btnSelRango1_Click()
     Dim rng As Range
     
@@ -135,7 +136,7 @@ Private Sub btnSelRango1_Click()
     End If
 End Sub
 
-' Bot髇 para seleccionar Rango 2
+' Bot贸n para seleccionar Rango 2
 Private Sub btnSelRango2_Click()
     Dim rng As Range
     
@@ -181,7 +182,7 @@ Private Sub cboHoja2_DblClick(ByVal Cancel As MSForms.ReturnBoolean)
     On Error GoTo 0
 End Sub
 
-' Bot髇 Comparar
+' Bot贸n Comparar
 Private Sub btnComparar_Click()
     Dim wb1 As Workbook, wb2 As Workbook
     Dim Hoja1 As Worksheet, Hoja2 As Worksheet
@@ -212,7 +213,7 @@ Private Sub btnComparar_Click()
     
     If Trim(txtRango1.Value) = "" Or Trim(txtRango2.Value) = "" Then
         If vbNo = MsgBox("No se han especificado rangos." & vbCrLf & _
-                         "緿esea comparar las hojas completas?", _
+                         "驴Desea comparar las hojas completas?", _
                          vbQuestion + vbYesNo, "Comparar hojas completas") Then
             Exit Sub
         End If
@@ -234,26 +235,26 @@ Private Sub btnComparar_Click()
                         rango2, chkColorear2.Value, _
                         colorSeleccionado, chkSoloBlanco.Value)
     
-    ' Habilitar bot髇 deshacer
+    ' Habilitar bot贸n deshacer
     btnDeshacer.enabled = True
     
-    ' Mostrar hojas en paralelo autom醫icamente
+    ' Mostrar hojas en paralelo autom谩ticamente
     Call VerHojasEnParalelo(Hoja1, Hoja2, rango1, rango2)
     
-    'MsgBox "Comparaci髇 completada. Las diferencias han sido resaltadas.", vbInformation
+    'MsgBox "Comparaci贸n completada. Las diferencias han sido resaltadas.", vbInformation
     
     Exit Sub
 ErrorHandler:
     
 End Sub
 
-' Bot髇 Deshacer
+' Bot贸n Deshacer
 Private Sub btnDeshacer_Click()
     Dim wb1 As Workbook, wb2 As Workbook
     Dim Hoja1 As Worksheet, Hoja2 As Worksheet
     
     If Not HayComparacionActiva() Then
-        MsgBox "No hay comparaci髇 activa para deshacer.", vbInformation
+        MsgBox "No hay comparaci贸n activa para deshacer.", vbInformation
         Exit Sub
     End If
     
@@ -273,13 +274,13 @@ Private Sub btnDeshacer_Click()
     ' Deshacer
     Call DeshacerComparacion
     
-    ' Deshabilitar bot髇 deshacer
+    ' Deshabilitar bot贸n deshacer
     btnDeshacer.enabled = False
     
-    MsgBox "Comparaci髇 deshecha. Los colores han sido restaurados.", vbInformation
+    MsgBox "Comparaci贸n deshecha. Los colores han sido restaurados.", vbInformation
 End Sub
 
-' Bot髇 seleccionar color - CON COLOR PICKER NATIVO
+' Bot贸n seleccionar color - CON COLOR PICKER NATIVO
 Private Sub btnColor_Click()
     Dim RGBRed As Long, RGBGreen As Long, RGBBlue As Long
     Dim FullColorCode As Long
@@ -311,8 +312,8 @@ End Sub
 Private Sub UserForm_QueryClose(Cancel As Integer, CloseMode As Integer)
     If HayComparacionActiva() Then
         Dim respuesta As VbMsgBoxResult
-        respuesta = MsgBox("Los cambios de la comparaci髇 se convertir醤 en definitivos." & vbCrLf & _
-                           "緾ontinuar?", vbQuestion + vbYesNo, "Confirmar cierre")
+        respuesta = MsgBox("Los cambios de la comparaci贸n se convertir谩n en definitivos." & vbCrLf & _
+                           "驴Continuar?", vbQuestion + vbYesNo, "Confirmar cierre")
         
         If respuesta = vbNo Then
             Cancel = True

@@ -1,4 +1,4 @@
-Attribute VB_Name = "UDFs_COOLPROP"
+ÔªøAttribute VB_Name = "UDFs_COOLPROP"
 '@IgnoreModule MissingAnnotationArgument
 '@Folder "UDFS"
 Option Explicit
@@ -7,16 +7,16 @@ Private Const MODULE_NAME As String = "UDFs_COOLPROP"
 
 '@UDF
 '@Description: Construye una cadena HEOS::... para CoolProp procesando uno o varios rangos
-'              disjuntos. Cada ·rea del rango es tratada como una tabla independiente con
+'              disjuntos. Cada √°rea del rango es tratada como una tabla independiente con
 '              encabezados ("nombre/gas" y "%/percentage") en la primera fila.
 '@Scope:
-'@ArgumentDescriptions: rango: Rango contiguo o disjunto, donde cada ·rea contiene columnas v·lidas
+'@ArgumentDescriptions: rango: Rango contiguo o disjunto, donde cada √°rea contiene columnas v√°lidas
 '                       de nombres y porcentajes. (columnas: Nombre/Gas y %/Percentage)
 '@Returns: String|Cadena HEOS para CoolProp o mensaje de error si la suma -> 100%
-'@Category: An·lisis de Gases
+'@Category: An√°lisis de Gases
 Public Function ConstruirCadenaCoolPropDesdeTabla(rango As Range) As String
-Attribute ConstruirCadenaCoolPropDesdeTabla.VB_Description = "[UDFs_COOLPROP] Construye una cadena HEOS::.. para CoolProp procesando uno o varios rangos disjuntos. Cada ·rea del rango es tratada como una tabla independiente con encabezados (""nombre/gas"" y ""%/percentage"") en la primera fila. Aplica a: Cells Range"
-Attribute ConstruirCadenaCoolPropDesdeTabla.VB_ProcData.VB_Invoke_Func = " \n21"
+Attribute ConstruirCadenaCoolPropDesdeTabla.VB_Description = "[UDFs_COOLPROP] Construye una cadena HEOS::.. para CoolProp procesando uno o varios rangos disjuntos. Cada √°rea del rango es tratada como una tabla independiente con encabezados (""nombre/gas"" y ""%/percentage"") en la primera fila. Aplica a: Cells Range"
+Attribute ConstruirCadenaCoolPropDesdeTabla.VB_ProcData.VB_Invoke_Func = " \n23"
     Dim aliasDict As Object
     Set aliasDict = CreateObject("Scripting.Dictionary")
     aliasDict.CompareMode = 1
@@ -28,19 +28,19 @@ Attribute ConstruirCadenaCoolPropDesdeTabla.VB_ProcData.VB_Invoke_Func = " \n21"
     Dim suma As Double: suma = 0
     Dim primera As Boolean: primera = True
     
-    ' Rangos colectivos que contendr·n TODAS las columnas de Nombres/Porcentajes
+    ' Rangos colectivos que contendr√°n TODAS las columnas de Nombres/Porcentajes
     Dim rngNombresGlobal As Range
     Dim rngPorcentajesGlobal As Range
     
     Dim area As Range
     Dim cabecera As Range
     
-    ' --- Fase 1: Identificar todas las columnas relevantes en todas las ·reas ---
+    ' --- Fase 1: Identificar todas las columnas relevantes en todas las √°reas ---
     For Each area In rango.Areas
         For Each cabecera In area.Rows(1).Cells
             Select Case LCase(Trim(cabecera.Value))
             Case "nombre", "gas"
-                ' AÒadir la columna completa al rango global de nombres
+                ' A√±adir la columna completa al rango global de nombres
                 If rngNombresGlobal Is Nothing Then
                     Set rngNombresGlobal = cabecera.EntireColumn
                 Else
@@ -48,7 +48,7 @@ Attribute ConstruirCadenaCoolPropDesdeTabla.VB_ProcData.VB_Invoke_Func = " \n21"
                     Set rngNombresGlobal = Application.Union(rngNombresGlobal, cabecera.EntireColumn)
                 End If
             Case "%", "percentage"
-                ' AÒadir la columna completa al rango global de porcentajes
+                ' A√±adir la columna completa al rango global de porcentajes
                 If rngPorcentajesGlobal Is Nothing Then
                     Set rngPorcentajesGlobal = cabecera.EntireColumn
                 Else
@@ -74,16 +74,16 @@ Attribute ConstruirCadenaCoolPropDesdeTabla.VB_ProcData.VB_Invoke_Func = " \n21"
     Set celdasPorcentajesValidas = Application.Intersect(rango, rngPorcentajesGlobal)
     
     If celdasNombresValidas Is Nothing Or celdasPorcentajesValidas Is Nothing Then
-        ConstruirCadenaCoolPropDesdeTabla = "Error: No hay datos v·lidos en las ·reas seleccionadas."
+        ConstruirCadenaCoolPropDesdeTabla = "Error: No hay datos v√°lidos en las √°reas seleccionadas."
         Exit Function
     End If
     
-    ' Asumimos que la lista de celdas de nombres y porcentajes son del mismo tamaÒo
-    ' y est·n en el mismo orden (e.g., A8, A9, A10; F8, F9, F10).
-    ' Este bucle itera sobre las celdas v·lidas (excepto la fila 1, que son cabeceras)
+    ' Asumimos que la lista de celdas de nombres y porcentajes son del mismo tama√±o
+    ' y est√°n en el mismo orden (e.g., A8, A9, A10; F8, F9, F10).
+    ' Este bucle itera sobre las celdas v√°lidas (excepto la fila 1, que son cabeceras)
     
     Dim c As Long
-    ' Usamos arrays para acceder por Ìndice, ya que collections no lo permiten f·cilmente con Rangos disjuntos
+    ' Usamos arrays para acceder por √≠ndice, ya que collections no lo permiten f√°cilmente con Rangos disjuntos
     Dim arrNombres() As Variant, nombre As String, nombreRaw As String, valP As String, porcentaje As Double
     Dim arrPorcentajes() As Variant
     
@@ -92,12 +92,12 @@ Attribute ConstruirCadenaCoolPropDesdeTabla.VB_ProcData.VB_Invoke_Func = " \n21"
     arrPorcentajes = CellsToArray(celdasPorcentajesValidas)
     
     If UBound(arrNombres) <> UBound(arrPorcentajes) Then
-        ConstruirCadenaCoolPropDesdeTabla = "Error: Desajuste en el n˙mero de valores."
+        ConstruirCadenaCoolPropDesdeTabla = "Error: Desajuste en el n√∫mero de valores."
         Exit Function
     End If
 
-    ' Iterar sobre los arrays emparejados (empezando por el Ìndice 1, asumiendo que la fila 1 es cabecera y ya la hemos ignorado)
-    ' Nota: La funciÛn CellsToArray maneja la omisiÛn de la primera fila.
+    ' Iterar sobre los arrays emparejados (empezando por el √≠ndice 1, asumiendo que la fila 1 es cabecera y ya la hemos ignorado)
+    ' Nota: La funci√≥n CellsToArray maneja la omisi√≥n de la primera fila.
     For c = 1 To UBound(arrNombres)
         nombreRaw = Trim(CStr(arrNombres(c)))
         valP = arrPorcentajes(c)
@@ -122,14 +122,14 @@ Attribute ConstruirCadenaCoolPropDesdeTabla.VB_ProcData.VB_Invoke_Func = " \n21"
     End If
 End Function
 
-' --- FunciÛn de ayuda para convertir un rango disjunto en un array plano ---
+' --- Funci√≥n de ayuda para convertir un rango disjunto en un array plano ---
 Private Function CellsToArray(inputRange As Range) As Variant()
     Dim coll As New Collection
     Dim area As Range
     Dim cell As Range
     
     For Each area In inputRange.Areas
-        ' Omitimos la primera fila de cada ·rea, ya que son cabeceras
+        ' Omitimos la primera fila de cada √°rea, ya que son cabeceras
         If area.Rows.Count > 1 Then
             For Each cell In area.Offset(1).Resize(area.Rows.Count - 1).Cells
                 coll.Add cell.Value

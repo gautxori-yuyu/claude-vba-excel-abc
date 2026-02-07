@@ -1,4 +1,4 @@
-Attribute VB_Name = "modOfertaTypes"
+﻿Attribute VB_Name = "modOfertaTypes"
 '@Folder "6-DOMINIO-Oportunidades y compresores.d-Ofertas.Gestion"
 Option Explicit
 
