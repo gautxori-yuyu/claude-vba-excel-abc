@@ -1,6 +1,6 @@
 Attribute VB_Name = "modAPPBudgetQuotesUtilids"
 ' ==========================================
-' Módulo de utilidades para gestión de presupuestos
+' MÃ³dulo de utilidades para gestiÃ³n de presupuestos
 ' ==========================================
 'FIXME: Las funciones de este modulo son GENERICAS, no solo para Budgets (aunque alguna ESTA PENSADA SOLO PARA CIERTAS PLANTILLAS)
 '   mejor ponerlas en un modulo "generico".
@@ -16,15 +16,15 @@ Private Const bSheetReport As Boolean = True
 ' Gestion de nombres de rangos y validaciones de datos
 ' ------------------------------------------
 
-' Recalcula y crea nombres de rangos basados en la columna A de hojas específicas
+' Recalcula y crea nombres de rangos basados en la columna A de hojas especÃ­ficas
 Sub recalcNames()
 Attribute recalcNames.VB_ProcData.VB_Invoke_Func = " \n0"
     Dim begin As Variant, rangename As String
     Dim rRange As Range, rCell As Range
     Dim namesCol As String, rangeCol As String
     
-    ' Solo aplica a hojas específicas
-    ' 1. Determinar namesCol según la hoja
+    ' Solo aplica a hojas especÃ­ficas
+    ' 1. Determinar namesCol segÃºn la hoja
     Select Case ActiveSheet.Name
     Case "BUDGET_SELECTOR" ' BUDGET_QUOTE_TEMPLATE
         namesCol = "A"
@@ -35,7 +35,7 @@ Attribute recalcNames.VB_ProcData.VB_Invoke_Func = " \n0"
     End Select
     
     ' Obtener la letra de la siguiente columna de forma robusta
-    ' Convertimos la letra a número, sumamos 1, y volvemos a obtener la letra
+    ' Convertimos la letra a nÃºmero, sumamos 1, y volvemos a obtener la letra
     rangeCol = Split(Cells(1, Columns(namesCol).Column + 1).Address, "$")(1)
     
     Application.Calculation = xlManual
@@ -48,14 +48,14 @@ Attribute recalcNames.VB_ProcData.VB_Invoke_Func = " \n0"
     Set rCell = rRange.Cells(1, 1)               ' Take the first cell in the range
     
     Do
-        If rCell.value <> "" Then
+        If rCell.Value <> "" Then
             If Not IsEmpty(begin) Then
-                Debug.Print rangename & "==" & "=$" & rangeCol & "$" & begin & ":$" & rangeCol & "$" & rCell.Row - 1
+                LogInfo MODULE_NAME, "[recalcNames] " & rangename & "==" & "=$" & rangeCol & "$" & begin & ":$" & rangeCol & "$" & rCell.Row - 1
                 ActiveWorkbook.Names.Add Name:=rangename, _
                     RefersTo:="=$" & rangeCol & "$" & begin & ":$" & rangeCol & "$" & rCell.Row - 1
             End If
             begin = rCell.Row
-            rangename = Replace(Replace(Replace(rCell.value, "-", ""), " / ", " "), " ", "_")
+            rangename = Replace(Replace(Replace(rCell.Value, "-", ""), " / ", " "), " ", "_")
         End If
         Set rCell = rCell.Offset(1, 0)           ' Jump 1 row down to the next cell
     Loop Until (rCell.Row > (rRange.Row + rRange.Rows.Count - 1))
@@ -73,7 +73,7 @@ Attribute AplicarNombresARangosUsadosActWB.VB_ProcData.VB_Invoke_Func = " \n0"
     Application.ScreenUpdating = False
     
     For Each ws In ActiveWorkbook.Worksheets
-        On Error Resume Next                     ' Por si la hoja está vacía
+        On Error Resume Next                     ' Por si la hoja estÃ¡ vacÃ­a
         Set rangoUsado = ws.UsedRange
         On Error GoTo 0
         
@@ -83,9 +83,9 @@ Attribute AplicarNombresARangosUsadosActWB.VB_ProcData.VB_Invoke_Func = " \n0"
             rangoUsado.ApplyNames
             
             If Err Then
-                Debug.Print "Error al aplicar nombres a " & ws.Name
+                LogError MODULE_NAME, "[AplicarNombresARangosUsadosActWB] Error al aplicar nombres a " & ws.Name
             Else
-                Debug.Print "Nombres aplicados a " & ws.Name
+                LogInfo MODULE_NAME, "[recalcNames] Nombres aplicados a " & ws.Name
             End If
             
             On Error GoTo 0
@@ -98,14 +98,14 @@ Attribute AplicarNombresARangosUsadosActWB.VB_ProcData.VB_Invoke_Func = " \n0"
 End Sub
 
 '@UDF
-'@Description: Reemplaza referencias de rango por nombres definidos dentro de una fórmula
+'@Description: Reemplaza referencias de rango por nombres definidos dentro de una fÃ³rmula
 '@Scope: Libro Activo
-'@ArgumentDescriptions: fórmula a procesar, con referencias del tipo "A2", "$G$7", ...
-'@Returns: String - fórmula resultante
+'@ArgumentDescriptions: fÃ³rmula a procesar, con referencias del tipo "A2", "$G$7", ...
+'@Returns: String - fÃ³rmula resultante
 '@Category: Validaciones de datos
 Public Function AplicarNombresAFormula(ByVal formula As String) As String
-Attribute AplicarNombresAFormula.VB_Description = "[modAPPBudgetQuotesUtilids] Reemplaza referencias de rango por nombres definidos dentro de una fórmula. Aplica a: ActiveWorkbook|Cells Range\r\nM.D.:Libro Activo"
-Attribute AplicarNombresAFormula.VB_ProcData.VB_Invoke_Func = " \n21"
+Attribute AplicarNombresAFormula.VB_Description = "[modAPPBudgetQuotesUtilids] Reemplaza referencias de rango por nombres definidos dentro de una fÃ³rmula. Aplica a: ActiveWorkbook|Cells Range\r\nM.D.:Libro Activo"
+Attribute AplicarNombresAFormula.VB_ProcData.VB_Invoke_Func = " \n23"
     Dim nm As Name
     Dim rngNombre As Range
     Dim formulaResultado As String
@@ -154,7 +154,7 @@ Attribute AplicarNombresAValidacionesCeldasActWBConReporte.VB_ProcData.VB_Invoke
     
     Application.ScreenUpdating = False
     contadorTotal = 0
-    reporte = "REPORTE DE ACTUALIZACIÓN DE VALIDACIONES" & vbCrLf & vbCrLf
+    reporte = "REPORTE DE ACTUALIZACIÃ“N DE VALIDACIONES" & vbCrLf & vbCrLf
     
     For Each ws In ActiveWorkbook.Worksheets
         If ws.Visible = xlSheetVisible Then
@@ -169,7 +169,7 @@ Attribute AplicarNombresAValidacionesCeldasActWBConReporte.VB_ProcData.VB_Invoke
                 For Each celda In rangoValidacion
                     If ActualizarValidacionCelda(celda) Then
                         contadorHoja = contadorHoja + 1
-                        reporte = reporte & "  • " & celda.Address & vbCrLf
+                        reporte = reporte & " - " & celda.Address & vbCrLf
                     End If
                 Next celda
                 
@@ -196,20 +196,20 @@ Attribute AplicarNombresAValidacionesCeldasActWBConReporte.VB_ProcData.VB_Invoke
     
     ' Mostrar en mensaje (para pocos datos) o en hoja nueva (para muchos datos)
     If Len(reporte) < 1000 Or Not bSheetReport Then
-        MsgBox reporte, vbInformation, "Reporte de Actualización"
+        MsgBox reporte, vbInformation, "Reporte de ActualizaciÃ³n"
     ElseIf bSheetReport Then
         MostrarReporteEnHoja reporte
     End If
 End Sub
 
-'@Description: Actualiza una validación de datos de una celda reemplazando rangos por nombres
+'@Description: Actualiza una validaciÃ³n de datos de una celda reemplazando rangos por nombres
 '@Scope: celda individual
-'@ArgumentDescriptions: celda: celda con validación
+'@ArgumentDescriptions: celda: celda con validaciÃ³n
 '@Returns: Boolean - indica si se ha actualizado
 '@Category: Validaciones de datos
 Public Function ActualizarValidacionCelda(ByVal celda As Range) As Boolean
-Attribute ActualizarValidacionCelda.VB_Description = "[modAPPBudgetQuotesUtilids] Actualiza una validación de datos de una celda reemplazando rangos por nombres. Aplica a: Cells Range\r\nM.D.:celda individual"
-Attribute ActualizarValidacionCelda.VB_ProcData.VB_Invoke_Func = " \n21"
+Attribute ActualizarValidacionCelda.VB_Description = "[modAPPBudgetQuotesUtilids] Actualiza una validaciÃ³n de datos de una celda reemplazando rangos por nombres. Aplica a: Cells Range\r\nM.D.:celda individual"
+Attribute ActualizarValidacionCelda.VB_ProcData.VB_Invoke_Func = " \n23"
     Dim actualizado As Boolean
     Dim formula1Original As String, formula1Nueva As String
     Dim formula2Original As String, formula2Nueva As String
@@ -270,10 +270,10 @@ Attribute MostrarReporteEnHoja.VB_ProcData.VB_Invoke_Func = " \n0"
         wsReporte.Cells.Clear
     End If
     
-    ' Dividir reporte en líneas y escribir en hoja
+    ' Dividir reporte en lÃ­neas y escribir en hoja
     lineas = Split(reporte, vbCrLf)
     For i = 0 To UBound(lineas)
-        wsReporte.Cells(i + 1, 1).value = lineas(i)
+        wsReporte.Cells(i + 1, 1).Value = lineas(i)
     Next i
     
     wsReporte.Columns("A").AutoFit

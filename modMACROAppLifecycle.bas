@@ -11,9 +11,63 @@ Option Explicit
 
 Private Const MODULE_NAME As String = "modMACROAppLifecycle"
 
+' ==========================================
+' DETECCION DE RESET VBA
+' ==========================================
+' Cuando VBA se resetea (error fatal, End en depuracion, etc.),
+' todas las variables de modulo se reinicializan a 0/Nothing.
+' Usamos una variable Static dentro de una funcion para detectar esto.
+' ==========================================
+
+Private mInitCounter As Long       ' Contador de inicializaciones (persistente en sesion)
+Private mLastInitTime As Double    ' Timestamp de ultima inicializacion
+
+'@Description: Detecta si ocurrio un reset de VBA desde la ultima llamada
+'@Returns: True si es la primera llamada tras un reset (contador > 1)
+'@Note: Esta funcion usa una variable Static que sobrevive entre llamadas
+'       pero se reinicia si VBA hace reset. El patron detecta ese reset.
+Public Function DetectVBAResetOccurred() As Boolean
+Attribute DetectVBAResetOccurred.VB_ProcData.VB_Invoke_Func = " \n0"
+    Static sInitFlag As Boolean
+
+    If Not sInitFlag Then
+        ' Primera vez que se ejecuta desde reset
+        sInitFlag = True
+        mInitCounter = mInitCounter + 1
+        mLastInitTime = Timer
+
+        ' Si contador > 1, hubo reset previo
+        DetectVBAResetOccurred = (mInitCounter > 1)
+
+        If DetectVBAResetOccurred Then
+            LogWarning MODULE_NAME, "[DetectVBAResetOccurred] Reset detectado! Inicializacion #" & mInitCounter
+        Else
+            LogInfo MODULE_NAME, "[DetectVBAResetOccurred] Primera inicializacion de la sesion"
+        End If
+    Else
+        ' Llamadas subsiguientes en la misma sesion - no hay reset
+        DetectVBAResetOccurred = False
+    End If
+End Function
+
+'@Description: Obtiene el numero de veces que se ha inicializado la aplicacion
+'@Returns: Long - Contador de inicializaciones (1 = primera vez, >1 = hubo resets)
+Public Property Get InitializationCount() As Long
+    InitializationCount = mInitCounter
+End Property
+
+'@Description: Obtiene el timestamp de la ultima inicializacion
+'@Returns: Double - Valor de Timer en la ultima inicializacion
+Public Property Get LastInitializationTime() As Double
+    LastInitializationTime = mLastInitTime
+End Property
+
+' ==========================================
+' ACCESO A LA APLICACION
+' ==========================================
+
 Public Function App() As clsApplication
-Attribute App.VB_Description = "[modMACROAppLifecycle] App (función personalizada). Aplica a: ThisWorkbook"
-Attribute App.VB_ProcData.VB_Invoke_Func = " \n21"
+Attribute App.VB_ProcData.VB_Invoke_Func = " \n0"
     Set App = ThisWorkbook.App
 End Function
 
@@ -24,12 +78,12 @@ Attribute ReiniciarAplicacion.VB_ProcData.VB_Invoke_Func = " \n0"
 
     result = MsgBox("Esto reiniciara completamente el complemento ABC." & vbCrLf & vbCrLf & _
                     "Se cerrara y volvera a inicializar la aplicacion." & vbCrLf & _
-                    "¿Desea continuar?", _
+                    "Â¿Desea continuar?", _
                     vbQuestion + vbYesNo, "Reiniciar Aplicacion")
 
     If result <> vbYes Then Exit Sub
 
-    LogInfo MODULE_NAME, "[ReiniciarAplicacion] - Reinicio solicitado por usuario"
+    LogInfo MODULE_NAME, "[ReiniciarAplicacion] Reinicio solicitado por usuario"
 
     On Error Resume Next
 
@@ -49,10 +103,10 @@ Attribute ReiniciarAplicacion.VB_ProcData.VB_Invoke_Func = " \n0"
 
     ' Verificar estado
     If IsRibbonAvailable() Then
-        MsgBox "Aplicación reiniciada correctamente." & vbCrLf & vbCrLf & _
+        MsgBox "AplicaciÃ³n reiniciada correctamente." & vbCrLf & vbCrLf & _
                App.ribbon.GetQuickDiagnostics(), vbInformation, "Reinicio Exitoso"
     Else
-        MsgBox "Aplicación reiniciada, pero el Ribbon puede requerir atención adicional." & vbCrLf & _
+        MsgBox "AplicaciÃ³n reiniciada, pero el Ribbon puede requerir atenciÃ³n adicional." & vbCrLf & _
                "Ejecute 'RecuperarRibbon' si es necesario.", _
                vbExclamation, "Reinicio Parcial"
     End If
@@ -64,7 +118,7 @@ End Sub
 ' ==========================================
 
 '@Description: Activa temporalmente la visibilidad del XLAM para operaciones de copia
-'              Muestra el libro que contiene este XLAM, haciéndolo visible en la interfaz de Excel.
+'              Muestra el libro que contiene este XLAM, haciÃ©ndolo visible en la interfaz de Excel.
 '@Scope: Manipula el libro host del complemento XLAM cargado.
 '@ArgumentDescriptions: (no tiene argumentos)
 '@Returns: (ninguno)
@@ -74,7 +128,7 @@ Attribute DesactivarModoAddin.VB_ProcData.VB_Invoke_Func = " \n0"
     On Error GoTo ErrHandler
     If ThisWorkbook.IsAddin Then
         ThisWorkbook.IsAddin = False     ' Hace que el libro se muestre
-        Debug.Print "[DesactivarModoAddin] - XLAM visible temporalmente"
+        LogInfo MODULE_NAME, "[DesactivarModoAddin] XLAM visible temporalmente"
     End If
 ErrHandler:
     Err.Raise Err.Number, "modMACROBackups.DesactivarModoAddin", _
@@ -91,7 +145,7 @@ Sub RestaurarModoAddin()
 Attribute RestaurarModoAddin.VB_ProcData.VB_Invoke_Func = " \n0"
     On Error GoTo ErrHandler
     ThisWorkbook.IsAddin = True
-    Debug.Print "[RestaurarModoAddin] - XLAM restaurado como Add-in"
+    LogInfo MODULE_NAME, "[RestaurarModoAddin] XLAM restaurado como Add-in"
 ErrHandler:
     Err.Raise Err.Number, "modMACROBackups.DesactivarModoAddin", _
               "Error desactivando el modo de AddIn: " & Err.Description
@@ -111,7 +165,7 @@ Attribute ToggleRibbonTab.VB_ProcData.VB_Invoke_Func = " \n0"
 
     Exit Sub
 ErrHandler:
-    Debug.Print "[ToggleRibbonTab] Error: " & Err.Description
+    LogError MODULE_NAME, "[ToggleRibbonTab] Error", Err.Number, Err.Description
     MsgBox "Error al cambiar modo del Ribbon: " & Err.Description, vbExclamation
 End Sub
 
@@ -122,8 +176,8 @@ Public Sub RecuperarRibbon()
 Attribute RecuperarRibbon.VB_ProcData.VB_Invoke_Func = " \n0"
     Dim result As VbMsgBoxResult
 
-    LogInfo MODULE_NAME, "[RecuperarRibbon] - Solicitado por usuario"
-    Debug.Print GetRibbonDiagnostics()
+    LogInfo MODULE_NAME, "[RecuperarRibbon] Solicitado por usuario"
+    LogDebug MODULE_NAME, "[RecuperarRibbon] Diagnosticos: " & GetRibbonDiagnostics()
 
     ' Si ya esta disponible, no hacer nada
     If IsRibbonAvailable() Then
@@ -169,8 +223,7 @@ End Sub
 '@Description: Obtiene informacion de diagnostico del estado del Ribbon
 '@Returns: String | Descripcion del estado actual
 Public Function GetRibbonDiagnostics() As String
-Attribute GetRibbonDiagnostics.VB_Description = "[modMACROAppLifecycle] FUNCIONES DE DIAGNOSTICO Obtiene informacion de diagnostico del estado del Ribbon"
-Attribute GetRibbonDiagnostics.VB_ProcData.VB_Invoke_Func = " \n21"
+Attribute GetRibbonDiagnostics.VB_ProcData.VB_Invoke_Func = " \n0"
     Dim info As String
 
     info = "=== DIAGNOSTICO DEL RIBBON ===" & vbCrLf
@@ -224,8 +277,7 @@ End Function
 '    DESDE EL CONTEXTO GLOBAL
 '@Returns: Boolean | True si el Ribbon esta operativo
 Public Function IsRibbonAvailable() As Boolean
-Attribute IsRibbonAvailable.VB_Description = "[modMACROAppLifecycle] Verifica si el Ribbon esta disponible y funcional DESDE EL CONTEXTO GLOBAL"
-Attribute IsRibbonAvailable.VB_ProcData.VB_Invoke_Func = " \n21"
+Attribute IsRibbonAvailable.VB_ProcData.VB_Invoke_Func = " \n0"
     On Error Resume Next
     Dim mApp As clsApplication
     ' Verificar que App existe
@@ -272,8 +324,7 @@ End Function
 '@Description: Intenta recuperar el Ribbon automaticamente
 '@Returns: Boolean | True si la recuperacion fue exitosa
 Public Function TryRecoverRibbon() As Boolean
-Attribute TryRecoverRibbon.VB_Description = "[modMACROAppLifecycle] FUNCIONES DE RECUPERACION Intenta recuperar el Ribbon automaticamente"
-Attribute TryRecoverRibbon.VB_ProcData.VB_Invoke_Func = " \n21"
+Attribute TryRecoverRibbon.VB_ProcData.VB_Invoke_Func = " \n0"
     On Error GoTo ErrHandler
 
     LogInfo MODULE_NAME, "TryRecoverRibbon - Iniciando recuperacion..."
@@ -395,7 +446,7 @@ Private Function RecoverByAddinToggle() As Boolean
     LogDebug MODULE_NAME, "RecoverByAddinToggle - Desactivando add-in..."
     targetAddin.Installed = False
 
-    ' Pequeña pausa
+    ' PequeÃ±a pausa
     DoEvents
     Application.Wait Now + TimeSerial(0, 0, 1)
     DoEvents

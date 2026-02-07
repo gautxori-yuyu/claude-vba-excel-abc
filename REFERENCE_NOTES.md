@@ -331,29 +331,101 @@ QUiero que revises detenidamente el codigo que te facilito, y que hagas las prop
 
 ## PUNTOS POSIBLEMENTE YA IMPLEMENTADOS
 
-Los siguientes puntos es posible que ya queden reflejados en la implementación actual, por lo que pudiera parecer que sobran. Asegurarse de que ya se cumplan, si no EMPEZAR POR CORREGIR ESTOS, y ADVERTIR en el chat, de que ya están resueltos. Si lo están, moverlos a la sección ##DONES
-
-- en clsApplicationState Se han creado varios Property Gets para proporcionar acceso a los subestados, Considero que no es correcto, porque esos subestados nacen y se definen en el subsistema al que pertenecen. Si Cualquier entidad de la aplicación quiere obtener una referencia a ellos, debería obtenerla a partir de esos subsistemas, Lo mismo que la ha obtenido clsApplicationState . Yo ya los he eliminado de mi código.
-
-- En clsRibbonState Has implementado la función:
-  "Public Function IsRibbonTabVisible(isOpportunityFileActive As Boolean) As Boolean",
-  Que recibe un parámetro. Pero esa función sólo se usa Desde una llamada, en modCALLBACKSRibbon, Y no recibe ningún parámetro... Mis preguntas anteriores he hecho referencia a esa misma función Y justamente A la implementación anterior que tenía para ella Utilizando una función global En lugar del parámetro que has implementado ahora. Por lo que te repito exactamente la misma pregunta que te hacía antes: ¿Qué cambios habría que hacer en el código para eliminar ese tipo de dependencias o inconsistencias, Y trasladarlas a nivel de dominio (Usando funciones como SyncRibbonAfterOpportunityChange)?
-  La resolución de esta discordancia es algo **prioritario**.
-
-- Tampoco es aceptable que exista la misma función, "AreSameFile", exactamente igual, en 3 clases distintas: Creo que se podría unificar esa implementación Y De hecho sería más correcto hacerla En la clase clsFileXLS, como "IsSameFileAs()"; Y en lugar de tener la implementación en cada una de esas clases, Todas las consultas se harían con respecto a Una de las instancias, De la siguiente manera: "AreSameFile (f1,f2) == f1.IsSameFileAs(f2)".
-  Lo mismo sucede con la función AreSameOpportunity que está doblemente implementada en las clases clsApplicationState y clsOpportunityState. Creo que para evitar la duplicidad se podía implementar en la clase clsOpportunity Una función "IsSameOpAs()", Y de modo similar al anterior usarla con la equivalencia "AreSameOpportunity(op1,op2) == op1.IsSameOpAs(op2)".
-
-  En este último caso además la duplicidad no tiene sentido porque conlleva hacer dos veces la misma comprobación: en clsApplicationState haces:
-  "Public Property Set CurrentOpportunity(op As clsOpportunity)
-  If Not AreSameOpportunity(mOpportunityState.CurrentOpportunity, op) Then
-  Set mOpportunityState.CurrentOpportunity = op
-  ", Pero la llamada Set mOpportunityState.CurrentOpportunity = op Se traduce A la llamada:
-  "Friend Property Set CurrentOpportunity(op As clsOpportunity)
-  ' FLAG NATURAL: solo cambia si es diferente
-  If AreSameOpportunity(mCurrentOpportunity, op) Then Exit Property
-  ", Y como puedes ver La llamada a la función duplicada AreSameOpportunity, Se hace primero en clsApplicationState , Y se repite seguidamente en clsOpportunityState.
-
-Mi conclusión a priori es que las comprobaciones de duplicidades en clsApplicationState deberían eliminarse, Y relegarse la comprobación de esa duplicidad a los subestados . Aunque aparentemente la justificación de la existencia de la funcion en clsApplicationState está en que esa verificación protege de posibles bucles infinitos la asignación en el "Public Property Set CurrentOpportunity", Porque el property SET Implementado en clsOpportunityState no nos da un valor de retorno que nos permita evitar la duplicidad de funciones. ¿es correcto? ¿ Puedes sugerir una alternativa a esa doble implementación que permita tener solo una copia de esa función y no tener que llamarle dos veces Para hacer la verificación en los dos niveles, clsApplicationState y clsOpportunityState ?
+Todos los puntos de esta sección han sido verificados y resueltos. Movidos a ##DONES.
 
 ## DONES
-Dejar aqui el texto de todos los puntos que hayan quedado implementados, a modo de changelog.
+
+### Facade Property Gets en clsApplicationState (Fase F — commit e37520f)
+Se eliminaron 5 Property Gets facade (CurrentOpportunity, CurrentFile, CurrentChart, RibbonMode, RibbonVisible) que no tenían callers externos. Cualquier entidad que necesita un subestado lo obtiene directamente del subsistema productor (ej: OpportunitiesMgr.State.CurrentOpportunity).
+
+### IsRibbonTabVisible (Pre-E — verificado en commit 3bfa2a6)
+La función IsRibbonTabVisible ya no existe en clsRibbonState. La visibilidad de la pestaña se controla directamente en modCALLBACKSRibbon mediante la consulta `App().AppState.IsOpportunityFileActive()`.
+
+### Duplication AreSameFile (Pre-E — verificado en commit 3bfa2a6)
+La función AreSameFile ya no existe duplicada en múltiples clases. La comparación de archivos se centraliza en la instancia que la necesita.
+
+### Duplication AreSameOpportunity + double-check en Property Set (Pre-E + flag natural — commits 3bfa2a6, efae28c)
+- AreSameOpportunity ya no existe duplicada en clsApplicationState y clsOpportunityState.
+- clsApplicationState ya no tiene Property Set CurrentOpportunity (eliminado en Fase D/F: State no debe tener setters ni ordenar).
+- El único guard contra asignación redundante vive en clsOpportunitiesMgr.CurrOpportunity (flag natural, commit efae28c): el Mgr compara antes de escribir al State y antes de emitir el evento. Una sola comprobación, en el lugar correcto.
+
+### On* stubs y SyncOpportunityFromFile en clsApplicationState (Fase F — commit e37520f)
+Los métodos Friend OnOpportunityChanged, OnFileChanged, OnOpportunityCollectionChanged y la Private SyncOpportunityFromFile solo logueaban sin ejercer coordinación real (AppState ya tiene referencias vivas a todos los subestados). Se eliminaron junto con las llamadas correspondientes en clsEventsMediatorDomain y el parámetro oApplicationState de su Initialize.
+
+### Double-MsgBox en monitoreo (Fase F — commit 58b6fbe)
+MonitoringError y MonitoringFailed mostraban MsgBox dos veces: una en clsFSMonitoringCoord (tras RaiseEvent) y otra en clsEventsMediatorDomain (en el handler síncrono). Se eliminaron los MsgBox del mediador. El mediador no es UI; los MsgBox originales en clsFSMonitoringCoord se mantienen como única notificación.
+
+### Property Let Public en clsRibbonState (Fase F — commit c5d3cb0)
+Property Let Modo y Visible cambiados de Public a Friend. Todos sus callers son clsRibbon (su Mgr). Per preceptos: State no debe exponer setters públicos.
+
+### Corrupción encoding en clsRibbonState (Fase F — commit c5d3cb0)
+@Description tenía "lógico" con bytes U+FFFD (ef bf bd, codificación UTF-8 del replacement character) en lugar de \xf3 (ó en ISO-8859-1). Corregido.
+
+### clsExecutionContext descompuesto (Fase E — commit e80be1f)
+clsExecutionContext (289 líneas) eliminado e íntegramente redistribuido en:
+- Listener en ThisWorkbook (WithEvents Application, 5 handlers, cero lógica)
+- clsExecutionContextState (estado cacheado puro, Friend setters)
+- clsExecutionContextMgr (recibe Listener, actualiza State, lanza eventos semánticos, DetectChart)
+
+### Bug residual Fase E: mCtx en ChartManager.Initialize (Fase F — commit e37520f)
+`mChartManager.Initialize mCtx` en clsApplication referenciaba la variable eliminada. Corregido a `mCtxState`.
+
+### Llamadas inadecuadas al Ribbon desde Dispatcher (Fase G — commit e6cea5e)
+clsEventDispatcher llamaba directamente a App.ribbon.InvalidarControl y App.ribbon.InvalidarRibbon en 3 lugares (btnNuevaOp, btnOpRefresh, SetRibbonSelectionIndex). Eliminadas estas llamadas. El Ribbon ahora se invalida automáticamente via eventos que clsRibbon escucha con WithEvents de los Managers (OpportunitiesMgr, FileMgr, etc.).
+
+### Detección de reset VBA (Fase G — commit e6cea5e)
+Añadida detección de reset de VBA mediante variable Static en modMACROAppLifecycle:
+- `DetectVBAResetOccurred()`: Detecta si ocurrió un reset desde la última llamada
+- `InitializationCount`: Contador de inicializaciones (>1 indica que hubo resets)
+- `LastInitializationTime`: Timestamp de la última inicialización
+
+### Validación de contexto COM (Fase G — commit e6cea5e)
+clsExecutionContextMgr ahora tiene:
+- `IsContextValid()`: Verifica que las referencias COM estén vivas (no zombis)
+- `RefreshContextState()`: Detecta y actualiza el contexto actual desde Excel
+- Handlers de ContextInvalidated/ContextReinitialized en clsEventsMgrInfrastructure
+
+### IsInitialized en clsApplicationState (Fase G — commit e6cea5e)
+Añadidas propiedades para diagnosticar estado de inicialización:
+- `IsInitialized`: True si todos los subestados críticos fueron inyectados
+- `GetInitializationStatus()`: String con estado de cada subestado
+
+### Interfaz IOpportunity de dominio (Fase H — commit 6acb541)
+IOpportunity.cls implementada como interfaz de dominio que define el contrato para trabajar con oportunidades. Métodos: OpportunityId, BasePath, DisplayName, IsValid, CanGenerateQuote, ReadTechnicalData.
+
+### Adaptador ExcelOpportunitySource (Fase H — commit 6acb541)
+ExcelOpportunitySource.cls creado como adaptador de infraestructura que implementa IOpportunity usando Excel. Encapsula clsFileXLS y traduce sus operaciones al contrato de dominio. El dominio solo ve IOpportunity; la infraestructura sabe hablar Excel.
+
+### Detección de reset integrada en bootstrap (Feature 1 — commit 5001caf)
+ThisWorkbook.Workbook_Open ahora llama a DetectVBAResetOccurred() al inicio y fuerza reinicialización del contexto si detecta reset. Loguea número de inicialización para diagnóstico.
+
+### Flujo de reinicialización completo en dominio (Feature 1 — commit 5001caf, actualizado Feature 2)
+- clsEventsMediatorDomain escucha InfraContextInvalidated/InfraContextReinitialized via WithEvents mInfraMediador (eventos traducidos)
+- Durante InfraContextInvalidated: pausa FSMonitoringCoord
+- Durante InfraContextReinitialized: reanuda FSMonitoringCoord y refresca oportunidades
+- clsFSMonitoringCoord: nuevos métodos PausarMonitoreo/ReanudarMonitoreo y propiedad IsPaused
+
+### clsOpportunity implementa IOpportunity (Feature 1 — commit 5001caf)
+La entidad de dominio clsOpportunity ahora implementa la interfaz IOpportunity directamente, exponiendo: OpportunityId, BasePath, DisplayName, IsValid, CanGenerateQuote, ReadTechnicalData.
+
+### CurrentOpportunitySource en clsOpportunitiesMgr (Feature 1 — commit 5001caf)
+Nueva propiedad `CurrentOpportunitySource As IOpportunity` que permite al código de dominio trabajar con la oportunidad actual usando la interfaz abstracta en lugar de la implementación concreta.
+
+### Interfaz IOferta de dominio (Feature 1 — commit 5001caf)
+IOferta.cls implementada como interfaz de dominio para ofertas. Métodos: OfertaId, NumeroOferta, FechaOferta, IsValid, IsDirty, IsNew, GetDatosGenerales, OtrosCount.
+
+### Traducción de eventos infra→dominio (Feature 2)
+Corregida la violación del Objetivo 5: el mediador de dominio ya NO escucha directamente a clases de infraestructura.
+- clsEventsMgrInfrastructure ahora emite eventos semánticos traducidos:
+  - `InfraContextInvalidated` (traducción de mCtxMgr_ContextInvalidated)
+  - `InfraContextReinitialized` (traducción de mCtxMgr_ContextReinitialized)
+  - `ActiveFileSessionChanged` (traducción de mFileMgr_ActiveFileChanged)
+- clsEventsMediatorDomain ahora escucha `WithEvents mInfraMediador` en lugar de escuchar directamente a mCtxMgr y mFileMgr
+- El flujo correcto es: Excel → ExecutionContextMgr → InfraMediador (traduce) → DomainMediador
+- clsApplication.cls actualizado para pasar mEvMgrInfrastructure al inicializar el mediador de dominio
+
+### clsFileManager reclasificado como infraestructura (Feature 2)
+@Folder cambiado de "4-Servicios.Archivos" a "2-Infraestructura" según Objetivo 6 de REFERENCE_NOTES.md.
+
+### Violación pendiente documentada: uso de clsFileXLS en domain mediator (Feature 2)
+En mOpportunities_currOpportunityChanged se usa clsFileXLS directamente. Documentado con TODO explicando que requiere decisión de diseño cuando se tenga la especificación de dominio. Opciones: delegarlo a servicio de infraestructura o que el mediador de infraestructura exponga método semántico.

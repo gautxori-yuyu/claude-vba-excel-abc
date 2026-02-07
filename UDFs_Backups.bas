@@ -1,10 +1,10 @@
 Attribute VB_Name = "UDFs_Backups"
 ' ==========================================
-' FUNCIONES DE BACKUP PARA SINCRONIZACI”N
+' FUNCIONES DE BACKUP PARA SINCRONIZACI√ìN
 ' ==========================================
-' PROP”SITO:
+' PROP√ìSITO:
 ' Crear copias de seguridad antes de modificar:
-' 1. CÛdigo VBA (archivos .bas, .cls, .frm) -> ZIP
+' 1. C√≥digo VBA (archivos .bas, .cls, .frm) -> ZIP
 ' 2. Hoja Excel "PROCEDIMIENTOS" -> Hoja duplicada con sufijo _bkp
 '
 ' ==========================================
@@ -21,7 +21,7 @@ Private Const MODULE_NAME As String = "UDFs_Backups"
 #End If
 
 ' ==========================================
-' FUNCI”N 1: BACKUP DE C”DIGO VBA A ZIP
+' FUNCI√ìN 1: BACKUP DE C√ìDIGO VBA A ZIP
 ' ==========================================
 
 '@Description: Exporta todos los componentes VBA de ThisWorkbook a una carpeta temporal y la comprime en ZIP
@@ -29,8 +29,8 @@ Private Const MODULE_NAME As String = "UDFs_Backups"
 '@ArgumentDescriptions: (sin argumentos)
 '@Returns: String | Ruta completa del archivo ZIP creado, o "" si falla
 Function CrearBackupCodigoVBA() As String
-Attribute CrearBackupCodigoVBA.VB_Description = "[UDFs_Backups] FUNCI”N 1: BACKUP DE C”DIGO VBA A ZIP Exporta todos los componentes VBA de ThisWorkbook a una carpeta temporal y la comprime en ZIP. Aplica a: ThisWorkbook\r\nM.D.:Privado"
-Attribute CrearBackupCodigoVBA.VB_ProcData.VB_Invoke_Func = " \n21"
+Attribute CrearBackupCodigoVBA.VB_Description = "[UDFs_Backups] FUNCI√ìN 1: BACKUP DE C√ìDIGO VBA A ZIP Exporta todos los componentes VBA de ThisWorkbook a una carpeta temporal y la comprime en ZIP. Aplica a: ThisWorkbook\r\nM.D.:Privado"
+Attribute CrearBackupCodigoVBA.VB_ProcData.VB_Invoke_Func = " \n23"
     Dim rutaBackup As String
     Dim rutaTempExport As String
     Dim nombreZip As String
@@ -41,7 +41,7 @@ Attribute CrearBackupCodigoVBA.VB_ProcData.VB_Invoke_Func = " \n21"
     
     Set fso = CreateObject("Scripting.FileSystemObject")
     
-    ' Generar timestamp para nombre ˙nico
+    ' Generar timestamp para nombre √∫nico
     timestampStr = Format(Now, "yyyymmdd_hhnnss")
     
     ' Rutas
@@ -80,21 +80,21 @@ Attribute CrearBackupCodigoVBA.VB_ProcData.VB_Invoke_Func = " \n21"
     Exit Function
     
 ErrorHandler:
-    Debug.Print "[CrearBackupCodigoVBA] - Error: " & Err.Description
+    LogCurrentError MODULE_NAME, "[CrearBackupCodigoVBA]"
     CrearBackupCodigoVBA = ""
 End Function
 
 ' ==========================================
-' FUNCI”N 2: BACKUP DE HOJA EXCEL
+' FUNCI√ìN 2: BACKUP DE HOJA EXCEL
 ' ==========================================
 
-'@Description: Crea una copia de seguridad de una hoja Excel aÒadiendo sufijo _bkp (VERSI”N PARA XLAM)
+'@Description: Crea una copia de seguridad de una hoja Excel a√±adiendo sufijo _bkp (VERSI√ìN PARA XLAM)
 '@Scope: Privado
 '@ArgumentDescriptions: ws: Worksheet a duplicar
-'@Returns: Boolean | True si se creÛ correctamente
+'@Returns: Boolean | True si se cre√≥ correctamente
 Function CrearBackupHojaExcel(ws As Worksheet) As Boolean
-Attribute CrearBackupHojaExcel.VB_Description = "[UDFs_Backups] FUNCI”N 2: BACKUP DE HOJA EXCEL Crea una copia de seguridad de una hoja Excel aÒadiendo sufijo _bkp (VERSI”N PARA XLAM). Aplica a: Cells Range\r\nM.D.:Privado"
-Attribute CrearBackupHojaExcel.VB_ProcData.VB_Invoke_Func = " \n21"
+Attribute CrearBackupHojaExcel.VB_Description = "[UDFs_Backups] FUNCI√ìN 2: BACKUP DE HOJA EXCEL Crea una copia de seguridad de una hoja Excel a√±adiendo sufijo _bkp (VERSI√ìN PARA XLAM). Aplica a: Cells Range\r\nM.D.:Privado"
+Attribute CrearBackupHojaExcel.VB_ProcData.VB_Invoke_Func = " \n23"
     Dim nombreBackup As String
     Dim wsBackup As Worksheet
     Dim respuesta As VbMsgBoxResult
@@ -114,9 +114,9 @@ Attribute CrearBackupHojaExcel.VB_ProcData.VB_Invoke_Func = " \n21"
     If Not wsBackup Is Nothing Then
         ' Ya existe, preguntar si eliminarla
         respuesta = MsgBox("Ya existe una copia de seguridad anterior: '" & nombreBackup & "'" & vbCrLf & vbCrLf & _
-                          "øDesea reemplazarla con una nueva copia?" & vbCrLf & vbCrLf & _
-                          "SÌ = Reemplazar (se eliminar· la anterior)" & vbCrLf & _
-                          "No = Cancelar operaciÛn", _
+                          "¬øDesea reemplazarla con una nueva copia?" & vbCrLf & vbCrLf & _
+                          "S√≠ = Reemplazar (se eliminar√° la anterior)" & vbCrLf & _
+                          "No = Cancelar operaci√≥n", _
                           vbQuestion + vbYesNo, "Backup existente")
         
         If respuesta = vbNo Then
@@ -132,7 +132,7 @@ Attribute CrearBackupHojaExcel.VB_ProcData.VB_Invoke_Func = " \n21"
     End If
     
     ' ========================================
-    ' SOLUCI”N PARA XLAM: Desactivar IsAddin temporalmente
+    ' SOLUCI√ìN PARA XLAM: Desactivar IsAddin temporalmente
     ' ========================================
     
     ' Guardar estado actual de IsAddin
@@ -141,24 +141,24 @@ Attribute CrearBackupHojaExcel.VB_ProcData.VB_Invoke_Func = " \n21"
     ' Si es un Add-in, desactivarlo temporalmente para permitir copiar hojas
     If esAddin Then
         ws.Parent.IsAddin = False
-        Debug.Print "[CrearBackupHojaExcel] - XLAM detectado, IsAddin desactivado temporalmente"
+        LogDebug MODULE_NAME, "[CrearBackupHojaExcel] XLAM detectado, IsAddin desactivado temporalmente"
     End If
     
     ' Crear nueva copia de la hoja
     On Error GoTo ErrorHandlerRestaurar
     ws.Copy After:=ws
     
-    ' Obtener referencia a la hoja reciÈn creada
+    ' Obtener referencia a la hoja reci√©n creada
     Set wsBackup = ws.Parent.Worksheets(ws.Index + 1)
     wsBackup.Name = nombreBackup
     
-    ' AÒadir marca visual de que es backup
+    ' A√±adir marca visual de que es backup
     With wsBackup.Range("A1")
         .Interior.Color = RGB(255, 200, 200)  ' Fondo rojo claro
         .Font.Bold = True
         
         If False Then
-            ' AÒadir comentario con fecha
+            ' A√±adir comentario con fecha
             On Error Resume Next
             .ClearComments
             .AddComment "BACKUP creado el " & Format(Now, "dd/mm/yyyy hh:nn:ss")
@@ -171,7 +171,7 @@ Attribute CrearBackupHojaExcel.VB_ProcData.VB_Invoke_Func = " \n21"
     ' ========================================
     If esAddin Then
         ws.Parent.IsAddin = True
-        Debug.Print "[CrearBackupHojaExcel] - IsAddin restaurado"
+        LogDebug MODULE_NAME, "[CrearBackupHojaExcel] IsAddin restaurado"
     End If
     
     CrearBackupHojaExcel = True
@@ -180,13 +180,13 @@ Attribute CrearBackupHojaExcel.VB_ProcData.VB_Invoke_Func = " \n21"
 ErrorHandlerRestaurar:
     ' Error durante la copia, pero debemos restaurar IsAddin
     errorOcurrido = True
-    Debug.Print "[CrearBackupHojaExcel] - Error al copiar: " & Err.Description
-    
+    LogCurrentError MODULE_NAME, "[CrearBackupHojaExcel] Error al copiar"
+
     ' Restaurar IsAddin antes de salir
     If esAddin Then
         On Error Resume Next
         ws.Parent.IsAddin = True
-        Debug.Print "[CrearBackupHojaExcel] - IsAddin restaurado tras error"
+        LogDebug MODULE_NAME, "[CrearBackupHojaExcel] IsAddin restaurado tras error"
         On Error GoTo 0
     End If
     
@@ -194,18 +194,18 @@ ErrorHandlerRestaurar:
     Exit Function
     
 ErrorHandler:
-    Debug.Print "[CrearBackupHojaExcel] - Error: " & Err.Description
+    LogCurrentError MODULE_NAME, "[CrearBackupHojaExcel] Error"
     CrearBackupHojaExcel = False
 End Function
 
 ' ==========================================
-' VERSI”N ALTERNATIVA: USO MANUAL DEL ESTADO
+' VERSI√ìN ALTERNATIVA: USO MANUAL DEL ESTADO
 ' ==========================================
 
-'@Description: VersiÛn alternativa de CrearBackupHojaExcel con control manual de IsAddin
+'@Description: Versi√≥n alternativa de CrearBackupHojaExcel con control manual de IsAddin
 '@Scope: Privado
 '@ArgumentDescriptions: ws: Worksheet a duplicar
-'@Returns: Boolean | True si se creÛ correctamente
+'@Returns: Boolean | True si se cre√≥ correctamente
 Private Function CrearBackupHojaExcel_V2(ws As Worksheet) As Boolean
     Dim nombreBackup As String
     Dim wsBackup As Worksheet
@@ -223,8 +223,8 @@ Private Function CrearBackupHojaExcel_V2(ws As Worksheet) As Boolean
     
     If Not wsBackup Is Nothing Then
         respuesta = MsgBox("Ya existe una copia de seguridad anterior: '" & nombreBackup & "'" & vbCrLf & vbCrLf & _
-                          "øDesea reemplazarla con una nueva copia?" & vbCrLf & vbCrLf & _
-                          "SÌ = Reemplazar | No = Cancelar", _
+                          "¬øDesea reemplazarla con una nueva copia?" & vbCrLf & vbCrLf & _
+                          "S√≠ = Reemplazar | No = Cancelar", _
                           vbQuestion + vbYesNo, "Backup existente")
         
         If respuesta = vbNo Then
@@ -268,12 +268,12 @@ Private Function CrearBackupHojaExcel_V2(ws As Worksheet) As Boolean
 ErrorConRestauracion:
     ' Error, pero restaurar IsAddin antes de salir
     Call RestaurarModoAddin
-    Debug.Print "[CrearBackupHojaExcel_V2] - Error: " & Err.Description
+    LogCurrentError MODULE_NAME, "[CrearBackupHojaExcel_V2] Error con restauraci√≥n"
     CrearBackupHojaExcel_V2 = False
     Exit Function
-    
+
 ErrorHandler:
-    Debug.Print "[CrearBackupHojaExcel_V2] - Error: " & Err.Description
+    LogCurrentError MODULE_NAME, "[CrearBackupHojaExcel_V2] Error"
     CrearBackupHojaExcel_V2 = False
 End Function
 
@@ -281,11 +281,11 @@ End Function
 ' INSTRUCCIONES DE USO
 ' ==========================================
 '
-' OPCI”N 1 (RECOMENDADA):
-' Reemplazar toda la funciÛn CrearBackupHojaExcel existente
-' por la primera versiÛn de este archivo
+' OPCI√ìN 1 (RECOMENDADA):
+' Reemplazar toda la funci√≥n CrearBackupHojaExcel existente
+' por la primera versi√≥n de este archivo
 '
-' OPCI”N 2:
+' OPCI√ìN 2:
 ' Si prefieres tener control separado, usa:
 ' - DesactivarModoAddin()
 ' - RestaurarModoAddin()
@@ -293,29 +293,29 @@ End Function
 '
 ' ==========================================
 '
-' EXPLICACI”N DEL PROBLEMA:
+' EXPLICACI√ìN DEL PROBLEMA:
 '
 ' Cuando ThisWorkbook.IsAddin = True:
-' ? No se pueden copiar hojas (.Copy)
-' ? No se pueden agregar hojas (.Add)
-' ? No se pueden mover hojas (.Move)
-' ? El libro no aparece en la UI de Excel
+' -> No se pueden copiar hojas (.Copy)
+' -> No se pueden agregar hojas (.Add)
+' -> No se pueden mover hojas (.Move)
+' -> El libro no aparece en la UI de Excel
 '
 ' Cuando ThisWorkbook.IsAddin = False:
-' ? Se pueden copiar hojas
-' ? Se pueden agregar hojas
-' ? Se pueden mover hojas
-' ? El libro aparece en la UI de Excel
+' -> Se pueden copiar hojas
+' -> Se pueden agregar hojas
+' -> Se pueden mover hojas
+' -> El libro aparece en la UI de Excel
 '
 ' ==========================================
 '
-' FLUJO DE LA SOLUCI”N:
+' FLUJO DE LA SOLUCI√ìN:
 '
 ' 1. Detectar si ThisWorkbook.IsAddin = True
-' 2. Si es True ? Cambiar temporalmente a False
+' 2. Si es True -> Cambiar temporalmente a False
 ' 3. Copiar la hoja con .Copy After:=ws
 ' 4. Renombrar la copia
-' 5. AÒadir marca visual
+' 5. A√±adir marca visual
 ' 6. SIEMPRE restaurar IsAddin al estado original
 '    (incluso si hay error)
 '
@@ -323,10 +323,10 @@ End Function
 '
 ' NOTAS IMPORTANTES:
 '
-' ï El cambio de IsAddin es TEMPORAL (microsegundos)
-' ï El usuario NO ver· el libro aparecer/desaparecer
-' ï Siempre se restaura el estado original
-' ï Funciona con GoTo ErrorHandlerRestaurar para
-'   garantizar restauraciÛn incluso con errores
+' El cambio de IsAddin es TEMPORAL (microsegundos)
+' El usuario NO ver√° el libro aparecer/desaparecer
+' Siempre se restaura el estado original
+' Funciona con GoTo ErrorHandlerRestaurar para
+'   garantizar restauraci√≥n incluso con errores
 '
 ' ==========================================

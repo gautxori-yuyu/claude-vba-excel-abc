@@ -13,26 +13,30 @@ Option Explicit
 
 Private Const MODULE_NAME As String = "clsEventsMediatorDomain"
 
+' ==================================================================
+' SUSCRIPCIONES A EVENTOS
+' ==================================================================
+' El mediador de dominio escucha:
+' - mInfraMediador: eventos SEMANTICOS traducidos de infraestructura
+' - mFSMonitoringCoord: eventos de sistema de archivos (ya son semanticos)
+' - mOpportunities: eventos de dominio (Manager de oportunidades)
+'
+' NO escucha directamente a clases de infraestructura pura (mCtxMgr, mFileMgr)
+
+Private WithEvents mInfraMediador As clsEventsMgrInfrastructure
+Attribute mInfraMediador.VB_VarHelpID = -1
+
 Private WithEvents mFSMonitoringCoord As clsFSMonitoringCoord
 Attribute mFSMonitoringCoord.VB_VarHelpID = -1
 
 Private WithEvents mOpportunities As clsOpportunitiesMgr
 Attribute mOpportunities.VB_VarHelpID = -1
 
-' NUEVO: Escuchar eventos de subestados
-Private WithEvents mOpportunityState As clsOpportunityState
-Attribute mOpportunityState.VB_VarHelpID = -1
-
-Private WithEvents mFileState As clsFileState
-Attribute mFileState.VB_VarHelpID = -1
-
-Private mCtx As clsExecutionContext
-Private mRibbon As clsRibbon
-Private mFileMgr As clsFileManager
-Private mApplicationState As clsApplicationState
+Private mCtxState As clsExecutionContextState
+Private mFileMgr As clsFileManager   ' Referencia sin WithEvents (solo para consultas)
 
 '--------------------------------------------------------------
-' Inicialización
+' InicializaciÃ³n
 '--------------------------------------------------------------
 Private Sub Class_Initialize()
     LogInfo MODULE_NAME, "[Class_Initialize]"
@@ -44,30 +48,26 @@ Private Sub Class_Terminate()
 End Sub
 
 'TODO: faltaria crear clases para otras funciones que estan en macros, y pasarlas como parametros...
-Public Sub Initialize(oCtx As clsExecutionContext, _
+Public Sub Initialize(oCtxState As clsExecutionContextState, _
+                oInfraMediador As clsEventsMgrInfrastructure, _
                 oFSMonitoringCoord As clsFSMonitoringCoord, _
                 oOpportunities As clsOpportunitiesMgr, _
-                oRibbon As clsRibbon, _
-                oFileMgr As clsFileManager, _
-                oApplicationState As clsApplicationState)
+                oFileMgr As clsFileManager)
     On Error GoTo ErrHandler
-    
-    Set mCtx = oCtx
-    
-    Set mRibbon = oRibbon
-    
+
+    Set mCtxState = oCtxState
+
+    ' Escuchar eventos SEMANTICOS del mediador de infraestructura
+    Set mInfraMediador = oInfraMediador
+
+    ' Referencia a FileMgr solo para consultas (no WithEvents)
     Set mFileMgr = oFileMgr
-    
+
     Set mFSMonitoringCoord = oFSMonitoringCoord
-    
+
     Set mOpportunities = oOpportunities
 
-    ' NUEVO: Guardar referencia a ApplicationState y escuchar eventos de subestados
-    Set mApplicationState = oApplicationState
-    Set mOpportunityState = oOpportunities.State
-    Set mFileState = oFileMgr.State
-
-    LogInfo MODULE_NAME, "[Initialize] Mediador configurado con ApplicationState y subestados"
+    LogInfo MODULE_NAME, "[Initialize] Mediador configurado (escucha via InfraMediador)"
 
     Exit Sub
 ErrHandler:
@@ -79,24 +79,19 @@ Public Sub Terminate()
     On Error GoTo ErrHandler
 
     ' Liberar referencias WithEvents primero
-    Set mFileState = Nothing
-    Set mOpportunityState = Nothing
     Set mOpportunities = Nothing
-    
     Set mFSMonitoringCoord = Nothing
+    Set mInfraMediador = Nothing
 
     ' Luego referencias normales
-    Set mApplicationState = Nothing
     Set mFileMgr = Nothing
-    Set mCtx = Nothing
-    
-    Set mRibbon = Nothing
-    
+    Set mCtxState = Nothing
+
     Exit Sub
 ErrHandler:
     LogCurrentError MODULE_NAME, "[Terminate]"
     Err.Raise Err.Number, MODULE_NAME & " [Terminate]", _
-              "Error finalizando aplicación: " & Err.Description
+              "Error finalizando aplicacion: " & Err.Description
 End Sub
 
 ' ==================================================================
@@ -107,69 +102,50 @@ End Sub
 ' Evento: cambios detectados en oportunidades (desde OpportunitiesMgr)
 ' -------------------------------------------------------------
 Private Sub mOpportunities_OpportunityCollectionUpdate(ByVal cambios As String)
-    LogInfo MODULE_NAME, "[callback: clsOpportunitiesMgr OpportunityCollectionUpdate] - cambios detectados: " & cambios
-
-    ' Llamar a ApplicationState para coordinar estados
-    If Not mApplicationState Is Nothing Then
-        mApplicationState.OnOpportunityCollectionChanged cambios
-    End If
-
-    ' MANTENER invalidación directa temporalmente por compatibilidad
-    If Not mRibbon Is Nothing Then
-        'mRibbon.InvalidarRibbon
-        mRibbon.InvalidarControl "ddlOportunidades"
-        LogDebug MODULE_NAME, "[mOpportunities_OpportunityCollectionUpdate] - Ribbon invalidado"
-    End If
+    LogInfo MODULE_NAME, "[callback: clsOpportunitiesMgr OpportunityCollectionUpdate] cambios detectados: " & cambios
 End Sub
-'TODO: Extraer la lógica de clsFileXLS A una función
+'TODO: VIOLACION ARQUITECTONICA - El mediador de dominio no deberia usar clsFileXLS directamente.
+'      Esta logica de "mover archivo a carpeta de oportunidad" deberia:
+'      1. Delegarse a un servicio de infraestructura (FileLocationService?), o
+'      2. El mediador de infraestructura deberia exponer un evento/metodo semantico
+'      Pendiente de decision cuando se tenga la especificacion de dominio.
 Private Sub mOpportunities_currOpportunityChanged(ByVal Index As Long, ByVal Path As String)
-    LogInfo MODULE_NAME, "[callback: clsOpportunitiesMgr currOpportunityChanged] - Oportunidad seleccionada: " & Path
-    
+    LogInfo MODULE_NAME, "[callback: clsOpportunitiesMgr currOpportunityChanged] Oportunidad seleccionada: " & Path
+
+    ' TEMPORAL: Uso directo de clsFileXLS (ver TODO arriba)
     Dim f As clsFileXLS
-    Set f = mFileMgr.GetOrTrackWorkbook(mCtx.Workbook)
+    Set f = mFileMgr.GetOrTrackWorkbook(mCtxState.Workbook)
     If Not f Is Nothing Then
         If f.DebeMoverseAOp(Path, mOpportunities.BaseFolder) Then
             f.MoverAOp Path, mOpportunities.BaseFolder
         End If
     End If
-    ' (Aquí no tiene sentido invalidar el ribbon, esto no tiene nada que ver con ribbon, SOLO LÓGICA DE NEGOCIO)
 End Sub
 
-'--------------------------------------------------------------
-' NUEVO: Evento de cambio de oportunidad desde OpportunityState
-'--------------------------------------------------------------
-Private Sub mOpportunityState_CurrentOpportunityChanged(op As clsOpportunity, Index As Long)
-    LogInfo MODULE_NAME, "[callback: OpportunityState CurrentOpportunityChanged] - Index=" & Index
 
-    ' Llamar a ApplicationState para coordinar estados
-    If Not mApplicationState Is Nothing Then
-        mApplicationState.OnOpportunityChanged op, Index
-    End If
+' -------------------------------------------------------------
+' Eventos SEMANTICOS del mediador de infraestructura
+' (traducidos de eventos tecnicos - el dominio no conoce Excel/COM)
+' -------------------------------------------------------------
 
-    ' NOTA: La lógica de mover archivo se mantiene en handler viejo por compatibilidad
-End Sub
-
-'--------------------------------------------------------------
-' NUEVO: Evento de cambio de archivo desde FileState
-'--------------------------------------------------------------
-Private Sub mFileState_CurrentFileChanged(f As clsFileXLS, isOpportunityFile As Boolean)
+'@Description: Evento semantico: el archivo activo ha cambiado
+Private Sub mInfraMediador_ActiveFileSessionChanged(ByVal filePath As String, ByVal isOpportunityFile As Boolean)
     Dim fileName As String
-    If f Is Nothing Then
+    If Len(filePath) = 0 Then
         fileName = "(ninguno)"
     Else
-        On Error Resume Next
-        fileName = f.Name
-        If Err.Number <> 0 Then fileName = "(error)"
-        On Error GoTo 0
+        ' Extraer solo el nombre del archivo del path
+        Dim pos As Long
+        pos = InStrRev(filePath, "\")
+        If pos > 0 Then
+            fileName = Mid$(filePath, pos + 1)
+        Else
+            fileName = filePath
+        End If
     End If
 
-    LogInfo MODULE_NAME, "[callback: FileState CurrentFileChanged] - File=" & fileName & _
+    LogInfo MODULE_NAME, "[InfraMediador_ActiveFileSessionChanged] File=" & fileName & _
                          ", IsOpportunity=" & isOpportunityFile
-
-    ' Llamar a ApplicationState para coordinar estados
-    If Not mApplicationState Is Nothing Then
-        mApplicationState.OnFileChanged f
-    End If
 End Sub
 
 ' -------------------------------------------------------------
@@ -225,14 +201,6 @@ End Sub
 
 Private Sub mFSMonitoringCoord_MonitoringError(ByVal folder As String, ByVal errorMessage As String)
     LogError MODULE_NAME, "[mFSMonitoringCoord_MonitoringError] " & folder & ": " & errorMessage
-
-    ' Mostrar al usuario solo errores criticos
-    If InStr(1, errorMessage, "Limite", vbTextCompare) > 0 Or _
-       InStr(1, errorMessage, "no encontrada", vbTextCompare) > 0 Then
-        MsgBox "Error en monitoreo de carpeta:" & vbCrLf & _
-               folder & vbCrLf & vbCrLf & _
-               errorMessage, vbExclamation, "FolderWatcher"
-    End If
 End Sub
 
 Private Sub mFSMonitoringCoord_MonitoringReconnected(ByVal folder As String, ByVal attempts As Long)
@@ -241,12 +209,38 @@ End Sub
 
 Private Sub mFSMonitoringCoord_MonitoringFailed(ByVal folder As String, ByVal reason As String)
     LogError MODULE_NAME, "[mFSMonitoringCoord_MonitoringFailed] " & folder & ": " & reason
-
-    MsgBox "El monitoreo de la carpeta ha fallado permanentemente:" & vbCrLf & _
-           folder & vbCrLf & vbCrLf & _
-           "Razon: " & reason & vbCrLf & vbCrLf & _
-           "Es posible que la carpeta no este accesible o haya problemas de red.", _
-           vbExclamation, "FolderWatcher - Reconexion Fallida"
 End Sub
 
+'@Description: Evento semantico: el contexto de infraestructura se ha invalidado
+'@Note: Permite al dominio prepararse para la invalidacion sin conocer detalles tecnicos
+Private Sub mInfraMediador_InfraContextInvalidated()
+    LogWarning MODULE_NAME, "[InfraMediador_InfraContextInvalidated] Contexto invalidado, notificando a dominio"
 
+    ' Pausar monitoreo de FS si esta activo (puede tener referencias invalidas)
+    On Error Resume Next
+    If Not mFSMonitoringCoord Is Nothing Then
+        mFSMonitoringCoord.PausarMonitoreo
+    End If
+    On Error GoTo 0
+End Sub
+
+'@Description: Evento semantico: el contexto de infraestructura se ha reinicializado
+'@Note: Permite al dominio reenganchar sus dependencias y refrescar estado
+Private Sub mInfraMediador_InfraContextReinitialized()
+    On Error GoTo ErrHandler
+    LogInfo MODULE_NAME, "[InfraMediador_InfraContextReinitialized] Reconectando dominio"
+
+    ' Reanudar monitoreo de FS
+    If Not mFSMonitoringCoord Is Nothing Then
+        mFSMonitoringCoord.ReanudarMonitoreo
+    End If
+
+    ' Refrescar coleccion de oportunidades por si hubo cambios durante el reset
+    If Not mOpportunities Is Nothing Then
+        mOpportunities.actualizarColeccionOportunidades
+    End If
+
+    Exit Sub
+ErrHandler:
+    LogError MODULE_NAME, "[InfraMediador_InfraContextReinitialized] Error durante reconexion de dominio", , Err.Description
+End Sub

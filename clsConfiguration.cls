@@ -7,8 +7,8 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
-'TODO Migrar de Registry a archivo JSON para configuración (NO PRIORITARIO)
-'TODO Implementar importar/exportar configuración (NO PRIORITARIO)
+'TODO Migrar de Registry a archivo JSON para configuraciÃ³n (NO PRIORITARIO)
+'TODO Implementar importar/exportar configuraciÃ³n (NO PRIORITARIO)
 
 '@Folder "2-Infraestructura.Configuracion"
 '@IgnoreModule ProcedureNotUsed
@@ -119,7 +119,7 @@ Private Sub CargarConfiguracionDesdeRegistro()
     On Error GoTo ErrHandler
     
     ' Cargar cada ruta desde el registro y mostrarla
-    LogInfo MODULE_NAME, "[CargarConfiguracionDesdeRegistro] - inicializacion de todas las rutas desde registro o valores por defecto"
+    LogInfo MODULE_NAME, "[CargarConfiguracionDesdeRegistro] inicializacion de todas las rutas desde registro o valores por defecto"
     mRutaOportunidades = ObtenerRuta(CFG_RUTA_OPORTUNIDADES, CFG_RUTA_OPORTUNIDADES_DEFAULT)
     mRutaPlantillas = ObtenerRuta(CFG_RUTA_PLANTILLAS, CFG_RUTA_PLANTILLAS_DEFAULT)
     mRutaOfergas = ObtenerRuta(CFG_RUTA_OFERGAS, CFG_RUTA_OFERGAS_DEFAULT)
@@ -132,14 +132,14 @@ Private Sub CargarConfiguracionDesdeRegistro()
     Exit Sub
 ErrHandler:
     Err.Raise Err.Number, "clsConfiguration.CargarConfiguracionDesdeRegistro", _
-              "Error en la carga de configuración desde registro: " & Err.Description
+              "Error en la carga de configuraciÃ³n desde registro: " & Err.Description
 End Sub
 
 '@Description: Devuelve diccionario de carpetas a monitorear (cacheado)
 '@Note: La cache se invalida automaticamente cuando cambian las rutas
 '
-'TODO: revisar el uso de esta función: Buscar otra forma de que el folder watcher tenga conocimiento de qué carpetas son supervisadas;
-' posiblemente presentando de otra manera el formulario de configuración de carpetas, y creando en él opciones para su selección...
+'TODO: revisar el uso de esta funciÃ³n: Buscar otra forma de que el folder watcher tenga conocimiento de quÃ© carpetas son supervisadas;
+' posiblemente presentando de otra manera el formulario de configuraciÃ³n de carpetas, y creando en Ã©l opciones para su selecciÃ³n...
 'TODO: Considerar refactorizar a una estructura mas clara:
 ' - Crear clase clsFolderWatchConfig con propiedades: TipoCarpeta, Ruta, EsMonitoreable
 ' - Exponer como Collection tipada en lugar de Dictionary
@@ -158,7 +158,7 @@ End Property
 '-------------------------------------------
 Private Sub GuardarSAM(SAM As Integer)
     CreateObject("WScript.Shell").RegWrite CFG_PATH_SAM, CStr(SAM), "REG_SZ"
-    LogDebug MODULE_NAME, "[GuardarSAM] - S.A.M. guardado en registro"
+    LogDebug MODULE_NAME, "[GuardarSAM] S.A.M. guardado en registro"
 End Sub
 
 Private Function ObtenerSAM() As Integer
@@ -171,7 +171,7 @@ Private Function ObtenerSAM() As Integer
 
     ' Verificar si hubo error o valor invalido
     If errNum <> 0 Or IsEmpty(valorLeido) Or Not IsNumeric(valorLeido) Then
-        LogWarning MODULE_NAME, "[ObtenerSAM] - no existente en registro o invalido, establecido valor por defecto"
+        LogWarning MODULE_NAME, "[ObtenerSAM] no existente en registro o invalido, establecido valor por defecto"
         ObtenerSAM = CFG_SAM
         GuardarSAM CFG_SAM
     ElseIf CInt(valorLeido) = 0 Then
@@ -189,7 +189,7 @@ End Function
 Private Sub GuardarRuta(nombreConfig As Variant, ruta As String)
     'SaveSetting APP_NAME & "\" & CFG_SECTION_RUTAS, nombreConfig, "", ruta
     CreateObject("WScript.Shell").RegWrite CFG_PATH_SECTION_RUTAS & nombreConfig & "\", ruta, "REG_SZ"
-    LogDebug MODULE_NAME, "[GuardarRuta] - ruta guardada en registro"
+    LogDebug MODULE_NAME, "[GuardarRuta] ruta guardada en registro"
 End Sub
 
 ' Recuperar una ruta del registro
@@ -200,9 +200,9 @@ Private Function ObtenerRuta(nombreConfig As Variant, strDefault As String) As S
     If ObtenerRuta = "" Or Not RutaExiste(ObtenerRuta) Then
         ObtenerRuta = strDefault
         GuardarRuta nombreConfig, ObtenerRuta
-        LogWarning MODULE_NAME, "[ObtenerRuta] - ruta no existente en registro o invalida, establecido valor por defecto"
+        LogWarning MODULE_NAME, "[ObtenerRuta] ruta no existente en registro o invalida, establecido valor por defecto"
     Else
-        LogDebug MODULE_NAME, "[ObtenerRuta] - ruta leida del registro: " & ObtenerRuta
+        LogDebug MODULE_NAME, "[ObtenerRuta] ruta leida del registro: " & ObtenerRuta
     End If
     On Error GoTo 0
 End Function
@@ -227,9 +227,9 @@ Private Sub GuardarListaCarpetas(ByVal carpetas As Variant, nombreConfig As Stri
     GuardarRuta nombreConfig, lista
     
     If Err.Number <> 0 Then
-        LogError MODULE_NAME, "[GuardarListaCarpetas] - No se pudo guardar lista en registro", , Err.Description
+        LogError MODULE_NAME, "[GuardarListaCarpetas] No se pudo guardar lista en registro", , Err.Description
     Else
-        LogDebug MODULE_NAME, "[GuardarListaCarpetas] - Lista de carpetas guardada en registro."
+        LogDebug MODULE_NAME, "[GuardarListaCarpetas] Lista de carpetas guardada en registro."
     End If
     
     On Error GoTo 0
@@ -241,11 +241,11 @@ Private Function ObtenerListaCarpetas(nombreConfig As String, strDefault As Stri
     ObtenerListaCarpetas = Split(CreateObject("WScript.Shell").RegRead(CFG_PATH_SECTION_RUTAS & nombreConfig & "\"), "|")
     
     If Err.Number <> 0 Then
-        LogWarning MODULE_NAME, "[ObtenerListaCarpetas] - No se encontró lista guardada en registro."
+        LogWarning MODULE_NAME, "[ObtenerListaCarpetas] No se encontrÃ³ lista guardada en registro."
         ObtenerListaCarpetas = Split(strDefault, "|")
         Call GuardarListaCarpetas(ObtenerListaCarpetas, nombreConfig)
     Else
-        LogDebug MODULE_NAME, "[ObtenerListaCarpetas] - Lista de carpetas leida desde registro: " & vbCrLf & vbTab & Join(ObtenerListaCarpetas, vbCrLf & vbTab)
+        LogDebug MODULE_NAME, "[ObtenerListaCarpetas] Lista de carpetas leida desde registro: " & vbCrLf & vbTab & Join(ObtenerListaCarpetas, vbCrLf & vbTab)
     End If
     On Error GoTo 0
 End Function
@@ -256,7 +256,7 @@ Private Sub BorrarListaCarpetas(nombreConfig As String)
     CreateObject("WScript.Shell").RegDelete CFG_PATH_SECTION_RUTAS & nombreConfig & "\"
     
     If Err.Number = 0 Then
-        LogInfo MODULE_NAME, "[BorrarListaCarpetas] - Lista de carpetas eliminada del registro."
+        LogInfo MODULE_NAME, "[BorrarListaCarpetas] Lista de carpetas eliminada del registro."
     End If
     
     On Error GoTo 0

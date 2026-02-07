@@ -45,7 +45,8 @@ Public Sub Dispatch(controlID As String)
                 Call FixCGASING
         Case "btnNuevaOp"
                 App.OpportunitiesMgr.CreaOportunidad
-                App.ribbon.InvalidarControl "ddlOportunidades"
+                ' Ribbon se invalida automaticamente via evento OpportunityCollectionUpdate
+                ' que clsRibbon escucha con WithEvents mOpportunities
         Case "btnConfig"
                 App.OpportunitiesMgr.Conf.ShowUI
         Case "btnValidationsToNames"
@@ -55,9 +56,8 @@ Public Sub Dispatch(controlID As String)
             ThisWorkbook.IsAddin = Not (ThisWorkbook.IsAddin)
         Case "btnOpRefresh"
             App.OpportunitiesMgr.actualizarColeccionOportunidades
-            'FIXME: La invalidacion de ribbon no debería aparecer aqui: ¿tal vez en el coordinador de eventos?
-            App.ribbon.InvalidarRibbon
-            'App.Ribbon.InvalidarControl "ddlOportunidades"
+            ' Ribbon se invalida automaticamente via evento OpportunityCollectionUpdate
+            ' que clsRibbon escucha con WithEvents mOpportunities
     End Select
 
 ErrorHandler:
@@ -81,17 +81,16 @@ Public Function GetRibbonItemLabel(controlID As String, Optional Index As Intege
     End Select
 End Function
 
-' resuelve un cambio de seleccion en un item de seleccion multiple del ribbon
+'@Description: Resuelve un cambio de seleccion en un dropdown del Ribbon
+'@Note: Este callback se ejecuta DESPUES de que Excel ya proceso el cambio visual.
+'       El Ribbon se invalida automaticamente via eventos del Manager correspondiente.
 Public Sub SetRibbonSelectionIndex(controlID As String, Index As Integer, id As String)
     Select Case controlID
         Case "ddlOportunidades"
-            ' Consulta la lógica de negocio real
             App.OpportunitiesMgr.CurrOpportunity = Index
-            LogInfo MODULE_NAME, "[SetItemSelectionIndex] - Cambiada oportunidad activa: " & id
+            LogInfo MODULE_NAME, "[SetRibbonSelectionIndex] Cambiada oportunidad activa: " & id
+            ' clsRibbon escucha currOpportunityChanged via WithEvents mOpportunities
     End Select
-    ' FIXME: invalidar, refrescar el UI? yo creo que estas funciones son llamadas CUANDO SE HA
-    ' SOLICITADO UNA INVALIDACION y que NO debería forzarse una nueva invalidacion desde aqui...
-    App.ribbon.InvalidarControl controlID
 End Sub
 
 Public Function GetRibbonControlEnabled(controlID As String) As Boolean
@@ -110,7 +109,7 @@ Public Function GetRibbonControlEnabled(controlID As String) As Boolean
     End Select
     GetRibbonControlEnabled = enabled
     'InvalidarControl controlID ' esto ESTA DE SOBRA!!
-    LogDebug MODULE_NAME, "[GetRibbonControlEnabled] - ¿" & controlID & "?: " & CBool(enabled)
+    LogDebug MODULE_NAME, "[GetRibbonControlEnabled] Â¿" & controlID & "?: " & CBool(enabled)
 End Function
 
 ' TODO: PTE PASAR EL RESTO DE LLAMADAS DE CALLBACKS DE RIBBON, supertips, fijar item sel en dropbox, etc

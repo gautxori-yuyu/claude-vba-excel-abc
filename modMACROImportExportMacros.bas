@@ -1,16 +1,16 @@
 Attribute VB_Name = "modMACROImportExportMacros"
 ' ==============================================================================================================
-' M覦ULO: modMACROImportExportMacros
-' DESCRIPCI覰: M骴ulo para exportar e importar componentes VBA (m骴ulos, clases, formularios) desde y hacia
-'              archivos f韘icos. Permite hacer backup del c骴igo VBA o transferirlo entre proyectos.
+' M脫DULO: modMACROImportExportMacros
+' DESCRIPCI脫N: M贸dulo para exportar e importar componentes VBA (m贸dulos, clases, formularios) desde y hacia
+'              archivos f铆sicos. Permite hacer backup del c贸digo VBA o transferirlo entre proyectos.
 ' REQUISITOS: - Referencia a "Microsoft Visual Basic for Applications Extensibility 5.3"
 '             - Acceso al modelo de objetos VBA habilitado en las opciones de seguridad de Excel
 ' ==============================================================================================================
 
 '@NOTE: Debes tener habilitado el acceso al modelo de objetos de VBA:
 ' - En el editor de VBA: ve a Herramientas > Referencias. Marca "Microsoft Visual Basic for Applications Extensibility 5.3".
-' - en Excel: Archivo > Opciones > Centro de confianza > Configuraci髇 del Centro de confianza
-'       > Configuraci髇 de macros > marca "Confiar en el acceso al modelo de objetos del proyecto VBA".
+' - en Excel: Archivo > Opciones > Centro de confianza > Configuraci贸n del Centro de confianza
+'       > Configuraci贸n de macros > marca "Confiar en el acceso al modelo de objetos del proyecto VBA".
 
 '@Folder "0-Developer"
 Option Explicit
@@ -18,32 +18,32 @@ Option Explicit
 Private Const MODULE_NAME As String = "modMACROImportExportMacros"
 
 ' -------------------------------------------------------------------------------------------------------------
-' EXPORTACI覰 DE COMPONENTES VBA
+' EXPORTACI脫N DE COMPONENTES VBA
 ' -------------------------------------------------------------------------------------------------------------
 
-'@Description: Exporta todos los componentes VBA del libro seleccionado (m骴ulos, clases, formularios)
+'@Description: Exporta todos los componentes VBA del libro seleccionado (m贸dulos, clases, formularios)
 '              a archivos individuales en la carpeta del libro
-'@Scope: (muestra formulario de selecci髇)
+'@Scope: (muestra formulario de selecci贸n)
 '@ArgumentDescriptions: (sin argumentos)
 '@Returns: (ninguno)
-'@Dependencies: frmImportExportMacros (formulario de selecci髇 de libro)
-'@Note: Los archivos se guardan con extensiones: .bas (m骴ulos), .cls (clases), .frm (formularios)
+'@Dependencies: frmImportExportMacros (formulario de selecci贸n de libro)
+'@Note: Los archivos se guardan con extensiones: .bas (m贸dulos), .cls (clases), .frm (formularios)
 Sub ExportarComponentesVBA()
 Attribute ExportarComponentesVBA.VB_ProcData.VB_Invoke_Func = " \n0"
     Dim vbComp As Object
     Dim rutaExportacion As String
     Dim nombreArchivo As String
-    Dim wb As Workbook
+    Dim Wb As Workbook
     
     Dim frm As New frmImportExportMacros
     frm.Show vbModal
     If frm.WorkbookSeleccionado Is Nothing Then Exit Sub
-    Set wb = frm.WorkbookSeleccionado
+    Set Wb = frm.WorkbookSeleccionado
     Unload frm
-    If wb Is Nothing Then Exit Sub               ' Cancelado o error
+    If Wb Is Nothing Then Exit Sub               ' Cancelado o error
     
-    ' Carpeta donde se guardar醤 los archivos exportados
-    rutaExportacion = wb.Path
+    ' Carpeta donde se guardar谩n los archivos exportados
+    rutaExportacion = Wb.Path
     
     ' Crear carpeta si no existe
     If Dir(rutaExportacion, vbDirectory) = "" Then
@@ -51,9 +51,9 @@ Attribute ExportarComponentesVBA.VB_ProcData.VB_Invoke_Func = " \n0"
     End If
     
     ' Recorrer todos los componentes del proyecto VBA
-    For Each vbComp In wb.VBProject.VBComponents
+    For Each vbComp In Wb.VBProject.VBComponents
         Select Case vbComp.Type
-        Case 1: nombreArchivo = vbComp.Name & ".bas" ' M骴ulo est醤dar
+        Case 1: nombreArchivo = vbComp.Name & ".bas" ' M贸dulo est谩ndar
         Case 2, 100: nombreArchivo = vbComp.Name & ".cls" ' Clase
         Case 3: nombreArchivo = vbComp.Name & ".frm" ' Formulario
         Case Else: nombreArchivo = vbComp.Name & ".txt"
@@ -72,7 +72,7 @@ End Sub
 '@Description: Exporta componentes VBA sin mostrar mensajes al usuario
 '@Scope: Privado
 '@ArgumentDescriptions: wb: Workbook de origen | rutaDestino: Carpeta donde exportar
-Sub ExportarComponentesVBASilencioso(wb As Workbook, rutaDestino As String)
+Sub ExportarComponentesVBASilencioso(Wb As Workbook, rutaDestino As String)
 Attribute ExportarComponentesVBASilencioso.VB_ProcData.VB_Invoke_Func = " \n0"
     Dim vbComp As Object
     Dim nombreArchivo As String
@@ -88,15 +88,15 @@ Attribute ExportarComponentesVBASilencioso.VB_ProcData.VB_Invoke_Func = " \n0"
     End If
     
     ' Recorrer todos los componentes del proyecto VBA
-    For Each vbComp In wb.VBProject.VBComponents
+    For Each vbComp In Wb.VBProject.VBComponents
         Select Case vbComp.Type
-            Case 1: nombreArchivo = vbComp.Name & ".bas"  ' M骴ulo est醤dar
+            Case 1: nombreArchivo = vbComp.Name & ".bas"  ' M贸dulo est谩ndar
             Case 2, 100: nombreArchivo = vbComp.Name & ".cls"  ' Clase o documento
             Case 3: nombreArchivo = vbComp.Name & ".frm"  ' Formulario
             Case Else: nombreArchivo = vbComp.Name & ".txt"
         End Select
         
-        ' Exportar solo si tiene c骴igo
+        ' Exportar solo si tiene c贸digo
         If vbComp.CodeModule.CountOfLines > 0 Then
             vbComp.Export rutaDestino & "\" & nombreArchivo
         End If
@@ -106,35 +106,35 @@ Attribute ExportarComponentesVBASilencioso.VB_ProcData.VB_Invoke_Func = " \n0"
 End Sub
 
 ' -------------------------------------------------------------------------------------------------------------
-' IMPORTACI覰 DE COMPONENTES VBA
+' IMPORTACI脫N DE COMPONENTES VBA
 ' -------------------------------------------------------------------------------------------------------------
 
-'@Description: Importa componentes VBA desde archivos f韘icos al libro seleccionado. Permite seleccionar
-'              m鷏tiples archivos (.bas, .cls, .frm)
-'@Scope:  (muestra formularios de selecci髇)
+'@Description: Importa componentes VBA desde archivos f铆sicos al libro seleccionado. Permite seleccionar
+'              m煤ltiples archivos (.bas, .cls, .frm)
+'@Scope:  (muestra formularios de selecci贸n)
 '@ArgumentDescriptions: (sin argumentos)
 '@Returns: (ninguno)
-'@Dependencies: frmImportExportMacros (formulario de selecci髇 de libro)
+'@Dependencies: frmImportExportMacros (formulario de selecci贸n de libro)
 '@Note: Elimina el componente existente si ya existe uno con el mismo nombre antes de importar
 Sub ImportarComponentesVBA()
 Attribute ImportarComponentesVBA.VB_ProcData.VB_Invoke_Func = " \n0"
     Dim fso As Object, carpeta As Object, archivo As Object
     Dim rutaImportacion As String
     Dim extension As String
-    Dim wb As Workbook
+    Dim Wb As Workbook
     
     Dim frm As New frmImportExportMacros
     frm.Show vbModal
     If frm.WorkbookSeleccionado Is Nothing Then Exit Sub
-    Set wb = frm.WorkbookSeleccionado
+    Set Wb = frm.WorkbookSeleccionado
     Unload frm
-    If wb Is Nothing Then Exit Sub               ' Cancelado o error
+    If Wb Is Nothing Then Exit Sub               ' Cancelado o error
     
-    ' Carpeta desde donde se importar醤 los archivos
-    rutaImportacion = wb.Path
+    ' Carpeta desde donde se importar谩n los archivos
+    rutaImportacion = Wb.Path
     
     If Dir(rutaImportacion, vbDirectory) = "" Then
-        MsgBox "La carpeta de importaci髇 no existe: " & rutaImportacion, vbExclamation
+        MsgBox "La carpeta de importaci贸n no existe: " & rutaImportacion, vbExclamation
         Exit Sub
     End If
     
@@ -144,19 +144,19 @@ Attribute ImportarComponentesVBA.VB_ProcData.VB_Invoke_Func = " \n0"
     For Each archivo In carpeta.Files
         extension = LCase(fso.GetExtensionName(archivo.Name))
         If extension = "bas" Or extension = "cls" Or extension = "frm" Then
-            wb.VBProject.VBComponents.Import archivo.Path
+            Wb.VBProject.VBComponents.Import archivo.Path
         End If
     Next archivo
     
-    MsgBox "Importaci髇 completada desde: " & rutaImportacion, vbInformation
+    MsgBox "Importaci贸n completada desde: " & rutaImportacion, vbInformation
 End Sub
 
 ' ==========================================
-' FUNCI覰 5: UTILIDAD PARA RESTAURAR DESDE BACKUP
+' FUNCI脫N 5: UTILIDAD PARA RESTAURAR DESDE BACKUP
 ' ==========================================
 
-'@Description: Restaura c骴igo VBA desde un archivo ZIP de backup
-'@Scope: P鷅lico
+'@Description: Restaura c贸digo VBA desde un archivo ZIP de backup
+'@Scope: P煤blico
 '@ArgumentDescriptions: rutaZip: Ruta completa del archivo ZIP con el backup
 Public Sub RestaurarBackupVBADesdeZip(Optional rutaZip As String)
 Attribute RestaurarBackupVBADesdeZip.VB_ProcData.VB_Invoke_Func = " \n0"
@@ -190,7 +190,7 @@ Attribute RestaurarBackupVBADesdeZip.VB_ProcData.VB_Invoke_Func = " \n0"
     Set shellApp = CreateObject("Shell.Application")
     shellApp.Namespace(rutaTempDescompresion).CopyHere shellApp.Namespace(rutaZip).Items
     
-    ' Esperar a que termine la descompresi髇
+    ' Esperar a que termine la descompresi贸n
     Dim intentos As Integer
     intentos = 0
     Do While fso.GetFolder(rutaTempDescompresion).Files.Count = 0 And intentos < 50
@@ -199,10 +199,10 @@ Attribute RestaurarBackupVBADesdeZip.VB_ProcData.VB_Invoke_Func = " \n0"
         intentos = intentos + 1
     Loop
     
-    ' Confirmar restauraci髇
-    If MsgBox("緿esea restaurar el c骴igo VBA desde este backup?" & vbCrLf & vbCrLf & _
-              "ADVERTENCIA: Se eliminar醤 todos los m骴ulos actuales" & vbCrLf & _
-              "y se cargar醤 los del backup.", vbExclamation + vbYesNo, "Confirmar restauraci髇") = vbYes Then
+    ' Confirmar restauraci贸n
+    If MsgBox("驴Desea restaurar el c贸digo VBA desde este backup?" & vbCrLf & vbCrLf & _
+              "ADVERTENCIA: Se eliminar谩n todos los m贸dulos actuales" & vbCrLf & _
+              "y se cargar谩n los del backup.", vbExclamation + vbYesNo, "Confirmar restauraci贸n") = vbYes Then
         
         ' Importar componentes
         Dim archivo As Object
@@ -223,7 +223,7 @@ Attribute RestaurarBackupVBADesdeZip.VB_ProcData.VB_Invoke_Func = " \n0"
             End If
         Next archivo
         
-        MsgBox "Restauraci髇 completada desde: " & rutaZip, vbInformation, "Restauraci髇 completada"
+        MsgBox "Restauraci贸n completada desde: " & rutaZip, vbInformation, "Restauraci贸n completada"
     End If
     
     ' Limpiar carpeta temporal
@@ -234,18 +234,18 @@ Attribute RestaurarBackupVBADesdeZip.VB_ProcData.VB_Invoke_Func = " \n0"
     Exit Sub
     
 ErrorHandler:
-    Debug.Print "[RestaurarBackupVBADesdeZip] - Error: " & Err.Description
+    LogCurrentError MODULE_NAME, "[RestaurarBackupVBADesdeZip]"
     MsgBox "Error al restaurar backup: " & Err.Description, vbCritical, "Error"
 End Sub
 
 Sub ImportarComponentesVBAaThisWorkbookXLAM()
 Attribute ImportarComponentesVBAaThisWorkbookXLAM.VB_ProcData.VB_Invoke_Func = " \n0"
-    ' Carpeta desde donde se importar醤 los archivos
+    ' Carpeta desde donde se importar谩n los archivos
     Dim fso As Object, archivo As Object, carpeta As Object, rutaImportacion As String, extension As String
     rutaImportacion = ThisWorkbook.Path
     
     If Dir(rutaImportacion, vbDirectory) = "" Then
-        MsgBox "La carpeta de importaci髇 no existe: " & rutaImportacion, vbExclamation
+        MsgBox "La carpeta de importaci贸n no existe: " & rutaImportacion, vbExclamation
         Exit Sub
     End If
     
@@ -259,12 +259,12 @@ Attribute ImportarComponentesVBAaThisWorkbookXLAM.VB_ProcData.VB_Invoke_Func = "
         End If
     Next archivo
     
-    MsgBox "Importaci髇 completada desde: " & rutaImportacion, vbInformation
+    MsgBox "Importaci贸n completada desde: " & rutaImportacion, vbInformation
 End Sub
 
 Sub ExportarComponentesVBAdesdeThisWorkbookXLAM()
 Attribute ExportarComponentesVBAdesdeThisWorkbookXLAM.VB_ProcData.VB_Invoke_Func = " \n0"
-    ' Carpeta donde se guardar醤 los archivos exportados
+    ' Carpeta donde se guardar谩n los archivos exportados
     Dim rutaExportacion As String, nombreArchivo As String, vbComp
     rutaExportacion = ThisWorkbook.Path
     
@@ -276,7 +276,7 @@ Attribute ExportarComponentesVBAdesdeThisWorkbookXLAM.VB_ProcData.VB_Invoke_Func
     ' Recorrer todos los componentes del proyecto VBA
     For Each vbComp In ThisWorkbook.VBProject.VBComponents
         Select Case vbComp.Type
-        Case 1: nombreArchivo = vbComp.Name & ".bas" ' M骴ulo est醤dar
+        Case 1: nombreArchivo = vbComp.Name & ".bas" ' M贸dulo est谩ndar
         Case 2, 100: nombreArchivo = vbComp.Name & ".cls" ' Clase
         Case 3: nombreArchivo = vbComp.Name & ".frm" ' Formulario
         Case Else: nombreArchivo = vbComp.Name & ".txt"
@@ -284,5 +284,5 @@ Attribute ExportarComponentesVBAdesdeThisWorkbookXLAM.VB_ProcData.VB_Invoke_Func
         If vbComp.CodeModule.CountOfLines > 0 Then vbComp.Export rutaExportacion & "\" & nombreArchivo
     Next vbComp
     
-    MsgBox "Exportaci髇 completada en: " & rutaExportacion, vbInformation
+    MsgBox "Exportaci贸n completada en: " & rutaExportacion, vbInformation
 End Sub

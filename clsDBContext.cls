@@ -35,7 +35,7 @@ Public Sub Conectar(ByVal RutaBD As String)
     Exit Sub
 ErrorHandler:
     Err.Raise Err.Number, , _
-        "Error ADO al abrir conexión a DB: " & vbCrLf & _
+        "Error ADO al abrir conexiÃ³n a DB: " & vbCrLf & _
         Err.Description
 End Sub
 Public Function EstaConectado() As Boolean
@@ -72,7 +72,7 @@ Public Function AbrirRecordset(ByVal Sql As String) As Object
     Exit Function
 
 ErrHandler:
-    LogCurrentError MODULE_NAME, "[AbrirRecordset] - SQL ejecutado: " & Sql
+    LogCurrentError MODULE_NAME, "[AbrirRecordset] SQL ejecutado: " & Sql
     Err.Raise Err.Number, , _
         "Error ADO al abrir Recordset." & vbCrLf & _
         "SQL ejecutado:" & vbCrLf & Sql & vbCrLf & _

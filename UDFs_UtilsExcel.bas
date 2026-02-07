@@ -1,6 +1,6 @@
 Attribute VB_Name = "UDFs_UtilsExcel"
 ' ==========================================
-' M骴ulo UDFS que requieren CONTEXTO EXCEL
+' M贸dulo UDFS que requieren CONTEXTO EXCEL
 ' ==========================================
 
 '@Folder "UDFS.Excel"
@@ -8,10 +8,10 @@ Option Explicit
 
 Private Const MODULE_NAME As String = "UDFs_UtilsExcel"
 
-' Funci髇 auxiliar para detectar filas vac韆s
+' Funci贸n auxiliar para detectar filas vac铆as
 Function IsEmptyRow(r As Range) As Boolean
-Attribute IsEmptyRow.VB_Description = "[UDFs_UtilsExcel] Funci髇 auxiliar para detectar filas vac韆s. Aplica a: Cells Range"
-Attribute IsEmptyRow.VB_ProcData.VB_Invoke_Func = " \n21"
+Attribute IsEmptyRow.VB_Description = "[UDFs_UtilsExcel] Funci贸n auxiliar para detectar filas vac铆as. Aplica a: Cells Range"
+Attribute IsEmptyRow.VB_ProcData.VB_Invoke_Func = " \n23"
     IsEmptyRow = (WorksheetFunction.CountA(r) = 0)
 End Function
 
@@ -21,7 +21,7 @@ End Function
 '@Returns: Boolean | True si la hoja existe
 Function SheetExists(Wb As Workbook, ByVal sheetName As String) As Boolean
 Attribute SheetExists.VB_Description = "[UDFs_UtilsExcel] Verifica si una hoja existe en un workbook"
-Attribute SheetExists.VB_ProcData.VB_Invoke_Func = " \n21"
+Attribute SheetExists.VB_ProcData.VB_Invoke_Func = " \n23"
     Dim ws As Worksheet
     On Error Resume Next
     Set ws = Wb.Worksheets(sheetName)
@@ -30,8 +30,8 @@ Attribute SheetExists.VB_ProcData.VB_Invoke_Func = " \n21"
 End Function
 
 Function HojaEstaSeleccionada(nombreHoja As String) As Boolean
-Attribute HojaEstaSeleccionada.VB_Description = "[UDFs_UtilsExcel] Hoja Esta Seleccionada (funci髇 personalizada)"
-Attribute HojaEstaSeleccionada.VB_ProcData.VB_Invoke_Func = " \n21"
+Attribute HojaEstaSeleccionada.VB_Description = "[UDFs_UtilsExcel] Hoja Esta Seleccionada (funci贸n personalizada)"
+Attribute HojaEstaSeleccionada.VB_ProcData.VB_Invoke_Func = " \n23"
     On Error Resume Next
     Dim Sh As Object
     Set Sh = ActiveWindow.SelectedSheets(nombreHoja)
@@ -40,10 +40,10 @@ Attribute HojaEstaSeleccionada.VB_ProcData.VB_Invoke_Func = " \n21"
 End Function
 
 ' Reemplaza texto en todas las celdas de un rango
-' NOTA: Esta es una funci髇 auxiliar (no UDF) - modifica celdas, no retorna valor
+' NOTA: Esta es una funci贸n auxiliar (no UDF) - modifica celdas, no retorna valor
 Function ReplaceInAllCells(rng As Range, strFrom As String, strTo As String, ByRef bSave As Boolean) As Boolean
-Attribute ReplaceInAllCells.VB_Description = "[UDFs_UtilsExcel] Reemplaza texto en todas las celdas de un rango. NOTA: Esta es una funci髇 auxiliar (no UDF) - modifica celdas, no retorna valor. Aplica a: Cells Range"
-Attribute ReplaceInAllCells.VB_ProcData.VB_Invoke_Func = " \n21"
+Attribute ReplaceInAllCells.VB_Description = "[UDFs_UtilsExcel] Reemplaza texto en todas las celdas de un rango. NOTA: Esta es una funci贸n auxiliar (no UDF) - modifica celdas, no retorna valor. Aplica a: Cells Range"
+Attribute ReplaceInAllCells.VB_ProcData.VB_Invoke_Func = " \n23"
     Dim oCell As Range
     Dim firstAddress As String, bNext As Boolean
     
@@ -79,7 +79,7 @@ End Function
 '@ArgumentDescriptions: Nombre de la hoja donde buscar la tabla
 Public Function GetFirstTableName(wsName As String) As String
 Attribute GetFirstTableName.VB_Description = "[UDFs_UtilsExcel] Obtiene el nombre de la primera tabla de una hoja especificada. Aplica a: ActiveWorkbook"
-Attribute GetFirstTableName.VB_ProcData.VB_Invoke_Func = " \n21"
+Attribute GetFirstTableName.VB_ProcData.VB_Invoke_Func = " \n23"
     Dim ws As Worksheet
     Application.Volatile
     On Error GoTo ErrorHandler
@@ -99,12 +99,12 @@ ErrorHandler:
 End Function
 
 '@UDF
-'@Description: Busca un patr髇 de expresi髇 regular en un rango de celdas
-'@Category: B鷖queda
-'@ArgumentDescriptions: Rango donde buscar|Patr髇 de expresi髇 regular|Si TRUE devuelve la coincidencia, si FALSE devuelve la direcci髇
+'@Description: Busca un patr贸n de expresi贸n regular en un rango de celdas
+'@Category: B煤squeda
+'@ArgumentDescriptions: Rango donde buscar|Patr贸n de expresi贸n regular|Si TRUE devuelve la coincidencia, si FALSE devuelve la direcci贸n
 Public Function BuscarRegex(rango As Range, patron As String, Optional devolverCoincidencia As Boolean = False) As Variant
-Attribute BuscarRegex.VB_Description = "[UDFs_UtilsExcel] Busca un patr髇 de expresi髇 regular en un rango de celdas. Aplica a: Cells Range"
-Attribute BuscarRegex.VB_ProcData.VB_Invoke_Func = " \n21"
+Attribute BuscarRegex.VB_Description = "[UDFs_UtilsExcel] Busca un patr贸n de expresi贸n regular en un rango de celdas. Aplica a: Cells Range"
+Attribute BuscarRegex.VB_ProcData.VB_Invoke_Func = " \n23"
     Dim regEx As Object
     Dim celda As Range
     Dim coincidencias As Object
@@ -145,7 +145,7 @@ End Function
 
 Function bContentsErrorFree(ByRef refOutput As String, ByRef refValues As String, ByRef refInput As String) As Boolean
 Attribute bContentsErrorFree.VB_Description = "[UDFs_UtilsExcel] RANGE VALIDATION FUNCTIONS. Aplica a: Cells Range"
-Attribute bContentsErrorFree.VB_ProcData.VB_Invoke_Func = " \n21"
+Attribute bContentsErrorFree.VB_ProcData.VB_Invoke_Func = " \n23"
     'This function checks whether the values(s) of a range throw an error in an output cell.
     'If True then no error
     'If False then error
@@ -194,8 +194,8 @@ Attribute bContentsErrorFree.VB_ProcData.VB_Invoke_Func = " \n21"
 End Function
 
 Function bAllNumbers(ByVal ref As String) As Boolean
-Attribute bAllNumbers.VB_Description = "[UDFs_UtilsExcel] b All Numbers (funci髇 personalizada). Aplica a: Cells Range"
-Attribute bAllNumbers.VB_ProcData.VB_Invoke_Func = " \n21"
+Attribute bAllNumbers.VB_Description = "[UDFs_UtilsExcel] b All Numbers (funci贸n personalizada). Aplica a: Cells Range"
+Attribute bAllNumbers.VB_ProcData.VB_Invoke_Func = " \n23"
     ' This function checks whether the value(s) of a range are numeric.
     ' If True all are numeric
     ' IF False then at least one value is non-numeric
@@ -225,8 +225,8 @@ Attribute bAllNumbers.VB_ProcData.VB_Invoke_Func = " \n21"
 End Function
 
 Function bIsAddress(ByVal Str As String) As Boolean
-Attribute bIsAddress.VB_Description = "[UDFs_UtilsExcel] b Is Address (funci髇 personalizada). Aplica a: Cells Range"
-Attribute bIsAddress.VB_ProcData.VB_Invoke_Func = " \n21"
+Attribute bIsAddress.VB_Description = "[UDFs_UtilsExcel] b Is Address (funci贸n personalizada). Aplica a: Cells Range"
+Attribute bIsAddress.VB_ProcData.VB_Invoke_Func = " \n23"
     'This function checks whether a string is a reference to a range.
     On Error Resume Next
     

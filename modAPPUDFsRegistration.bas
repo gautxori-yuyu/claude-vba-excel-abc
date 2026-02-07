@@ -2,18 +2,18 @@ Attribute VB_Name = "modAPPUDFsRegistration"
 ' ==========================================
 ' SISTEMA DE AUTO-REGISTRO Y DESREGISTRO DE UDFs EN EXCEL
 ' ==========================================
-' Este módulo implementa un sistema completo para:
+' Este mÃ³dulo implementa un sistema completo para:
 ' - Detectar funciones UDF en el proyecto VBA
 ' - Registrar y desregistrar UDFs en Excel
 ' - Persistir el estado en el Registro de Windows
-' - Soportar fallback dinámico ante fallos
+' - Soportar fallback dinÃ¡mico ante fallos
 '
 ' Se apoya en ParsearProcsDelProyecto() y clsVBAProcedure
 ' ==========================================
 
-'FIXME: revisarlo. Las clases clsVBAProcedure.cls, modAPPUDFsRegistration.bas y modUTILSProcedureParsing.bas Pretenden
-'  - la identificación de todos los procedimientos en el proyecto VBA (clsVBAProcedure.cls y modUTILSProcedureParsing.bas)
-'  - la identificación de todas las funciones Que pudieran ser udfs para registrarlas en  la carga del XLM (modAPPUDFsRegistration.bas). 
+'FIXME: revisarlo. Las clases clsVBAProcedure.cls,Â modAPPUDFsRegistration.bas yÂ modUTILSProcedureParsing.bas Pretenden
+'  - la identificaciÃ³n de todos los procedimientos en el proyecto VBA (clsVBAProcedure.cls yÂ modUTILSProcedureParsing.bas)
+'  - la identificaciÃ³n de todas las funciones Que pudieran ser udfs para registrarlas en  la carga del XLM (modAPPUDFsRegistration.bas).Â 
 '
 ' [DONE 2026-01-01] Extendido el reconocimiento de atributos de documentacion:
 '  - Soporta formatos: '@Tag: Valor', '@Tag("Valor")', '@Tag "Valor"'
@@ -27,10 +27,10 @@ Private Const MODULE_NAME As String = "modAPPUDFsRegistration"
 
 Private bVerbose As Boolean
 ' ---------------------------------------------------------------------
-' PUNTOS DE ENTRADA PÚBLICOS
+' PUNTOS DE ENTRADA PÃšBLICOS
 ' ---------------------------------------------------------------------
 
-'@Description: Punto de entrada sin parámetros para auto-registrar todas las UDFs del proyecto.
+'@Description: Punto de entrada sin parÃ¡metros para auto-registrar todas las UDFs del proyecto.
 '@Scope: Manipula el registro de funciones UDF en Excel.
 '@ArgumentDescriptions: (sin argumentos)
 '@Returns: (ninguno)
@@ -42,7 +42,7 @@ End Sub
 
 '@Description: Auto-registra todas las funciones UDF del proyecto VBA, opcionalmente filtrando por metadatos.
 '@Scope: Analiza procedimientos del proyecto y registra funciones UDF en Excel.
-'@ArgumentDescriptions: bOnlyWithMetadata: Solo registrar UDFs con metadatos explícitos | bVerbose_: Mostrar salida detallada en ventana Inmediato
+'@ArgumentDescriptions: bOnlyWithMetadata: Solo registrar UDFs con metadatos explÃ­citos | bVerbose_: Mostrar salida detallada en ventana Inmediato
 '@Returns: (ninguno)
 '@Category: Registro UDF
 Public Sub AutoRegistrarTodasLasUDFs(Optional bOnlyWithMetadata As Boolean = False, Optional bVerbose_ As Boolean = False)
@@ -64,7 +64,7 @@ Attribute AutoRegistrarTodasLasUDFs.VB_ProcData.VB_Invoke_Func = " \n0"
         Application.ScreenUpdating = False
         ThisWorkbook.Activate
         
-        ' Registrar cada función
+        ' Registrar cada funciÃ³n
         For Each key In funciones
             Set metadata = funciones.Item(key)
             
@@ -78,22 +78,22 @@ Attribute AutoRegistrarTodasLasUDFs.VB_ProcData.VB_Invoke_Func = " \n0"
         
         Application.ScreenUpdating = True
         
-        ' Persistir lista para desinstalación posterior
+        ' Persistir lista para desinstalaciÃ³n posterior
         Call GuardarListaFuncionesRegistradas(funciones)
         
-        LogInfo "modAPPUDFsRegistration", "[AutoRegistrarTodasLasUDFs] - " & funciones.Count & " funciones registradas correctamente."
+        LogInfo "modAPPUDFsRegistration", "[AutoRegistrarTodasLasUDFs] " & funciones.Count & " funciones registradas correctamente."
         
     Else
-        LogWarning "modAPPUDFsRegistration", "[AutoRegistrarTodasLasUDFs] - No se encontraron funciones UDF válidas."
+        LogWarning "modAPPUDFsRegistration", "[AutoRegistrarTodasLasUDFs] No se encontraron funciones UDF vÃ¡lidas."
     End If
     
     Exit Sub
     
 ErrorHandler:
-    LogError "modAPPUDFsRegistration", "[AutoRegistrarTodasLasUDFs] - Error", , Err.Description
+    LogCurrentError "modAPPUDFsRegistration", "[AutoRegistrarTodasLasUDFs]"
 End Sub
 
-'@Description: Desregistra todas las UDFs previamente registradas utilizando la información persistida.
+'@Description: Desregistra todas las UDFs previamente registradas utilizando la informaciÃ³n persistida.
 '@Scope: Elimina registros de funciones UDF en Excel.
 '@ArgumentDescriptions: bVerbose_: Mostrar salida detallada en ventana Inmediato
 '@Returns: (ninguno)
@@ -127,7 +127,7 @@ Attribute DesregistrarTodasLasUDFs.VB_ProcData.VB_Invoke_Func = " \n0"
         
         LogInfo "modAPPUDFsRegistration", "[DesregistrarTodasLasUDFs] : " & (UBound(funciones) + 1) & " funciones desregistradas."
     Else
-        LogWarning "modAPPUDFsRegistration", "[DesregistrarTodasLasUDFs] - No hay lista guardada, intentando desregistro manual."
+        LogWarning "modAPPUDFsRegistration", "[DesregistrarTodasLasUDFs] No hay lista guardada, intentando desregistro manual."
         ' Fallback: desregistrar todas las funciones encontradas ahora
         DesregistrarTodasLasFuncionesActuales
     End If
@@ -135,7 +135,7 @@ Attribute DesregistrarTodasLasUDFs.VB_ProcData.VB_Invoke_Func = " \n0"
     Exit Sub
     
 ErrorHandler:
-    LogError "modAPPUDFsRegistration", "[DesregistrarTodasLasUDFs] - Error", , Err.Description
+    LogCurrentError "modAPPUDFsRegistration", "[DesregistrarTodasLasUDFs]"
     ' Intentar desregistro manual como respaldo
     DesregistrarTodasLasFuncionesActuales
 End Sub
@@ -144,9 +144,9 @@ End Sub
 ' REGISTRO Y DESREGISTRO INDIVIDUAL DE UDFs
 ' ---------------------------------------------------------------------
 
-'@Description: Registra una función UDF individual en Excel usando sus metadatos.
+'@Description: Registra una funciÃ³n UDF individual en Excel usando sus metadatos.
 '@Scope: Llama a Application.MacroOptions para registrar funciones.
-'@ArgumentDescriptions: metadata: Objeto clsVBAProcedure con información de la función
+'@ArgumentDescriptions: metadata: Objeto clsVBAProcedure con informaciÃ³n de la funciÃ³n
 '@Returns: Boolean | True si el registro fue exitoso
 '@Category: Registro UDF
 Private Function RegistrarUDF(metadata As clsVBAProcedure) As Boolean
@@ -180,7 +180,7 @@ Private Function RegistrarUDF(metadata As clsVBAProcedure) As Boolean
             Category:=metadata.Category, _
             ArgumentDescriptions:=argArray
     Else
-        ' Registrar sin descripción de argumentos
+        ' Registrar sin descripciÃ³n de argumentos
         Application.MacroOptions _
             Macro:=metadata.Name, _
             Description:=strDescription, _
@@ -188,19 +188,19 @@ Private Function RegistrarUDF(metadata As clsVBAProcedure) As Boolean
     End If
     
     If Err.Number <> 0 Then
-        LogError "modAPPUDFsRegistration", "[RegistrarUDF] - Error registrando '" & metadata.Name & "'", , Err.Description
+        LogError "modAPPUDFsRegistration", "[RegistrarUDF] Error registrando '" & metadata.Name & "'", , Err.Description
     Else
-        If bVerbose Then LogInfo "modAPPUDFsRegistration", "[RegistrarUDF] - Registrada: " & metadata.Name
+        If bVerbose Then LogInfo "modAPPUDFsRegistration", "[RegistrarUDF] Registrada: " & metadata.Name
         RegistrarUDF = True
     End If
     
     On Error GoTo 0
 End Function
 
-'@Description: Elimina el registro de una función UDF individual en Excel.
-'@Scope: Limpia metadatos de una función registrada.
-'@ArgumentDescriptions: nombreFuncion: Nombre de la función UDF
-'@Returns: Boolean | True si se desregistró correctamente
+'@Description: Elimina el registro de una funciÃ³n UDF individual en Excel.
+'@Scope: Limpia metadatos de una funciÃ³n registrada.
+'@ArgumentDescriptions: nombreFuncion: Nombre de la funciÃ³n UDF
+'@Returns: Boolean | True si se desregistrÃ³ correctamente
 '@Category: Registro UDF
 Private Function DesregistrarUDF(nombreFuncion As String) As Boolean
     
@@ -212,7 +212,7 @@ Private Function DesregistrarUDF(nombreFuncion As String) As Boolean
         Category:=Empty
     
     If Err.Number = 0 Then
-        If bVerbose Then LogInfo "modAPPUDFsRegistration", "[DesregistrarUDF] - Desregistrada: " & nombreFuncion
+        If bVerbose Then LogInfo "modAPPUDFsRegistration", "[DesregistrarUDF] Desregistrada: " & nombreFuncion
         DesregistrarUDF = True
     End If
     
@@ -245,9 +245,9 @@ Private Sub GuardarListaFuncionesRegistradas(funciones As Object)
     CreateObject("WScript.Shell").RegWrite CFG_RUTA_UDFS, lista, "REG_SZ"
     
     If Err.Number <> 0 Then
-        LogError "modAPPUDFsRegistration", "[DesregistrarUDF] - No se pudo guardar lista en registro", , Err.Description
+        LogError "modAPPUDFsRegistration", "[DesregistrarUDF] No se pudo guardar lista en registro", , Err.Description
     Else
-        If bVerbose Then LogInfo "modAPPUDFsRegistration", "[DesregistrarUDF] - Lista de UDFs guardada en registro."
+        If bVerbose Then LogInfo "modAPPUDFsRegistration", "[DesregistrarUDF] Lista de UDFs guardada en registro."
     End If
     
     On Error GoTo 0
@@ -264,7 +264,7 @@ Private Function ObtenerListaFuncionesRegistradas() As String
     
     If Err.Number <> 0 Then
         ObtenerListaFuncionesRegistradas = ""
-        LogError "modAPPUDFsRegistration", "[ObtenerListaFuncionesRegistradas] - No se encontró lista guardada en registro."
+        LogError "modAPPUDFsRegistration", "[ObtenerListaFuncionesRegistradas] No se encontrÃ³ lista guardada en registro."
     End If
     
     On Error GoTo 0
@@ -280,17 +280,17 @@ Private Sub BorrarListaFuncionesRegistradas()
     CreateObject("WScript.Shell").RegDelete CFG_RUTA_UDFS
     
     If Err.Number = 0 Then
-        LogInfo "modAPPUDFsRegistration", "[BorrarListaFuncionesRegistradas] - Lista de UDFs eliminada del registro."
+        LogInfo "modAPPUDFsRegistration", "[BorrarListaFuncionesRegistradas] Lista de UDFs eliminada del registro."
     End If
     
     On Error GoTo 0
 End Sub
 
 ' ---------------------------------------------------------------------
-' FALLBACK: DESREGISTRO DINÁMICO
+' FALLBACK: DESREGISTRO DINÃMICO
 ' ---------------------------------------------------------------------
 
-'@Description: Desregistra dinámicamente todas las funciones encontradas en el proyecto.
+'@Description: Desregistra dinÃ¡micamente todas las funciones encontradas en el proyecto.
 '@Scope: Analiza procedimientos actuales y elimina su registro.
 '@ArgumentDescriptions: (sin argumentos)
 '@Returns: (ninguno)
@@ -308,9 +308,9 @@ Private Sub DesregistrarTodasLasFuncionesActuales()
     Next key
     
     If Count > 0 Then
-        If bVerbose Then LogInfo "modAPPUDFsRegistration", "[DesregistrarTodasLasFuncionesActuales] - Desregistro dinámico: " & Count & " funciones procesadas."
+        If bVerbose Then LogInfo "modAPPUDFsRegistration", "[DesregistrarTodasLasFuncionesActuales] Desregistro dinÃ¡mico: " & Count & " funciones procesadas."
     Else
-        LogInfo "modAPPUDFsRegistration", "[DesregistrarTodasLasFuncionesActuales] - Desregistro dinámico: No se encontraron funciones para desregistrar."
+        LogInfo "modAPPUDFsRegistration", "[DesregistrarTodasLasFuncionesActuales] Desregistro dinÃ¡mico: No se encontraron funciones para desregistrar."
     End If
 End Sub
 

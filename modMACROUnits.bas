@@ -5,7 +5,7 @@ Attribute VB_Name = "modMACROUnits"
 ' De momento la unica solucion aceptable es CREAR LOS RANGOS, definir los nombres ES INUTIL, porque Excel NO es capaz de usarlos
 '==========================================
 
-'@Folder "6-DOMINIO-Oportunidades y compresores.b-Calculos t閏nicos"
+'@Folder "6-DOMINIO-Oportunidades y compresores.b-Calculos t茅cnicos"
 Option Explicit
 
 Private Const MODULE_NAME As String = "modMACROUnits"
@@ -34,13 +34,13 @@ Attribute InstalarValidacionesUnidades.VB_ProcData.VB_Invoke_Func = " \n0"
     nombreXLAM = ThisWorkbook.Name
     
     ' Definir tipos de unidades
-    tipos = Array("Presi髇", "Temp", "Masa", "Peso molecular", "Potencia", "Caudal", "Distancia")
+    tipos = Array("Presi贸n", "Temp", "Masa", "Peso molecular", "Potencia", "Caudal", "Distancia")
     
-    ' Crear nombres definidos con f髍mulas FILTRO que apuntan al XLAM
+    ' Crear nombres definidos con f贸rmulas FILTRO que apuntan al XLAM
     For i = LBound(tipos) To UBound(tipos)
         nombreRango = "Unidades_" & Replace(tipos(i), " ", "_")
         
-        ' Construir f髍mula FILTRO
+        ' Construir f贸rmula FILTRO
         ' =FILTRO('[XLAM]Unidades'!$B:$B,'[XLAM]Unidades'!$A:$A="Tipo")
         formulaReferencia = "=FILTER('[" & nombreXLAM & "]Unidades'!$B:$B," & _
                             "'[" & nombreXLAM & "]Unidades'!$A:$A=""" & tipos(i) & """)"
@@ -60,7 +60,7 @@ Attribute InstalarValidacionesUnidades.VB_ProcData.VB_Invoke_Func = " \n0"
     
 ErrorHandler:
     MsgBox "Error al instalar validaciones: " & Err.Description & vbCrLf & _
-           "NOTA: Requiere Excel 365 o Excel 2021+ con funci髇 FILTRO", vbCritical
+           "NOTA: Requiere Excel 365 o Excel 2021+ con funci贸n FILTRO", vbCritical
 End Sub
 
 '==========================================
@@ -97,11 +97,11 @@ Attribute InstalarValidacionesLocalesUnidades.VB_ProcData.VB_Invoke_Func = " \n0
     End If
     
     ' Definir tipos de unidades
-    tipos = Array("Presi髇", "Temp", "Masa", "Peso molecular", "Potencia", "Caudal", "Distancia")
+    tipos = Array("Presi贸n", "Temp", "Masa", "Peso molecular", "Potencia", "Caudal", "Distancia")
     
     ' Generar listas en el libro destino
     For i = LBound(tipos) To UBound(tipos)
-        wsDestino.Cells(1, i + 1).value = tipos(i)
+        wsDestino.Cells(1, i + 1).Value = tipos(i)
         wsDestino.Cells(1, i + 1).Font.Bold = True
         
         listaUnidades = UdsPorTipo(tipos(i))
@@ -109,7 +109,7 @@ Attribute InstalarValidacionesLocalesUnidades.VB_ProcData.VB_Invoke_Func = " \n0
         If Not IsError(listaUnidades) Then
             If IsArray(listaUnidades) Then
                 numElementos = UBound(listaUnidades, 1) - LBound(listaUnidades, 1) + 1
-                wsDestino.Cells(2, i + 1).Resize(numElementos, 1).value = listaUnidades
+                wsDestino.Cells(2, i + 1).Resize(numElementos, 1).Value = listaUnidades
             End If
         End If
     Next i
@@ -170,17 +170,17 @@ Attribute GenerarListasUnidades.VB_ProcData.VB_Invoke_Func = " \n0"
     End If
     
     ' Definir tipos de unidades
-    tipos = Array("Presi髇", "Temp", "Masa", "Peso molecular", "Potencia", "Caudal", "Distancia")
+    tipos = Array("Presi贸n", "Temp", "Masa", "Peso molecular", "Potencia", "Caudal", "Distancia")
     
     For i = LBound(tipos) To UBound(tipos)
-        wsListas.Cells(1, i + 1).value = tipos(i)
+        wsListas.Cells(1, i + 1).Value = tipos(i)
         wsListas.Cells(1, i + 1).Font.Bold = True
         
         listaUnidades = UdsPorTipo(tipos(i))
         
         If Not IsError(listaUnidades) Then
             If IsArray(listaUnidades) Then
-                wsListas.Cells(2, i + 1).Resize(UBound(listaUnidades), 1).value = listaUnidades
+                wsListas.Cells(2, i + 1).Resize(UBound(listaUnidades), 1).Value = listaUnidades
             End If
         End If
     Next i
@@ -190,10 +190,10 @@ Attribute GenerarListasUnidades.VB_ProcData.VB_Invoke_Func = " \n0"
     Dim nombreRango As String
     
     For i = LBound(tipos) To UBound(tipos)
-        ' Encontrar l韒ite del rango en esa columna
+        ' Encontrar l铆mite del rango en esa columna
         ultimaFila = wsListas.Cells(wsListas.Rows.Count, i + 1).End(xlUp).Row
         
-        ' Solo crear nombre si hay datos (m醩 de la fila de encabezado)
+        ' Solo crear nombre si hay datos (m谩s de la fila de encabezado)
         If ultimaFila > 1 Then
             ' Crear nombre definido
             nombreRango = "Unidades_" & Replace(tipos(i), " ", "_")
@@ -207,7 +207,7 @@ Attribute GenerarListasUnidades.VB_ProcData.VB_Invoke_Func = " \n0"
     Next i
     
     wsListas.Visible = xlSheetVeryHidden
-    Debug.Print "Nombres de listas de unidades para validaci髇 de celdas generados correctamente"
+    LogInfo MODULE_NAME, "[GenerarListasUnidades] Nombres de listas de unidades para validaci贸n de celdas generados correctamente"
 End Sub
 
 

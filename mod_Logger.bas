@@ -194,7 +194,7 @@ End Sub
 '@Description: Obtiene el nombre del nivel de log
 Public Function GetLevelName(ByVal level As LogLevel) As String
 Attribute GetLevelName.VB_Description = "[mod_Logger] UTILIDADES Obtiene el nombre del nivel de log"
-Attribute GetLevelName.VB_ProcData.VB_Invoke_Func = " \n21"
+Attribute GetLevelName.VB_ProcData.VB_Invoke_Func = " \n23"
     Select Case level
         Case LOG_DEBUG:    GetLevelName = "DEBUG"
         Case LOG_INFO:     GetLevelName = "INFO"
@@ -220,6 +220,6 @@ End Sub
 '@Description: Obtiene la ruta del archivo de log actual
 Public Function GetLogFilePath() As String
 Attribute GetLogFilePath.VB_Description = "[mod_Logger] Obtiene la ruta del archivo de log actual"
-Attribute GetLogFilePath.VB_ProcData.VB_Invoke_Func = " \n21"
+Attribute GetLogFilePath.VB_ProcData.VB_Invoke_Func = " \n23"
     GetLogFilePath = mLogFilePath
 End Function

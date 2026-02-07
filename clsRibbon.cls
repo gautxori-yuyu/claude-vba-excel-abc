@@ -6,7 +6,7 @@ Attribute VB_Name = "clsRibbon"
 Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = False
-Attribute VB_Exposed = True
+Attribute VB_Exposed = False
 ' ==========================================
 ' CLASE DE EVENTOS DEL RIBBON
 ' ==========================================
@@ -28,11 +28,26 @@ Private Const MODULE_NAME As String = "clsRibbon"
 ' ==========================================
 Private mribbonUI As IRibbonUI
 
-Private WithEvents mStateRibbon As clsRibbonState
+Private mStateRibbon As clsRibbonState
 Attribute mStateRibbon.VB_VarHelpID = -1
 
 Private mIsRecovering As Boolean              ' Flag para evitar recursion durante recuperacion
 Private mWasEverInitialized As Boolean        ' Flag para distinguir "nunca inicializado" de "perdido"
+
+' ==========================================
+' DEPENDENCIAS INYECTADAS (para escuchar eventos)
+' ==========================================
+Private WithEvents mOpportunities As clsOpportunitiesMgr
+Attribute mOpportunities.VB_VarHelpID = -1
+
+Private WithEvents mFileMgr As clsFileManager
+Attribute mFileMgr.VB_VarHelpID = -1
+
+Private WithEvents mChartMgr As clsChartMgr
+Attribute mChartMgr.VB_VarHelpID = -1
+
+Private WithEvents mCtxMgr As clsExecutionContextMgr
+Attribute mCtxMgr.VB_VarHelpID = -1
 
 ' ==========================================
 ' PROPERTY GET/SET PARA MIEMBROS
@@ -68,42 +83,78 @@ Private Sub Class_Terminate()
 End Sub
 
 Public Sub Init(ByRef ribbonObj As IRibbonUI)
-    LogDebug MODULE_NAME, "[Init] - Recibiendo puntero IRibbonUI"
+    LogDebug MODULE_NAME, "[Init] Recibiendo puntero IRibbonUI"
     Set mribbonUI = ribbonObj
 
     If ribbonObj Is Nothing Then
-        LogWarning MODULE_NAME, "[Init] - Se paso Nothing como puntero"
+        LogWarning MODULE_NAME, "[Init] Se paso Nothing como puntero"
     Else
-        LogDebug MODULE_NAME, "[Init] - Puntero establecido correctamente"
+        LogDebug MODULE_NAME, "[Init] Puntero establecido correctamente"
     End If
     mWasEverInitialized = True
 End Sub
 
-Public Sub StopEvents()
-    LogDebug MODULE_NAME, "[StopEvents] - Liberando puntero"
-    Set mribbonUI = Nothing
+'@Description: Inyecta dependencias para escuchar eventos de los Managers
+Public Sub Initialize(oOpportunities As clsOpportunitiesMgr, _
+                      oFileMgr As clsFileManager, _
+                      oChartMgr As clsChartMgr, _
+                      oCtxMgr As clsExecutionContextMgr)
+    Set mOpportunities = oOpportunities
+    Set mFileMgr = oFileMgr
+    Set mChartMgr = oChartMgr
+    Set mCtxMgr = oCtxMgr
 End Sub
 
-' ==========================================
-' CAPTURA DE EVENTOS DE ESTADO
-' ==========================================
-Private Sub mStateRibbon_StateChanged()
-    InvalidarRibbon
+Public Sub StopEvents()
+    LogDebug MODULE_NAME, "[StopEvents] Liberando puntero"
+    Set mribbonUI = Nothing
+    Set mOpportunities = Nothing
+    Set mFileMgr = Nothing
+    Set mChartMgr = Nothing
+    Set mCtxMgr = Nothing
 End Sub
+
 
 ' ==========================================
 '
 ' ==========================================
 Public Sub ToggleModo()
-    mStateRibbon.ToggleModo
-    On Error Resume Next
+    ' Logica de toggle movida desde clsRibbonState (el Mgr decide, no el State)
+    Select Case mStateRibbon.Modo
+    Case Ribbon_OpportunityOnly
+        mStateRibbon.Modo = Ribbon_User
+    Case Ribbon_User
+        mStateRibbon.Modo = Ribbon_Hidden
+    Case Ribbon_Hidden
+        mStateRibbon.Modo = Ribbon_Admin
+    Case Ribbon_Admin
+        mStateRibbon.Modo = Ribbon_OpportunityOnly
+    Case Else
+        mStateRibbon.Modo = Ribbon_OpportunityOnly
+    End Select
 
+    ' Guardar el nuevo estado de vuelta al libro activo
+    On Error Resume Next
+    Dim f As clsFileXLS
+    If Not mFileMgr Is Nothing Then
+        If Not mFileMgr.State.CurrentFile Is Nothing Then
+            Set f = mFileMgr.State.CurrentFile
+            f.RibbonMode = mStateRibbon.Modo
+            LogDebug MODULE_NAME, "[ToggleModo] Estado guardado en libro: " & f.Name & " -> " & mStateRibbon.Description
+        End If
+    End If
+    On Error GoTo 0
+
+    ' El Mgr invalida el ribbon despues de cambiar estado
+    InvalidarRibbon
+
+    On Error Resume Next
     If EsFicheroOportunidad() Then
         ActivarTab "tabOfertasEspecial"
     End If
 End Sub
 
-'@Description: Activa una pestaña del Ribbon por id
+'@Description: Activa una pestaÃ±a del Ribbon por id
 '@Scope: Friend (uso exclusivo desde clsApplication)
 '@ArgumentDescriptions: tabId | id del tab a activar
 '@Category: UI / Ribbon
@@ -208,7 +259,7 @@ Private Function TryAutoRecover() As Boolean
     On Error GoTo ErrHandler
 
     mIsRecovering = True
-    LogInfo MODULE_NAME, "[TryAutoRecover] - Iniciando"
+    LogInfo MODULE_NAME, "[TryAutoRecover] Iniciando"
 
     ' Usar el modulo de recuperacion
     TryAutoRecover = TryRecoverRibbon()
@@ -217,7 +268,7 @@ Private Function TryAutoRecover() As Boolean
     Exit Function
 
 ErrHandler:
-    LogError MODULE_NAME, "[TryAutoRecover] - Error", Err.Number, Err.Description
+    LogCurrentError MODULE_NAME, "[TryAutoRecover]"
     mIsRecovering = False
     TryAutoRecover = False
 End Function
@@ -227,6 +278,29 @@ Public Property Get IsRecovering() As Boolean
     IsRecovering = mIsRecovering
 End Property
 
+
+'@Description: Determina si la pestana principal del Ribbon debe ser visible
+'@Note: La decision de visibilidad vive en el Mgr (no en State). El Mgr consulta
+'       su propio State (Modo) y, si hace falta, el estado de la aplicacion.
+'@Returns: True si la pestana debe mostrarse segun el modo actual
+Public Function IsTabVisible() As Boolean
+    On Error GoTo ErrHandler
+    Select Case mStateRibbon.Modo
+    Case Ribbon_Admin
+        IsTabVisible = True
+    Case Ribbon_User
+        IsTabVisible = True
+    Case Ribbon_OpportunityOnly
+        ' En este modo: visible solo si hay archivo de oportunidad activo.
+        ' La UI puede consultar estado de la aplicacion (conoce al mundo).
+        IsTabVisible = App().AppState.IsOpportunityFileActive()
+    Case Else
+        IsTabVisible = False
+    End Select
+    Exit Function
+ErrHandler:
+    IsTabVisible = False
+End Function
 
 '@Description: Diagnostico rapido del estado del Ribbon
 Public Function GetQuickDiagnostics() As String
@@ -251,4 +325,63 @@ Public Function GetQuickDiagnostics() As String
     GetQuickDiagnostics = info
 End Function
 
+' ==========================================
+' HANDLERS DE EVENTOS (UI escucha a los Managers)
+' ==========================================
+
+Private Sub mOpportunities_OpportunityCollectionUpdate(ByVal cambios As String)
+    InvalidarControl "ddlOportunidades"
+End Sub
+
+Private Sub mOpportunities_currOpportunityChanged(ByVal Index As Long, ByVal Path As String)
+    ' En modo OpportunityOnly, mostrar ribbon cuando hay oportunidad
+    If mStateRibbon.Modo = Ribbon_OpportunityOnly Then
+        mStateRibbon.Visible = True
+    End If
+    InvalidarControl "btnGenerarGraficos"
+    InvalidarControl "dropdownOportunidades"
+    InvalidarControl "btnCreaOportunidad"
+    InvalidarControl "grpOportunidades"
+End Sub
+
+Private Sub mFileMgr_ActiveFileChanged(f As clsFileXLS)
+    ' Sincronizar estado del ribbon desde el libro activo
+    If Not f Is Nothing Then
+        mStateRibbon.SyncFromBookState f.RibbonBookState
+        LogDebug MODULE_NAME, "[mFileMgr_ActiveFileChanged] Sincronizado estado ribbon desde libro: " & f.Name
+    End If
+
+    InvalidarControl "btnGenerarGraficos"
+    InvalidarControl "btnExportarPDF"
+    InvalidarControl "btnLimpiarFormato"
+    InvalidarControl "btnAjustarFilas"
+
+    ' Invalidar todo el ribbon para reflejar el nuevo estado
+    InvalidarRibbon
+End Sub
+
+Private Sub mChartMgr_ChartActivated(cht As Chart)
+    InvalidarControl "btnInvertirSeries"
+End Sub
+
+Private Sub mChartMgr_ChartDeactivated(cht As Chart)
+    InvalidarControl "btnInvertirSeries"
+End Sub
+
+Private Sub mCtxMgr_WorkbookActivated(ByVal Wb As Workbook)
+    ' Necesario para re-evaluar btnCGASING cuando una hoja se copia a otro libro
+    ' (WorkbookActivated se dispara al activar el libro destino)
+    InvalidarControl "btnGenerarGraficos"
+    InvalidarControl "btnCGASING"
+End Sub
+
+Private Sub mCtxMgr_SheetActivated(ByVal Sh As Object)
+    InvalidarControl "btnGenerarGraficos"
+    InvalidarControl "btnCGASING"
+End Sub
+
+Private Sub mCtxMgr_SheetDeactivated(ByVal Sh As Object)
+    InvalidarControl "btnGenerarGraficos"
+    InvalidarControl "btnCGASING"
+End Sub
 

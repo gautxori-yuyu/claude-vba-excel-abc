@@ -21,7 +21,7 @@ Option Explicit
 
 Private Const MODULE_NAME As String = "IFile"
 
-'@Description: Identificador único del archivo
+'@Description: Identificador Ãºnico del archivo
 '@Returns: Double - Puntero al objeto subyacente
 Public Property Get ObjectKey() As Double
     ' Las interfaces en VBA deben lanzar error o no hacer nada
@@ -41,18 +41,18 @@ Public Property Get Name() As String
 End Property
 
 ' ==================================================================
-' NOTAS DE IMPLEMENTACIÓN
+' NOTAS DE IMPLEMENTACIÃ“N
 ' ==================================================================
 ' Para implementar esta interfaz en una clase:
 '
 ' 1. Agregar al inicio de la clase:
 '    Implements IFile
 '
-' 2. VBA generará automáticamente los stubs:
+' 2. VBA generarÃ¡ automÃ¡ticamente los stubs:
 '    Private Property Get IFile_ObjectKey() As Double
 '    Private Property Get IFile_Path() As String
 '    Private Property Get IFile_Name() As String
 '
-' 3. Implementar cada método delegando a las propiedades públicas
+' 3. Implementar cada mÃ©todo delegando a las propiedades pÃºblicas
 '
-' 4. Opcionalmente mantener las propiedades públicas originales
+' 4. Opcionalmente mantener las propiedades pÃºblicas originales

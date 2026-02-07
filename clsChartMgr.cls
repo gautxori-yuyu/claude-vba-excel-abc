@@ -9,37 +9,37 @@ Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
 '@IgnoreModule MissingAnnotationArgument
 '@Folder "2-Infraestructura.Excel.Charts"
-'@ModuleDescription "Gestor centralizado de eventos de gr·ficos (orquestador)"
+'@ModuleDescription "Gestor centralizado de eventos de gr√°ficos (orquestador)"
 Option Explicit
 
 Private Const MODULE_NAME As String = "clsChartMgr"
 
 '--------------------------------------------------------------
-' Eventos p˙blicos: notifican cambios de contexto gr·fico
+' Eventos p√∫blicos: notifican cambios de contexto gr√°fico
 '--------------------------------------------------------------
 '@Description: Se dispara cuando el usuario activa un grafico
-'@Category: Gr·ficos
+'@Category: Gr√°ficos
 '@ArgumentDescriptions: chart As Chart
 Public Event ChartActivated(Chart As Chart)
 '@Description: Se dispara cuando el usuario desactiva un grafico
-'@Category: Gr·ficos
+'@Category: Gr√°ficos
 '@ArgumentDescriptions: chart As Chart
 Public Event ChartDeactivated(Chart As Chart)
 
 '--------------------------------------------------------------
 ' Variables privadas
 '--------------------------------------------------------------
-Private mChartsInActiveSheet As Collection              ' ColecciÛn de instancias de clsChartEvents activas
-Private mChartState As clsChartState              ' Estado de Chart activo (composiciÛn)
-Private mCtx As clsExecutionContext
+Private mChartsInActiveSheet As Collection              ' Colecci√≥n de instancias de clsChartEvents activas
+Private mChartState As clsChartState              ' Estado de Chart activo (composici√≥n)
+Private mCtxState As clsExecutionContextState
 
 '--------------------------------------------------------------
-' InicializaciÛn
+' Inicializaci√≥n
 '--------------------------------------------------------------
 Private Sub Class_Initialize()
     Set mChartsInActiveSheet = New Collection
 
-    ' Crear estado de Chart (composiciÛn - Manager posee el estado)
+    ' Crear estado de Chart (composici√≥n - Manager posee el estado)
     Set mChartState = New clsChartState
 
     LogInfo MODULE_NAME, "[Class_Initialize]"
@@ -54,56 +54,56 @@ Private Sub Class_Terminate()
     LogInfo MODULE_NAME, "[Class_Terminate]"
 End Sub
 
-'@Description: Expone el estado de Chart (para inyecciÛn en ApplicationState)
+'@Description: Expone el estado de Chart (para inyecci√≥n en ApplicationState)
 Public Property Get State() As clsChartState
     Set State = mChartState
 End Property
 
-Public Sub Initialize(oCtx As clsExecutionContext)
-    Set mCtx = oCtx
-    ' No cacheamos nada aquÌ ? lazy evaluation segura
-    LogInfo MODULE_NAME, "[Initialize] - Suscrito a eventos de Application"
+Public Sub Initialize(oCtxState As clsExecutionContextState)
+    Set mCtxState = oCtxState
+    ' No cacheamos nada aqu√≠ -> lazy evaluation segura
+    LogInfo MODULE_NAME, "[Initialize] Suscrito a eventos de Application"
 End Sub
 
 '--------------------------------------------------------------
-' @Description: Comprueba si el gr·fico activo es v·lido para invertir ejes
+' @Description: Comprueba si el gr√°fico activo es v√°lido para invertir ejes
 '--------------------------------------------------------------
 ' TODO: unificar esta funcion con lo de clsExecutioContext: alli la funcion Chart DEVUELVE CASI TODO LO QUE HACE ESTA FUNCION,
-' queda cambiar el Select Case TypeName(mCtx.Selection) usando la informacion cacheada alli (m_cachedChartInfo) (y sigo pensando que
+' queda cambiar el Select Case TypeName(mCtxState.Selection) usando la informacion cacheada alli (m_cachedChartInfo) (y sigo pensando que
 ' clsExecutionContext "ESTA DE SOBRA", lo unico que aporta es el "Cacheado"... y pendiente de incoporarle funcionalidad para,
-' cuando se pierde el contexto, **reenganchar eventos, **reconstruir estado derivado, y **aislar el daÒo del reset)
+' cuando se pierde el contexto, **reenganchar eventos, **reconstruir estado derivado, y **aislar el da√±o del reset)
 
 Public Function EsValidoInvertirEjes() As Boolean
     On Error GoTo SafeExit
     
-    ' 1. ValidaciÛn segura de contexto mÌnimo
-    If mCtx.Workbook Is Nothing Then Exit Function
-    If mCtx.Selection Is Nothing Then Exit Function
-    If mCtx.Chart Is Nothing Then Exit Function
+    ' 1. Validaci√≥n segura de contexto m√≠nimo
+    If mCtxState.Workbook Is Nothing Then Exit Function
+    If mCtxState.Selection Is Nothing Then Exit Function
+    If mCtxState.Chart Is Nothing Then Exit Function
     
-    ' 3. Caso de hoja de gr·fico activa (ChartSheet)
+    ' 3. Caso de hoja de gr√°fico activa (ChartSheet)
     If TypeName(Application.ActiveSheet) = "Chart" Then
         EsValidoInvertirEjes = True
         GoTo CheckSeries
     End If
     
-    ' 4. Caso de gr·fico incrustado en hoja de c·lculo (ChartObject)
-    Select Case TypeName(mCtx.Selection)
+    ' 4. Caso de gr√°fico incrustado en hoja de c√°lculo (ChartObject)
+    Select Case TypeName(mCtxState.Selection)
         Case "ChartObject", "ChartArea"
             ' No tengo nada claro que en este tipo de objetos se puedan invertir los ejes; en todo caso, NO son los que yo creo
             EsValidoInvertirEjes = True
         Case "DrawingObjects", "Picture", "Shape", "GroupObject", "OLEObject", "TextBox"
-            ' ExplÌcitamente NO es un gr·fico
+            ' Expl√≠citamente NO es un gr√°fico
             EsValidoInvertirEjes = False
             Exit Function
         Case Else
-            ' Otras selecciones no v·lidas
+            ' Otras selecciones no v√°lidas
             EsValidoInvertirEjes = False
             Exit Function
     End Select
     ' HASTA AQUI SE REEMPLAZARIA CON EL Chart de clsExecutionContext; A PARTIR DE AQUI "EMPIEZA" EsValidoInvertirEjes
 CheckSeries:
-    ' 5. Comprobar al menos una serie en cada eje (tu lÛgica exacta)
+    ' 5. Comprobar al menos una serie en cada eje (tu l√≥gica exacta)
     Dim tienePrimario As Boolean, tieneSecundario As Boolean
     Dim s As Series
     For Each s In ActiveChart.SeriesCollection
@@ -118,7 +118,7 @@ CheckSeries:
 
 SafeExit:
     EsValidoInvertirEjes = False
-    ' Opcional: loguear solo en modo depuraciÛn:
+    ' Opcional: loguear solo en modo depuraci√≥n:
     LogCurrentError MODULE_NAME, "[EsValidoInvertirEjes]"
 End Function
 
@@ -126,32 +126,32 @@ End Function
 '
 '--------------------------------------------------------------
 '@Description: Inicia la vigilancia de graficos en una hoja (normal o de grafico)
-'@Category: Gr·ficos
+'@Category: Gr√°ficos
 '@Scope: argumentos
 '@ArgumentDescriptions: sh As Object
-Public Sub WatchSheet(sh As Object)
+Public Sub WatchSheet(Sh As Object)
     Dim oChartEvents As clsChartEvents
     
     On Error GoTo ErrHandler
     
-    LogInfo MODULE_NAME, "[WatchSheet] - Empezando a observar hoja: " & sh.Name
+    LogInfo MODULE_NAME, "[WatchSheet] Empezando a observar hoja: " & Sh.Name
     
-    ' Detener observaciÛn anterior (libera eventos)
+    ' Detener observaci√≥n anterior (libera eventos)
     ' Call StopWatching
     
-    ' Caso 1: Hoja de gr·fico (Chart Sheet)
-    If TypeName(sh) = "Chart" Then
+    ' Caso 1: Hoja de gr√°fico (Chart Sheet)
+    If TypeName(Sh) = "Chart" Then
         Set oChartEvents = New clsChartEvents
-        Set oChartEvents.Chart = sh
+        Set oChartEvents.Chart = Sh
         Set oChartEvents.ParentManager = Me
-        mChartsInActiveSheet.Add oChartEvents, CStr(ObjPtr(sh))
+        mChartsInActiveSheet.Add oChartEvents, CStr(ObjPtr(Sh))
         Exit Sub
     End If
     
-    ' Caso 2: Hoja con gr·ficos embebidos
-    If sh.ChartObjects.Count > 0 Then
+    ' Caso 2: Hoja con gr√°ficos embebidos
+    If Sh.ChartObjects.Count > 0 Then
         Dim chtObj As ChartObject
-        For Each chtObj In sh.ChartObjects
+        For Each chtObj In Sh.ChartObjects
             Set oChartEvents = New clsChartEvents
             Set oChartEvents.Chart = chtObj.Chart
             Set oChartEvents.ParentManager = Me
@@ -159,20 +159,20 @@ Public Sub WatchSheet(sh As Object)
         Next chtObj
     End If
     
-    LogDebug MODULE_NAME, "[WatchSheet] - gr·ficos en observaciÛn: " & mChartsInActiveSheet.Count
+    LogDebug MODULE_NAME, "[WatchSheet] gr√°ficos en observaci√≥n: " & mChartsInActiveSheet.Count
     
     Exit Sub
 ErrHandler:
     LogError MODULE_NAME, "[WatchSheet] Error", , Err.Description
     Err.Raise Err.Number, "clsChartMgr.WatchSheet", _
-              "Error al configurar la vigilancia de selecciÛn de gr·ficos en hoja: " & Err.Description
+              "Error al configurar la vigilancia de selecci√≥n de gr√°ficos en hoja: " & Err.Description
 End Sub
 
 '--------------------------------------------------------------
-' Detener toda observaciÛn
+' Detener toda observaci√≥n
 '--------------------------------------------------------------
 '@Description: Detiene la vigilancia de todos los graficos actualmente observados
-'@Category: Gr·ficos
+'@Category: Gr√°ficos
 '@Scope: interna, auxiliar
 Public Sub StopWatching()
     On Error GoTo ErrHandler
@@ -181,12 +181,12 @@ Public Sub StopWatching()
         Set oChartEvents.Chart = Nothing
     Next oChartEvents
     Set mChartsInActiveSheet = New Collection
-    LogDebug MODULE_NAME, "[StopWatching] - Eventos de gr·ficos desactivados"
+    LogDebug MODULE_NAME, "[StopWatching] Eventos de gr√°ficos desactivados"
 
     Exit Sub
 ErrHandler:
     LogCurrentError MODULE_NAME, "[StopWatching]"
-    Err.Raise Err.Number, MODULE_NAME & " [StopWatching] - Error al detener la vigilancia de selecciÛn de gr·ficos en hoja", Err.Description
+    Err.Raise Err.Number, MODULE_NAME & " [StopWatching] Error al detener la vigilancia de selecci√≥n de gr√°ficos en hoja", Err.Description
 End Sub
 
 Public Sub RefreshCurrentSheet()
@@ -204,10 +204,10 @@ ErrHandler:
 End Sub
 
 '--------------------------------------------------------------
-' MÈtodos internos: llamados por clsChartEvents
+' M√©todos internos: llamados por clsChartEvents
 '--------------------------------------------------------------
 '@Description: Notifica la activacion de un grafico al gestor central
-'@Category: Gr·ficos
+'@Category: Gr√°ficos
 '@Scope: interna, auxiliar
 '@ArgumentDescriptions: cht As Chart
 Friend Sub NotifyChartActivated(cht As Chart)
@@ -215,7 +215,7 @@ Friend Sub NotifyChartActivated(cht As Chart)
 End Sub
 
 '@Description: Notifica la desactivacion de un grafico al gestor central
-'@Category: Gr·ficos
+'@Category: Gr√°ficos
 '@Scope: interna, auxiliar
 '@ArgumentDescriptions: cht As Chart
 Friend Sub NotifyChartDeactivated(cht As Chart)
