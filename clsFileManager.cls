@@ -139,16 +139,7 @@ Public Function GetOrTrackWorkbook(Wb As Workbook) As clsFileXLS
 
     On Error GoTo ErrHandler
 
-    ' PRIMERO: Verificar si ya existe por FullName (evita duplicados por ObjPtr diferente)
-    Dim existingFile As clsFileXLS
-    Set existingFile = FindTrackedByPath(Wb.FullName)
-    If Not existingFile Is Nothing Then
-        LogDebug MODULE_NAME, "[GetOrTrackWorkbook] Ya tracked por path: " & Wb.Name
-        Set GetOrTrackWorkbook = existingFile
-        Exit Function
-    End If
-
-    ' No existe, crear nueva instancia
+    ' Crear instancia temporal para obtener su clave
     Dim f As clsFileXLS
     Set f = New clsFileXLS
     f.BindTo Wb
@@ -162,7 +153,7 @@ Public Function GetOrTrackWorkbook(Wb As Workbook) As clsFileXLS
         Exit Function
     End If
 
-    ' Verificar de nuevo por key (por si acaso)
+    ' Si ya existe, devolver la instancia existente (descartar temporal)
     If mTrackedFiles.Exists(key) Then
         Set GetOrTrackWorkbook = mTrackedFiles(key)
         Exit Function
@@ -286,28 +277,15 @@ End Function
 Private Function FindTrackedWorkbook(Wb As Workbook) As clsFileXLS
     If Wb Is Nothing Then Exit Function
 
-    ' Buscar por FullName (más fiable que ObjPtr)
-    Set FindTrackedWorkbook = FindTrackedByPath(Wb.FullName)
-End Function
+    ' Crear instancia temporal solo para obtener la clave
+    Dim fTemp As clsFileXLS
+    Set fTemp = New clsFileXLS
+    Dim key As Double
+    key = fTemp.CreateFromWorkbook(Wb).ObjectKey
 
-'@Description: Busca un archivo tracked por su ruta completa
-'@Returns: clsFileXLS si está tracked, Nothing si no
-Private Function FindTrackedByPath(fullPath As String) As clsFileXLS
-    If Len(fullPath) = 0 Then Exit Function
-
-    Dim key As Variant
-    Dim f As clsFileXLS
-
-    For Each key In mTrackedFiles.Keys
-        Set f = mTrackedFiles(key)
-        If StrComp(f.Path, fullPath, vbTextCompare) = 0 Then
-            Set FindTrackedByPath = f
-            Exit Function
-        End If
-    Next key
-
-    ' No encontrado
-    Set FindTrackedByPath = Nothing
+    If mTrackedFiles.Exists(key) Then
+        Set FindTrackedWorkbook = mTrackedFiles(key)
+    End If
 End Function
 
 '@Description: Obtiene la clave de un archivo que implementa IFile
