@@ -211,6 +211,12 @@ End Sub
 '@Scope: interna, auxiliar
 '@ArgumentDescriptions: cht As Chart
 Friend Sub NotifyChartActivated(cht As Chart)
+    ' 1. Actualizar State (hecho consumado)
+    Set mChartState.CurrentChart = cht
+
+    LogDebug MODULE_NAME, "[NotifyChartActivated] " & cht.Name
+
+    ' 2. Notificar (evento de hecho consumado)
     RaiseEvent ChartActivated(cht)
 End Sub
 
@@ -219,6 +225,12 @@ End Sub
 '@Scope: interna, auxiliar
 '@ArgumentDescriptions: cht As Chart
 Friend Sub NotifyChartDeactivated(cht As Chart)
+    ' 1. Actualizar State (hecho consumado)
+    Set mChartState.CurrentChart = Nothing
+
+    LogDebug MODULE_NAME, "[NotifyChartDeactivated] " & cht.Name
+
+    ' 2. Notificar (evento de hecho consumado)
     RaiseEvent ChartDeactivated(cht)
 End Sub
 
