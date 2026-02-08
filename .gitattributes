@@ -11,9 +11,9 @@
 # *.bas text eol=crlf filter=vba-encoding
 # *.cls text eol=crlf filter=vba-encoding
 # *.frm text eol=crlf filter=vba-encoding
-*.bas text eol=crlf working-tree-encoding=8859-1
-*.cls text eol=crlf working-tree-encoding=8859-1
-*.frm text eol=crlf working-tree-encoding=8859-1
+*.bas text eol=crlf working-tree-encoding=windows-1252
+*.cls text eol=crlf working-tree-encoding=windows-1252
+*.frm text eol=crlf working-tree-encoding=windows-1252
 
 # Configuración adicional
 CodeExport.config.json text eol=crlf
