@@ -2,7 +2,7 @@
 BEGIN
   MultiUse = -1  'True
 END
-Attribute VB_Name = "clsEventsMgrInfrastructure"
+Attribute VB_Name = "clsEventsMediatorInfrastructure"
 Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = False
@@ -11,7 +11,7 @@ Attribute VB_Exposed = False
 '@ModuleDescription "Gestor centralizado de eventos (orquestador)"
 Option Explicit
 
-Private Const MODULE_NAME As String = "clsEventsMgrInfrastructure"
+Private Const MODULE_NAME As String = "clsEventsMediatorInfrastructure"
 
 ' ==================================================================
 ' EVENTOS SEMANTICOS DE INFRAESTRUCTURA (para consumo por dominio)

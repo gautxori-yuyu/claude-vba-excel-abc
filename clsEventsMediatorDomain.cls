@@ -23,7 +23,7 @@ Private Const MODULE_NAME As String = "clsEventsMediatorDomain"
 '
 ' NO escucha directamente a clases de infraestructura pura (mCtxMgr, mFileMgr)
 
-Private WithEvents mInfraMediador As clsEventsMgrInfrastructure
+Private WithEvents mInfraMediador As clsEventsMediatorInfrastructure
 Attribute mInfraMediador.VB_VarHelpID = -1
 
 Private WithEvents mFSMonitoringCoord As clsFSMonitoringCoord
@@ -49,7 +49,7 @@ End Sub
 
 'TODO: faltaria crear clases para otras funciones que estan en macros, y pasarlas como parametros...
 Public Sub Initialize(oCtxState As clsExecutionContextState, _
-                oInfraMediador As clsEventsMgrInfrastructure, _
+                oInfraMediador As clsEventsMediatorInfrastructure, _
                 oFSMonitoringCoord As clsFSMonitoringCoord, _
                 oOpportunities As clsOpportunitiesMgr, _
                 oFileMgr As clsFileManager)

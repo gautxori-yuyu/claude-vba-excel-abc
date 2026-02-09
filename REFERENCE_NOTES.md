@@ -311,7 +311,7 @@ sacar TODOS los RAISEEVENT de clsApplicationState, y ponerlos en METODOS de las 
   clsFileManager "escucha WorkbookOpen / WorkbookBeforeClose" (OJO!!: el mediador de infraestructura implementa esos callbacks, y esa clase "escucha" al recibir ordenes desde el mediador). Esa clase mantiene una caché de Workbook, y decide cuándo enganchar / desenganchar de ellos.
 
 7. **el ribbon**
-- el ribbon DEBE desaparecer del mediador de infraestructura, clsEventsMgrInfrastructure. DEBE diferenciarse una "capa de Interfaz" (Ribbon, formularios, panes), que escuche eventos que vienen del dominio / infraestructura, y ella misma decida cuándo invalidarse.
+- el ribbon DEBE desaparecer del mediador de infraestructura, clsEventsMediatorInfrastructure. DEBE diferenciarse una "capa de Interfaz" (Ribbon, formularios, panes), que escuche eventos que vienen del dominio / infraestructura, y ella misma decida cuándo invalidarse.
 
 8. **proteccion contra resets**
 - con todo ello, DEBEMOS conserguir la ESTABILIDAD de la aplicación: hay que conseguir evitar que Excel resetee el runtime sin avisar, o que los objetos COM (Workbook, Worksheet, Range) no sobrevivan, o que las referencias cruzadas se rompan silenciosamente.
@@ -383,7 +383,7 @@ Añadida detección de reset de VBA mediante variable Static en modMACROAppLifec
 clsExecutionContextMgr ahora tiene:
 - `IsContextValid()`: Verifica que las referencias COM estén vivas (no zombis)
 - `RefreshContextState()`: Detecta y actualiza el contexto actual desde Excel
-- Handlers de ContextInvalidated/ContextReinitialized en clsEventsMgrInfrastructure
+- Handlers de ContextInvalidated/ContextReinitialized en clsEventsMediatorInfrastructure
 
 ### IsInitialized en clsApplicationState (Fase G — commit e6cea5e)
 Añadidas propiedades para diagnosticar estado de inicialización:
@@ -416,13 +416,13 @@ IOferta.cls implementada como interfaz de dominio para ofertas. Métodos: Oferta
 
 ### Traducción de eventos infra→dominio (Feature 2)
 Corregida la violación del Objetivo 5: el mediador de dominio ya NO escucha directamente a clases de infraestructura.
-- clsEventsMgrInfrastructure ahora emite eventos semánticos traducidos:
+- clsEventsMediatorInfrastructure ahora emite eventos semánticos traducidos:
   - `InfraContextInvalidated` (traducción de mCtxMgr_ContextInvalidated)
   - `InfraContextReinitialized` (traducción de mCtxMgr_ContextReinitialized)
   - `ActiveFileSessionChanged` (traducción de mFileMgr_ActiveFileChanged)
 - clsEventsMediatorDomain ahora escucha `WithEvents mInfraMediador` en lugar de escuchar directamente a mCtxMgr y mFileMgr
 - El flujo correcto es: Excel → ExecutionContextMgr → InfraMediador (traduce) → DomainMediador
-- clsApplication.cls actualizado para pasar mEvMgrInfrastructure al inicializar el mediador de dominio
+- clsApplication.cls actualizado para pasar mEvMediatorInfrastructure al inicializar el mediador de dominio
 
 ### clsFileManager reclasificado como infraestructura (Feature 2)
 @Folder cambiado de "4-Servicios.Archivos" a "2-Infraestructura" según Objetivo 6 de REFERENCE_NOTES.md.

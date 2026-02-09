@@ -17,7 +17,7 @@ Private mChartManager As clsChartMgr
 Private mCtxMgr As clsExecutionContextMgr
 
 Private mEventDispatcher As clsEventDispatcher
-Private mEvMgrInfrastructure As clsEventsMgrInfrastructure
+Private mEvMediatorInfrastructure As clsEventsMediatorInfrastructure
 
 Private mFileMgr As clsFileManager
 Private mOpportunities As clsOpportunitiesMgr
@@ -105,14 +105,14 @@ Private Sub Class_Initialize()
                                  ChartState:=mChartManager.State, _
                                  CtxState:=mCtxMgr.State
     ' GESTOR DE EVENTOS DE INFRAESTRUCTURA
-    Set mEvMgrInfrastructure = New clsEventsMgrInfrastructure
-    Call mEvMgrInfrastructure.Initialize(mFileMgr, mChartManager, mCtxMgr)
+    Set mEvMediatorInfrastructure = New clsEventsMediatorInfrastructure
+    Call mEvMediatorInfrastructure.Initialize(mFileMgr, mChartManager, mCtxMgr)
 
     ' MEDIADOR DE EVENTOS DE DOMINIO
     ' Escucha eventos SEMANTICOS del mediador de infraestructura (no directamente de mCtxMgr)
     Set mEvMediatorDomain = New clsEventsMediatorDomain
     Call mEvMediatorDomain.Initialize(mCtxMgr.State, _
-                                    mEvMgrInfrastructure, _
+                                    mEvMediatorInfrastructure, _
                                     mFSMonitoringCoord, _
                                     mOpportunities, _
                                     mFileMgr)
@@ -149,7 +149,7 @@ Private Sub Class_Terminate()
     ' 3. Liberar managers
     Set mFileMgr = Nothing
 
-    Set mEvMgrInfrastructure = Nothing
+    Set mEvMediatorInfrastructure = Nothing
 
     Set mEventDispatcher = Nothing
     
