@@ -127,17 +127,32 @@ Public Function GetCalculations(ByVal opportunityPath As String) As Collection
     ' Crear objetos ITechnicalCalc para cada fichero principal (_calc)
     Dim fileName As Variant
     Dim parsed As Object
+    Dim calcSource As ExcelTechnicalCalcSource
+    Dim filePath As String
+
     For Each fileName In files
         Set parsed = ParseCalculationFileName(CStr(fileName))
         If Not parsed Is Nothing Then
             If parsed("IsMainCalc") Then
-                ' TODO: Crear ExcelTechnicalCalcSource y agregarlo
-                ' Por ahora solo logueamos
-                LogDebug MODULE_NAME, "[GetCalculations] Encontrado: " & fileName
+                ' Crear ExcelTechnicalCalcSource
+                filePath = calcFolder & "\" & CStr(fileName)
+                Set calcSource = New ExcelTechnicalCalcSource
+                calcSource.Initialize filePath, parsed
+
+                ' Agregar a la coleccion usando CalcOption como key
+                On Error Resume Next
+                result.Add calcSource, parsed("CalcOption")
+                If Err.Number <> 0 Then
+                    ' Ya existe, ignorar duplicado
+                    LogDebug MODULE_NAME, "[GetCalculations] Calculo duplicado: " & parsed("CalcOption")
+                    Err.Clear
+                End If
+                On Error GoTo ErrHandler
             End If
         End If
     Next fileName
 
+    LogDebug MODULE_NAME, "[GetCalculations] Encontrados " & result.Count & " calculos principales"
     Set GetCalculations = result
     Exit Function
 

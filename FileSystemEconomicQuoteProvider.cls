@@ -134,12 +134,36 @@ Public Function GetQuotes(ByVal opportunityPath As String) As Collection
     Dim files As Collection
     Set files = IdentifyQuoteFiles(opportunityPath)
 
-    ' TODO: Crear objetos IEconomicQuote para cada fichero
-    Dim fileName As Variant
-    For Each fileName In files
-        LogDebug MODULE_NAME, "[GetQuotes] Encontrado: " & fileName
-    Next fileName
+    ' Crear objetos IEconomicQuote para cada fichero
+    Dim filePath As Variant
+    Dim parsed As Object
+    Dim quoteSource As ExcelEconomicQuoteSource
+    Dim fso As Object
+    Set fso = CreateObject("Scripting.FileSystemObject")
 
+    For Each filePath In files
+        Set parsed = ParseQuoteFileName(fso.GetFileName(CStr(filePath)))
+        If Not parsed Is Nothing Then
+            ' Crear ExcelEconomicQuoteSource
+            Set quoteSource = New ExcelEconomicQuoteSource
+            quoteSource.Initialize CStr(filePath), parsed
+
+            ' Agregar a la coleccion usando QuoteId + revision como key
+            Dim key As String
+            key = parsed("QuoteId") & "_rev" & parsed("Revision")
+
+            On Error Resume Next
+            result.Add quoteSource, key
+            If Err.Number <> 0 Then
+                ' Ya existe, ignorar duplicado
+                LogDebug MODULE_NAME, "[GetQuotes] Valoracion duplicada: " & key
+                Err.Clear
+            End If
+            On Error GoTo ErrHandler
+        End If
+    Next filePath
+
+    LogDebug MODULE_NAME, "[GetQuotes] Encontradas " & result.Count & " valoraciones"
     Set GetQuotes = result
     Exit Function
 
