@@ -101,23 +101,24 @@ End Sub
 ' -------------------------------------------------------------
 ' Evento: cambios detectados en oportunidades (desde OpportunitiesMgr)
 ' -------------------------------------------------------------
-Private Sub mOpportunities_OpportunityCollectionUpdate(ByVal cambios As String)
-    LogInfo MODULE_NAME, "[callback: clsOpportunitiesMgr OpportunityCollectionUpdate] cambios detectados: " & cambios
+Private Sub mOpportunities_OpportunityCollectionUpdated(ByVal reason As String)
+    LogInfo MODULE_NAME, "[callback: clsOpportunitiesMgr OpportunityCollectionUpdated] razon: " & reason
 End Sub
+
 'TODO: VIOLACION ARQUITECTONICA - El mediador de dominio no deberia usar clsFileXLS directamente.
 '      Esta logica de "mover archivo a carpeta de oportunidad" deberia:
 '      1. Delegarse a un servicio de infraestructura (FileLocationService?), o
 '      2. El mediador de infraestructura deberia exponer un evento/metodo semantico
 '      Pendiente de decision cuando se tenga la especificacion de dominio.
-Private Sub mOpportunities_currOpportunityChanged(ByVal Index As Long, ByVal Path As String)
-    LogInfo MODULE_NAME, "[callback: clsOpportunitiesMgr currOpportunityChanged] Oportunidad seleccionada: " & Path
+Private Sub mOpportunities_CurrentOpportunityChanged(ByVal opportunityName As String, ByVal opportunityPath As String)
+    LogInfo MODULE_NAME, "[callback: clsOpportunitiesMgr CurrentOpportunityChanged] Oportunidad seleccionada: " & opportunityPath
 
     ' TEMPORAL: Uso directo de clsFileXLS (ver TODO arriba)
     Dim f As clsFileXLS
     Set f = mFileMgr.GetOrTrackWorkbook(mCtxState.Workbook)
     If Not f Is Nothing Then
-        If f.DebeMoverseAOp(Path, mOpportunities.BaseFolder) Then
-            f.MoverAOp Path, mOpportunities.BaseFolder
+        If f.DebeMoverseAOp(opportunityPath, mOpportunities.BaseFolder) Then
+            f.MoverAOp opportunityPath, mOpportunities.BaseFolder
         End If
     End If
 End Sub
@@ -237,7 +238,7 @@ Private Sub mInfraMediador_InfraContextReinitialized()
 
     ' Refrescar coleccion de oportunidades por si hubo cambios durante el reset
     If Not mOpportunities Is Nothing Then
-        mOpportunities.actualizarColeccionOportunidades
+        mOpportunities.RefreshOpportunities
     End If
 
     Exit Sub

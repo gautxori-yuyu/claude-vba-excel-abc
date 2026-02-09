@@ -329,18 +329,18 @@ End Function
 ' HANDLERS DE EVENTOS (UI escucha a los Managers)
 ' ==========================================
 
-Private Sub mOpportunities_OpportunityCollectionUpdate(ByVal cambios As String)
+Private Sub mOpportunities_OpportunityCollectionUpdated(ByVal reason As String)
     InvalidarControl "ddlOportunidades"
 End Sub
 
-Private Sub mOpportunities_currOpportunityChanged(ByVal Index As Long, ByVal Path As String)
+Private Sub mOpportunities_CurrentOpportunityChanged(ByVal opportunityName As String, ByVal opportunityPath As String)
     ' En modo OpportunityOnly, mostrar ribbon cuando hay oportunidad
     If mStateRibbon.Modo = Ribbon_OpportunityOnly Then
         mStateRibbon.Visible = True
     End If
     InvalidarControl "btnGenerarGraficos"
     InvalidarControl "dropdownOportunidades"
-    InvalidarControl "btnCreaOportunidad"
+    InvalidarControl "btnNuevaOp"
     InvalidarControl "grpOportunidades"
 End Sub
 

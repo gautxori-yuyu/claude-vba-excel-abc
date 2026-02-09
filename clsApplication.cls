@@ -60,6 +60,11 @@ Public Property Get OpportunitiesMgr() As clsOpportunitiesMgr
     Set OpportunitiesMgr = mOpportunities
 End Property
 
+'@Description: Obtiene la configuracion de la aplicacion
+Public Property Get Configuration() As clsConfiguration
+    Set Configuration = mConfiguration
+End Property
+
 '@Description: Obtiene el gestor de estado centralizado de la aplicación
 Public Property Get AppState() As clsApplicationState
     Set AppState = mApplicationState

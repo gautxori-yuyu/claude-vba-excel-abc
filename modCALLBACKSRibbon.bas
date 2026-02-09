@@ -278,27 +278,27 @@ End Sub
 ' ==========================================
 Sub GetSupertipRutaBaseOportunidades(control As IRibbonControl, ByRef returnedVal)
 Attribute GetSupertipRutaBaseOportunidades.VB_ProcData.VB_Invoke_Func = " \n0"
-    returnedVal = GetSupertipRutaBase(App.OpportunitiesMgr.Conf.RutaOportunidades)
+    returnedVal = GetSupertipRutaBase(App.Configuration.RutaOportunidades)
 End Sub
 
 Sub GetSupertipRutaBasePlantillas(control As IRibbonControl, ByRef returnedVal)
 Attribute GetSupertipRutaBasePlantillas.VB_ProcData.VB_Invoke_Func = " \n0"
-    returnedVal = GetSupertipRutaBase(App.OpportunitiesMgr.Conf.RutaPlantillas)
+    returnedVal = GetSupertipRutaBase(App.Configuration.RutaPlantillas)
 End Sub
 
 Sub GetSupertipRutaBaseOfergas(control As IRibbonControl, ByRef returnedVal)
 Attribute GetSupertipRutaBaseOfergas.VB_ProcData.VB_Invoke_Func = " \n0"
-    returnedVal = GetSupertipRutaBase(App.OpportunitiesMgr.Conf.RutaOfergas)
+    returnedVal = GetSupertipRutaBase(App.Configuration.RutaOfergas)
 End Sub
 
 Sub GetSupertipRutaBaseGasVBNet(control As IRibbonControl, ByRef returnedVal)
 Attribute GetSupertipRutaBaseGasVBNet.VB_ProcData.VB_Invoke_Func = " \n0"
-    returnedVal = GetSupertipRutaBase(App.OpportunitiesMgr.Conf.RutaGasVBNet)
+    returnedVal = GetSupertipRutaBase(App.Configuration.RutaGasVBNet)
 End Sub
 
 Sub GetSupertipRutaBaseCalcTmpl(control As IRibbonControl, ByRef returnedVal)
 Attribute GetSupertipRutaBaseCalcTmpl.VB_ProcData.VB_Invoke_Func = " \n0"
-    returnedVal = GetSupertipRutaBase(App.OpportunitiesMgr.Conf.RutaExcelCalcTempl)
+    returnedVal = GetSupertipRutaBase(App.Configuration.RutaExcelCalcTempl)
 End Sub
 
 ' Para mostrar la ruta actual en el supertip (dinámico)

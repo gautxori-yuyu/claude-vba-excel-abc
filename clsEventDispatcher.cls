@@ -44,19 +44,19 @@ Public Sub Dispatch(controlID As String)
                 Application.ScreenUpdating = False
                 Call FixCGASING
         Case "btnNuevaOp"
-                App.OpportunitiesMgr.CreaOportunidad
-                ' Ribbon se invalida automaticamente via evento OpportunityCollectionUpdate
+                App.OpportunitiesMgr.CreateNewOpportunity
+                ' Ribbon se invalida automaticamente via evento OpportunityCollectionUpdated
                 ' que clsRibbon escucha con WithEvents mOpportunities
         Case "btnConfig"
-                App.OpportunitiesMgr.Conf.ShowUI
+                App.Configuration.ShowUI
         Case "btnValidationsToNames"
                 Call modAPPBudgetQuotesUtilids.AplicarNombresAValidacionesCeldasActWBConReporte
-        
+
         Case "btnToggleXLAM"
             ThisWorkbook.IsAddin = Not (ThisWorkbook.IsAddin)
         Case "btnOpRefresh"
-            App.OpportunitiesMgr.actualizarColeccionOportunidades
-            ' Ribbon se invalida automaticamente via evento OpportunityCollectionUpdate
+            App.OpportunitiesMgr.RefreshOpportunities
+            ' Ribbon se invalida automaticamente via evento OpportunityCollectionUpdated
             ' que clsRibbon escucha con WithEvents mOpportunities
     End Select
 
@@ -89,7 +89,7 @@ Public Sub SetRibbonSelectionIndex(controlID As String, Index As Integer, id As 
         Case "ddlOportunidades"
             App.OpportunitiesMgr.SetCurrentOpportunityByIndex Index
             LogInfo MODULE_NAME, "[SetRibbonSelectionIndex] Cambiada oportunidad activa: " & id
-            ' clsRibbon escucha currOpportunityChanged via WithEvents mOpportunities
+            ' clsRibbon escucha CurrentOpportunityChanged via WithEvents mOpportunities
     End Select
 End Sub
 
