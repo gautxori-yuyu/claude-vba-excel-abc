@@ -20,8 +20,10 @@ Private mEventDispatcher As clsEventDispatcher
 Private mEvMediatorInfrastructure As clsEventsMediatorInfrastructure
 
 Private mFileMgr As clsFileManager
+Private mOpportunityProvider As FileSystemOpportunityProvider
 Private mOpportunities As clsOpportunitiesMgr
 Private mFSMonitoringCoord As clsFSMonitoringCoord
+Private mConfiguration As clsConfiguration
                 '
 Private mEvMediatorDomain As clsEventsMediatorDomain
 
@@ -83,15 +85,20 @@ Private Sub Class_Initialize()
     Set mFileMgr = New clsFileManager
     mFileMgr.Init mCtxMgr.Application.Workbooks
 
+    ' CONFIGURACION (servicio de infraestructura)
+    Set mConfiguration = New clsConfiguration
+
+    ' PROVIDER DE OPORTUNIDADES (infraestructura)
+    Set mOpportunityProvider = New FileSystemOpportunityProvider
+    mOpportunityProvider.Initialize mFileMgr
+
     ' DOMINIO - Crear managers (ellos crean sus estados internamente)
     Set mOpportunities = New clsOpportunitiesMgr
-    ' Inyectar dependencia de FileManager y arrancar
-    Set mOpportunities.FileManager = mFileMgr
-    mOpportunities.Initialize
+    mOpportunities.Initialize mOpportunityProvider
 
     ' SERVICIOS DE MONITOREO
     Set mFSMonitoringCoord = New clsFSMonitoringCoord
-    mFSMonitoringCoord.IniciarMonitoreo mOpportunities.Conf.oDicFoldersToWatch
+    mFSMonitoringCoord.IniciarMonitoreo mConfiguration.oDicFoldersToWatch
 
     ' INTERFAZ - Crear Ribbon (crea RibbonState internamente)
     Set mRibbon = New clsRibbon
@@ -145,6 +152,10 @@ Private Sub Class_Terminate()
     Set mFSMonitoringCoord = Nothing
 
     Set mOpportunities = Nothing
+
+    Set mOpportunityProvider = Nothing
+
+    Set mConfiguration = Nothing
 
     ' 3. Liberar managers
     Set mFileMgr = Nothing

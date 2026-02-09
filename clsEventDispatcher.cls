@@ -68,7 +68,7 @@ Public Function GetRibbonItemsNr(controlID As String) As Long
     Select Case controlID
         Case "ddlOportunidades"
             ' MEZCLA LOGICA DE NEGOCIO CON EVENTOS -> deberia resolver el "coordinador de eventos"
-            GetRibbonItemsNr = App.OpportunitiesMgr.numOpportunities
+            GetRibbonItemsNr = App.OpportunitiesMgr.Count
     End Select
 End Function
 
@@ -77,7 +77,7 @@ Public Function GetRibbonItemLabel(controlID As String, Optional Index As Intege
         Case "ddlOportunidades"
             ' MEZCLA LOGICA DE NEGOCIO CON EVENTOS -> deberia resolver el "coordinador de eventos"
             If Index < 0 Then Err.Raise vbObjectError + 600, , "No se ha proporcionado indice"
-            GetRibbonItemLabel = App.OpportunitiesMgr.OportunityLabel(Index)
+            GetRibbonItemLabel = App.OpportunitiesMgr.GetOpportunityNameByIndex(Index)
     End Select
 End Function
 
@@ -87,7 +87,7 @@ End Function
 Public Sub SetRibbonSelectionIndex(controlID As String, Index As Integer, id As String)
     Select Case controlID
         Case "ddlOportunidades"
-            App.OpportunitiesMgr.CurrOpportunity = Index
+            App.OpportunitiesMgr.SetCurrentOpportunityByIndex Index
             LogInfo MODULE_NAME, "[SetRibbonSelectionIndex] Cambiada oportunidad activa: " & id
             ' clsRibbon escucha currOpportunityChanged via WithEvents mOpportunities
     End Select

@@ -224,7 +224,7 @@ End Sub
 ' Índice del elemento seleccionado
 Sub GetSelectedOportunidadIndex(control As IRibbonControl, ByRef Index)
 Attribute GetSelectedOportunidadIndex.VB_ProcData.VB_Invoke_Func = " \n0"
-    Index = App.OpportunitiesMgr.CurrOpportunity
+    Index = App.OpportunitiesMgr.CurrentIndex
 End Sub
 
 ' ==========================================
