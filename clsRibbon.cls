@@ -70,7 +70,13 @@ Private Sub Class_Initialize()
     LogInfo MODULE_NAME, "[Class_Initialize]"
     
     Set mStateRibbon = New clsRibbonState
-    mStateRibbon.Modo = Ribbon_OpportunityOnly
+    ' Modo inicial: Ribbon_User (seguro, sin dependencias).
+    ' Ribbon_OpportunityOnly solo se permite cuando mOpportunities y mFileMgr esten inyectados.
+    If IsOpportunityModeSupported() Then
+        mStateRibbon.Modo = Ribbon_OpportunityOnly
+    Else
+        mStateRibbon.Modo = Ribbon_User
+    End If
     
     mWasEverInitialized = False
     mIsRecovering = False
@@ -122,15 +128,26 @@ Public Sub ToggleModo()
     ' Logica de toggle movida desde clsRibbonState (el Mgr decide, no el State)
     Select Case mStateRibbon.Modo
     Case Ribbon_OpportunityOnly
+        ' Si de algun modo llegamos aqui sin soporte, salir a User
         mStateRibbon.Modo = Ribbon_User
     Case Ribbon_User
         mStateRibbon.Modo = Ribbon_Hidden
     Case Ribbon_Hidden
         mStateRibbon.Modo = Ribbon_Admin
     Case Ribbon_Admin
-        mStateRibbon.Modo = Ribbon_OpportunityOnly
+        ' Solo pasar a OpportunityOnly si las dependencias de dominio estan disponibles
+        If IsOpportunityModeSupported() Then
+            mStateRibbon.Modo = Ribbon_OpportunityOnly
+        Else
+            mStateRibbon.Modo = Ribbon_User
+        End If
     Case Else
-        mStateRibbon.Modo = Ribbon_OpportunityOnly
+        ' Fallback seguro: nunca aterrizar en OpportunityOnly sin soporte
+        If IsOpportunityModeSupported() Then
+            mStateRibbon.Modo = Ribbon_OpportunityOnly
+        Else
+            mStateRibbon.Modo = Ribbon_User
+        End If
     End Select
 
     ' Guardar el nuevo estado de vuelta al libro activo
@@ -237,6 +254,13 @@ ErrHandler:
     LogError MODULE_NAME, "[InvalidarControl] Error en control " & idControl, , Err.Description
 End Sub
 
+'@Description: Indica si el modo Ribbon_OpportunityOnly esta soportado.
+'              Solo es posible cuando las dependencias de dominio (mOpportunities, mFileMgr)
+'              han sido inyectadas. Si alguna es Nothing, el modo no tiene sentido.
+Private Function IsOpportunityModeSupported() As Boolean
+    IsOpportunityModeSupported = Not (mOpportunities Is Nothing) And Not (mFileMgr Is Nothing)
+End Function
+
 '@Description: Verifica si el objeto ribbonUI esta disponible y funcional
 Private Function IsRibbonUIAvailable() As Boolean
     If mribbonUI Is Nothing Then IsRibbonUIAvailable = False: Exit Function
@@ -304,9 +328,16 @@ Public Function IsTabVisible() As Boolean
     Case Ribbon_User
         IsTabVisible = True
     Case Ribbon_OpportunityOnly
-        ' En este modo: visible solo si hay archivo de oportunidad activo.
-        ' La UI puede consultar estado de la aplicacion (conoce al mundo).
-        IsTabVisible = App().AppState.IsOpportunityFileActive()
+        ' Este modo solo es valido si las dependencias de dominio estan disponibles.
+        ' Si no lo estan (p.ej. durante inicializacion progresiva), el modo no debe
+        ' haberse alcanzado, pero lo tratamos defensivamente devolviendo False.
+        If Not IsOpportunityModeSupported() Then
+            IsTabVisible = False
+        ElseIf App().AppState Is Nothing Then
+            IsTabVisible = False
+        Else
+            IsTabVisible = App().AppState.IsOpportunityFileActive()
+        End If
     Case Else
         IsTabVisible = False
     End Select
