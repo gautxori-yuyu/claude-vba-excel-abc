@@ -7,13 +7,12 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
-'@Folder("5-Aplicac (Coord)")
+'@Folder("1-Aplicacion.6-Servicios.Dispatchers")
+' es un Application Service -traduce intenciones de usuario a llamadas a servicios de dominio-
+' y eso es exactamente la responsabilidad de la capa de aplicación en DDD y arquitectura hexagonal.
 Option Explicit
 
 Private Const MODULE_NAME As String = "clsEventDispatcher"
-
-
-'@Folder("3-Aplicac (Coord)")
 
 'TODO: decidir si las macros se convierten en metodos de clase
 Public Sub Dispatch(controlID As String)
@@ -67,8 +66,9 @@ End Sub
 Public Function GetRibbonItemsNr(controlID As String) As Long
     Select Case controlID
         Case "ddlOportunidades"
-            ' MEZCLA LOGICA DE NEGOCIO CON EVENTOS -> deberia resolver el "coordinador de eventos"
-            GetRibbonItemsNr = App.OpportunitiesMgr.Count
+            If Not App.OpportunitiesMgr Is Nothing Then
+                GetRibbonItemsNr = App.OpportunitiesMgr.Count
+            End If
     End Select
 End Function
 
@@ -96,16 +96,16 @@ End Sub
 Public Function GetRibbonControlEnabled(controlID As String) As Boolean
     Dim enabled As Boolean
     Select Case controlID
-    Case "btnGenerarGraficos"                    ' GetGraficoEnabled
-        enabled = EsFicheroOportunidad() And EsValidoGenerarGrafico()
-    Case "btnInvertirSeries"                     ' GetInvertirEjesEnabled
-        enabled = Not (ActiveChart Is Nothing)
-        If enabled Then enabled = App.ChartManager.EsValidoInvertirEjes()
-    Case "btnCGASING"                            ' GetCGASINGEnabled
-        enabled = EsFicheroOportunidad()
-        If enabled Then enabled = IsDefaultCGasIngSheet()
-    Case "btnNuevaOp"                            ' GetNuevaOportunidadEnabled
-        enabled = True
+        Case "btnGenerarGraficos"                    ' GetGraficoEnabled
+            enabled = EsFicheroOportunidad() And EsValidoGenerarGrafico()
+        Case "btnInvertirSeries"                     ' GetInvertirEjesEnabled
+            enabled = Not (ActiveChart Is Nothing)
+            If enabled Then enabled = App.ChartManager.EsValidoInvertirEjes()
+        Case "btnCGASING"                            ' GetCGASINGEnabled
+            enabled = EsFicheroOportunidad()
+            If enabled Then enabled = IsDefaultCGasIngSheet()
+        Case "btnNuevaOp"                            ' GetNuevaOportunidadEnabled
+            enabled = True
     End Select
     GetRibbonControlEnabled = enabled
     'InvalidarControl controlID ' esto ESTA DE SOBRA!!

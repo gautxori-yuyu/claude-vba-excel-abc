@@ -41,7 +41,7 @@ Attribute VB_Exposed = False
 ' - clsApplication.Terminate() llama a Dispose antes de Set = Nothing
 ' =====================================================
 
-'@Folder "4-Servicios.Archivos.Supervision"
+'@Folder "2-Infraestructura.4-Servicios.FSWatcher"
 Option Explicit
 
 Private Const MODULE_NAME As String = "clsFSWatcher"
@@ -543,7 +543,7 @@ End Sub
 
 ' Manejadores para eventos de reconexión automática
 Private Sub fw_WatcherReconnected(ByVal folder As String, ByVal attempts As Long)
-    LogDebug MODULE_NAME, "[callback: FolderWatcher.Monitor WatcherReconnected] " & folder & " (tras " & attempts & " intento(s))"
+    'LogDebug MODULE_NAME, "[callback: FolderWatcher.Monitor WatcherReconnected] " & folder & " (tras " & attempts & " intento(s))"
     RaiseEvent WatcherReconnected(folder, attempts)
 End Sub
 

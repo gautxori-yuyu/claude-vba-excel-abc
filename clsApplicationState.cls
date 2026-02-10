@@ -9,7 +9,7 @@ Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
 '@Description: Gestor centralizado del estado actual de la aplicación
 '@Category: State
-'@Folder "5-Aplicac (Coord).Estado"
+'@Folder "1-Aplicacion.4-Estado"
 Option Explicit
 
 Private Const MODULE_NAME As String = "clsApplicationState"
@@ -57,11 +57,11 @@ Public Sub Initialize(Optional RibbonState As clsRibbonState = Nothing, _
     On Error GoTo ErrHandler
 
     ' Inyectar referencias a subestados
-    Set mRibbonState = RibbonState
-    Set mOpportunityState = OpportunityState
-    Set mFileState = FileState
-    Set mChartState = ChartState
-    Set mCtxState = CtxState
+    If Not RibbonState Is Nothing Then Set mRibbonState = RibbonState
+    If Not OpportunityState Is Nothing Then Set mOpportunityState = OpportunityState
+    If Not FileState Is Nothing Then Set mFileState = FileState
+    If Not ChartState Is Nothing Then Set mChartState = ChartState
+    If Not CtxState Is Nothing Then Set mCtxState = CtxState
 
     LogInfo MODULE_NAME, "[Initialize] Referencias inyectadas: " & _
             "Ribbon=" & CStr(Not (RibbonState Is Nothing)) & ", " & _

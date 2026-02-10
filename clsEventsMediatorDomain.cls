@@ -205,7 +205,7 @@ Private Sub mFSMonitoringCoord_MonitoringError(ByVal folder As String, ByVal err
 End Sub
 
 Private Sub mFSMonitoringCoord_MonitoringReconnected(ByVal folder As String, ByVal attempts As Long)
-    LogDebug MODULE_NAME, "[mFSMonitoringCoord_MonitoringReconnected] " & folder & " tras " & attempts & " intentos"
+    'LogDebug MODULE_NAME, "[mFSMonitoringCoord_MonitoringReconnected] " & folder & " tras " & attempts & " intentos"
 End Sub
 
 Private Sub mFSMonitoringCoord_MonitoringFailed(ByVal folder As String, ByVal reason As String)

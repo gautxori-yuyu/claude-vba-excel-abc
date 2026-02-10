@@ -85,7 +85,7 @@ Public Static Sub BindTo(Wb As Workbook)
     End If
     Set p_wb = Wb
     p_ObjectKey = ObjPtr(p_wb)
-    LogInfo MODULE_NAME, "[BindTo] Asociado a: " & Me.Path & " (key: " & p_ObjectKey & ")"
+    LogDebug MODULE_NAME, "[BindTo] Asociado a: " & Me.Path & " (key: " & p_ObjectKey & ")"
 End Sub
 ' Factory Method estático: "Creador especializado"
 Public Static Function CreateFromWorkbook(Wb As Workbook) As clsFileXLS

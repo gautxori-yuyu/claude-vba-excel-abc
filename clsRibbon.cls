@@ -18,7 +18,7 @@ Attribute VB_Exposed = False
 ' - mWasEverInitialized es informativo, no bloquea
 ' ==========================================
 
-'@Folder "3-UI.Excel.Ribbon"
+'@Folder "4-UI.Excel.Ribbon"
 Option Explicit
 
 Private Const MODULE_NAME As String = "clsRibbon"
@@ -29,7 +29,6 @@ Private Const MODULE_NAME As String = "clsRibbon"
 Private mribbonUI As IRibbonUI
 
 Private mStateRibbon As clsRibbonState
-Attribute mStateRibbon.VB_VarHelpID = -1
 
 Private mIsRecovering As Boolean              ' Flag para evitar recursion durante recuperacion
 Private mWasEverInitialized As Boolean        ' Flag para distinguir "nunca inicializado" de "perdido"
@@ -72,11 +71,7 @@ Private Sub Class_Initialize()
     Set mStateRibbon = New clsRibbonState
     ' Modo inicial: Ribbon_User (seguro, sin dependencias).
     ' Ribbon_OpportunityOnly solo se permite cuando mOpportunities y mFileMgr esten inyectados.
-    If IsOpportunityModeSupported() Then
-        mStateRibbon.Modo = Ribbon_OpportunityOnly
-    Else
-        mStateRibbon.Modo = Ribbon_User
-    End If
+    mStateRibbon.Modo = Ribbon_Hidden
     
     mWasEverInitialized = False
     mIsRecovering = False
@@ -136,14 +131,14 @@ Public Sub ToggleModo()
         mStateRibbon.Modo = Ribbon_Admin
     Case Ribbon_Admin
         ' Solo pasar a OpportunityOnly si las dependencias de dominio estan disponibles
-        If IsOpportunityModeSupported() Then
+        If IsOpportunityMgrEnabled() Then
             mStateRibbon.Modo = Ribbon_OpportunityOnly
         Else
             mStateRibbon.Modo = Ribbon_User
         End If
     Case Else
         ' Fallback seguro: nunca aterrizar en OpportunityOnly sin soporte
-        If IsOpportunityModeSupported() Then
+        If IsOpportunityMgrEnabled() Then
             mStateRibbon.Modo = Ribbon_OpportunityOnly
         Else
             mStateRibbon.Modo = Ribbon_User
@@ -254,11 +249,11 @@ ErrHandler:
     LogError MODULE_NAME, "[InvalidarControl] Error en control " & idControl, , Err.Description
 End Sub
 
-'@Description: Indica si el modo Ribbon_OpportunityOnly esta soportado.
-'              Solo es posible cuando las dependencias de dominio (mOpportunities, mFileMgr)
-'              han sido inyectadas. Si alguna es Nothing, el modo no tiene sentido.
-Private Function IsOpportunityModeSupported() As Boolean
-    IsOpportunityModeSupported = Not (mOpportunities Is Nothing) And Not (mFileMgr Is Nothing)
+'@Description: Indica si las dependencias de dominio (mOpportunities, mFileMgr)
+'              han sido inyectadas. Condiciona por ejemplo si el modo
+'              Ribbon_OpportunityOnly esta soportado. Si alguna es Nothing, el modo no tiene sentido.
+Public Function IsOpportunityMgrEnabled() As Boolean
+    IsOpportunityMgrEnabled = Not (mOpportunities Is Nothing) And Not (mFileMgr Is Nothing)
 End Function
 
 '@Description: Verifica si el objeto ribbonUI esta disponible y funcional
@@ -331,7 +326,7 @@ Public Function IsTabVisible() As Boolean
         ' Este modo solo es valido si las dependencias de dominio estan disponibles.
         ' Si no lo estan (p.ej. durante inicializacion progresiva), el modo no debe
         ' haberse alcanzado, pero lo tratamos defensivamente devolviendo False.
-        If Not IsOpportunityModeSupported() Then
+        If Not IsOpportunityMgrEnabled() Then
             IsTabVisible = False
         ElseIf App().AppState Is Nothing Then
             IsTabVisible = False
@@ -431,4 +426,5 @@ Private Sub mCtxMgr_SheetDeactivated(ByVal Sh As Object)
     InvalidarControl "btnGenerarGraficos"
     InvalidarControl "btnCGASING"
 End Sub
+
 
