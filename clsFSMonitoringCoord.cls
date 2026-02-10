@@ -310,7 +310,7 @@ End Sub
 
 ' Eventos de reconexion automatica del FolderWatcher
 Private Sub mFolderWatcher_WatcherReconnected(ByVal folder As String, ByVal attempts As Long)
-    LogDebug MODULE_NAME, "[WatcherReconnected] " & folder & " reconectado tras " & attempts & " intento(s)"
+    'LogDebug MODULE_NAME, "[WatcherReconnected] " & folder & " reconectado tras " & attempts & " intento(s)"
     ' Opcional: notificar al usuario solo si hubo multiples intentos
     If attempts > 1 Then
         LogWarning MODULE_NAME, "Monitoreo restaurado en " & folder & " tras " & attempts & " intentos"

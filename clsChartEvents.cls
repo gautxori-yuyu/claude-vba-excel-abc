@@ -45,20 +45,20 @@ Public Property Set Chart(oChart As Chart)
     On Error GoTo ErrHandler
     
     If Not mChart Is Nothing Then
-        LogWarning MODULE_NAME, "[Chart Set] Reasignando mChart"
+        LogInfo MODULE_NAME, "[Chart Set] Reasignando mChart"
         Set mChart = Nothing
     End If
     Set mChart = oChart
     If Not oChart Is Nothing Then
-        LogInfo MODULE_NAME, " - mChart asignado: " & TypeName(oChart.Parent) & "!" & oChart.Name & " @ " & ObjPtr(oChart)
+        LogInfo MODULE_NAME, "[Chart Set] mChart asignado: " & TypeName(oChart.Parent) & "!" & oChart.Name & " @ " & ObjPtr(oChart)
     Else
-        LogError MODULE_NAME, " - mChart liberado"
+        LogInfo MODULE_NAME, "[Chart Set] mChart liberado"
     End If
 
     Exit Property
 ErrHandler:
-    LogCurrentError MODULE_NAME, " [Chart]"
-    Err.Raise Err.Number, MODULE_NAME & " [Chart]", Err.Description
+    LogCurrentError MODULE_NAME, " [Chart Set]"
+    Err.Raise Err.Number, MODULE_NAME & " [Chart Set]", Err.Description
 End Property
 
 '--------------------------------------------------------------

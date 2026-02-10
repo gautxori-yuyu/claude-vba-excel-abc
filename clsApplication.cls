@@ -83,56 +83,13 @@ Private Sub Class_Initialize()
     ' y dentro de cada capa, primero los managers (que crean ellos mismos los State), luego
     ' los servicios y la configuracion de la capa; y finalmente mediadores de eventos, y coordinadores
 
-    ' INFRAESTRUCTURA
-    Set mCtxMgr = New clsExecutionContextMgr
-    ' FIXME: Es mejor UNIFICAR, o HACER COMPOSICION, de clsChartMgr, dentro de clsExecutionContext (ChartMgr PERTENECE al exec context,
-    ' mas que depender de él; actualmente parece que la relación está invertida, está asi para minimizar los cambios al resto del codigo...)
-'    Set mChartManager = New clsChartMgr
-'    mChartManager.Initialize mCtxMgr.State
-'    Set mEventDispatcher = New clsEventDispatcher
-'
-'    Set mFileMgr = New clsFileManager
-'    mFileMgr.Init mCtxMgr.Application.Workbooks
-'
-'    ' GESTOR DE EVENTOS DE INFRAESTRUCTURA
-'    Set mEvMediatorInfrastructure = New clsEventsMediatorInfrastructure
-'    Call mEvMediatorInfrastructure.Initialize(mFileMgr, mChartManager, mCtxMgr)
-
-    ' CONFIGURACION (servicio de infraestructura)
-'    Set mConfiguration = New clsConfiguration
-
-    ' SERVICIOS DE MONITOREO
-'    Set mFSMonitoringCoord = New clsFSMonitoringCoord
-'    mFSMonitoringCoord.IniciarMonitoreo mConfiguration.oDicFoldersToWatch
-
-    ' PROVIDER DE OPORTUNIDADES (infraestructura)
-'    Set mOpportunityProvider = New FileSystemOpportunityProvider
-'    mOpportunityProvider.Initialize mFileMgr, mConfiguration
-
-    ' DOMINIO - Crear managers (ellos crean sus estados internamente)
-    'Set mOpportunities = New clsOpportunitiesMgr
-    'mOpportunities.Initialize mOpportunityProvider
-
-    ' INTERFAZ - Crear Ribbon (crea RibbonState internamente)
-    Set mRibbon = New clsRibbon
-    mRibbon.Initialize mOpportunities, mFileMgr, mChartManager, mCtxMgr
+    Set mApplicationState = New clsApplicationState
     
-    ' ESTADO CENTRALIZADO - Inyectar referencias a subestados (Dependency Injection)
-'    Set mApplicationState = New clsApplicationState
-'    mApplicationState.Initialize RibbonState:=mRibbon.State, _
-'                                 OpportunityState:=mOpportunities.State, _
-'                                 FileState:=mFileMgr.State, _
-'                                 ChartState:=mChartManager.State, _
-'                                 CtxState:=mCtxMgr.State
+    InitializeInfrastructure
     
-    ' MEDIADOR DE EVENTOS DE DOMINIO
-    ' Escucha eventos SEMANTICOS del mediador de infraestructura (no directamente de mCtxMgr)
-'    Set mEvMediatorDomain = New clsEventsMediatorDomain
-'    Call mEvMediatorDomain.Initialize(mCtxMgr.State, _
-'                                    mEvMediatorInfrastructure, _
-'                                    mFSMonitoringCoord, _
-'                                    mOpportunities, _
-'                                    mFileMgr)
+    'InitializeDomain
+
+    InitializeUI
 
     LogInfo MODULE_NAME, "[Class_Initialize] inicialización completada"
     
@@ -142,7 +99,84 @@ ErrHandler:
     Err.Raise Err.Number, MODULE_NAME & "[Class_Initialize]", _
               "Error inicializando aplicación: " & Err.Description
 End Sub
+Private Sub InitializeInfrastructure()
+    On Error GoTo ErrHandler
+    ' INFRAESTRUCTURA
+    Set mCtxMgr = New clsExecutionContextMgr
+    ' ESTADO CENTRALIZADO - Inyectar referencias a subestados (Dependency Injection)
+    mApplicationState.Initialize CtxState:=mCtxMgr.State
+    
+    ' FIXME: Es mejor UNIFICAR, o HACER COMPOSICION, de clsChartMgr, dentro de clsExecutionContext (ChartMgr PERTENECE al exec context,
+    ' mas que depender de él; actualmente parece que la relación está invertida, está asi para minimizar los cambios al resto del codigo...)
+    Set mChartManager = New clsChartMgr
+    mChartManager.Initialize mCtxMgr.State
+    ' ESTADO CENTRALIZADO - Inyectar referencias a subestados (Dependency Injection)
+    mApplicationState.Initialize ChartState:=mChartManager.State
 
+    Set mFileMgr = New clsFileManager
+    mFileMgr.Init mCtxMgr.Application.Workbooks
+    ' ESTADO CENTRALIZADO - Inyectar referencias a subestados (Dependency Injection)
+    mApplicationState.Initialize FileState:=mFileMgr.State
+
+    ' GESTOR DE EVENTOS DE INFRAESTRUCTURA
+    Set mEvMediatorInfrastructure = New clsEventsMediatorInfrastructure
+    Call mEvMediatorInfrastructure.Initialize(mFileMgr, mChartManager, mCtxMgr)
+    
+    Exit Sub
+ErrHandler:
+    LogCurrentError MODULE_NAME, "[InitializeInfrastructure]"
+    Err.Raise Err.Number, MODULE_NAME & "[InitializeInfrastructure]", _
+              Err.Description
+End Sub
+Private Sub InitializeDomain()
+    On Error GoTo ErrHandler
+    ' CONFIGURACION (servicio de infraestructura)
+    Set mConfiguration = New clsConfiguration
+
+    ' SERVICIOS DE MONITOREO
+    Set mFSMonitoringCoord = New clsFSMonitoringCoord
+    mFSMonitoringCoord.IniciarMonitoreo mConfiguration.oDicFoldersToWatch
+
+    ' PROVIDER DE OPORTUNIDADES (infraestructura)
+    Set mOpportunityProvider = New FileSystemOpportunityProvider
+    mOpportunityProvider.Initialize mFileMgr, mConfiguration
+
+    ' DOMINIO - Crear managers (ellos crean sus estados internamente)
+    Set mOpportunities = New clsOpportunitiesMgr
+    mOpportunities.Initialize mOpportunityProvider
+    ' ESTADO CENTRALIZADO - Inyectar referencias a subestados (Dependency Injection)
+    mApplicationState.Initialize OpportunityState:=mOpportunities.State
+
+    ' MEDIADOR DE EVENTOS DE DOMINIO
+    ' Escucha eventos SEMANTICOS del mediador de infraestructura (no directamente de mCtxMgr)
+    Set mEvMediatorDomain = New clsEventsMediatorDomain
+    Call mEvMediatorDomain.Initialize(mCtxMgr.State, _
+                                    mEvMediatorInfrastructure, _
+                                    mFSMonitoringCoord, _
+                                    mOpportunities, _
+                                    mFileMgr)
+    Exit Sub
+ErrHandler:
+    LogCurrentError MODULE_NAME, "[InitializeDomain]"
+    Err.Raise Err.Number, MODULE_NAME & "[InitializeDomain]", _
+              Err.Description
+End Sub
+Private Sub InitializeUI()
+    On Error GoTo ErrHandler
+    ' INTERFAZ - Crear Ribbon (crea RibbonState internamente)
+    Set mEventDispatcher = New clsEventDispatcher
+    
+    Set mRibbon = New clsRibbon
+    mRibbon.Initialize mOpportunities, mFileMgr, mChartManager, mCtxMgr
+    ' ESTADO CENTRALIZADO - Inyectar referencias a subestados (Dependency Injection)
+    mApplicationState.Initialize RibbonState:=mRibbon.State
+
+    Exit Sub
+ErrHandler:
+    LogCurrentError MODULE_NAME, "[InitializeUI]"
+    Err.Raise Err.Number, MODULE_NAME & "[InitializeUI]", _
+              Err.Description
+End Sub
 ' -------------------------------------------------------------
 ' Class_Terminate: limpieza
 ' -------------------------------------------------------------
@@ -159,48 +193,57 @@ Private Sub Class_Terminate()
     '                       -> OpportunityProvider -> EvMediatorInfrastructure -> FSMonitoringCoord
     '                       -> Configuration -> FileMgr -> EventDispatcher -> ChartMgr -> CtxMgr
 
+    DisposeUI
+    
+    DisposeDomain
+    
+    DisposeInfrastructure
+
+    ' 12. Liberar estado centralizado de aplicacion
+    Set mApplicationState = Nothing
+
+    LogInfo MODULE_NAME, "[Terminate] Limpieza completada"
+End Sub
+Private Sub DisposeInfrastructure()
+    ' Liberar mediador de eventos de infraestructura
+    Set mEvMediatorInfrastructure = Nothing
+
+    ' Liberar gestor de archivos
+    Set mFileMgr = Nothing
+
+    ' Liberar gestor de graficos
+    Set mChartManager = Nothing
+
+    ' Liberar contexto de ejecucion (primero en instanciarse, ultimo en liberarse)
+    Set mCtxMgr = Nothing
+End Sub
+Private Sub DisposeDomain()
     ' 1. Liberar mediador de eventos de dominio (ultimo en instanciarse)
     Set mEvMediatorDomain = Nothing
 
-    ' 2. Liberar estado centralizado de aplicacion
-    Set mApplicationState = Nothing
-
-    ' 3. Liberar Ribbon (con apagado explicito de eventos)
-    If Not mRibbon Is Nothing Then
-        mRibbon.StopEvents
-        Set mRibbon = Nothing
-    End If
-
-    ' 4. Liberar gestor de oportunidades
+    ' 3. Liberar gestor de oportunidades
     Set mOpportunities = Nothing
 
-    ' 5. Liberar proveedor de oportunidades
+    ' 4. Liberar proveedor de oportunidades
     Set mOpportunityProvider = Nothing
 
-    ' 6. Apagado explícito del monitor de archivos
+    ' 5. Apagado explícito del monitor de archivos
     If Not mFSMonitoringCoord Is Nothing Then
         mFSMonitoringCoord.Shutdown
         Set mFSMonitoringCoord = Nothing
     End If
 
-    ' 7. Liberar configuracion
+    ' 6. Liberar configuracion
     Set mConfiguration = Nothing
+End Sub
+Private Sub DisposeUI()
+    ' Liberar Ribbon (con apagado explicito de eventos)
+    If Not mRibbon Is Nothing Then
+        mRibbon.StopEvents
+        Set mRibbon = Nothing
+    End If
 
-    ' 8. Liberar mediador de eventos de infraestructura
-    Set mEvMediatorInfrastructure = Nothing
-
-    ' 9. Liberar gestor de archivos
-    Set mFileMgr = Nothing
-
-    ' 10. Liberar dispatcher de eventos
+    ' Liberar dispatcher de eventos
     Set mEventDispatcher = Nothing
-
-    ' 11. Liberar gestor de graficos
-    Set mChartManager = Nothing
-
-    ' 12. Liberar contexto de ejecucion (primero en instanciarse, ultimo en liberarse)
-    Set mCtxMgr = Nothing
-
-    LogInfo MODULE_NAME, "[Terminate] Limpieza completada"
 End Sub
 

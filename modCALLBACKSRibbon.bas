@@ -4,7 +4,7 @@ Attribute VB_Name = "modCALLBACKSRibbon"
 'FIXME: DETECCIÓN Y RECUPERACIÓN DE OBJETOS RIBBON; en ocasiones el ribbon se pierde. Es necesario revisar que lo causa
 '  Creo que casi siempre tiene que ver con que se desactive el XLAM, o se suspende la ejecución de VBA mediante STOP
 
-'@Folder "3-UI.Excel.Ribbon"
+'@Folder "4-UI.Excel.Ribbon"
 '@IgnoreModule ProcedureNotUsed
 Option Private Module
 Option Explicit
@@ -420,6 +420,7 @@ End Sub
 ' ==========================================
 ' CALLBACKS GetEnabled (habilitar/deshabilitar controles)
 ' ==========================================
+
 ' Habilita el botón de gráfico si el fichero es válido y cumple condiciones internas
 Public Sub GetGraficoEnabled(control As IRibbonControl, ByRef enabled)
 Attribute GetGraficoEnabled.VB_ProcData.VB_Invoke_Func = " \n0"
@@ -546,6 +547,7 @@ Attribute GetTabABCVisible.VB_ProcData.VB_Invoke_Func = " \n0"
         Exit Sub
     End If
     On Error GoTo ErrHandler
+    LogDebug MODULE_NAME, "[GetTabABCVisible] comprobando visibilidad Ribbon"
     Visible = App.ribbon.IsTabVisible()
     Exit Sub
 
@@ -554,6 +556,17 @@ ErrHandler:
     LogCurrentError MODULE_NAME, "[GetTabABCVisible]"
     Err.Raise Err.Number, MODULE_NAME & "[GetTabABCVisible]", _
               "Error determinando la visibilidad del ribbon: " & Err.Description
+End Sub
+Public Sub GetOpGrpEnabled(control As IRibbonControl, ByRef Visible)
+    On Error GoTo ErrHandler
+    Visible = App.ribbon.IsOpportunityMgrEnabled
+    Exit Sub
+
+ErrHandler:
+    Visible = False
+    LogCurrentError MODULE_NAME, "[GetOpGrpEnabled]"
+    Err.Raise Err.Number, MODULE_NAME & "[GetOpGrpEnabled]", _
+              "Error determinando la visibilidad del grupo de gestion de oportunidad actual: " & Err.Description
 End Sub
 
 Public Sub GetGrpDeveloperAdminVisible(control As IRibbonControl, ByRef Visible)
@@ -565,4 +578,6 @@ Attribute GetGrpDeveloperAdminVisible.VB_ProcData.VB_Invoke_Func = " \n0"
 ErrHandler:
     Visible = False
     LogCurrentError MODULE_NAME, "[GetGrpDeveloperAdminVisible]"
+    Err.Raise Err.Number, MODULE_NAME & "[GetOpGrpEnabled]", _
+              "Error determinando la visibilidad del grupo de Administración: " & Err.Description
 End Sub

@@ -7,7 +7,7 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
-'@Folder "2-Infraestructura"
+'@Folder "2-Infraestructura.2-Mediadores"
 '@ModuleDescription "Gestor centralizado de eventos (orquestador)"
 Option Explicit
 
@@ -29,7 +29,7 @@ Public Event InfraContextReinitialized()
 '@Description: El archivo activo ha cambiado (traduccion de ActiveFileChanged)
 '@Param filePath: Ruta del archivo activo (vacio si ninguno)
 '@Param isOpportunityFile: True si el archivo es de una oportunidad
-Public Event ActiveFileSessionChanged(ByVal filePath As String, ByVal isOpportunityFile As Boolean)
+Public Event ActiveFileSessionChanged(ByVal FilePath As String, ByVal isOpportunityFile As Boolean)
 
 ' ==================================================================
 ' REFERENCIAS INTERNAS
@@ -102,9 +102,11 @@ Private Sub mCtxMgr_WorkbookActivated(ByVal Wb As Workbook)
 
     ' Actualizar el archivo activo en FileManager
     ' Esto dispara ActiveFileChanged -> sincroniza estado del ribbon
-    Dim f As clsFileXLS
-    Set f = mFileMgr.GetOrTrackWorkbook(Wb)
-    mFileMgr.SetActiveFile f
+    If Not mFileMgr Is Nothing Then
+        Dim f As clsFileXLS
+        Set f = mFileMgr.GetOrTrackWorkbook(Wb)
+        mFileMgr.SetActiveFile f
+    End If
 
     mChartManager.RefreshCurrentSheet
 End Sub
@@ -146,13 +148,19 @@ End Sub
 '@Description: Callback cuando se abre un workbook
 Private Sub mCtxMgr_WorkbookOpened(ByVal Wb As Workbook)
     LogDebug MODULE_NAME, "[mCtx_WorkbookOpened] " & Wb.Name
-    mFileMgr.GetOrTrackWorkbook Wb
+    ' TODO: asegurarse de que aquí NO HACE FALTA indexar el fichero en clsFileManager, porque YA SE HACE
+    ' EN mCtxMgr_WorkbookActivated
+'    If Not mFileMgr Is Nothing Then
+'        mFileMgr.GetOrTrackWorkbook Wb
+'    End If
 End Sub
 
 '@Description: Callback cuando se cierra un workbook
 Private Sub mCtxMgr_WorkbookBeforeClose(ByVal Wb As Workbook, Cancel As Boolean)
     LogDebug MODULE_NAME, "[mCtx_WorkbookBeforeClose] " & Wb.Name
-    mFileMgr.UntrackWorkbook Wb
+    If Not mFileMgr Is Nothing Then
+        mFileMgr.UntrackWorkbook Wb
+    End If
 End Sub
 
 ' -------------------------------------------------------------
@@ -207,24 +215,25 @@ End Sub
 ' -------------------------------------------------------------
 
 '@Description: Traduce el evento tecnico ActiveFileChanged a evento semantico
+' FIXME: este evento se esta capturando DOS VECES!!, aqui, y en clsRibbon!!!
 Private Sub mFileMgr_ActiveFileChanged(f As clsFileXLS)
     On Error GoTo ErrHandler
 
-    Dim filePath As String
+    Dim FilePath As String
     Dim isOpp As Boolean
 
     If f Is Nothing Then
-        filePath = ""
+        FilePath = ""
         isOpp = False
     Else
-        filePath = f.Path
+        FilePath = f.Path
         isOpp = mFileMgr.State.isOpportunityFile
     End If
 
-    LogDebug MODULE_NAME, "[mFileMgr_ActiveFileChanged] -> ActiveFileSessionChanged: " & filePath
+    LogDebug MODULE_NAME, "[mFileMgr_ActiveFileChanged] -> ActiveFileSessionChanged: " & FilePath
 
     ' Emitir evento semantico (sin referencias a clsFileXLS)
-    RaiseEvent ActiveFileSessionChanged(filePath, isOpp)
+    RaiseEvent ActiveFileSessionChanged(FilePath, isOpp)
 
     Exit Sub
 ErrHandler:
