@@ -70,7 +70,9 @@ Private Sub Class_Initialize()
     LogInfo MODULE_NAME, "[Class_Initialize]"
     
     Set mStateRibbon = New clsRibbonState
-    mStateRibbon.Modo = Ribbon_OpportunityOnly
+    ' Modo inicial: Ribbon_User (seguro, sin dependencias).
+    ' Ribbon_OpportunityOnly solo se permite cuando mOpportunities y mFileMgr esten inyectados.
+    mStateRibbon.Modo = Ribbon_User
     
     mWasEverInitialized = False
     mIsRecovering = False
@@ -122,15 +124,26 @@ Public Sub ToggleModo()
     ' Logica de toggle movida desde clsRibbonState (el Mgr decide, no el State)
     Select Case mStateRibbon.Modo
     Case Ribbon_OpportunityOnly
+        ' Si de algun modo llegamos aqui sin soporte, salir a User
         mStateRibbon.Modo = Ribbon_User
     Case Ribbon_User
         mStateRibbon.Modo = Ribbon_Hidden
     Case Ribbon_Hidden
         mStateRibbon.Modo = Ribbon_Admin
     Case Ribbon_Admin
-        mStateRibbon.Modo = Ribbon_OpportunityOnly
+        ' Solo pasar a OpportunityOnly si las dependencias de dominio estan disponibles
+        If IsOpportunityModeSupported() Then
+            mStateRibbon.Modo = Ribbon_OpportunityOnly
+        Else
+            mStateRibbon.Modo = Ribbon_User
+        End If
     Case Else
-        mStateRibbon.Modo = Ribbon_OpportunityOnly
+        ' Fallback seguro: nunca aterrizar en OpportunityOnly sin soporte
+        If IsOpportunityModeSupported() Then
+            mStateRibbon.Modo = Ribbon_OpportunityOnly
+        Else
+            mStateRibbon.Modo = Ribbon_User
+        End If
     End Select
 
     ' Guardar el nuevo estado de vuelta al libro activo
@@ -154,7 +167,7 @@ Public Sub ToggleModo()
     End If
 End Sub
 
-'@Description: Activa una pestaña del Ribbon por id
+'@Description: Activa una pestaï¿½a del Ribbon por id
 '@Scope: Friend (uso exclusivo desde clsApplication)
 '@ArgumentDescriptions: tabId | id del tab a activar
 '@Category: UI / Ribbon
@@ -237,6 +250,13 @@ ErrHandler:
     LogError MODULE_NAME, "[InvalidarControl] Error en control " & idControl, , Err.Description
 End Sub
 
+'@Description: Indica si el modo Ribbon_OpportunityOnly esta soportado.
+'              Solo es posible cuando las dependencias de dominio (mOpportunities, mFileMgr)
+'              han sido inyectadas. Si alguna es Nothing, el modo no tiene sentido.
+Private Function IsOpportunityModeSupported() As Boolean
+    IsOpportunityModeSupported = Not (mOpportunities Is Nothing) And Not (mFileMgr Is Nothing)
+End Function
+
 '@Description: Verifica si el objeto ribbonUI esta disponible y funcional
 Private Function IsRibbonUIAvailable() As Boolean
     If mribbonUI Is Nothing Then IsRibbonUIAvailable = False: Exit Function
@@ -261,7 +281,7 @@ Private Function TryAutoRecover() As Boolean
     mIsRecovering = True
     LogInfo MODULE_NAME, "[TryAutoRecover] Iniciando"
 
-    ' PRIMERO: Intentar recuperación con CopyMemory (más rápido y menos invasivo)
+    ' PRIMERO: Intentar recuperaciï¿½n con CopyMemory (mï¿½s rï¿½pido y menos invasivo)
     Dim recoveredRibbon As IRibbonUI
     Set recoveredRibbon = GetRibbonFromMemory()
 
@@ -274,7 +294,7 @@ Private Function TryAutoRecover() As Boolean
     End If
 
     ' SEGUNDO: Si CopyMemory falla, usar el modulo de recuperacion tradicional
-    LogWarning MODULE_NAME, "[TryAutoRecover] CopyMemory fallido, intentando recuperación tradicional..."
+    LogWarning MODULE_NAME, "[TryAutoRecover] CopyMemory fallido, intentando recuperaciï¿½n tradicional..."
     TryAutoRecover = TryRecoverRibbon()
 
     mIsRecovering = False
@@ -304,9 +324,16 @@ Public Function IsTabVisible() As Boolean
     Case Ribbon_User
         IsTabVisible = True
     Case Ribbon_OpportunityOnly
-        ' En este modo: visible solo si hay archivo de oportunidad activo.
-        ' La UI puede consultar estado de la aplicacion (conoce al mundo).
-        IsTabVisible = App().AppState.IsOpportunityFileActive()
+        ' Este modo solo es valido si las dependencias de dominio estan disponibles.
+        ' Si no lo estan (p.ej. durante inicializacion progresiva), el modo no debe
+        ' haberse alcanzado, pero lo tratamos defensivamente devolviendo False.
+        If Not IsOpportunityModeSupported() Then
+            IsTabVisible = False
+        ElseIf App().AppState Is Nothing Then
+            IsTabVisible = False
+        Else
+            IsTabVisible = App().AppState.IsOpportunityFileActive()
+        End If
     Case Else
         IsTabVisible = False
     End Select
@@ -382,11 +409,11 @@ Private Sub mChartMgr_ChartDeactivated(cht As Chart)
 End Sub
 
 Private Sub mCtxMgr_WorkbookActivated(ByVal Wb As Workbook)
-    ' CRÍTICO: Invalidar TODO el ribbon al cambiar de libro
+    ' CRï¿½TICO: Invalidar TODO el ribbon al cambiar de libro
     ' Esto es necesario para:
-    ' 1. Re-evaluar la visibilidad de controles según el libro activo
+    ' 1. Re-evaluar la visibilidad de controles segï¿½n el libro activo
     ' 2. Sincronizar el estado del ribbon con el libro (cada libro puede tener su propio modo)
-    ' 3. Refrescar callbacks getVisible cuando hay múltiples libros abiertos
+    ' 3. Refrescar callbacks getVisible cuando hay mï¿½ltiples libros abiertos
     LogDebug MODULE_NAME, "[mCtxMgr_WorkbookActivated] Invalidando ribbon para libro: " & Wb.Name
     InvalidarRibbon
 End Sub
