@@ -6,28 +6,77 @@ Option Private Module
 ' Funciones publicas para gestion de la aplicacion y Ribbon
 ' ==========================================
 
-'@Folder "1-Inicio e Instalacion.Ciclo de vida"
+'@Folder "1-Aplicacion.3-Ciclo de vida"
 Option Explicit
 
 Private Const MODULE_NAME As String = "modMACROAppLifecycle"
 
+' RECUPERACION DE LA APLICACION
+Private mInitCounter As Long       ' Contador de inicializaciones (persistente en sesion)
+Private mLastInitTime As Double    ' Timestamp de ultima inicializacion
+
 ' ==========================================
-' DETECCION DE RESET VBA
+' ACCESO A LA APLICACION
 ' ==========================================
+
+Public Function App() As clsApplication
+    Set App = ThisWorkbook.App
+End Function
+
+' ================================================
+' RECUPERACION DE LA APLICACION
+' DETECCION DE RESET Y CONTROL INICIALIZACIONES
+' ================================================
 ' Cuando VBA se resetea (error fatal, End en depuracion, etc.),
 ' todas las variables de modulo se reinicializan a 0/Nothing.
 ' Usamos una variable Static dentro de una funcion para detectar esto.
-' ==========================================
+' ================================================
 
-Private mInitCounter As Long       ' Contador de inicializaciones (persistente en sesion)
-Private mLastInitTime As Double    ' Timestamp de ultima inicializacion
+'@Description: Fuerza el reinicio completo de la aplicacion
+Public Sub ReiniciarAplicacion()
+    Dim result As TDRESULT
+
+    result = ShowTaskDialogYesNo("Reiniciar Aplicación", _
+                                 "¿Reiniciar el complemento ABC?", _
+                                 "Se cerrará y volverá a inicializar la aplicación.")
+
+    If result <> vbYes Then Exit Sub
+
+    LogInfo MODULE_NAME, "[ReiniciarAplicacion] Reinicio solicitado por usuario"
+
+    On Error Resume Next
+
+    ' Terminar aplicacion actual
+    ThisWorkbook.TerminateApp
+
+    ' Reinicializar
+    DoEvents
+    Application.Wait Now + TimeSerial(0, 0, 1)
+    DoEvents
+
+    ' Forzar reinicio llamando a App()
+    Dim dummy As clsApplication
+    Set dummy = App()
+
+    On Error GoTo 0
+
+    ' Verificar estado
+    If IsRibbonAvailable() Then
+        ShowTaskDialogError "Reinicio Exitoso", _
+                            "Aplicación reiniciada correctamente", _
+                            App.ribbon.GetQuickDiagnostics()
+    Else
+        ShowTaskDialogError "Reinicio Parcial", _
+                            "Aplicación reiniciada con advertencias", _
+                            "El Ribbon puede requerir atención adicional. Ejecute 'RecuperarRibbon' si es necesario."
+    End If
+End Sub
 
 '@Description: Detecta si ocurrio un reset de VBA desde la ultima llamada
 '@Returns: True si es la primera llamada tras un reset (contador > 1)
 '@Note: Esta funcion usa una variable Static que sobrevive entre llamadas
 '       pero se reinicia si VBA hace reset. El patron detecta ese reset.
 Public Function DetectVBAResetOccurred() As Boolean
-Attribute DetectVBAResetOccurred.VB_ProcData.VB_Invoke_Func = " \n0"
     Static sInitFlag As Boolean
 
     If Not sInitFlag Then
@@ -61,56 +110,6 @@ End Property
 Public Property Get LastInitializationTime() As Double
     LastInitializationTime = mLastInitTime
 End Property
-
-' ==========================================
-' ACCESO A LA APLICACION
-' ==========================================
-
-Public Function App() As clsApplication
-Attribute App.VB_ProcData.VB_Invoke_Func = " \n0"
-    Set App = ThisWorkbook.App
-End Function
-
-'@Description: Fuerza el reinicio completo de la aplicacion
-Public Sub ReiniciarAplicacion()
-Attribute ReiniciarAplicacion.VB_ProcData.VB_Invoke_Func = " \n0"
-    Dim result As VbMsgBoxResult
-
-    result = MsgBox("Esto reiniciara completamente el complemento ABC." & vbCrLf & vbCrLf & _
-                    "Se cerrara y volvera a inicializar la aplicacion." & vbCrLf & _
-                    "¿Desea continuar?", _
-                    vbQuestion + vbYesNo, "Reiniciar Aplicacion")
-
-    If result <> vbYes Then Exit Sub
-
-    LogInfo MODULE_NAME, "[ReiniciarAplicacion] Reinicio solicitado por usuario"
-
-    On Error Resume Next
-
-    ' Terminar aplicacion actual
-    ThisWorkbook.TerminateApp
-
-    ' Reinicializar
-    DoEvents
-    Application.Wait Now + TimeSerial(0, 0, 1)
-    DoEvents
-
-    ' Forzar reinicio llamando a App()
-    Dim dummy As clsApplication
-    Set dummy = App()
-
-    On Error GoTo 0
-
-    ' Verificar estado
-    If IsRibbonAvailable() Then
-        MsgBox "Aplicación reiniciada correctamente." & vbCrLf & vbCrLf & _
-               App.ribbon.GetQuickDiagnostics(), vbInformation, "Reinicio Exitoso"
-    Else
-        MsgBox "Aplicación reiniciada, pero el Ribbon puede requerir atención adicional." & vbCrLf & _
-               "Ejecute 'RecuperarRibbon' si es necesario.", _
-               vbExclamation, "Reinicio Parcial"
-    End If
-End Sub
 
 ' ==========================================
 ' GESTION DEL COMPLEMENTO XLAM
@@ -160,13 +159,17 @@ End Sub
 Public Sub ToggleRibbonTab()
 Attribute ToggleRibbonTab.VB_ProcData.VB_Invoke_Func = " \n0"
     On Error GoTo ErrHandler
-
+    If App.ribbon Is Nothing Then
+        LogDebug MODULE_NAME, "[ToggleRibbonTab] Ribbon no disponible"
+        Exit Sub
+    End If
     App.ribbon.ToggleModo
 
     Exit Sub
 ErrHandler:
-    LogError MODULE_NAME, "[ToggleRibbonTab] Error", Err.Number, Err.Description
-    MsgBox "Error al cambiar modo del Ribbon: " & Err.Description, vbExclamation
+    LogCurrentError MODULE_NAME, "[ToggleRibbonTab]"
+    Err.Raise Err.Number, MODULE_NAME & "[ToggleRibbonTab]", _
+              "Error cambiando el modo del ribbon: " & Err.Description
 End Sub
 
 '@Description: Macro publica para recuperar el Ribbon manualmente
@@ -174,38 +177,35 @@ End Sub
 '@Category: Ribbon / Recuperacion
 Public Sub RecuperarRibbon()
 Attribute RecuperarRibbon.VB_ProcData.VB_Invoke_Func = " \n0"
-    Dim result As VbMsgBoxResult
+    Dim result As TDRESULT
 
     LogInfo MODULE_NAME, "[RecuperarRibbon] Solicitado por usuario"
     LogDebug MODULE_NAME, "[RecuperarRibbon] Diagnosticos: " & GetRibbonDiagnostics()
 
     ' Si ya esta disponible, no hacer nada
     If IsRibbonAvailable() Then
-        MsgBox "El Ribbon ya esta funcionando correctamente.", vbInformation, "Ribbon OK"
+        ShowTaskDialogError "Ribbon OK", "Estado correcto", "El Ribbon ya está funcionando correctamente."
         Exit Sub
     End If
 
     ' Confirmar con el usuario
-    result = MsgBox("El Ribbon no esta disponible." & vbCrLf & vbCrLf & _
-                    "Se intentara recuperar. Esto puede requerir" & vbCrLf & _
-                    "recargar el complemento temporalmente." & vbCrLf & vbCrLf & _
-                    "Consulte el log: " & GetLogFilePath() & vbCrLf & vbCrLf & _
-                    "Desea continuar?", _
-                    vbQuestion + vbYesNo, "Recuperar Ribbon")
+    result = ShowTaskDialogYesNo("Recuperar Ribbon", _
+                                 "El Ribbon no está disponible", _
+                                 "Se intentará recuperar. Esto puede requerir recargar el complemento temporalmente. ¿Desea continuar?")
 
     If result <> vbYes Then Exit Sub
 
     ' Intentar recuperacion
     If TryRecoverRibbon() Then
-        MsgBox "Ribbon recuperado exitosamente." & vbCrLf & vbCrLf & _
-               App.ribbon.GetQuickDiagnostics(), vbInformation, "Recuperacion Exitosa"
+        ShowTaskDialogError "Recuperación Exitosa", _
+                            "Ribbon recuperado", _
+                            App.ribbon.GetQuickDiagnostics()
     Else
-        MsgBox "No se pudo recuperar el Ribbon automaticamente." & vbCrLf & vbCrLf & _
-               "Recomendaciones:" & vbCrLf & _
-               "1. Cierre Excel completamente" & vbCrLf & _
-               "2. Vuelva a abrir Excel" & vbCrLf & vbCrLf & _
-               "Consulte el log: " & GetLogFilePath(), _
-               vbExclamation, "Recuperacion Fallida"
+        ShowTaskDialogError "Recuperación Fallida", _
+                            "No se pudo recuperar automáticamente", _
+                            "Recomendaciones:" & vbCrLf & _
+                            "1. Cierre Excel completamente" & vbCrLf & _
+                            "2. Vuelva a abrir Excel"
     End If
 End Sub
 
@@ -213,7 +213,7 @@ End Sub
 Public Sub MostrarDiagnosticoRibbon()
 Attribute MostrarDiagnosticoRibbon.VB_ProcData.VB_Invoke_Func = " \n0"
     LogInfo MODULE_NAME, "MostrarDiagnosticoRibbon - Solicitado"
-    MsgBox GetRibbonDiagnostics(), vbInformation, "Diagnostico del Ribbon"
+    ShowTaskDialogError "Diagnóstico del Ribbon", "Estado actual del  ribbon", GetRibbonDiagnostics()
 End Sub
 
 ' ------------------------------------------
@@ -226,7 +226,7 @@ Public Function GetRibbonDiagnostics() As String
 Attribute GetRibbonDiagnostics.VB_ProcData.VB_Invoke_Func = " \n0"
     Dim info As String
 
-    info = "=== DIAGNOSTICO DEL RIBBON ===" & vbCrLf
+    'info = "=== DIAGNOSTICO DEL RIBBON ===" & vbCrLf
     info = info & "Fecha/Hora: " & Now & vbCrLf
     info = info & "Log Path: " & GetLogFilePath() & vbCrLf
     info = info & vbCrLf

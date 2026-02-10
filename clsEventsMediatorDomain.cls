@@ -7,7 +7,7 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
-'@Folder "5-Aplicac (Coord)"
+'@Folder "3-Dominio.2-2-Mediadores"
 '@ModuleDescription "Gestor de eventos (mediador entre nivel de infraestructura y de dominio)"
 Option Explicit
 
@@ -23,7 +23,7 @@ Private Const MODULE_NAME As String = "clsEventsMediatorDomain"
 '
 ' NO escucha directamente a clases de infraestructura pura (mCtxMgr, mFileMgr)
 
-Private WithEvents mInfraMediador As clsEventsMgrInfrastructure
+Private WithEvents mInfraMediador As clsEventsMediatorInfrastructure
 Attribute mInfraMediador.VB_VarHelpID = -1
 
 Private WithEvents mFSMonitoringCoord As clsFSMonitoringCoord
@@ -49,7 +49,7 @@ End Sub
 
 'TODO: faltaria crear clases para otras funciones que estan en macros, y pasarlas como parametros...
 Public Sub Initialize(oCtxState As clsExecutionContextState, _
-                oInfraMediador As clsEventsMgrInfrastructure, _
+                oInfraMediador As clsEventsMediatorInfrastructure, _
                 oFSMonitoringCoord As clsFSMonitoringCoord, _
                 oOpportunities As clsOpportunitiesMgr, _
                 oFileMgr As clsFileManager)
@@ -101,23 +101,24 @@ End Sub
 ' -------------------------------------------------------------
 ' Evento: cambios detectados en oportunidades (desde OpportunitiesMgr)
 ' -------------------------------------------------------------
-Private Sub mOpportunities_OpportunityCollectionUpdate(ByVal cambios As String)
-    LogInfo MODULE_NAME, "[callback: clsOpportunitiesMgr OpportunityCollectionUpdate] cambios detectados: " & cambios
+Private Sub mOpportunities_OpportunityCollectionUpdated(ByVal reason As String)
+    LogInfo MODULE_NAME, "[callback: clsOpportunitiesMgr OpportunityCollectionUpdated] razon: " & reason
 End Sub
+
 'TODO: VIOLACION ARQUITECTONICA - El mediador de dominio no deberia usar clsFileXLS directamente.
 '      Esta logica de "mover archivo a carpeta de oportunidad" deberia:
 '      1. Delegarse a un servicio de infraestructura (FileLocationService?), o
 '      2. El mediador de infraestructura deberia exponer un evento/metodo semantico
 '      Pendiente de decision cuando se tenga la especificacion de dominio.
-Private Sub mOpportunities_currOpportunityChanged(ByVal Index As Long, ByVal Path As String)
-    LogInfo MODULE_NAME, "[callback: clsOpportunitiesMgr currOpportunityChanged] Oportunidad seleccionada: " & Path
+Private Sub mOpportunities_CurrentOpportunityChanged(ByVal opportunityName As String, ByVal opportunityPath As String)
+    LogInfo MODULE_NAME, "[callback: clsOpportunitiesMgr CurrentOpportunityChanged] Oportunidad seleccionada: " & opportunityPath
 
     ' TEMPORAL: Uso directo de clsFileXLS (ver TODO arriba)
     Dim f As clsFileXLS
     Set f = mFileMgr.GetOrTrackWorkbook(mCtxState.Workbook)
     If Not f Is Nothing Then
-        If f.DebeMoverseAOp(Path, mOpportunities.BaseFolder) Then
-            f.MoverAOp Path, mOpportunities.BaseFolder
+        If f.DebeMoverseAOp(opportunityPath, mOpportunities.BaseFolder) Then
+            f.MoverAOp opportunityPath, mOpportunities.BaseFolder
         End If
     End If
 End Sub
@@ -129,18 +130,18 @@ End Sub
 ' -------------------------------------------------------------
 
 '@Description: Evento semantico: el archivo activo ha cambiado
-Private Sub mInfraMediador_ActiveFileSessionChanged(ByVal filePath As String, ByVal isOpportunityFile As Boolean)
+Private Sub mInfraMediador_ActiveFileSessionChanged(ByVal FilePath As String, ByVal isOpportunityFile As Boolean)
     Dim fileName As String
-    If Len(filePath) = 0 Then
+    If Len(FilePath) = 0 Then
         fileName = "(ninguno)"
     Else
         ' Extraer solo el nombre del archivo del path
         Dim pos As Long
-        pos = InStrRev(filePath, "\")
+        pos = InStrRev(FilePath, "\")
         If pos > 0 Then
-            fileName = Mid$(filePath, pos + 1)
+            fileName = Mid$(FilePath, pos + 1)
         Else
-            fileName = filePath
+            fileName = FilePath
         End If
     End If
 
@@ -204,7 +205,7 @@ Private Sub mFSMonitoringCoord_MonitoringError(ByVal folder As String, ByVal err
 End Sub
 
 Private Sub mFSMonitoringCoord_MonitoringReconnected(ByVal folder As String, ByVal attempts As Long)
-    LogInfo MODULE_NAME, "[mFSMonitoringCoord_MonitoringReconnected] " & folder & " tras " & attempts & " intentos"
+    LogDebug MODULE_NAME, "[mFSMonitoringCoord_MonitoringReconnected] " & folder & " tras " & attempts & " intentos"
 End Sub
 
 Private Sub mFSMonitoringCoord_MonitoringFailed(ByVal folder As String, ByVal reason As String)
@@ -237,7 +238,7 @@ Private Sub mInfraMediador_InfraContextReinitialized()
 
     ' Refrescar coleccion de oportunidades por si hubo cambios durante el reset
     If Not mOpportunities Is Nothing Then
-        mOpportunities.actualizarColeccionOportunidades
+        mOpportunities.RefreshOpportunities
     End If
 
     Exit Sub

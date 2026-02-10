@@ -7,7 +7,7 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
-'@Folder "5-Aplicac (Coord)"
+'@Folder "2-Infraestructura.4-Servicios.FSWatcher"
 Option Explicit
 
 Private Const MODULE_NAME As String = "clsFSMonitoringCoord"
@@ -22,6 +22,7 @@ Private m_rutaGasVBNet As String
 
 ' Estado de pausa del monitoreo
 Private m_IsPaused As Boolean
+Private mDisposed As Boolean ' Flag para limpieza explícita
 
 ' -------------------------------------------------------------
 ' EVENTOS PUBLICOS - clsApplication los escucha y delega
@@ -91,13 +92,29 @@ End Sub
 
 Private Sub Class_Initialize()
     Set mFolderWatcher = New clsFSWatcher
+    mDisposed = False
 End Sub
 
 Private Sub Class_Terminate()
+    ' Red de seguridad por si Shutdown no fue llamado explícitamente
+    LogInfo MODULE_NAME, "[Terminate] Limpieza de seguridad iniciada"
+    Shutdown
+End Sub
+
+'@Description: Libera explícitamente los recursos del monitor de archivos.
+Public Sub Shutdown()
+    If mDisposed Then Exit Sub
+
+    On Error Resume Next
+    LogInfo MODULE_NAME, "[Shutdown] Liberando FolderWatcher COM explícitamente"
+
     If Not mFolderWatcher Is Nothing Then
-        LogInfo MODULE_NAME, "[Terminate] Liberando FolderWatcher COM"
+        mFolderWatcher.Dispose
         Set mFolderWatcher = Nothing
     End If
+
+    mDisposed = True
+    LogDebug MODULE_NAME, "[Shutdown] Limpieza explícita completada"
 End Sub
 
 ' -------------------------------------------------------------
@@ -282,12 +299,12 @@ End Sub
 Private Sub mFolderWatcher_ErrorOccurred(ByVal folder As String, ByVal errorMessage As String)
     LogError MODULE_NAME, "[ErrorOccurred] ERROR en " & folder & ": " & errorMessage
     RaiseEvent MonitoringError(folder, errorMessage)
-    ' Mostrar al usuario solo errores críticos
+    ' Mostrar al usuario solo errores críticos (sin revelar rutas completas)
     If InStr(1, errorMessage, "Límite", vbTextCompare) > 0 Or _
        InStr(1, errorMessage, "no encontrada", vbTextCompare) > 0 Then
-        MsgBox "Error en monitoreo de carpeta:" & vbCrLf & _
-               folder & vbCrLf & vbCrLf & _
-               errorMessage, vbExclamation, "FolderWatcher"
+        ShowTaskDialogError "Error de Monitoreo", _
+                            "Error en monitoreo de carpeta", _
+                            errorMessage
     End If
 End Sub
 
@@ -305,12 +322,11 @@ Private Sub mFolderWatcher_WatcherReconnectionFailed(ByVal folder As String, ByV
     LogError MODULE_NAME, "[WatcherReconnectionFailed] " & folder & ": " & reason
     RaiseEvent MonitoringFailed(folder, reason)
 
-    ' Notificar al usuario que el monitoreo fallo permanentemente
-    MsgBox "El monitoreo de la carpeta ha fallado permanentemente:" & vbCrLf & _
-           folder & vbCrLf & vbCrLf & _
-           "Razon: " & reason & vbCrLf & vbCrLf & _
-           "Es posible que la carpeta no este accesible o haya problemas de red.", _
-           vbExclamation, "FolderWatcher - Reconexion Fallida"
+    ' Notificar al usuario que el monitoreo fallo permanentemente (sin revelar rutas completas)
+    ShowTaskDialogError "Monitoreo Fallido", _
+                        "El monitoreo de carpetas ha fallado permanentemente", _
+                        "Razón: " & reason & vbCrLf & vbCrLf & _
+                        "Es posible que la carpeta no esté accesible o haya problemas de red."
 End Sub
 
 ' -------------------------------------------------------------
@@ -422,7 +438,7 @@ End Sub
 '@Description: Muestra estadísticas de monitoreo en MessageBox
 Public Sub VerEstadisticasMonitoreo()
     If mFolderWatcher Is Nothing Then
-        MsgBox "FolderWatcher no está activo", vbExclamation
+        ShowTaskDialogError "FolderWatcher", "No disponible", "FolderWatcher no está activo"
         Exit Sub
     End If
     
@@ -433,12 +449,12 @@ Public Sub VerEstadisticasMonitoreo()
     carpetas = mFolderWatcher.CarpetasActivas()
     
     If Not IsArray(carpetas) Then
-        MsgBox "No hay carpetas monitoreadas", vbInformation
+        ShowTaskDialogError "Estadísticas", "Sin datos", "No hay carpetas monitoreadas"
         Exit Sub
     End If
-    
+
     If UBound(carpetas) < LBound(carpetas) Then
-        MsgBox "No hay carpetas monitoreadas", vbInformation
+        ShowTaskDialogError "Estadísticas", "Sin datos", "No hay carpetas monitoreadas"
         Exit Sub
     End If
     
@@ -465,9 +481,9 @@ Public Sub VerEstadisticasMonitoreo()
         End If
     Next i
     
-    MsgBox msg, vbInformation, "Estadísticas FolderWatcher"
+    ShowTaskDialogError "Estadísticas FolderWatcher", "Monitoreo activo", msg
     Exit Sub
-    
+
 ErrHandler:
     LogCurrentError MODULE_NAME, "[VerEstadisticasMonitoreo]"
     Err.Raise Err.Number, MODULE_NAME & " [VerEstadisticasMonitoreo]", Err.Description
@@ -476,7 +492,7 @@ End Sub
 '@Description: Genera hoja de Excel con historial de eventos
 Public Sub VerHistorialMonitoreo(Optional ByVal lastMinutes As Long = 60)
     If mFolderWatcher Is Nothing Then
-        MsgBox "FolderWatcher no está activo", vbExclamation
+        ShowTaskDialogError "FolderWatcher", "No disponible", "FolderWatcher no está activo"
         Exit Sub
     End If
     
@@ -487,12 +503,12 @@ Public Sub VerHistorialMonitoreo(Optional ByVal lastMinutes As Long = 60)
     history = mFolderWatcher.ObtenerHistorial(lastMinutes, "")
     
     If Not IsArray(history) Then
-        MsgBox "No hay eventos en el historial", vbInformation
+        ShowTaskDialogError "Historial", "Sin datos", "No hay eventos en el historial"
         Exit Sub
     End If
-    
+
     If UBound(history, 1) < 0 Then
-        MsgBox "No hay eventos en el historial", vbInformation
+        ShowTaskDialogError "Historial", "Sin datos", "No hay eventos en el historial"
         Exit Sub
     End If
     
@@ -521,9 +537,9 @@ Public Sub VerHistorialMonitoreo(Optional ByVal lastMinutes As Long = 60)
         .Columns("D:D").ColumnWidth = 30
     End With
     
-    MsgBox "Historial generado: " & rowCount & " eventos", vbInformation
+    ShowTaskDialogError "Historial", "Generado correctamente", "Historial generado: " & rowCount & " eventos"
     Exit Sub
-    
+
 ErrHandler:
     LogCurrentError MODULE_NAME, "[VerHistorialMonitoreo]"
     Err.Raise Err.Number, MODULE_NAME & " [VerHistorialMonitoreo]", Err.Description
@@ -532,20 +548,20 @@ End Sub
 '@Description: Limpia el historial de eventos
 Public Sub LimpiarHistorialMonitoreo()
     If mFolderWatcher Is Nothing Then
-        MsgBox "FolderWatcher no está activo", vbExclamation
+        ShowTaskDialogError "FolderWatcher", "No disponible", "FolderWatcher no está activo"
         Exit Sub
     End If
-    
-    If MsgBox("¿Deseas limpiar el historial de eventos?", vbQuestion + vbYesNo) = vbYes Then
+
+    If ShowTaskDialogYesNo("Limpiar historial", "¿Deseas limpiar el historial?", "Se eliminarán todos los eventos registrados.") = vbYes Then
         mFolderWatcher.LimpiarHistorial
-        MsgBox "Historial limpiado", vbInformation
+        ShowTaskDialogError "Historial", "Operación completada", "Historial limpiado correctamente"
     End If
 End Sub
 
 '@Description: Muestra información de configuración del watcher
 Public Sub VerConfiguracionWatcher()
     If mFolderWatcher Is Nothing Then
-        MsgBox "FolderWatcher no está activo", vbExclamation
+        ShowTaskDialogError "FolderWatcher", "No disponible", "FolderWatcher no está activo"
         Exit Sub
     End If
     
@@ -569,7 +585,7 @@ Public Sub VerConfiguracionWatcher()
         msg = msg & "  (ninguna)" & vbCrLf
     End If
     
-    MsgBox msg, vbInformation, "Configuración FolderWatcher"
+    ShowTaskDialogError "Configuración FolderWatcher", "Estado actual", msg
 End Sub
 
 ' =====================================================

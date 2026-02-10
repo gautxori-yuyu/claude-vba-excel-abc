@@ -1,0 +1,63 @@
+@startuml C4_Component_Diagram_Enhanced
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+title Diagrama de Componentes C4 - Arquitectura App Ofertas (Versión Mejorada)
+
+Person(user, "Usuario", "Operador de ofertas de compresores")
+
+System_Boundary(app_boundary, "Aplicación de Ofertas (Add-in Excel)") {
+    Container(app, "Add-in XLAM", "VBA", "Gestiona el ciclo de vida de las ofertas de compresores ABC.")
+    
+    Container_Boundary(ui_layer, "Capa de Presentación") {
+        Component(ribbon, "Ribbon UI", "VBA (clsRibbon)", "Interfaz de usuario principal")
+        Component(forms, "Formularios", "VBA (frm*)", "Interfaces especializadas")
+    }
+    
+    Container_Boundary(domain_layer, "Capa de Dominio") {
+        Component(opportunity_mgr, "Opportunity Manager", "VBA (clsOpportunitiesMgr)", "Gestión de oportunidades")
+        Component(offer_mgr, "Offer Manager", "VBA (clsOferta)", "Gestión de ofertas")
+        Component(compressor_mgr, "Compressor Manager", "VBA (clsCompressor)", "Gestión de compresores")
+        Component(domain_state, "Estado de Dominio", "VBA (...State)", "Modelo de datos del dominio")
+    }
+    
+    Container_Boundary(mediator_layer, "Capa de Coordinación") {
+        Component(domain_mediator, "Mediador de Dominio", "VBA (clsEventsMediatorDomain)", "Coordinación de eventos de dominio")
+        Component(infra_mediator, "Mediador de Infraestructura", "VBA (clsEventsMediatorInfrastructure)", "Traducción de eventos de bajo nivel")
+        Component(dispatcher, "Event Dispatcher", "VBA (clsEventDispatcher)", "Despacho centralizado de eventos")
+    }
+    
+    Container_Boundary(infra_layer, "Capa de Infraestructura") {
+        Component(exec_context, "Contexto de Ejecución", "VBA (clsExecutionContextMgr)", "Abstracción de Excel")
+        Component(file_mgr, "File Manager", "VBA (clsFileManager)", "Gestión de archivos")
+        Component(provider_fs, "FS Provider", "VBA (FileSystem...Provider)", "Proveedor de datos FS")
+        Component(provider_excel, "Excel Provider", "VBA (Excel...Source)", "Proveedor de datos Excel")
+        Component(fs_watcher, "File System Watcher", "VBA/COM (clsFSWatcher)", "Monitorización de FS")
+        Component(repository, "Repositorio", "VBA (clsOfertaRepository)", "Acceso a datos de ofertas")
+    }
+}
+
+System_Ext(excel, "Microsoft Excel", "Host de la aplicación")
+System_Ext(filesystem, "Sistema de Archivos", "Almacenamiento de oportunidades y ofertas")
+System_Ext(database, "Base de Datos (futuro)", "Almacenamiento persistente opcional")
+
+' Relaciones de usuario
+Rel(user, ribbon, "Interactúa con", "Ribbon UI")
+
+' Relaciones entre capas
+Rel(ribbon, dispatcher, "Despacha acciones", "control.id")
+Rel(dispatcher, domain_mgrs, "Ejecuta comandos", "Eventos de dominio")
+Rel(domain_mgrs, domain_state, "Lee/Escribe estado", "Modelo de dominio")
+Rel(domain_mgrs, domain_mediator, "Notifica cambios", "Eventos semánticos")
+Rel(domain_mediator, infra_mediator, "Orquesta operaciones", "Eventos de infraestructura")
+Rel(infra_mediator, infra_layer, "Controla componentes", "API de infraestructura")
+
+' Relaciones con sistemas externos
+Rel(exec_context, excel, "Interactúa vía", "API de Excel")
+Rel(file_mgr, filesystem, "Lee/Escribe", "Archivos de oportunidades")
+Rel(provider_fs, filesystem, "Accede a", "Datos estructurados")
+Rel(provider_excel, excel, "Lee/Escribe", "Libros Excel")
+Rel(fs_watcher, filesystem, "Monitorea", "Cambios en tiempo real")
+Rel(repository, provider_fs, "Usa", "Proveedor de datos")
+Rel(repository, provider_excel, "Usa", "Proveedor de datos")
+
+@enduml

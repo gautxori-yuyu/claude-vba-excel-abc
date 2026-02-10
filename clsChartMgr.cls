@@ -33,6 +33,11 @@ Private mChartsInActiveSheet As Collection              ' Colección de instanci
 Private mChartState As clsChartState              ' Estado de Chart activo (composición)
 Private mCtxState As clsExecutionContextState
 
+'@Description: Expone el estado de Chart (para inyección en ApplicationState)
+Public Property Get State() As clsChartState
+    Set State = mChartState
+End Property
+
 '--------------------------------------------------------------
 ' Inicialización
 '--------------------------------------------------------------
@@ -53,11 +58,6 @@ Private Sub Class_Terminate()
 
     LogInfo MODULE_NAME, "[Class_Terminate]"
 End Sub
-
-'@Description: Expone el estado de Chart (para inyección en ApplicationState)
-Public Property Get State() As clsChartState
-    Set State = mChartState
-End Property
 
 Public Sub Initialize(oCtxState As clsExecutionContextState)
     Set mCtxState = oCtxState
@@ -211,6 +211,12 @@ End Sub
 '@Scope: interna, auxiliar
 '@ArgumentDescriptions: cht As Chart
 Friend Sub NotifyChartActivated(cht As Chart)
+    ' 1. Actualizar State (hecho consumado)
+    Set mChartState.CurrentChart = cht
+
+    LogDebug MODULE_NAME, "[NotifyChartActivated] " & cht.Name
+
+    ' 2. Notificar (evento de hecho consumado)
     RaiseEvent ChartActivated(cht)
 End Sub
 
@@ -219,6 +225,12 @@ End Sub
 '@Scope: interna, auxiliar
 '@ArgumentDescriptions: cht As Chart
 Friend Sub NotifyChartDeactivated(cht As Chart)
+    ' 1. Actualizar State (hecho consumado)
+    Set mChartState.CurrentChart = Nothing
+
+    LogDebug MODULE_NAME, "[NotifyChartDeactivated] " & cht.Name
+
+    ' 2. Notificar (evento de hecho consumado)
     RaiseEvent ChartDeactivated(cht)
 End Sub
 

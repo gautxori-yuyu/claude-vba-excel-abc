@@ -45,9 +45,14 @@ Private Property Get IFile_Path() As String
 End Property
 
 Private Property Get IFile_Name() As String
+    On Error GoTo ErrHandler
     Dim fso As Object
     Set fso = CreateObject("Scripting.FileSystemObject")
     IFile_Name = fso.GetFileName(p_filePath)
+    Exit Property
+ErrHandler:
+    LogCurrentError MODULE_NAME, "[IFile_Name]"
+    IFile_Name = "(error)"
 End Property
 
 ' Propiedades públicas
@@ -65,20 +70,28 @@ End Property
 
 ' Método específico de PDF
 Public Sub BindTo(filePath As String)
+    On Error GoTo ErrHandler
+
     If p_ObjectKey <> 0 Then
         Err.Raise vbObjectError + 580, TypeName(Me), "Ya está asociado a un archivo."
     End If
-    
+
     Dim fso As Object
     Set fso = CreateObject("Scripting.FileSystemObject")
-    
+
     If Not fso.FileExists(filePath) Then
-        Err.Raise vbObjectError + 581, TypeName(Me), "El archivo no existe."
+        Err.Raise vbObjectError + 581, TypeName(Me), "El archivo no existe: " & filePath
     End If
-    
+
     p_filePath = filePath
     ' Para archivos en disco, usar hash del path como ObjectKey
     p_ObjectKey = GetPathHashCode(filePath)
+    LogInfo MODULE_NAME, "[BindTo] Asociado a: " & filePath
+    Exit Sub
+
+ErrHandler:
+    LogCurrentError MODULE_NAME, "[BindTo]"
+    Err.Raise Err.Number, MODULE_NAME & " [BindTo]", Err.Description
 End Sub
 
 ' Helper para generar ObjectKey consistente desde path

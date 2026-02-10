@@ -9,7 +9,7 @@ Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
 ' clase desde la que se gestiona cada oportunidad, y los elementos (entidad compresor, ficheros, etc) que la constituyen
 
-'@Folder "6-DOMINIO-Oportunidades y compresores"
+'@Folder "3-Dominio"
 Option Explicit
 
 Private Const MODULE_NAME As String = "clsOpportunity"
@@ -18,10 +18,10 @@ Private Const MODULE_NAME As String = "clsOpportunity"
 ' ATRIBUTOS PRIVADOS
 ' ==========================================
 Private mLabel As String        ' Nombre completo de la oportunidad (ej: "412601015 - Cliente - Proyecto")
-Private mName As String         ' Nombre corto (ej: "412601015")
+Private mNumber As Long         ' Numero codificado (ej: 412601015)
 Private mPath As String         ' Ruta completa a la carpeta
 Private mCustomer As String     ' Nombre del cliente
-Private mQuoteNumber As String  ' Número de cotización
+Private mProject As String     ' Nombre del Proyecto
 Private mCreatedDate As Date    ' Fecha de creación
 
 ' Componentes futuros (no implementados aún):
@@ -37,10 +37,9 @@ Private mCreatedDate As Date    ' Fecha de creación
 
 Private Sub Class_Initialize()
     mLabel = ""
-    mName = ""
+    mNumber = 0
     mPath = ""
     mCustomer = ""
-    mQuoteNumber = ""
     mCreatedDate = 0
 End Sub
 
@@ -61,15 +60,6 @@ Public Property Let Label(Value As String)
     mLabel = Value
 End Property
 
-'@Description: Obtiene o establece el nombre corto de la oportunidad
-Public Property Get Name() As String
-    Name = mName
-End Property
-
-Public Property Let Name(Value As String)
-    mName = Value
-End Property
-
 '@Description: Obtiene o establece la ruta completa a la carpeta
 Public Property Get Path() As String
     Path = mPath
@@ -77,6 +67,15 @@ End Property
 
 Public Property Let Path(Value As String)
     mPath = Value
+End Property
+
+'@Description: Obtiene o establece el numero de la oportunidad
+Public Property Get Number() As Long
+    Number = mNumber
+End Property
+
+Public Property Let Number(Value As Long)
+    mNumber = Value
 End Property
 
 '@Description: Obtiene o establece el nombre del cliente
@@ -88,13 +87,13 @@ Public Property Let Customer(Value As String)
     mCustomer = Value
 End Property
 
-'@Description: Obtiene o establece el número de cotización
-Public Property Get QuoteNumber() As String
-    QuoteNumber = mQuoteNumber
+'@Description: Obtiene o establece el Proyecto asociado a la oportunidad
+Public Property Get Project() As String
+    Project = mProject
 End Property
 
-Public Property Let QuoteNumber(Value As String)
-    mQuoteNumber = Value
+Public Property Let Project(Value As String)
+    mProject = Value
 End Property
 
 '@Description: Obtiene o establece la fecha de creación

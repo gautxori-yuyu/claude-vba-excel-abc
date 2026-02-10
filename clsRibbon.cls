@@ -261,7 +261,20 @@ Private Function TryAutoRecover() As Boolean
     mIsRecovering = True
     LogInfo MODULE_NAME, "[TryAutoRecover] Iniciando"
 
-    ' Usar el modulo de recuperacion
+    ' PRIMERO: Intentar recuperación con CopyMemory (más rápido y menos invasivo)
+    Dim recoveredRibbon As IRibbonUI
+    Set recoveredRibbon = GetRibbonFromMemory()
+
+    If Not recoveredRibbon Is Nothing Then
+        Set mribbonUI = recoveredRibbon
+        LogInfo MODULE_NAME, "[TryAutoRecover] Ribbon recuperado via CopyMemory"
+        mIsRecovering = False
+        TryAutoRecover = True
+        Exit Function
+    End If
+
+    ' SEGUNDO: Si CopyMemory falla, usar el modulo de recuperacion tradicional
+    LogWarning MODULE_NAME, "[TryAutoRecover] CopyMemory fallido, intentando recuperación tradicional..."
     TryAutoRecover = TryRecoverRibbon()
 
     mIsRecovering = False
@@ -329,18 +342,18 @@ End Function
 ' HANDLERS DE EVENTOS (UI escucha a los Managers)
 ' ==========================================
 
-Private Sub mOpportunities_OpportunityCollectionUpdate(ByVal cambios As String)
+Private Sub mOpportunities_OpportunityCollectionUpdated(ByVal reason As String)
     InvalidarControl "ddlOportunidades"
 End Sub
 
-Private Sub mOpportunities_currOpportunityChanged(ByVal Index As Long, ByVal Path As String)
+Private Sub mOpportunities_CurrentOpportunityChanged(ByVal opportunityName As String, ByVal opportunityPath As String)
     ' En modo OpportunityOnly, mostrar ribbon cuando hay oportunidad
     If mStateRibbon.Modo = Ribbon_OpportunityOnly Then
         mStateRibbon.Visible = True
     End If
     InvalidarControl "btnGenerarGraficos"
     InvalidarControl "dropdownOportunidades"
-    InvalidarControl "btnCreaOportunidad"
+    InvalidarControl "btnNuevaOp"
     InvalidarControl "grpOportunidades"
 End Sub
 
@@ -369,10 +382,13 @@ Private Sub mChartMgr_ChartDeactivated(cht As Chart)
 End Sub
 
 Private Sub mCtxMgr_WorkbookActivated(ByVal Wb As Workbook)
-    ' Necesario para re-evaluar btnCGASING cuando una hoja se copia a otro libro
-    ' (WorkbookActivated se dispara al activar el libro destino)
-    InvalidarControl "btnGenerarGraficos"
-    InvalidarControl "btnCGASING"
+    ' CRÍTICO: Invalidar TODO el ribbon al cambiar de libro
+    ' Esto es necesario para:
+    ' 1. Re-evaluar la visibilidad de controles según el libro activo
+    ' 2. Sincronizar el estado del ribbon con el libro (cada libro puede tener su propio modo)
+    ' 3. Refrescar callbacks getVisible cuando hay múltiples libros abiertos
+    LogDebug MODULE_NAME, "[mCtxMgr_WorkbookActivated] Invalidando ribbon para libro: " & Wb.Name
+    InvalidarRibbon
 End Sub
 
 Private Sub mCtxMgr_SheetActivated(ByVal Sh As Object)

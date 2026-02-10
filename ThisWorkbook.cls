@@ -7,7 +7,7 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = True
-'@Folder "1-Inicio e Instalacion.Ciclo de vida"
+'@Folder "1-Aplicacion.3-Ciclo de vida"
 Option Explicit
 
 Private Const MODULE_NAME As String = "ThisWorkbook"
@@ -30,10 +30,12 @@ Public Sub TerminateApp()
 End Sub
 
 Private Sub Workbook_Open()
+    On Error GoTo ErrHandler
+
     ' 0. Inicializar logger con salida a fichero
-    removeOldLogs
     InitLogger LOG_DEBUG, True, ThisWorkbook.Path & "\ABC_Log_" & Format(Now, "yyyy-mm-dd_hh-nn") & ".txt"
-    
+    removeOldLogs
+
     LogInfo MODULE_NAME, "[Open] Abriendo Workbook " & ThisWorkbook.Name
     ' Sistema de instalación existente
     AutoInstalador
@@ -41,8 +43,9 @@ Private Sub Workbook_Open()
     ' Ctrl + Shift + R
     Application.OnKey "^+R", "ToggleRibbonTab"
 
-    ' Capturar eventos de Application (Listener)
+    ' Capturar eventos de Application (Listener) - CRÍTICO para eventos subsiguientes
     Set mXLApp = Application
+    LogDebug MODULE_NAME, "[Open] mXLApp conectado a Application"
 
     ' Iniciar aplicación (lazy init del singleton)
     App
@@ -54,6 +57,20 @@ Private Sub Workbook_Open()
                 App.ExecutionContextMgr.ReInitializeContext
             End If
         End If
+    End If
+
+    LogInfo MODULE_NAME, "[Open] Inicialización completada correctamente"
+    Exit Sub
+
+ErrHandler:
+    ' Registrar el error pero NO propagarlo para no interrumpir Excel
+    LogError MODULE_NAME, "[Workbook_Open] Error durante inicialización", Err.Number, Err.Description
+    ' Intentar mantener la conexión de eventos aunque falle algo
+    If mXLApp Is Nothing Then
+        On Error Resume Next
+        Set mXLApp = Application
+        LogWarning MODULE_NAME, "[Workbook_Open] Reconectando mXLApp tras error"
+        On Error GoTo 0
     End If
 End Sub
 
@@ -126,72 +143,83 @@ Private Sub Workbook_AddinInstall()
     
     On Error GoTo 0
 End Sub
-' Elimina los ficheros de log que tengan más de 3 días, si hay más de 3 ficheros de log
+' Elimina los ficheros de log más antiguos para conservar solo los últimos 3.
 Private Sub removeOldLogs()
+    Const MAX_LOG_FILES_TO_KEEP As Long = 3
+    Const LOG_FILE_PATTERN As String = "ABC_Log_????-??-??_??-??.txt"
+    
     Dim fso As Object
     Dim folderPath As String
-    Dim oFolder As Object
-    Dim oFile As Object
-    Dim logFiles As Object ' Collection para filtrar solo logs de este tipo
-    Dim fileDate As Date
-    Dim fileNamePattern As String, i
+    Dim logFolder As Object
+    Dim logFile As Object
+    Dim logFiles() As Object ' Array dinámico de ficheros
+    Dim fileCount As Long
+    Dim i As Long, J As Long
+
+    On Error GoTo ErrHandler
     
+    ' --- 1. Recolectar ficheros de log en un array ---
     Set fso = CreateObject("Scripting.FileSystemObject")
-    folderPath = ThisWorkbook.Path & "\"
-    fileNamePattern = "ABC_Log_????-??-??_??-??.txt"
-    
-    ' 1. Coleccionamos los archivos que coinciden con el patrón
-    Set logFiles = New Collection
+    folderPath = ThisWorkbook.Path
     
     If Not fso.FolderExists(folderPath) Then Exit Sub
-    Set oFolder = fso.GetFolder(folderPath)
-    
-    For Each oFile In oFolder.Files
-        ' Verificamos si el nombre coincide con el patrón ABC_Log_...
-        If oFile.Name Like fileNamePattern Then
-            If logFiles.Count = 0 Then
-                logFiles.Add oFile
-            ElseIf (oFile.DateLastAccessed < logFiles.Item(logFiles.Count).DateLastAccessed) Then
-                logFiles.Add Item:=oFile, before:=logFiles.Count
-            Else
-                logFiles.Add oFile
-            End If
+
+    Set logFolder = fso.GetFolder(folderPath)
+    fileCount = 0
+    ReDim logFiles(1 To logFolder.files.Count) ' Sobredimensionar inicialmente
+
+    For Each logFile In logFolder.files
+        If logFile.Name Like LOG_FILE_PATTERN Then
+            fileCount = fileCount + 1
+            Set logFiles(fileCount) = logFile
         End If
-    Next oFile
+    Next logFile
     
-    ' 2. Si hay más de 3 ficheros en total, evaluamos el borrado
-    Do While logFiles.Count > 3
-        logFiles.Item(1).Delete True
-        logFiles.Remove 1
-    Loop
-    For Each oFile In logFiles
-        ' Calculamos la diferencia de días (DateDiff)
-        ' Usamos DateLastModified para mayor precisión, o DateCreated
-        fileDate = oFile.DateLastModified
-        
-        ' Requisito: Más de 3 días de antigüedad
-        If DateDiff("d", fileDate, Now) > 3 Then
-            ' Re-verificamos el conteo antes de cada borrado para asegurar que siempre queden 3
-            If logFiles.Count > 3 Then
-                On Error Resume Next ' Por si el archivo está abierto o bloqueado
-                oFile.Delete True
-                If Err.Number = 0 Then
-                    ' Actualizar lógica si es necesario, aunque al ser una colección
-                    ' se recorre una foto fija. El "If logFiles.Count > 3"
-                    ' aquí dentro es preventivo.
-                End If
-                On Error GoTo 0
+    If fileCount = 0 Then
+        Set fso = Nothing
+        Set logFolder = Nothing
+        Exit Sub
+    End If
+    ReDim Preserve logFiles(1 To fileCount) ' Ajustar tamaño
+
+    ' --- 2. Salir si no hay suficientes ficheros para limpiar ---
+    If fileCount <= MAX_LOG_FILES_TO_KEEP Then
+        LogInfo MODULE_NAME, "[removeOldLogs] " & fileCount & " logs encontrados, no se necesita limpieza."
+        Exit Sub
+    End If
+
+    ' --- 3. Ordenar el array por fecha de modificación (del más antiguo al más nuevo) ---
+    Dim temp As Object
+    For i = 1 To fileCount - 1
+        For J = i + 1 To fileCount
+            If logFiles(i).DateLastModified > logFiles(J).DateLastModified Then
+                Set temp = logFiles(J)
+                Set logFiles(J) = logFiles(i)
+                Set logFiles(i) = temp
             End If
-        Else
-            Exit For
-        End If
-    Next oFile
+        Next J
+    Next i
+
+    ' --- 4. Borrar los ficheros más antiguos ---
+    Dim filesToDeleteCount As Long
+    filesToDeleteCount = fileCount - MAX_LOG_FILES_TO_KEEP
     
-    ' Limpieza de objetos
-    Set oFile = Nothing
-    Set oFolder = Nothing
-    Set fso = Nothing
-    LogInfo MODULE_NAME, "[removeOldLogs] Finalizado"
+    LogInfo MODULE_NAME, "[removeOldLogs] " & fileCount & " logs encontrados. Borrando " & filesToDeleteCount & " más antiguos."
+
+    On Error Resume Next ' Si un fichero está bloqueado, continuar con el siguiente
+    For i = 1 To filesToDeleteCount
+        LogDebug MODULE_NAME, "[removeOldLogs] Borrando: " & logFiles(i).Name
+        logFiles(i).Delete True
+    Next i
+    On Error GoTo 0
+    
+    LogInfo MODULE_NAME, "[removeOldLogs] Finalizado."
+    
+    Exit Sub
+
+ErrHandler:
+    LogCurrentError MODULE_NAME, "[removeOldLogs]"
+    ' No es necesario un 'Resume', la limpieza se gestiona al salir.
 End Sub
 
 ' ==========================================
@@ -200,28 +228,61 @@ End Sub
 
 Private Sub mXLApp_WorkbookOpen(ByVal Wb As Workbook)
     If mApp Is Nothing Then Exit Sub
+    If mApp.ExecutionContextMgr Is Nothing Then Exit Sub
+    On Error GoTo ErrHandler
     App.ExecutionContextMgr.OnWorkbookOpened Wb
+    Exit Sub
+ErrHandler:
+    LogCurrentError MODULE_NAME, "[mXLApp_WorkbookOpen]"
+    Err.Raise Err.Number, MODULE_NAME & "[mXLApp_WorkbookOpen]", _
+              Err.Description
 End Sub
 
 Private Sub mXLApp_WorkbookActivate(ByVal Wb As Workbook)
     If mApp Is Nothing Then Exit Sub
+    If mApp.ExecutionContextMgr Is Nothing Then Exit Sub
+    On Error GoTo ErrHandler
     App.ExecutionContextMgr.OnWorkbookActivated Wb
+    Exit Sub
+ErrHandler:
+    LogCurrentError MODULE_NAME, "[mXLApp_WorkbookActivate]"
+    Err.Raise Err.Number, MODULE_NAME & "[mXLApp_WorkbookActivate]", _
+              Err.Description
 End Sub
 
 Private Sub mXLApp_WorkbookBeforeClose(ByVal Wb As Workbook, Cancel As Boolean)
     If mApp Is Nothing Then Exit Sub
+    If mApp.ExecutionContextMgr Is Nothing Then Exit Sub
+    On Error GoTo ErrHandler
     App.ExecutionContextMgr.OnWorkbookBeforeClose Wb, Cancel
+    Exit Sub
+ErrHandler:
+    LogCurrentError MODULE_NAME, "[mXLApp_WorkbookBeforeClose]"
+    Err.Raise Err.Number, MODULE_NAME & "[mXLApp_WorkbookBeforeClose]", _
+              Err.Description
 End Sub
 
 Private Sub mXLApp_SheetActivate(ByVal Sh As Object)
     If mApp Is Nothing Then Exit Sub
+    If mApp.ExecutionContextMgr Is Nothing Then Exit Sub
+    On Error GoTo ErrHandler
     App.ExecutionContextMgr.OnSheetActivated Sh
+    Exit Sub
+ErrHandler:
+    LogCurrentError MODULE_NAME, "[mXLApp_SheetActivate]"
+    Err.Raise Err.Number, MODULE_NAME & "[mXLApp_SheetActivate]", _
+              Err.Description
 End Sub
 
 Private Sub mXLApp_SheetDeactivate(ByVal Sh As Object)
     If mApp Is Nothing Then Exit Sub
+    If mApp.ExecutionContextMgr Is Nothing Then Exit Sub
+    On Error GoTo ErrHandler
     App.ExecutionContextMgr.OnSheetDeactivated Sh
+    Exit Sub
+ErrHandler:
+    LogCurrentError MODULE_NAME, "[mXLApp_SheetDeactivate]"
+    Err.Raise Err.Number, MODULE_NAME & "[mXLApp_SheetDeactivate]", _
+              Err.Description
 End Sub
-
-
 

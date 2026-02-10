@@ -1,0 +1,71 @@
+@startuml C4_Component_Diagram_Improved
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+' Usar una dirección de arriba-abajo para mayor claridad
+top to bottom direction
+
+' Título del diagrama
+title Diagrama de Componentes C4 - Arquitectura App Ofertas
+
+' Contenedor principal de la aplicación
+Container(app, "Aplicación de Ofertas (Add-in Excel)", "VBA", "Gestiona el ciclo de vida de las ofertas de compresores ABC.")
+
+' Límite para todos los componentes internos
+Container_Boundary(c1, "Componentes Internos del Add-in") {
+
+    ' Capa 1: UI
+    Component(ribbon, "UI - Ribbon & Forms", "VBA (clsRibbon, Forms)", "Renderiza la interfaz y captura las acciones del usuario.")
+    
+    ' Capa 2: Dominio
+    Component(domain_mgrs, "Domain Managers", "VBA (clsOpportunitiesMgr, etc.)", "Implementan la lógica de negocio principal y orquestan cambios de estado.")
+    Component(domain_entities, "Domain - Entidades & Estado", "VBA (clsOpportunity, ...State, Interfaces)", "Representan el estado y los conceptos puros del negocio. No conocen Excel.")
+
+    ' Capa 3: Mediadores (Orquestación)
+    Component(domain_mediator, "Domain Mediator", "VBA (clsEventsMediatorDomain)", "Desacopla el Dominio de la Infraestructura, orquestando la comunicación.")
+    Component(infra_mediator, "Infrastructure Mediator", "VBA (clsEventsMediatorInfrastructure)", "Traduce eventos de bajo nivel (ej: Excel) a eventos con significado para la aplicación.")
+
+    ' Capa 4: Infraestructura
+    Component(exec_context, "Execution Context", "VBA (clsExecutionContextMgr)", "Abstrae la interacción con el entorno de Excel (libros, hojas).")
+    Component(file_mgr, "File Manager & Providers", "VBA (clsFileManager, ...Provider)", "Abstrae el acceso a ficheros específicos del dominio (ofertas, cálculos).")
+    Component(fs_watcher, "File System Watcher", "VBA/COM (clsFSWatcher)", "Monitoriza cambios en el sistema de archivos en tiempo real.")
+}
+
+' Sistemas Externos con los que interactúa la aplicación
+System_Ext(excel, "Microsoft Excel", "Host de la aplicación")
+System_Ext(fs, "Sistema de Archivos", "Almacenamiento de ficheros de Excel y PDFs")
+
+' == Relaciones entre Componentes ==
+
+' === Flujo Descendente (Órdenes / Llamadas a Métodos) ===
+User -> ribbon: "Usa la Interfaz"
+Rel_D(ribbon, domain_mgrs, "Ejecuta Órdenes", "Ej: Crear Nueva Oportunidad")
+
+Rel_D(domain_mgrs, domain_entities, "Actualiza y Lee Estado", "Composición")
+Rel_D(domain_mgrs, domain_mediator, "Delega acciones complejas")
+
+Rel_D(domain_mediator, file_mgr, "Orquesta operaciones de fichero")
+Rel_D(domain_mediator, exec_context, "Consulta estado de Excel")
+
+' La infraestructura interactúa con el exterior
+Rel_D(file_mgr, fs, "Lee/Escribe Ficheros")
+Rel_D(fs_watcher, fs, "Monitoriza Cambios")
+Rel_D(exec_context, excel, "Interactúa vía API de Excel (Workbook, Range)")
+
+
+' === Flujo Ascendente (Eventos / Notificaciones) ===
+' La infraestructura emite eventos de bajo nivel
+Rel_U(exec_context, infra_mediator, "Emite Eventos de Contexto", "Notificación")
+Rel_U(file_mgr, infra_mediator, "Emite Eventos de Fichero", "Notificación")
+Rel_U(fs_watcher, infra_mediator, "Emite Eventos de Sist. Archivos", "Notificación")
+
+' El mediador de infraestructura traduce y notifica
+Rel_U(infra_mediator, domain_mediator, "Notifica Eventos Semánticos", "Notificación")
+
+' El mediador de dominio notifica a las capas superiores
+Rel_U(domain_mediator, domain_mgrs, "Notifica a los Managers", "Notificación")
+Rel_U(domain_mediator, ribbon, "Notifica a la UI", "Notificación")
+
+' Los managers de dominio emiten sus propios eventos de alto nivel
+Rel_U(domain_mgrs, ribbon, "Emite Eventos de Dominio (Ej: OpportunityUpdated)", "Notificación")
+
+@enduml

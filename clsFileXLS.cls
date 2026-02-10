@@ -11,7 +11,7 @@ Attribute VB_Exposed = True
 ' Es la única capa que conoce directamente al Workbook.
 ' Todas las operaciones que requieran wb deben pasar por aquí.
 
-'@Folder "4-Servicios.Archivos.Tipos de archivos"
+'@Folder "2-Infraestructura.FS"
 Option Explicit
 
 Private Const MODULE_NAME As String = "clsFileXLS"
@@ -233,10 +233,11 @@ Public Sub MoverAOp(rutaOportunidadRelativa As String, rutaBaseOportunidades As 
     
     Dim nombreArchivo As String
     nombreArchivo = p_wb.Name
-    Dim respuesta As VbMsgBoxResult
-    respuesta = MsgBox("¿Deseas mover el archivo '" & nombreArchivo & "' a la carpeta de la oportunidad seleccionada?", _
-                       vbQuestion + vbYesNo, "Mover archivo a oportunidad")
-    
+    Dim respuesta As TDRESULT
+    respuesta = ShowTaskDialogYesNo("Mover archivo a oportunidad", _
+                                    "¿Deseas mover este archivo?", _
+                                    "Se moverá '" & nombreArchivo & "' a la carpeta de la oportunidad seleccionada.")
+
     If respuesta <> vbYes Then Exit Sub
         
     On Error GoTo ErrorHandler
@@ -283,7 +284,9 @@ Public Sub MoverAOp(rutaOportunidadRelativa As String, rutaBaseOportunidades As 
         nuevoNombre = Left(fso.GetBaseName(nombreArchivo), maxNombreLen - Len(fso.GetExtensionName(nombreArchivo)) - 8) _
                     & fso.GetExtensionName(nombreArchivo)
         nuevaRuta = fso.BuildPath(rutaDestinoBase, nuevoNombre)
-        MsgBox "Nombre de archivo truncado para cumplir con límite de ruta de Windows: " & vbCrLf & nuevoNombre, vbExclamation
+        ShowTaskDialogError "Nombre de archivo truncado", _
+                            "Límite de ruta de Windows", _
+                            "El nombre del archivo ha sido acortado a: " & nuevoNombre
     End If
     
     ' === 4. Guardar copia en destino ===
@@ -303,8 +306,10 @@ Public Sub MoverAOp(rutaOportunidadRelativa As String, rutaBaseOportunidades As 
     ' === 6. Reasignar .Path y .FullName (simbólicamente, VBA no lo permite directamente) ===
     ' El libro sigue abierto, pero su ruta "efectiva" ahora es la nueva.
     ' Excel lo manejará correctamente al guardar de nuevo.
-    
-    MsgBox "El archivo '" & nombreArchivo & "' se ha movido a la carpeta de la oportunidad.", vbInformation
+
+    ShowTaskDialogError "Operación completada", _
+                        "Archivo movido correctamente", _
+                        "El archivo '" & nombreArchivo & "' se ha movido a la carpeta de la oportunidad."
     
     Exit Sub
     
@@ -355,7 +360,7 @@ End Function
 Private Function EsLibroDeTablasCurvasRto() As Boolean
     'On Error GoTo ErrorHandler
     Dim hoja As Worksheet
-    Dim r As Range
+    Dim R As Range
     Dim encabezados As Range, datos As Range
     Dim formula As String
     
@@ -368,16 +373,16 @@ Private Function EsLibroDeTablasCurvasRto() As Boolean
         ' Validar que la tabla comience en A1
         If hoja.ListObjects(1).Range.Cells(1, 1).Address <> "$A$1" Then GoTo ErrorHandler
         
-        Set r = hoja.Range("A1").CurrentRegion
-        If r.Rows.Count < 2 Or r.Columns.Count < 2 Then GoTo Siguiente
+        Set R = hoja.Range("A1").CurrentRegion
+        If R.Rows.Count < 2 Or R.Columns.Count < 2 Then GoTo Siguiente
         
         ' Validar encabezados (fila 1, desde la segunda columna)
-        Set encabezados = r.Rows(1).Offset(0, 1).Resize(1, r.Columns.Count - 1)
+        Set encabezados = R.Rows(1).Offset(0, 1).Resize(1, R.Columns.Count - 1)
         formula = "SUMPRODUCT(--ISNUMBER(SEARCH(""("", " & encabezados.Address(External:=True) & ")))"
         If Evaluate(formula) <> encabezados.Columns.Count Then GoTo ErrorHandler
         
         ' Validar datos numéricos (todo menos la primera fila y primera columna)
-        Set datos = r.Offset(1, 1).Resize(r.Rows.Count - 1, r.Columns.Count - 1)
+        Set datos = R.Offset(1, 1).Resize(R.Rows.Count - 1, R.Columns.Count - 1)
         formula = "SUMPRODUCT(--ISNUMBER(" & datos.Address(External:=True) & "))"
         If Evaluate(formula) <> datos.Cells.Count Then GoTo ErrorHandler
         

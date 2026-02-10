@@ -2,7 +2,7 @@ Attribute VB_Name = "modUTILSProcedureParsing"
 ' ==========================================
 ' FUNCIONES DE PARSING
 ' ==========================================
-'@Folder "1-Inicio e Instalacion.Gestion de modulos y procs"
+'@Folder "1-Aplicacion.2-Gestion de modulos y procs"
 '@IgnoreModule MissingAnnotationArgument, ProcedureNotUsed
 Option Explicit
 
@@ -11,7 +11,7 @@ Private Const MODULE_NAME As String = "modUTILSProcedureParsing"
 ' Requiere referencia a: Microsoft Visual Basic for Applications Extensibility 5.3
 Public Function ParsearUDFsDeTodosLosProyectos() As Object
 Attribute ParsearUDFsDeTodosLosProyectos.VB_Description = "[modUTILSProcedureParsing] Requiere referencia a: Microsoft Visual Basic for Applications Extensibility 5.3"
-Attribute ParsearUDFsDeTodosLosProyectos.VB_ProcData.VB_Invoke_Func = " \n23"
+Attribute ParsearUDFsDeTodosLosProyectos.VB_ProcData.VB_Invoke_Func = " \n21"
     Dim vbeProj As Object ' VBIDE.VBProject
     Dim oDicUDFs As Object
     Dim oDicProcs As Object, key
@@ -32,8 +32,8 @@ Attribute ParsearUDFsDeTodosLosProyectos.VB_ProcData.VB_Invoke_Func = " \n23"
         
             oDicUDFs.Add vbeProj.fileName, CreateObject("Scripting.Dictionary")
             For Each key In oDicProcs
-                If oDicProcs.Item(key).ProcedureType = udf Then
-                    oDicUDFs(vbeProj.fileName).Add oDicProcs.Item(key).Name, Empty
+                If oDicProcs.item(key).ProcedureType = udf Then
+                    oDicUDFs(vbeProj.fileName).Add oDicProcs.item(key).Name, Empty
                 End If
             Next key
             If oDicUDFs(vbeProj.fileName).Count = 0 Then oDicUDFs.Remove (vbeProj.fileName)
@@ -44,7 +44,7 @@ Attribute ParsearUDFsDeTodosLosProyectos.VB_ProcData.VB_Invoke_Func = " \n23"
 End Function
 Public Function ParsearProcsDelProyecto() As Object
 Attribute ParsearProcsDelProyecto.VB_Description = "[modUTILSProcedureParsing] Parsear Procs Del Proyecto (función personalizada). Aplica a: ThisWorkbook"
-Attribute ParsearProcsDelProyecto.VB_ProcData.VB_Invoke_Func = " \n23"
+Attribute ParsearProcsDelProyecto.VB_ProcData.VB_Invoke_Func = " \n21"
     On Error GoTo ErrorHandler
     
     Set ParsearProcsDelProyecto = ParsearProcs(ThisWorkbook.VBProject)
@@ -55,7 +55,7 @@ End Function
 ' Parsea todos los procedimientos del proyecto VBA (CON Y SIN metadatos)
 Public Function ParsearProcs(ByVal vbProj As Object) As Object
 Attribute ParsearProcs.VB_Description = "[modUTILSProcedureParsing] Parsea todos los procedimientos del proyecto VBA (CON Y SIN metadatos)"
-Attribute ParsearProcs.VB_ProcData.VB_Invoke_Func = " \n23"
+Attribute ParsearProcs.VB_ProcData.VB_Invoke_Func = " \n21"
     Dim vbComp As VBIDE.VBComponent
     
     Dim procName As String
@@ -147,13 +147,13 @@ Private Function getProcCode(CodeModule As Object, procName As String, PKind As 
         
         ' ... y hay que corregir el final, tampoco termina bien los bloques de función
         re.Pattern = "\bFunction|Sub|Property\b"
-        re.Pattern = "^\s*End\s+" & re.Execute(CodeModule.Lines(.procSignatureLine, 1)).Item(0).Value
+        re.Pattern = "^\s*End\s+" & re.Execute(CodeModule.Lines(.procSignatureLine, 1)).item(0).Value
         i = .procStartLine
         .strCode = CodeModule.Lines(i, 1)
         Do
             i = i + 1
             .strCode = .strCode & vbCrLf & CodeModule.Lines(i, 1)
-            If i - .procStartLine > 500 Then Stop
+            'If i - .procStartLine > 500 Then Stop
         Loop Until (i = CodeModule.CountOfLines) Or re.Test(CodeModule.Lines(i, 1))
         
         '.procWrongEndLines = .procNumLines - (i - .procStartLine + 1) ' ESTAS LINEAS DEBEN ASOCIARSE AL PROCEDIMIENTO SIGUIENTE

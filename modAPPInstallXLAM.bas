@@ -53,131 +53,6 @@ Attribute archivoInstScriptToBase64RC4.VB_ProcData.VB_Invoke_Func = " \n0"
 End Sub
 
 ' ---------------------------------------------------------------------
-' FUNCIONES COM (DEPRECATED - El VBScript ahora gestiona la instalación)
-' ---------------------------------------------------------------------
-' NOTA: Estas funciones se mantienen como fallback pero ya no se usan
-' directamente. El VBScript extrae el COM desde dentro del XLAM.
-
-'@Description: [DEPRECATED] Instala los archivos COM desde una carpeta externa
-'@Note: Ya no se usa. El VBScript extrae el COM del XLAM.
-Private Function InstalarCOM(ByVal rutaOrigen As String) As Boolean
-    On Error GoTo ErrHandler
-
-    Dim fso As Object
-    Dim rutaDestino As String
-    Dim rutaDLLOrigen As String
-    Dim rutaManifestOrigen As String
-    Dim rutaDLLDestino As String
-    Dim rutaManifestDestino As String
-
-    Set fso = CreateObject("Scripting.FileSystemObject")
-
-    rutaDestino = Application.UserLibraryPath
-
-    ' Rutas de origen
-    rutaDLLOrigen = rutaOrigen & COM_DLL_NOMBRE
-    rutaManifestOrigen = rutaOrigen & COM_MANIFEST_NOMBRE
-
-    ' Rutas de destino
-    rutaDLLDestino = rutaDestino & COM_DLL_NOMBRE
-    rutaManifestDestino = rutaDestino & COM_MANIFEST_NOMBRE
-
-    ' Verificar que existen los archivos de origen
-    If Not fso.FileExists(rutaDLLOrigen) Then
-        LogWarning "modAPPInstallXLAM", "[InstalarCOM] DLL no encontrada: " & rutaDLLOrigen
-        InstalarCOM = False
-        GoTo CleanUp
-    End If
-
-    If Not fso.FileExists(rutaManifestOrigen) Then
-        LogWarning "modAPPInstallXLAM", "[InstalarCOM] Manifest no encontrado: " & rutaManifestOrigen
-        InstalarCOM = False
-        GoTo CleanUp
-    End If
-
-    ' Eliminar archivos existentes si los hay
-    On Error Resume Next
-    If fso.FileExists(rutaDLLDestino) Then fso.DeleteFile rutaDLLDestino, True
-    If fso.FileExists(rutaManifestDestino) Then fso.DeleteFile rutaManifestDestino, True
-    On Error GoTo ErrHandler
-
-    ' Copiar DLL
-    fso.CopyFile rutaDLLOrigen, rutaDLLDestino, True
-    LogInfo "modAPPInstallXLAM", "[InstalarCOM] DLL copiada a: " & rutaDLLDestino
-
-    ' Copiar Manifest
-    fso.CopyFile rutaManifestOrigen, rutaManifestDestino, True
-    LogInfo "modAPPInstallXLAM", "[InstalarCOM] Manifest copiado a: " & rutaManifestDestino
-
-    InstalarCOM = True
-CleanUp:
-    Set fso = Nothing
-    Exit Function
-
-ErrHandler:
-    LogCurrentError "modAPPInstallXLAM", "[InstalarCOM]"
-    InstalarCOM = False
-    Resume CleanUp
-End Function
-
-'@Description: [DEPRECATED] Desinstala los archivos COM de la carpeta AddIns
-'@Note: Ya no se usa. El VBScript elimina el COM durante desinstalación.
-Private Function DesinstalarCOM() As Boolean
-    On Error GoTo ErrHandler
-
-    Dim fso As Object
-    Dim rutaDestino As String
-    Dim rutaDLL As String
-    Dim rutaManifest As String
-
-    Set fso = CreateObject("Scripting.FileSystemObject")
-
-    rutaDestino = Application.UserLibraryPath
-    rutaDLL = rutaDestino & COM_DLL_NOMBRE
-    rutaManifest = rutaDestino & COM_MANIFEST_NOMBRE
-
-    ' Eliminar DLL si existe
-    If fso.FileExists(rutaDLL) Then
-        fso.DeleteFile rutaDLL, True
-        LogInfo "modAPPInstallXLAM", "[DesinstalarCOM] DLL eliminada: " & rutaDLL
-    End If
-
-    ' Eliminar Manifest si existe
-    If fso.FileExists(rutaManifest) Then
-        fso.DeleteFile rutaManifest, True
-        LogInfo "modAPPInstallXLAM", "[DesinstalarCOM] Manifest eliminado: " & rutaManifest
-    End If
-
-    DesinstalarCOM = True
-
-CleanUp:
-    Set fso = Nothing
-    Exit Function
-
-ErrHandler:
-    LogCurrentError "modAPPInstallXLAM", "[DesinstalarCOM]"
-    DesinstalarCOM = False
-    Resume CleanUp
-End Function
-
-'@Description: Verifica si los archivos COM están instalados en la carpeta AddIns
-'@Returns: Boolean | True si ambos archivos (DLL y manifest) existen
-'@Category: Instalación COM
-Public Function ComprobarCOMInstalado() As Boolean
-Attribute ComprobarCOMInstalado.VB_ProcData.VB_Invoke_Func = " \n0"
-    Dim fso As Object
-    Dim rutaDestino As String
-
-    Set fso = CreateObject("Scripting.FileSystemObject")
-    rutaDestino = Application.UserLibraryPath
-
-    ComprobarCOMInstalado = fso.FileExists(rutaDestino & COM_DLL_NOMBRE) And _
-                            fso.FileExists(rutaDestino & COM_MANIFEST_NOMBRE)
-
-    Set fso = Nothing
-End Function
-
-' ---------------------------------------------------------------------
 ' FLUJO PRINCIPAL DE AUTO-INSTALACIÓN / DESINSTALACIÓN
 ' ---------------------------------------------------------------------
 
@@ -190,7 +65,10 @@ Public Sub AutoInstalador()
 Attribute AutoInstalador.VB_ProcData.VB_Invoke_Func = " \n0"
     
     ' Validar que se está ejecutando desde un XLAM
-    If Not (ThisWorkbook.FileFormat = xlOpenXMLAddIn Or ThisWorkbook.FileFormat = xlAddIn) Then Exit Sub
+    If Not (ThisWorkbook.FileFormat = xlOpenXMLAddIn Or ThisWorkbook.FileFormat = xlAddIn) Then
+        LogInfo MODULE_NAME, "[AutoInstalador] La aplicación NO se inicializa desde un complemento XLAM, NO se ejecuta el proceso de instalación / desinstalación"
+        Exit Sub
+    End If
     
     Dim rutaActual As String
     Dim rutaDestino As String
@@ -200,7 +78,7 @@ Attribute AutoInstalador.VB_ProcData.VB_Invoke_Func = " \n0"
     
     ' Si ya se ejecuta desde la carpeta destino, no hacer nada
     If rutaActual = rutaDestino Then
-        LogInfo "modAPPInstallXLAM", "[AutoInstalador] el complemento se inicia desde la ruta destino de instalación, NO se ejecuta el proceso de instalación / desinstalación"
+        LogInfo MODULE_NAME, "[AutoInstalador] el complemento se inicia desde la ruta destino de instalación, NO se ejecuta el proceso de instalación / desinstalación"
         Exit Sub
     End If
     
@@ -210,12 +88,12 @@ Attribute AutoInstalador.VB_ProcData.VB_Invoke_Func = " \n0"
         ' Evitar sobrescribir un XLAM con el mismo nombre final
         If LCase$(ThisWorkbook.Name) = LCase$(APP_NAME & ".xlam") Then
             
-            LogInfo "modAPPInstallXLAM", "[AutoInstalador] XLAM no es posible instalarlo"
+            LogInfo MODULE_NAME, "[AutoInstalador] XLAM no es posible instalarlo"
             MsgBox "El nombre del fichero a instalar tiene que ser diferente de '" & APP_NAME & ".xlam" & "'. Cámbialo si quieres hacer la instalación."
             
         ElseIf MsgBox("¿Deseas instalar este complemento?", vbYesNo + vbQuestion) = vbYes Then
             
-            LogInfo "modAPPInstallXLAM", "[AutoInstalador] ejecutando script de instalación"
+            LogInfo MODULE_NAME, "[AutoInstalador] ejecutando script de instalación"
             
             EjecutarScript _
                 INSTALLSCRIPT_B64RC4, _
@@ -233,7 +111,7 @@ Attribute AutoInstalador.VB_ProcData.VB_Invoke_Func = " \n0"
         
         If MsgBox("Este complemento ya está instalado. ¿Deseas desinstalarlo?", vbYesNo + vbQuestion) = vbYes Then
             
-            LogInfo "modAPPInstallXLAM", "[AutoInstalador] ejecutando script de desinstalación"
+            LogInfo MODULE_NAME, "[AutoInstalador] ejecutando script de desinstalación"
             
             EjecutarScript _
                 INSTALLSCRIPT_B64RC4, _
@@ -273,18 +151,143 @@ Attribute ComprobarSiInstalado.VB_ProcData.VB_Invoke_Func = " \n0"
             
             ' Estado inconsistente: marcado como instalado pero el fichero no existe
             If Not bFExists And ai.Installed Then
-                LogError "modAPPInstallXLAM", "[ComprobarSiInstalado] XLAM marcado como instalado, pero inexistente: forzando el proceso de desinstalación"
+                LogError MODULE_NAME, "[ComprobarSiInstalado] XLAM marcado como instalado, pero inexistente: forzando el proceso de desinstalación"
                 ai.Installed = False
             End If
             
             ComprobarSiInstalado = ai.Installed
-            LogInfo "modAPPInstallXLAM", "[ComprobarSiInstalado] XLAM " & IIf(ComprobarSiInstalado, "", "no ") & "instalado"
+            LogInfo MODULE_NAME, "[ComprobarSiInstalado] XLAM " & IIf(ComprobarSiInstalado, "", "no ") & "instalado"
             Exit Function
             
         End If
     Next ai
     
 End Function
+
+' ---------------------------------------------------------------------
+' FUNCIONES COM (DEPRECATED - El VBScript ahora gestiona la instalación)
+' ---------------------------------------------------------------------
+' NOTA: Estas funciones se mantienen como fallback pero ya no se usan
+' directamente. El VBScript extrae el COM desde dentro del XLAM.
+
+'@Description: Verifica si los archivos COM están instalados en la carpeta AddIns
+'@Returns: Boolean | True si ambos archivos (DLL y manifest) existen
+'@Category: Instalación COM
+Public Function ComprobarCOMInstalado() As Boolean
+    Dim fso As Object
+    Dim rutaDestino As String
+
+    Set fso = CreateObject("Scripting.FileSystemObject")
+    rutaDestino = Application.UserLibraryPath
+
+    ComprobarCOMInstalado = fso.FileExists(rutaDestino & COM_DLL_NOMBRE) And _
+                            fso.FileExists(rutaDestino & COM_MANIFEST_NOMBRE)
+
+    Set fso = Nothing
+End Function
+
+'@Description: [DEPRECATED] Instala los archivos COM desde una carpeta externa
+'@Note: Ya no se usa. El VBScript extrae el COM del XLAM.
+Private Function InstalarCOM(ByVal rutaOrigen As String) As Boolean
+    On Error GoTo ErrHandler
+
+    Dim fso As Object
+    Dim rutaDestino As String
+    Dim rutaDLLOrigen As String
+    Dim rutaManifestOrigen As String
+    Dim rutaDLLDestino As String
+    Dim rutaManifestDestino As String
+
+    Set fso = CreateObject("Scripting.FileSystemObject")
+
+    rutaDestino = Application.UserLibraryPath
+
+    ' Rutas de origen
+    rutaDLLOrigen = rutaOrigen & COM_DLL_NOMBRE
+    rutaManifestOrigen = rutaOrigen & COM_MANIFEST_NOMBRE
+
+    ' Rutas de destino
+    rutaDLLDestino = rutaDestino & COM_DLL_NOMBRE
+    rutaManifestDestino = rutaDestino & COM_MANIFEST_NOMBRE
+
+    ' Verificar que existen los archivos de origen
+    If Not fso.FileExists(rutaDLLOrigen) Then
+        LogWarning MODULE_NAME, "[InstalarCOM] DLL no encontrada: " & rutaDLLOrigen
+        InstalarCOM = False
+        GoTo CleanUp
+    End If
+
+    If Not fso.FileExists(rutaManifestOrigen) Then
+        LogWarning MODULE_NAME, "[InstalarCOM] Manifest no encontrado: " & rutaManifestOrigen
+        InstalarCOM = False
+        GoTo CleanUp
+    End If
+
+    ' Eliminar archivos existentes si los hay
+    On Error Resume Next
+    If fso.FileExists(rutaDLLDestino) Then fso.DeleteFile rutaDLLDestino, True
+    If fso.FileExists(rutaManifestDestino) Then fso.DeleteFile rutaManifestDestino, True
+    On Error GoTo ErrHandler
+
+    ' Copiar DLL
+    fso.CopyFile rutaDLLOrigen, rutaDLLDestino, True
+    LogInfo MODULE_NAME, "[InstalarCOM] DLL copiada a: " & rutaDLLDestino
+
+    ' Copiar Manifest
+    fso.CopyFile rutaManifestOrigen, rutaManifestDestino, True
+    LogInfo MODULE_NAME, "[InstalarCOM] Manifest copiado a: " & rutaManifestDestino
+
+    InstalarCOM = True
+CleanUp:
+    Set fso = Nothing
+    Exit Function
+
+ErrHandler:
+    LogCurrentError MODULE_NAME, "[InstalarCOM]"
+    InstalarCOM = False
+    Resume CleanUp
+End Function
+
+'@Description: [DEPRECATED] Desinstala los archivos COM de la carpeta AddIns
+'@Note: Ya no se usa. El VBScript elimina el COM durante desinstalación.
+Private Function DesinstalarCOM() As Boolean
+    On Error GoTo ErrHandler
+
+    Dim fso As Object
+    Dim rutaDestino As String
+    Dim rutaDLL As String
+    Dim rutaManifest As String
+
+    Set fso = CreateObject("Scripting.FileSystemObject")
+
+    rutaDestino = Application.UserLibraryPath
+    rutaDLL = rutaDestino & COM_DLL_NOMBRE
+    rutaManifest = rutaDestino & COM_MANIFEST_NOMBRE
+
+    ' Eliminar DLL si existe
+    If fso.FileExists(rutaDLL) Then
+        fso.DeleteFile rutaDLL, True
+        LogInfo MODULE_NAME, "[DesinstalarCOM] DLL eliminada: " & rutaDLL
+    End If
+
+    ' Eliminar Manifest si existe
+    If fso.FileExists(rutaManifest) Then
+        fso.DeleteFile rutaManifest, True
+        LogInfo MODULE_NAME, "[DesinstalarCOM] Manifest eliminado: " & rutaManifest
+    End If
+
+    DesinstalarCOM = True
+
+CleanUp:
+    Set fso = Nothing
+    Exit Function
+
+ErrHandler:
+    LogCurrentError MODULE_NAME, "[DesinstalarCOM]"
+    DesinstalarCOM = False
+    Resume CleanUp
+End Function
+
 Function INSTALLSCRIPT_B64RC4() As String
 Attribute INSTALLSCRIPT_B64RC4.VB_ProcData.VB_Invoke_Func = " \n0"
     INSTALLSCRIPT_B64RC4 = _
