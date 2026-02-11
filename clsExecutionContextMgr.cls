@@ -7,8 +7,8 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
-'@Description: Manager del contexto de ejecuciï¿½n Excel. Recibe eventos del Listener (ThisWorkbook),
-'              actualiza State, emite eventos semï¿½nticos de infraestructura.
+'@Description: Manager del contexto de ejecución Excel. Recibe eventos del Listener (ThisWorkbook),
+'              actualiza State, emite eventos semánticos de infraestructura.
 '@Category: Manager
 '@Folder "2-Infraestructura"
 Option Explicit
@@ -16,7 +16,7 @@ Option Explicit
 Private Const MODULE_NAME As String = "clsExecutionContextMgr"
 
 ' ==========================================
-' EVENTOS SEMï¿½NTICOS DE INFRAESTRUCTURA
+' EVENTOS SEMÁNTICOS DE INFRAESTRUCTURA
 ' ==========================================
 Public Event WorkbookOpened(ByVal Wb As Workbook)
 Public Event WorkbookActivated(ByVal Wb As Workbook)
@@ -32,7 +32,7 @@ Private mState As clsExecutionContextState
 Private mChartMgr As clsChartMgr
 
 ' ==========================================
-' INICIALIZACIï¿½N
+' INICIALIZACIÓN
 ' ==========================================
 
 Private Sub Class_Initialize()
@@ -58,7 +58,7 @@ Public Property Get State() As clsExecutionContextState
 End Property
 
 ' ==========================================
-' Mï¿½TODOS DE ESTADO DE CONVENIENCIA
+' MÉTODOS DE ESTADO DE CONVENIENCIA
 ' ==========================================
 '@Description: Expone el State para lectura por consumidores
 Public Property Get ActiveWorkbook() As Workbook
@@ -86,7 +86,7 @@ Public Property Get ChartMgr() As clsChartMgr
     Set ChartMgr = mChartMgr
 End Property
 ' ==========================================
-' Mï¿½TODOS DEL LISTENER (llamados por ThisWorkbook)
+' MÉTODOS DEL LISTENER (llamados por ThisWorkbook)
 ' ==========================================
 
 Public Sub OnWorkbookOpened(ByVal Wb As Workbook)
@@ -227,7 +227,7 @@ Private Sub RefreshContextState()
 End Sub
 
 ' ==========================================
-' ELECCIï¿½N DE CHART (lï¿½gica privada del Mgr)
+' ELECCIÓN DE CHART (lógica privada del Mgr)
 ' ==========================================
 
 Private Sub DetectChart()

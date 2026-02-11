@@ -28,7 +28,7 @@ Private mEvMediatorDomain As clsEventsMediatorDomain
 
 Private mRibbon As clsRibbon
 
-' Estado centralizado de la aplicaciï¿½n
+' Estado centralizado de la aplicación
 Private mApplicationState As clsApplicationState
 
 Public Property Get ChartManager() As clsChartMgr
@@ -64,21 +64,21 @@ Public Property Get Configuration() As clsConfiguration
     Set Configuration = mConfiguration
 End Property
 
-'@Description: Obtiene el gestor de estado centralizado de la aplicaciï¿½n
+'@Description: Obtiene el gestor de estado centralizado de la aplicación
 Public Property Get AppState() As clsApplicationState
     Set AppState = mApplicationState
 End Property
 
 ' -------------------------------------------------------------
-' Class_Initialize: SOLO inicializaciï¿½n mï¿½nima (ligera y segura)
+' Class_Initialize: SOLO inicialización mínima (ligera y segura)
 ' NO debe hacer trabajo pesado ni depender de App
 ' -------------------------------------------------------------
 Private Sub Class_Initialize()
     On Error GoTo ErrHandler
 
     LogInfo MODULE_NAME, "[Class_Initialize] Iniciando aplicacion"
-    ' fixme: revisar que el orden de instanciaciï¿½n de cada componente es EL CORRECTO!!
-    ' (se ha intentado respetar el orden Infraestructura -> dominio -> UI -> Aplicaciï¿½n;
+    ' fixme: revisar que el orden de instanciación de cada componente es EL CORRECTO!!
+    ' (se ha intentado respetar el orden Infraestructura -> dominio -> UI -> Aplicación;
     ' y dentro de cada capa, primero los managers (que crean ellos mismos los State), luego
     ' los servicios y la configuracion de la capa; y finalmente mediadores de eventos, y coordinadores
 
@@ -90,13 +90,13 @@ Private Sub Class_Initialize()
 
     InitializeUI
 
-    LogInfo MODULE_NAME, "[Class_Initialize] inicializaciï¿½n completada"
+    LogInfo MODULE_NAME, "[Class_Initialize] inicialización completada"
     
     Exit Sub
 ErrHandler:
     LogCurrentError MODULE_NAME, "[Class_Initialize]"
     Err.Raise Err.Number, MODULE_NAME & "[Class_Initialize]", _
-              "Error inicializando aplicaciï¿½n: " & Err.Description
+              "Error inicializando aplicación: " & Err.Description
 End Sub
 Private Sub InitializeInfrastructure()
     On Error GoTo ErrHandler
@@ -175,7 +175,7 @@ End Sub
 Private Sub Class_Terminate()
     LogInfo MODULE_NAME, "[Terminate] Iniciando limpieza de la aplicacion"
 
-    On Error Resume Next  ' Asegurar que la limpieza continï¿½a aunque haya errores
+    On Error Resume Next  ' Asegurar que la limpieza continúa aunque haya errores
 
     ' ORDEN INVERSO A LA INSTANCIACION:
     ' Instanciacion: CtxMgr -> ChartMgr -> EventDispatcher -> FileMgr -> Configuration
@@ -217,7 +217,7 @@ Private Sub DisposeDomain()
     ' 4. Liberar proveedor de oportunidades
     Set mOpportunityProvider = Nothing
 
-    ' 5. Apagado explï¿½cito del monitor de archivos
+    ' 5. Apagado explícito del monitor de archivos
     If Not mFSMonitoringCoord Is Nothing Then
         mFSMonitoringCoord.Shutdown
         Set mFSMonitoringCoord = Nothing
