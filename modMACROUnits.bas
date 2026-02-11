@@ -5,7 +5,7 @@ Attribute VB_Name = "modMACROUnits"
 ' De momento la unica solucion aceptable es CREAR LOS RANGOS, definir los nombres ES INUTIL, porque Excel NO es capaz de usarlos
 '==========================================
 
-'@Folder "6-DOMINIO-Oportunidades y compresores.b-Calculos técnicos"
+'@Folder "3-Dominio.b-Calculos técnicos"
 Option Explicit
 
 Private Const MODULE_NAME As String = "modMACROUnits"

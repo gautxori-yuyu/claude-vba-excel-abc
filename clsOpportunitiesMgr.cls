@@ -180,13 +180,13 @@ End Function
 
 '@Description: Verifica si una oportunidad existe en la coleccion
 Public Function OpportunityExists(ByVal opportunityName As String) As Boolean
-    Dim item As Variant
-    For Each item In mOpportunities
-        If StrComp(CStr(item), opportunityName, vbTextCompare) = 0 Then
+    Dim Item As Variant
+    For Each Item In mOpportunities
+        If StrComp(CStr(Item), opportunityName, vbTextCompare) = 0 Then
             OpportunityExists = True
             Exit Function
         End If
-    Next item
+    Next Item
 End Function
 
 '@Description: Procesa cambios detectados por el watcher en carpetas de oportunidad

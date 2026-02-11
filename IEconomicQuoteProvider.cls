@@ -26,7 +26,7 @@ Attribute VB_Exposed = False
 ' Implementada por: FileSystemEconomicQuoteProvider (infraestructura)
 ' ==================================================================
 
-'@Folder "6-DOMINIO-Oportunidades y compresores"
+'@Folder "3-Dominio"
 Option Explicit
 
 ' ==================================================================

@@ -281,4 +281,3 @@ ErrHandler:
     LogCurrentError MODULE_NAME, "[DetectChart]"
 End Sub
 
-

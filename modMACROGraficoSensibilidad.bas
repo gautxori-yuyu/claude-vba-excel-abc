@@ -1,6 +1,6 @@
 Attribute VB_Name = "modMACROGraficoSensibilidad"
 
-'@Folder "6-DOMINIO-Oportunidades y compresores.b-Calculos técnicos"
+'@Folder "3-Dominio.b-Calculos técnicos"
 Option Explicit
 
 Private Const MODULE_NAME As String = "modMACROGraficoSensibilidad"
@@ -9,7 +9,7 @@ Dim iSeriesNr As Integer
 
 Public Function EsFicheroOportunidad() As Boolean
 Attribute EsFicheroOportunidad.VB_Description = "[modMACROGraficoSensibilidad] Es Fichero Oportunidad (función personalizada). Aplica a: ActiveWorkbook"
-Attribute EsFicheroOportunidad.VB_ProcData.VB_Invoke_Func = " \n23"
+Attribute EsFicheroOportunidad.VB_ProcData.VB_Invoke_Func = " \n21"
     Dim re As Object: Set re = CreateObject("VBScript.RegExp")
     re.Pattern = "^[A-Z]{3}\d{5}_\d{2}"          ' patrón esperado en el nombre del fichero
     re.IgnoreCase = True
@@ -22,10 +22,10 @@ End Function
 
 Public Function EsValidoGenerarGrafico() As Boolean
 Attribute EsValidoGenerarGrafico.VB_Description = "[modMACROGraficoSensibilidad] Es Valido Generar Grafico (función personalizada). Aplica a: ActiveWorkbook|Cells Range"
-Attribute EsValidoGenerarGrafico.VB_ProcData.VB_Invoke_Func = " \n23"
+Attribute EsValidoGenerarGrafico.VB_ProcData.VB_Invoke_Func = " \n21"
     'On Error GoTo ErrorHandler
     Dim hoja As Worksheet
-    Dim r As Range
+    Dim R As Range
     Dim encabezados As Range, datos As Range
     Dim formula As String
     
@@ -43,16 +43,16 @@ Attribute EsValidoGenerarGrafico.VB_ProcData.VB_Invoke_Func = " \n23"
         ' Validar que la tabla comience en A1
         If hoja.ListObjects(1).Range.Cells(1, 1).Address <> "$A$1" Then GoTo ErrorHandler
         
-        Set r = hoja.Range("A1").CurrentRegion
-        If r.Rows.Count < 2 Or r.Columns.Count < 2 Then GoTo Siguiente
+        Set R = hoja.Range("A1").CurrentRegion
+        If R.Rows.Count < 2 Or R.Columns.Count < 2 Then GoTo Siguiente
         
         ' Validar encabezados (fila 1, desde la segunda columna)
-        Set encabezados = r.Rows(1).Offset(0, 1).Resize(1, r.Columns.Count - 1)
+        Set encabezados = R.Rows(1).Offset(0, 1).Resize(1, R.Columns.Count - 1)
         formula = "SUMPRODUCT(--ISNUMBER(SEARCH(""("", " & encabezados.Address(External:=True) & ")))"
         If Evaluate(formula) <> encabezados.Columns.Count Then GoTo ErrorHandler
         
         ' Validar datos numéricos (todo menos la primera fila y primera columna)
-        Set datos = r.Offset(1, 1).Resize(r.Rows.Count - 1, r.Columns.Count - 1)
+        Set datos = R.Offset(1, 1).Resize(R.Rows.Count - 1, R.Columns.Count - 1)
         formula = "SUMPRODUCT(--ISNUMBER(" & datos.Address(External:=True) & "))"
         If Evaluate(formula) <> datos.Cells.Count Then GoTo ErrorHandler
         
@@ -68,7 +68,7 @@ End Function
 ' Comprueba si el gráfico activo es válido para invertir ejes
 Public Function EsValidoInvertirEjes() As Boolean
 Attribute EsValidoInvertirEjes.VB_Description = "[modMACROGraficoSensibilidad] Comprueba si el gráfico activo es válido para invertir ejes. Aplica a: Selection|ActiveWorkbook|ActiveSheet"
-Attribute EsValidoInvertirEjes.VB_ProcData.VB_Invoke_Func = " \n23"
+Attribute EsValidoInvertirEjes.VB_ProcData.VB_Invoke_Func = " \n21"
     'On Error Resume Next
     Dim Ch As Chart
     Select Case True
@@ -499,7 +499,7 @@ End Sub
 ' Agrupa columnas por variación y etiquetas sin solapamiento
 Private Sub AgruparColumnasPorVariacion(ws As Worksheet, columnas() As Long, ByRef grupo1() As Long, ByRef grupo2() As Long)
     On Error GoTo ManejoErrores
-    Dim i As Long, r As Long, lastRow As Long
+    Dim i As Long, R As Long, lastRow As Long
     Dim minVal As Double, maxVal As Double
     Dim variaciones() As Double
     Dim etiquetas() As String
@@ -512,14 +512,14 @@ Private Sub AgruparColumnasPorVariacion(ws As Worksheet, columnas() As Long, ByR
     For i = LBound(columnas) To UBound(columnas)
         minVal = CDbl(ws.Cells(2, columnas(i)).Value)
         maxVal = minVal
-        For r = 3 To lastRow
-            If IsNumeric(ws.Cells(r, columnas(i)).Value) Then
+        For R = 3 To lastRow
+            If IsNumeric(ws.Cells(R, columnas(i)).Value) Then
                 Dim valor As Double
-                valor = Round(CDbl(ws.Cells(r, columnas(i)).Value), 8)
+                valor = Round(CDbl(ws.Cells(R, columnas(i)).Value), 8)
                 If valor < Round(minVal, 8) Then minVal = valor
                 If valor > Round(maxVal, 8) Then maxVal = valor
             End If
-        Next r
+        Next R
         variaciones(i) = Round(maxVal - minVal, 8)
         etiquetas(i) = ExtraerTextoEnParentesis(ws.Cells(1, columnas(i)).Value)
     Next i
@@ -591,17 +591,17 @@ Private Sub AjustarEjeDesdeDatos(axis As axis, ws As Worksheet, cols() As Long)
     On Error GoTo ManejoErrores
     Dim minVal As Double: minVal = WorksheetFunction.Max(ws.Cells.Rows.Count, 1)
     Dim maxVal As Double: maxVal = WorksheetFunction.Min(ws.Cells.Rows.Count, 1)
-    Dim i As Long, r As Long, Value As Variant
+    Dim i As Long, R As Long, Value As Variant
     Dim lastRow As Long: lastRow = ws.Cells(ws.Rows.Count, cols(0)).End(xlUp).Row
     
     For i = LBound(cols) To UBound(cols)
-        For r = 2 To lastRow
-            Value = ws.Cells(r, cols(i)).Value
+        For R = 2 To lastRow
+            Value = ws.Cells(R, cols(i)).Value
             If IsNumeric(Value) Then
                 If Value < minVal Then minVal = Value
                 If Value > maxVal Then maxVal = Value
             End If
-        Next r
+        Next R
     Next i
     
     ' Ajustes según múltiplos de 5 y 10
@@ -764,15 +764,15 @@ Private Function ConcatenarTextosEntreParentesis(ws As Worksheet, cols() As Long
         If Len(texto) > 0 Then
             texto = ExtraerTextoEnParentesis(texto)
             If Len(texto) > 0 Then
-                Dim partes() As String, j As Long
+                Dim partes() As String, J As Long
                 partes = Split(texto, ",")
-                For j = LBound(partes) To UBound(partes)
+                For J = LBound(partes) To UBound(partes)
                     Dim parte As String
-                    parte = Trim(partes(j))
+                    parte = Trim(partes(J))
                     If Len(parte) > 0 And Not dictUniq.Exists(parte) Then
                         dictUniq.Add parte, True
                     End If
-                Next j
+                Next J
             End If
         End If
     Next i

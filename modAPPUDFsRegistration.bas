@@ -20,7 +20,7 @@ Attribute VB_Name = "modAPPUDFsRegistration"
 '  - Nuevos atributos: @Example, @Raises, @Throws, @Dependencies
 '  - Ver clsVBAProcedure.ParsearMetadataCompleta() para detalles
 
-'@Folder "1-Inicio e Instalacion.Gestion de modulos y procs"
+'@Folder "1-Aplicacion.2-Gestion de modulos y procs"
 Option Explicit
 
 Private Const MODULE_NAME As String = "modAPPUDFsRegistration"

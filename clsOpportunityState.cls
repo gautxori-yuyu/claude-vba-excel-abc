@@ -9,7 +9,7 @@ Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
 '@Description: Estado relacionado con la oportunidad actual
 '@Category: State
-'@Folder "5-Aplicac (Coord).Estado"
+'@Folder "3-Dominio.1-Estado"
 Option Explicit
 
 Private Const MODULE_NAME As String = "clsOpportunityState"

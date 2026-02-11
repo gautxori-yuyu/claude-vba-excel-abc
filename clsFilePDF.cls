@@ -25,7 +25,7 @@ Attribute VB_Exposed = False
 ' mFileMgr.TrackFile pdfFile
 ' ==================================================================
 
-'@Folder "4-Servicios.Archivos.Tipos de archivos"
+'@Folder "2-Infraestructura.FS"
 '@Implements IFile
 Option Explicit
 
@@ -35,7 +35,38 @@ Private p_filePath As String
 Private p_fileInfo As Object                     ' Podría ser metadatos del PDF
 Private p_ObjectKey As Double
 
-' Implementación de IFile
+
+' ==================================================================
+' IMPLEMENTA LA INTERFAZ IFile
+' ==================================================================
+Implements IFile
+
+
+' ==================================================================
+' PROPIEDADES PÚBLICAS (API pública de la clase)
+' ==================================================================
+' Propiedades públicas
+Public Property Get ObjectKey() As Double
+    ObjectKey = p_ObjectKey
+End Property
+
+Public Property Get Path() As String
+    Path = p_filePath
+End Property
+
+Public Property Get Name() As String
+    Name = IFile_Name
+End Property
+
+Public Property Get IsOpportunityFile() As Boolean
+    ' Si está en una carpeta de oportunidad... o es de gasnet, valoracion, oferta, ...
+End Property
+
+'--------------------------------------------------------------
+' Estas propiedades Private son generadas automáticamente por VBA
+' cuando escribes "Implements IFile"
+' Delegan a las propiedades públicas
+'--------------------------------------------------------------
 Private Property Get IFile_ObjectKey() As Double
     IFile_ObjectKey = p_ObjectKey
 End Property
@@ -55,21 +86,15 @@ ErrHandler:
     IFile_Name = "(error)"
 End Property
 
-' Propiedades públicas
-Public Property Get ObjectKey() As Double
-    ObjectKey = p_ObjectKey
+Private Property Get IFile_IsOpportunityFile() As Boolean
+    IFile_IsOpportunityFile = Me.IsOpportunityFile
 End Property
 
-Public Property Get Path() As String
-    Path = p_filePath
-End Property
-
-Public Property Get Name() As String
-    Name = IFile_Name
-End Property
-
+' ==================================================================
+' Metodos publicos: vinculo entre Documento PDF y fichero
+' ==================================================================
 ' Método específico de PDF
-Public Sub BindTo(filePath As String)
+Public Sub BindTo(FilePath As String)
     On Error GoTo ErrHandler
 
     If p_ObjectKey <> 0 Then
@@ -79,14 +104,14 @@ Public Sub BindTo(filePath As String)
     Dim fso As Object
     Set fso = CreateObject("Scripting.FileSystemObject")
 
-    If Not fso.FileExists(filePath) Then
-        Err.Raise vbObjectError + 581, TypeName(Me), "El archivo no existe: " & filePath
+    If Not fso.FileExists(FilePath) Then
+        Err.Raise vbObjectError + 581, TypeName(Me), "El archivo no existe: " & FilePath
     End If
 
-    p_filePath = filePath
+    p_filePath = FilePath
     ' Para archivos en disco, usar hash del path como ObjectKey
-    p_ObjectKey = GetPathHashCode(filePath)
-    LogInfo MODULE_NAME, "[BindTo] Asociado a: " & filePath
+    p_ObjectKey = GetPathHashCode(FilePath)
+    LogInfo MODULE_NAME, "[BindTo] Asociado a: " & FilePath
     Exit Sub
 
 ErrHandler:

@@ -29,7 +29,7 @@ Public Event InfraContextReinitialized()
 '@Description: El archivo activo ha cambiado (traduccion de ActiveFileChanged)
 '@Param filePath: Ruta del archivo activo (vacio si ninguno)
 '@Param isOpportunityFile: True si el archivo es de una oportunidad
-Public Event ActiveFileSessionChanged(ByVal FilePath As String, ByVal isOpportunityFile As Boolean)
+Public Event ActiveFileSessionChanged(ByVal FilePath As String, ByVal IsOpportunityFile As Boolean)
 
 ' ==================================================================
 ' REFERENCIAS INTERNAS
@@ -41,7 +41,7 @@ Private WithEvents mFileMgr As clsFileManager
 Attribute mFileMgr.VB_VarHelpID = -1
 
 '--------------------------------------------------------------
-' Inicializaciï¿½n
+' Inicialización
 '--------------------------------------------------------------
 Private Sub Class_Initialize()
     LogInfo MODULE_NAME, "[Class_Initialize]"
@@ -59,7 +59,7 @@ Public Sub Initialize(oFileMgr As clsFileManager, oCtxMgr As clsExecutionContext
 ErrHandler:
     LogCurrentError MODULE_NAME, "[Initialize]"
     Err.Raise Err.Number, MODULE_NAME & " [Initialize]", _
-              "Error inicializando aplicaciï¿½n: " & Err.Description
+              "Error inicializando aplicación: " & Err.Description
 End Sub
 
 Public Sub Terminate()
@@ -70,7 +70,7 @@ Public Sub Terminate()
 ErrHandler:
     LogCurrentError MODULE_NAME, "[Terminate]"
     Err.Raise Err.Number, MODULE_NAME & " [Terminate]", _
-              "Error finalizando aplicaciï¿½n: " & Err.Description
+              "Error finalizando aplicación: " & Err.Description
 End Sub
 
 ' ==================================================================
@@ -82,12 +82,13 @@ End Sub
 ' -------------------------------------------------------------
 
 '@Description: Se dispara cuando se activa un workbook
-'@Category: Grï¿½ficos
+'@Category: Gráficos
 '@Scope: Grafico seleccionado
 '@ArgumentDescriptions: wb As Workbook
 
 Private Sub mCtxMgr_WorkbookActivated(ByVal Wb As Workbook)
     LogDebug MODULE_NAME, "[mCtx_WorkbookActivated] " & Wb.Name
+
     ' Actualizar el archivo activo en FileManager
     ' Esto dispara ActiveFileChanged -> sincroniza estado del ribbon
     If Not mFileMgr Is Nothing Then
@@ -99,18 +100,30 @@ Private Sub mCtxMgr_WorkbookActivated(ByVal Wb As Workbook)
 End Sub
 
 '@Description: Se dispara al activar una hoja; inicia vigilancia de graficos
-'@Category: Grï¿½ficos
+'@Category: Gráficos
 '@Scope: Grafico seleccionado
 '@ArgumentDescriptions: sh As Object
 
 Private Sub mCtxMgr_SheetActivated(ByVal Sh As Object)
     ' WatchSheet delegado a clsExecutionContextMgr (composicion interna con clsChartMgr)
-    LogDebug MODULE_NAME, "[mCtx_SheetActivated] " & Sh.Name
+    On Error GoTo ErrHandler
+
+    LogDebug MODULE_NAME, "[mCtx_SheetActivated] " & Sh.Name & "'"
+
+    Exit Sub
+ErrHandler:
+    LogError MODULE_NAME, "[mCtx_SheetActivated] Error", , Err.Description
 End Sub
 
 Private Sub mCtxMgr_SheetDeactivated(ByVal Sh As Object)
     ' StopWatching delegado a clsExecutionContextMgr (composicion interna con clsChartMgr)
-    LogDebug MODULE_NAME, "[mCtx_SheetDeactivated] " & Sh.Name
+    On Error GoTo ErrHandler
+
+    LogDebug MODULE_NAME, "[mCtx_SheetDeactivated] '" & Sh.Name & "'"
+
+    Exit Sub
+ErrHandler:
+    LogError MODULE_NAME, "[mCtx_SheetDeactivated] Error", , Err.Description
 End Sub
 
 ' -------------------------------------------------------------
@@ -120,11 +133,6 @@ End Sub
 '@Description: Callback cuando se abre un workbook
 Private Sub mCtxMgr_WorkbookOpened(ByVal Wb As Workbook)
     LogDebug MODULE_NAME, "[mCtx_WorkbookOpened] " & Wb.Name
-    ' TODO: asegurarse de que aquï¿½ NO HACE FALTA indexar el fichero en clsFileManager, porque YA SE HACE
-    ' EN mCtxMgr_WorkbookActivated
-'    If Not mFileMgr Is Nothing Then
-'        mFileMgr.GetOrTrackWorkbook Wb
-'    End If
 End Sub
 
 '@Description: Callback cuando se cierra un workbook
@@ -191,7 +199,7 @@ Private Sub mFileMgr_ActiveFileChanged(f As clsFileXLS)
         isOpp = False
     Else
         FilePath = f.Path
-        isOpp = mFileMgr.State.isOpportunityFile
+        isOpp = mFileMgr.State.IsOpportunityFile
     End If
 
     LogDebug MODULE_NAME, "[mFileMgr_ActiveFileChanged] -> ActiveFileSessionChanged: " & FilePath
@@ -203,3 +211,5 @@ Private Sub mFileMgr_ActiveFileChanged(f As clsFileXLS)
 ErrHandler:
     LogError MODULE_NAME, "[mFileMgr_ActiveFileChanged] Error traduciendo evento", , Err.Description
 End Sub
+
+

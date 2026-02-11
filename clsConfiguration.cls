@@ -10,7 +10,7 @@ Attribute VB_Exposed = False
 'TODO Migrar de Registry a archivo JSON para configuración (NO PRIORITARIO)
 'TODO Implementar importar/exportar configuración (NO PRIORITARIO)
 
-'@Folder "2-Infraestructura.Configuracion"
+'@Folder "2-Infraestructura.3-Configuracion"
 '@IgnoreModule ProcedureNotUsed
 Option Explicit
 

@@ -1,5 +1,5 @@
 Attribute VB_Name = "modMACROListarProyectosVBA"
-'@Folder "1-Inicio e Instalacion.Gestion de modulos y procs"
+'@Folder "1-Aplicacion.2-Gestion de modulos y procs"
 '@Ignore VariableNotUsed
 Option Explicit
 
@@ -97,7 +97,7 @@ Attribute ListarProyectosVBAIncluyendoXLAM.VB_ProcData.VB_Invoke_Func = " \n0"
         Debug.Print "   Tipo: " & tipoProyecto
         Debug.Print "   Archivo: " & vbProj.fileName
         Debug.Print "   HelpFile: " & vbProj.HelpFile
-        Debug.Print "   Mode: " & vbProj.mode
+        Debug.Print "   Mode: " & vbProj.Mode
         Debug.Print "----------------------------------"
     Next vbProj
     

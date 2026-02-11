@@ -7,7 +7,7 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
-'@Folder "2-Infraestructura.Excel"
+'@Folder "4-UI.Excel.Range Sel"
 Option Explicit
 
 Private Const MODULE_NAME As String = "CRefEdit"

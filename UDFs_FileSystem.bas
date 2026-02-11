@@ -7,7 +7,7 @@ Private Const MODULE_NAME As String = "UDFs_FileSystem"
 '@Description: Valida si una ruta de carpeta existe
 Public Function RutaExiste(ruta As String) As Boolean
 Attribute RutaExiste.VB_Description = "[UDFs_FileSystem] Valida si una ruta de carpeta existe"
-Attribute RutaExiste.VB_ProcData.VB_Invoke_Func = " \n23"
+Attribute RutaExiste.VB_ProcData.VB_Invoke_Func = " \n21"
     On Error Resume Next
     RutaExiste = ruta <> "" And (Dir(ruta, vbDirectory) <> "")
     On Error GoTo 0
@@ -18,7 +18,7 @@ End Function
 '@Returns: Boolean | True si es ruta de red o removible
 Function EsRutaRemovibleORed(ruta As String) As Boolean
 Attribute EsRutaRemovibleORed.VB_Description = "[UDFs_FileSystem] Determina si una ruta es de red o unidad removible"
-Attribute EsRutaRemovibleORed.VB_ProcData.VB_Invoke_Func = " \n23"
+Attribute EsRutaRemovibleORed.VB_ProcData.VB_Invoke_Func = " \n21"
     Dim fso As Object
     Dim drive As Object
     Dim driveLetter As String
@@ -59,7 +59,7 @@ End Function
 '@Returns: Boolean | True si es ruta de red
 Function IsNetworkPath(ByVal ruta As String) As Boolean
 Attribute IsNetworkPath.VB_Description = "[UDFs_FileSystem] Determina si una ruta es de red (UNC o unidad mapeada)"
-Attribute IsNetworkPath.VB_ProcData.VB_Invoke_Func = " \n23"
+Attribute IsNetworkPath.VB_ProcData.VB_Invoke_Func = " \n21"
     On Error Resume Next
     
     IsNetworkPath = False
@@ -104,7 +104,7 @@ End Function
 '@Description: Normaliza una ruta eliminando la barra final
 Function NormalizarRuta(ByVal ruta As String) As String
 Attribute NormalizarRuta.VB_Description = "[UDFs_FileSystem] Normaliza una ruta eliminando la barra final"
-Attribute NormalizarRuta.VB_ProcData.VB_Invoke_Func = " \n23"
+Attribute NormalizarRuta.VB_ProcData.VB_Invoke_Func = " \n21"
     If Right(ruta, 1) = "\" Then
         NormalizarRuta = Left(ruta, Len(ruta) - 1)
     Else
@@ -115,7 +115,7 @@ End Function
 '@Description: Obtiene el nombre de una carpeta de su ruta completa
 Function ObtenerNombreCarpeta(ByVal rutaCompleta As String) As String
 Attribute ObtenerNombreCarpeta.VB_Description = "[UDFs_FileSystem] Obtiene el nombre de una carpeta de su ruta completa"
-Attribute ObtenerNombreCarpeta.VB_ProcData.VB_Invoke_Func = " \n23"
+Attribute ObtenerNombreCarpeta.VB_ProcData.VB_Invoke_Func = " \n21"
     Dim fso As Object
     Set fso = CreateObject("Scripting.FileSystemObject")
     
@@ -128,7 +128,7 @@ End Function
 
 Function ObtenerRutaEjecutable(nombreExe As String) As String
 Attribute ObtenerRutaEjecutable.VB_Description = "[UDFs_FileSystem] Obtener Ruta Ejecutable (función personalizada)"
-Attribute ObtenerRutaEjecutable.VB_ProcData.VB_Invoke_Func = " \n23"
+Attribute ObtenerRutaEjecutable.VB_ProcData.VB_Invoke_Func = " \n21"
     Dim objShell As Object
     Dim objExec As Object
     Dim comando As String

@@ -12,7 +12,7 @@ Attribute VB_Name = "modMACROImportExportMacros"
 ' - en Excel: Archivo > Opciones > Centro de confianza > Configuración del Centro de confianza
 '       > Configuración de macros > marca "Confiar en el acceso al modelo de objetos del proyecto VBA".
 
-'@Folder "0-Developer"
+'@Folder "9-Developer"
 Option Explicit
 
 Private Const MODULE_NAME As String = "modMACROImportExportMacros"
@@ -141,7 +141,7 @@ Attribute ImportarComponentesVBA.VB_ProcData.VB_Invoke_Func = " \n0"
     Set fso = CreateObject("Scripting.FileSystemObject")
     Set carpeta = fso.GetFolder(rutaImportacion)
     
-    For Each archivo In carpeta.Files
+    For Each archivo In carpeta.files
         extension = LCase(fso.GetExtensionName(archivo.Name))
         If extension = "bas" Or extension = "cls" Or extension = "frm" Then
             Wb.VBProject.VBComponents.Import archivo.Path
@@ -193,7 +193,7 @@ Attribute RestaurarBackupVBADesdeZip.VB_ProcData.VB_Invoke_Func = " \n0"
     ' Esperar a que termine la descompresión
     Dim intentos As Integer
     intentos = 0
-    Do While fso.GetFolder(rutaTempDescompresion).Files.Count = 0 And intentos < 50
+    Do While fso.GetFolder(rutaTempDescompresion).files.Count = 0 And intentos < 50
         DoEvents
         Sleep 200
         intentos = intentos + 1
@@ -208,7 +208,7 @@ Attribute RestaurarBackupVBADesdeZip.VB_ProcData.VB_Invoke_Func = " \n0"
         Dim archivo As Object
         Dim extension As String
         
-        For Each archivo In fso.GetFolder(rutaTempDescompresion).Files
+        For Each archivo In fso.GetFolder(rutaTempDescompresion).files
             extension = LCase(fso.GetExtensionName(archivo.Name))
             If extension = "bas" Or extension = "cls" Or extension = "frm" Then
                 ' Intentar eliminar componente existente
@@ -252,7 +252,7 @@ Attribute ImportarComponentesVBAaThisWorkbookXLAM.VB_ProcData.VB_Invoke_Func = "
     Set fso = CreateObject("Scripting.FileSystemObject")
     Set carpeta = fso.GetFolder(rutaImportacion)
     
-    For Each archivo In carpeta.Files
+    For Each archivo In carpeta.files
         extension = LCase(fso.GetExtensionName(archivo.Name))
         If extension = "bas" Or extension = "cls" Or extension = "frm" Then
             ThisWorkbook.VBProject.VBComponents.Import archivo.Path

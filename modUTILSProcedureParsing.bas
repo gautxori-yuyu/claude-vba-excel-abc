@@ -32,8 +32,8 @@ Attribute ParsearUDFsDeTodosLosProyectos.VB_ProcData.VB_Invoke_Func = " \n21"
         
             oDicUDFs.Add vbeProj.fileName, CreateObject("Scripting.Dictionary")
             For Each key In oDicProcs
-                If oDicProcs.item(key).ProcedureType = udf Then
-                    oDicUDFs(vbeProj.fileName).Add oDicProcs.item(key).Name, Empty
+                If oDicProcs.Item(key).ProcedureType = udf Then
+                    oDicUDFs(vbeProj.fileName).Add oDicProcs.Item(key).Name, Empty
                 End If
             Next key
             If oDicUDFs(vbeProj.fileName).Count = 0 Then oDicUDFs.Remove (vbeProj.fileName)
@@ -147,16 +147,14 @@ Private Function getProcCode(CodeModule As Object, procName As String, PKind As 
         
         ' ... y hay que corregir el final, tampoco termina bien los bloques de función
         re.Pattern = "\bFunction|Sub|Property\b"
-        re.Pattern = "^\s*End\s+" & re.Execute(CodeModule.Lines(.procSignatureLine, 1)).item(0).Value
+        re.Pattern = "^\s*End\s+" & re.Execute(CodeModule.Lines(.procSignatureLine, 1)).Item(0).Value
         i = .procStartLine
         .strCode = CodeModule.Lines(i, 1)
         Do
             i = i + 1
             .strCode = .strCode & vbCrLf & CodeModule.Lines(i, 1)
-            'If i - .procStartLine > 500 Then Stop
         Loop Until (i = CodeModule.CountOfLines) Or re.Test(CodeModule.Lines(i, 1))
         
-        '.procWrongEndLines = .procNumLines - (i - .procStartLine + 1) ' ESTAS LINEAS DEBEN ASOCIARSE AL PROCEDIMIENTO SIGUIENTE
         .procNumLines = i - .procStartLine + 1
     End With
     

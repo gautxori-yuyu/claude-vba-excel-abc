@@ -7,7 +7,7 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
-'@Folder "3-UI.TaskDialog"
+'@Folder "4-UI.TaskDialog"
 Option Explicit
 
 '************************************************************
@@ -1397,9 +1397,9 @@ End If
 End Property
 Public Property Get ComboCueBanner() As String: ComboCueBanner = m_sComboCue: End Property
 
-Public Property Let InputPasswordChar(ByVal ch As Integer)
-    If ch <> mPassChar Then
-        mPassChar = ch
+Public Property Let InputPasswordChar(ByVal Ch As Integer)
+    If Ch <> mPassChar Then
+        mPassChar = Ch
         If hEditBox Then
             SendMessageW hEditBox, EM_SETPASSWORDCHAR, mPassChar, ByVal 0&
             SetFocusAPI hEditBox 'necessary to get the change visible
@@ -4295,12 +4295,12 @@ CBX_InsertItem = CLng(SendMessageW(hCB, CBEM_INSERTITEMW, 0, cbxi))
 End Function
 Private Function GetComboTextW(hEdit As LongPtr) As String
 Dim bytS() As Byte
-Dim ch As Long
-ch = CLng(SendMessageW(hEdit, WM_GETTEXTLENGTH, 0, ByVal 0&) * 2 + 1)
-ReDim Preserve bytS(ch)
-ch = CLng(SendMessageW(hEdit, WM_GETTEXT, ch, ByVal VarPtr(bytS(0)))) * 2 - 1
-If ch >= 0 Then
-    ReDim Preserve bytS(ch)
+Dim Ch As Long
+Ch = CLng(SendMessageW(hEdit, WM_GETTEXTLENGTH, 0, ByVal 0&) * 2 + 1)
+ReDim Preserve bytS(Ch)
+Ch = CLng(SendMessageW(hEdit, WM_GETTEXT, Ch, ByVal VarPtr(bytS(0)))) * 2 - 1
+If Ch >= 0 Then
+    ReDim Preserve bytS(Ch)
 End If
 GetComboTextW = CStr(bytS)
 

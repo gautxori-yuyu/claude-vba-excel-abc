@@ -16,7 +16,7 @@ Attribute VB_Exposed = False
 ' El dominio solo ve IOpportunity; esta clase sabe hablar Excel.
 ' ==================================================================
 
-'@Folder "2-Infraestructura.Adaptadores"
+'@Folder "2-Infraestructura.5-1-Adaptadores.Excel"
 Option Explicit
 Implements IOpportunity
 

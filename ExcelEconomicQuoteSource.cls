@@ -25,7 +25,7 @@ Attribute VB_Exposed = False
 ' Patron de nombre: ^(\d{9})(?:[\-_](\d+))?(?:[ \-_]*rev\.?[ \-_]*(\d+))?.*\.xls[xm]$
 ' ==================================================================
 
-'@Folder "2-Infraestructura.Sources"
+'@Folder "2-Infraestructura.5-1-Adaptadores.Excel"
 Option Explicit
 Implements IEconomicQuote
 
@@ -75,18 +75,18 @@ End Sub
 '@Description: Inicializa el source con la informacion parseada del nombre de fichero
 '@Param filePath: Ruta completa del fichero de valoracion
 '@Param parsedInfo: Dictionary con QuoteNumber, CompressorIndex, Revision, etc.
-Public Sub Initialize(ByVal filePath As String, parsedInfo As Object)
+Public Sub Initialize(ByVal FilePath As String, parsedInfo As Object)
     On Error GoTo ErrHandler
 
-    mFilePath = filePath
+    mFilePath = FilePath
 
     ' Extraer nombre de fichero y fecha de modificacion
     Dim fso As Object
     Set fso = CreateObject("Scripting.FileSystemObject")
 
-    If fso.FileExists(filePath) Then
-        mFileName = fso.GetFileName(filePath)
-        mLastModified = fso.GetFile(filePath).DateLastModified
+    If fso.FileExists(FilePath) Then
+        mFileName = fso.GetFileName(FilePath)
+        mLastModified = fso.GetFile(FilePath).DateLastModified
         mIsNew = False
     Else
         mIsNew = True
@@ -199,16 +199,16 @@ End Function
 ' PROPIEDADES PUBLICAS
 ' ==================================================================
 
-Public Property Get QuoteNumber() As String
-    QuoteNumber = mQuoteNumber
+Public Property Get quoteNumber() As String
+    quoteNumber = mQuoteNumber
 End Property
 
 Public Property Get CompressorIndex() As String
     CompressorIndex = mCompressorIndex
 End Property
 
-Public Property Get QuoteId() As String
-    QuoteId = mQuoteId
+Public Property Get quoteId() As String
+    quoteId = mQuoteId
 End Property
 
 Public Property Get Revision() As Long
@@ -219,8 +219,8 @@ Public Property Get FilePath() As String
     FilePath = mFilePath
 End Property
 
-Public Property Get FileName() As String
-    FileName = mFileName
+Public Property Get fileName() As String
+    fileName = mFileName
 End Property
 
 Public Property Get IsValid() As Boolean

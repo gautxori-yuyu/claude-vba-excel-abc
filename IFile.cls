@@ -14,7 +14,7 @@ Attribute VB_Exposed = True
 ' que puedan ser gestionadas por clsFileManager
 ' ==================================================================
 
-'@Folder "4-Servicios.Archivos.Tipos de archivos"
+'@Folder "2-Infraestructura.FS"
 '@Interface
 '@IgnoreModule MissingAnnotationArgument
 Option Explicit
@@ -25,19 +25,25 @@ Private Const MODULE_NAME As String = "IFile"
 '@Returns: Double - Puntero al objeto subyacente
 Public Property Get ObjectKey() As Double
     ' Las interfaces en VBA deben lanzar error o no hacer nada
-    Err.Raise 5, "IFile", "ObjectKey debe implementarse en clase concreta"
+    Err.Raise 5, MODULE_NAME, "ObjectKey debe implementarse en clase concreta"
 End Property
 
 '@Description: Ruta completa del archivo
 '@Returns: String - Path completo o "(cerrado)" si no disponible
 Public Property Get Path() As String
-    Err.Raise 5, "IFile", "Path debe implementarse en clase concreta"
+    Err.Raise 5, MODULE_NAME, "Path debe implementarse en clase concreta"
 End Property
 
 '@Description: Nombre del archivo (sin ruta)
 '@Returns: String - Nombre del archivo
 Public Property Get Name() As String
-    Err.Raise 5, "IFile", "Name debe implementarse en clase concreta"
+    Err.Raise 5, MODULE_NAME, "Name debe implementarse en clase concreta"
+End Property
+
+'@Description: Si el fichero pertenece a una oportunidad
+'@Returns: Boolean
+Public Property Get IsOpportunityFile() As Boolean
+    Err.Raise 5, MODULE_NAME, "IsOpportunityFile debe implementarse en clase concreta"
 End Property
 
 ' ==================================================================

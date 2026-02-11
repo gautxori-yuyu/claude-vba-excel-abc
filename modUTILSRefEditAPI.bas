@@ -1,12 +1,12 @@
 Attribute VB_Name = "modUTILSRefEditAPI"
-'@Folder "2-Infraestructura.Excel"
+'@Folder "4-UI.Excel.Range Sel"
 Option Explicit
 
 Private Const MODULE_NAME As String = "modUTILSRefEditAPI"
 
 Private Type POINTAPI
-    x As Long
-    y As Long
+    X As Long
+    Y As Long
 End Type
 
 Private Type RECT
@@ -24,19 +24,19 @@ End Type
         Private Declare PtrSafe Function SetWindowLong Lib "user32" Alias "SetWindowLongW" (ByVal hwnd As LongPtr, ByVal nIndex As Long, ByVal dwNewLong As Long) As LongPtr
         Private Declare PtrSafe Function GetWindowLong Lib "user32" Alias "GetWindowLongA" (ByVal hwnd As LongPtr, ByVal nIndex As Long) As LongPtr
     #End If
-    Private Declare PtrSafe Sub MoveMemory Lib "kernel32" Alias "RtlMoveMemory" (ByVal Destination As Any, ByVal source As Any, ByVal Length As LongPtr)
-    Private Declare PtrSafe Sub CopyMemory Lib "kernel32" Alias "RtlMoveMemory" (Destination As Any, source As Any, ByVal Length As LongPtr)
+    Private Declare PtrSafe Sub MoveMemory Lib "kernel32" Alias "RtlMoveMemory" (ByVal Destination As Any, ByVal Source As Any, ByVal Length As LongPtr)
+    Private Declare PtrSafe Sub CopyMemory Lib "kernel32" Alias "RtlMoveMemory" (Destination As Any, Source As Any, ByVal Length As LongPtr)
     Private Declare PtrSafe Function IUnknown_GetWindow Lib "shlwapi" Alias "#172" (ByVal pIUnk As IUnknown, ByVal hUf As LongPtr) As Long
-    Private Declare PtrSafe Function GetDeviceCaps Lib "gdi32" (ByVal hdc As LongPtr, ByVal nIndex As Long) As Long
+    Private Declare PtrSafe Function GetDeviceCaps Lib "gdi32" (ByVal hDC As LongPtr, ByVal nIndex As Long) As Long
     Private Declare PtrSafe Function GetDC Lib "user32" (ByVal hwnd As LongPtr) As LongPtr
-    Private Declare PtrSafe Function SetWindowPos Lib "user32" (ByVal hwnd As LongPtr, ByVal hWndInsertAfter As LongPtr, ByVal x As Long, ByVal y As Long, ByVal cx As Long, ByVal cy As Long, ByVal wFlags As Long) As Long
+    Private Declare PtrSafe Function SetWindowPos Lib "user32" (ByVal hwnd As LongPtr, ByVal hWndInsertAfter As LongPtr, ByVal X As Long, ByVal Y As Long, ByVal CX As Long, ByVal CY As Long, ByVal wFlags As Long) As Long
     Private Declare PtrSafe Function GetWindowText Lib "user32" Alias "GetWindowTextA" (ByVal hwnd As LongPtr, ByVal lpString As String, ByVal cch As Long) As Long
     Private Declare PtrSafe Function GetClassName Lib "user32" Alias "GetClassNameA" (ByVal hwnd As LongPtr, ByVal lpClassName As String, ByVal nMaxCount As Long) As Long
     Private Declare PtrSafe Function CallWindowProc Lib "user32" Alias "CallWindowProcA" (ByVal lpPrevWndFunc As LongPtr, ByVal hwnd As LongPtr, ByVal msg As Long, ByVal wParam As LongPtr, ByVal lParam As LongPtr) As LongPtr
     Private Declare PtrSafe Function GetCurrentThreadId Lib "kernel32" () As Long
     Private Declare PtrSafe Function CallNextHookEx Lib "user32" (ByVal hKBhook As LongPtr, ByVal ncode As Long, ByVal wParam As LongPtr, lParam As Any) As LongPtr
     Private Declare PtrSafe Function UnhookWindowsHookEx Lib "user32" (ByVal hKBhook As LongPtr) As Long
-    Private Declare PtrSafe Function SetWindowsHookEx Lib "user32" Alias "SetWindowsHookExA" (ByVal idHook As Long, ByVal lpfn As LongPtr, ByVal hmod As LongPtr, ByVal dwThreadId As Long) As LongPtr
+    Private Declare PtrSafe Function SetWindowsHookEx Lib "user32" Alias "SetWindowsHookExA" (ByVal idHook As Long, ByVal lpFN As LongPtr, ByVal hmod As LongPtr, ByVal dwThreadId As Long) As LongPtr
     Private Declare PtrSafe Function GetModuleHandle Lib "kernel32" Alias "GetModuleHandleA" (ByVal lpModuleName As String) As LongPtr
     Private Declare PtrSafe Function GetWindowRect Lib "user32" (ByVal hwnd As LongPtr, lpRect As RECT) As Long
     Private Declare PtrSafe Function GetWindow Lib "user32" (ByVal hwnd As LongPtr, ByVal wFlag As Long) As LongPtr
@@ -49,7 +49,7 @@ End Type
     Private Declare PtrSafe Function ShowCursor Lib "user32" (ByVal bShow As Long) As Long
     Private Declare PtrSafe Function FindWindow Lib "user32" Alias "FindWindowA" (ByVal lpClassName As String, ByVal lpWindowName As String) As LongPtr
     Private Declare PtrSafe Function ShowWindow Lib "user32" (ByVal hwnd As LongPtr, ByVal nCmdShow As Long) As Long
-    Private Declare PtrSafe Function ReleaseDC Lib "user32" (ByVal hwnd As LongPtr, ByVal hdc As LongPtr) As Long
+    Private Declare PtrSafe Function ReleaseDC Lib "user32" (ByVal hwnd As LongPtr, ByVal hDC As LongPtr) As Long
     Private Declare PtrSafe Function ScreenToClient Lib "user32" (ByVal hwnd As LongPtr, lpPoint As POINTAPI) As Long
     Private Declare PtrSafe Function PostMessage Lib "user32" Alias "PostMessageA" (ByVal hwnd As LongPtr, ByVal wMsg As Long, ByVal wParam As LongPtr, ByVal lParam As LongPtr) As Long
     Private Declare PtrSafe Function GetFocus Lib "user32" () As LongPtr
@@ -166,7 +166,7 @@ End Sub
 
 Public Function IsFormModal(frm As Object) As Boolean
 Attribute IsFormModal.VB_Description = "[modUTILSRefEditAPI] Is Form Modal (función personalizada)"
-Attribute IsFormModal.VB_ProcData.VB_Invoke_Func = " \n23"
+Attribute IsFormModal.VB_ProcData.VB_Invoke_Func = " \n21"
     IsFormModal = Not CBool(SetFocus(Application.hwnd))
     Call IUnknown_GetWindow(frm, VarPtr(hwndFrm))
     Call SetFocus(hwndFrm)
@@ -213,12 +213,12 @@ If idHook = HCBT_ACTIVATE Then
         Call GetWindowRect(hwndFrm, tFrmRect)
         Call GetWindowRect(RefEditHwnd, tRefRect)
         With tRefRect
-            p1.x = .Left: p1.y = .Top
-            p2.x = .Right + 15: p2.y = .Bottom
+            p1.X = .Left: p1.Y = .Top
+            p2.X = .Right + 15: p2.Y = .Bottom
         End With
         Call ScreenToClient(wParam, p1)
         Call ScreenToClient(wParam, p2)
-        lp = MakeLong_32_64(p2.x, p1.y)
+        lp = MakeLong_32_64(p2.X, p1.Y)
         With tFrmRect
             Call SetWindowPos(wParam, -1, .Left, .Top, _
                               PTtoPX(dblTextboxwidth, False), 0, SWP_SHOWWINDOW + SWP_NOACTIVATE)

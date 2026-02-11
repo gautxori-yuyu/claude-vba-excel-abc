@@ -8,7 +8,7 @@ Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
 '@Exposed
-'@Folder "1-Inicio e Instalacion.Gestion de modulos y procs"
+'@Folder "1-Aplicacion.2-Gestion de modulos y procs"
 '@IgnoreModule MissingAnnotationArgument
 Option Explicit
 
@@ -129,6 +129,7 @@ Private Function TipoProcedimiento(ByVal firmaNormalizada As String) As ProcType
     If acceso = "" Then acceso = "public"
     
     If InStr(m.SubMatches(2), "_") > 0 Then
+        ' FIXME: revisar esto: NO SIEMPRE un procedimiento con '_' es un evento... debería perfeccionarse este criterio
         TipoProcedimiento = ProcType.eventHandler
         ' Normalmente deberían ser privados, dentro de una clase que instancie un objeto de otra clase que implemente eventos
         'If acceso <> "private" Then Stop
@@ -139,16 +140,13 @@ Private Function TipoProcedimiento(ByVal firmaNormalizada As String) As ProcType
         TipoProcedimiento = ProcType.internalSubPublicWithParams
     ElseIf acceso <> "public" Or bPrivateModule Or ContainerType <> StdModule Or InStr(tipo, "property") > 0 Then
         TipoProcedimiento = ProcType.internalPrivate
+    ElseIf EsFirmaMacro(firmaNormalizada) Then
+        TipoProcedimiento = ProcType.Macro
+    ElseIf EsFirmaUDFCompleta(firmaNormalizada) Then
+        ' UNA UDF solo puede tener como parametros, VALORES (numero, texto, boolean) o RANGEs
+        TipoProcedimiento = ProcType.udf
     Else
-        Select Case LCase$(tipo)
-        Case "sub"
-            TipoProcedimiento = ProcType.Macro
-        Case "function"
-            TipoProcedimiento = ProcType.udf
-        Case Else
-            LogError MODULE_NAME, "[TipoProcedimiento] Tipo de procedimiento no reconocido: " & tipo
-            Stop                                 ' depurar la causa
-        End Select
+        LogError MODULE_NAME, "[TipoProcedimiento] Tipo de procedimiento no reconocido: " & tipo
     End If
     
     ' FIXME: establece los valores de PKind y Returns, en funcion del parsing realizado en este procedimiento
@@ -178,6 +176,48 @@ Private Function TipoProcedimiento(ByVal firmaNormalizada As String) As ProcType
 ErrorHandler:
     LogCurrentError MODULE_NAME, "[TipoProcedimiento] Error al procesar Code con expresiones regulares"
     Err.Raise Err.Number, MODULE_NAME & " [TipoProcedimiento]", Err.Description
+End Function
+
+Private Function EsFirmaUDFCompleta(ByVal linea As String) As Boolean
+    Dim regEx As Object
+    Set regEx = CreateObject("VBScript.RegExp")
+    
+    Dim tipos As String
+    ' Tipos nativos que Excel puede procesar en una celda
+    tipos = "Range|Variant|String|Boolean|Double|Long|Integer|Date|Single"
+    
+    Dim pParametros As String
+    ' Valida parámetros normales (opcionales, ByVal/ByRef, tipos y valores por defecto)
+    pParametros = "(?:\s*(?:Optional\s+)?(?:ByVal\s+|ByRef\s+)?(?:[a-z_]\w*)\s*(?:As\s+(?:" & tipos & "))?(?:\s*=\s*[^,)]+)?\s*(?:,\s*|(?=\s*\))))?"
+    
+    Dim pParamArray As String
+    ' Valida el ParamArray final (opcional)
+    pParamArray = "(?:\s*ParamArray\s+[a-z_]\w*\(\)\s*(?:As\s+Variant)?)?"
+    
+    With regEx
+        .IgnoreCase = True
+        .Global = False
+        .Pattern = "^\s*(?:Public\s+)?Function\s+[a-z_]\w*\s*(?:\(" & _
+                   pParametros & "*" & _
+                   pParamArray & _
+                   "\s*\))?\s*(?:As\s+(?:" & tipos & "))?\s*$"
+    End With
+    
+    EsFirmaUDFCompleta = regEx.Test(linea)
+End Function
+
+Private Function EsFirmaMacro(ByVal linea As String) As Boolean
+    Dim regEx As Object
+    Set regEx = CreateObject("VBScript.RegExp")
+    
+    With regEx
+        .IgnoreCase = True
+        .Global = False
+        .Pattern = "(?i)^\s*(?:Public\s+)?Sub\s+[a-z_]\w*\s*\((?:\s*(?:Optional\s+)?(?:ByVal\s+|ByRef\s+)?" & _
+                   "(?:[a-z_]\w*)\s*(?:As\s+[^,)]+)?(?:\s*=\s*[^,)]+)?\s*(?:,\s*|$))*\)\s*$"
+    End With
+
+    EsFirmaMacro = regEx.Test(linea)
 End Function
 
 '@Description: Determina si una función es visible para excel como macro o udf, o si es "interna",

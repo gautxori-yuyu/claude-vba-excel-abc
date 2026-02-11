@@ -14,6 +14,8 @@ Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = True
 Attribute VB_Exposed = False
 
+
+
 ' ==============================================================================================================
 ' FORMULARIO: frmConfiguracion
 ' DESCRIPCIÓN: Formulario para configurar los parámetros de la aplicación ABC_ofertas. Permite al usuario
@@ -21,7 +23,7 @@ Attribute VB_Exposed = False
 '              planos de compresores, etc. Todos los cambios se persisten en la configuración de la aplicación.
 ' ==============================================================================================================
 
-'@Folder "3-UI.Configuracion"
+'@Folder "4-UI.Configuracion"
 Option Explicit
 
 Private Const MODULE_NAME As String = "frmConfiguracion"
@@ -356,8 +358,8 @@ End Sub
 Private Sub ListBoxComprDrawPIDs_MouseMoveBKP( _
         ByVal Button As Integer, _
         ByVal Shift As Integer, _
-        ByVal x As Single, _
-        ByVal y As Single)
+        ByVal X As Single, _
+        ByVal Y As Single)
     
     'MostrarTooltip Me.ListBoxComprDrawPIDs, _
     ListToText(ListBoxComprDrawPIDs)
@@ -372,8 +374,8 @@ End Sub
 Private Sub UserForm_MouseMoveBKP( _
         ByVal Button As Integer, _
         ByVal Shift As Integer, _
-        ByVal x As Single, _
-        ByVal y As Single)
+        ByVal X As Single, _
+        ByVal Y As Single)
     
     'OcultarTooltip
 End Sub

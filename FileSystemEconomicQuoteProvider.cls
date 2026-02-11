@@ -22,7 +22,7 @@ Attribute VB_Exposed = False
 ' strQuoteNrRevPattern = "(" & strQuoteNrPattern & ")(?:[ \-_]*rev\.?[ \-_]*\d+\b)?"
 ' ==================================================================
 
-'@Folder "2-Infraestructura.Providers"
+'@Folder "2-Infraestructura.5-2-Providers.FS"
 Option Explicit
 Implements IEconomicQuoteProvider
 
@@ -135,18 +135,18 @@ Public Function GetQuotes(ByVal opportunityPath As String) As Collection
     Set files = IdentifyQuoteFiles(opportunityPath)
 
     ' Crear objetos IEconomicQuote para cada fichero
-    Dim filePath As Variant
+    Dim FilePath As Variant
     Dim parsed As Object
     Dim quoteSource As ExcelEconomicQuoteSource
     Dim fso As Object
     Set fso = CreateObject("Scripting.FileSystemObject")
 
-    For Each filePath In files
-        Set parsed = ParseQuoteFileName(fso.GetFileName(CStr(filePath)))
+    For Each FilePath In files
+        Set parsed = ParseQuoteFileName(fso.GetFileName(CStr(FilePath)))
         If Not parsed Is Nothing Then
             ' Crear ExcelEconomicQuoteSource
             Set quoteSource = New ExcelEconomicQuoteSource
-            quoteSource.Initialize CStr(filePath), parsed
+            quoteSource.Initialize CStr(FilePath), parsed
 
             ' Agregar a la coleccion usando QuoteId + revision como key
             Dim key As String
@@ -161,7 +161,7 @@ Public Function GetQuotes(ByVal opportunityPath As String) As Collection
             End If
             On Error GoTo ErrHandler
         End If
-    Next filePath
+    Next FilePath
 
     LogDebug MODULE_NAME, "[GetQuotes] Encontradas " & result.Count & " valoraciones"
     Set GetQuotes = result
@@ -182,7 +182,7 @@ Public Function GetQuotesByNumber(ByVal opportunityPath As String, ByVal quoteNu
 
     Dim quote As IEconomicQuote
     For Each quote In allQuotes
-        If quote.QuoteNumber = quoteNumber Then
+        If quote.quoteNumber = quoteNumber Then
             result.Add quote
         End If
     Next quote
@@ -204,7 +204,7 @@ Public Function GetQuoteById(ByVal opportunityPath As String, ByVal quoteId As S
 
     Dim quote As IEconomicQuote
     For Each quote In allQuotes
-        If quote.QuoteId = quoteId Then
+        If quote.quoteId = quoteId Then
             Set GetQuoteById = quote
             Exit Function
         End If
@@ -257,11 +257,11 @@ Public Function GetLatestQuotes(ByVal opportunityPath As String) As Collection
     ' Agrupar por QuoteId y quedarse con la mayor revision
     Dim quote As IEconomicQuote
     For Each quote In allQuotes
-        If Not byQuoteId.Exists(quote.QuoteId) Then
-            byQuoteId.Add quote.QuoteId, quote
+        If Not byQuoteId.Exists(quote.quoteId) Then
+            byQuoteId.Add quote.quoteId, quote
         Else
-            If quote.Revision > byQuoteId(quote.QuoteId).Revision Then
-                Set byQuoteId(quote.QuoteId) = quote
+            If quote.Revision > byQuoteId(quote.quoteId).Revision Then
+                Set byQuoteId(quote.quoteId) = quote
             End If
         End If
     Next quote
@@ -306,7 +306,7 @@ Public Function IdentifyQuoteFiles(ByVal opportunityPath As String) As Collectio
 
     ' Buscar en carpeta raiz
     Dim file As Object
-    For Each file In folder.Files
+    For Each file In folder.files
         If IsValidQuoteFile(file.Name) Then
             result.Add file.Path
         End If
@@ -316,7 +316,7 @@ Public Function IdentifyQuoteFiles(ByVal opportunityPath As String) As Collectio
     Dim subfolder As Object
     For Each subfolder In folder.SubFolders
         If IsRevisionFolder(subfolder.Name) Then
-            For Each file In subfolder.Files
+            For Each file In subfolder.files
                 If IsValidQuoteFile(file.Name) Then
                     result.Add file.Path
                 End If

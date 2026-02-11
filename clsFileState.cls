@@ -9,7 +9,7 @@ Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
 '@Description: Estado relacionado con el archivo Excel activo
 '@Category: State
-'@Folder "5-Aplicac (Coord).Estado"
+'@Folder "2-Infraestructura.1-Estado"
 Option Explicit
 
 Private Const MODULE_NAME As String = "clsFileState"
@@ -48,11 +48,11 @@ Friend Property Set CurrentFile(f As clsFileXLS)
 End Property
 
 '@Description: Indica si el archivo actual es un archivo de oportunidad
-Public Property Get isOpportunityFile() As Boolean
-    isOpportunityFile = mIsOpportunityFile
+Public Property Get IsOpportunityFile() As Boolean
+    IsOpportunityFile = mIsOpportunityFile
 End Property
 
-Friend Property Let isOpportunityFile(Value As Boolean)
+Friend Property Let IsOpportunityFile(Value As Boolean)
     mIsOpportunityFile = Value
 End Property
 
