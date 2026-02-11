@@ -26,16 +26,6 @@ Private p_WbTipoFichero As TipoArchivo
 
 Private p_RibbonMode As eRibbonMode ' Estado del ribbon específico para este libro
 
-'--------------------------------------------------------------
-' @Description: Información generica de los archivos de Excel, relacionada con mi aplicación
-'--------------------------------------------------------------
-Private Type T_InfoArchivo
-    EsValido As Boolean
-    TipoDetectado As TipoArchivo
-    Customer As String
-    OpportunityNr As String
-End Type
-
 ' ==================================================================
 ' IMPLEMENTA LA INTERFAZ IFile
 ' ==================================================================
@@ -189,7 +179,7 @@ Public Sub AnalizarWorkBook(Optional ByVal Wb As Workbook = Nothing)
     
     If Not Wb Is Nothing And p_wb Is Nothing Then
         BindTo Wb
-    ElseIf Not (p_wb Is Wb) Then
+    ElseIf Not Wb Is Nothing And Not (p_wb Is Wb) Then
         ' El libro ya estaba definido y se intenta analizar uno distinto
         LogError MODULE_NAME, "[AnalizarWorkBook] Intentando analizar un libro diferente al asociado"
         Err.Raise vbObjectError + 573, MODULE_NAME, _
@@ -200,7 +190,7 @@ Public Sub AnalizarWorkBook(Optional ByVal Wb As Workbook = Nothing)
     p_WbTipoFichero = TipoPorNombreFichero()
     
     ' Determinar tipo por CONTENIDO de fichero
-    Stop
+    
     Select Case p_WbTipoFichero
         Case TipoArchivo.CGASING_CurvasRendimiento, _
                 TipoArchivo.CGASING_CalcOpc, _
@@ -208,7 +198,7 @@ Public Sub AnalizarWorkBook(Optional ByVal Wb As Workbook = Nothing)
                 TipoArchivo.PlantillaOferta
         Case TipoArchivo.CGASING_CalcResults
             ' TODO: SE PUEDE SEGUIR FILTRANDO POR NOMBRES, ver en VBScript
-            Stop
+            
         Case TipoArchivo.oportunidad
             ' de momento NO HAY CRITERIO FIJO para el nombre de fichero
             ' que acote tipos con precisión (PTE)...
@@ -216,7 +206,7 @@ Public Sub AnalizarWorkBook(Optional ByVal Wb As Workbook = Nothing)
             p_WbTipoFichero = TipoPorContenidoLibro
         Case Else
             ' Aqui puede haber de todo, PTE seguir fijando criterios... o descartando ficheros
-            Stop
+            
             ' p_WbTipoFichero = TipoPorContenidoLibro
     End Select
     
