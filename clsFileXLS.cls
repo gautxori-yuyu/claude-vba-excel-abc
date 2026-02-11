@@ -189,7 +189,7 @@ Public Sub AnalizarWorkBook(Optional ByVal Wb As Workbook = Nothing)
     
     If Not Wb Is Nothing And p_wb Is Nothing Then
         BindTo Wb
-    ElseIf Not (p_wb Is Wb) Then
+    ElseIf Not Wb Is Nothing And Not (p_wb Is Wb) Then
         ' El libro ya estaba definido y se intenta analizar uno distinto
         LogError MODULE_NAME, "[AnalizarWorkBook] Intentando analizar un libro diferente al asociado"
         Err.Raise vbObjectError + 573, MODULE_NAME, _
