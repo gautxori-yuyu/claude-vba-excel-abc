@@ -123,7 +123,9 @@ Private Function TipoProcedimiento(ByVal firmaNormalizada As String) As ProcType
         acceso = Replace(LCase$(Trim$(m.SubMatches(0))), " static", "")
         tipo = LCase$(Trim$(m.SubMatches(1)))
     Else
-        'Stop
+        LogWarning "clsVBAProcedure", "[TipoProcedimiento] Firma no reconocida: " & firmaNormalizada
+        TipoProcedimiento = ProcType.internalPrivate
+        Exit Function
     End If
 
     If acceso = "" Then acceso = "public"
