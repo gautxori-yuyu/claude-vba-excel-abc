@@ -5,7 +5,7 @@ Attribute VB_Name = "modAPPBudgetQuotesUtilids"
 'FIXME: Las funciones de este modulo son GENERICAS, no solo para Budgets (aunque alguna ESTA PENSADA SOLO PARA CIERTAS PLANTILLAS)
 '   mejor ponerlas en un modulo "generico".
 
-'@Folder "6-DOMINIO-Oportunidades y compresores.d-Ofertas.Plantillas"
+'@Folder "3-Dominio.d-Ofertas.Plantillas"
 Option Explicit
 
 Private Const MODULE_NAME As String = "modAPPBudgetQuotesUtilids"
@@ -105,35 +105,35 @@ End Sub
 '@Category: Validaciones de datos
 Public Function AplicarNombresAFormula(ByVal formula As String) As String
 Attribute AplicarNombresAFormula.VB_Description = "[modAPPBudgetQuotesUtilids] Reemplaza referencias de rango por nombres definidos dentro de una fórmula. Aplica a: ActiveWorkbook|Cells Range\r\nM.D.:Libro Activo"
-Attribute AplicarNombresAFormula.VB_ProcData.VB_Invoke_Func = " \n23"
-    Dim nm As Name
+Attribute AplicarNombresAFormula.VB_ProcData.VB_Invoke_Func = " \n21"
+    Dim NM As Name
     Dim rngNombre As Range
     Dim formulaResultado As String
     
     formulaResultado = formula
     
-    For Each nm In ActiveWorkbook.Names
+    For Each NM In ActiveWorkbook.Names
         On Error Resume Next
-        Set rngNombre = nm.RefersToRange
+        Set rngNombre = NM.RefersToRange
         On Error GoTo 0
         
         If Not rngNombre Is Nothing Then
             ' Reemplazar diferentes formatos
-            formulaResultado = Replace(formulaResultado, rngNombre.Address(True, True, xlA1, True), nm.Name)
-            formulaResultado = Replace(formulaResultado, rngNombre.Address(False, False, xlA1, True), nm.Name)
-            formulaResultado = Replace(formulaResultado, rngNombre.Address(True, False, xlA1, True), nm.Name)
-            formulaResultado = Replace(formulaResultado, rngNombre.Address(False, True, xlA1, True), nm.Name)
+            formulaResultado = Replace(formulaResultado, rngNombre.Address(True, True, xlA1, True), NM.Name)
+            formulaResultado = Replace(formulaResultado, rngNombre.Address(False, False, xlA1, True), NM.Name)
+            formulaResultado = Replace(formulaResultado, rngNombre.Address(True, False, xlA1, True), NM.Name)
+            formulaResultado = Replace(formulaResultado, rngNombre.Address(False, True, xlA1, True), NM.Name)
             
             ' Referencias externas
             If InStr(rngNombre.Worksheet.Name, " ") > 0 Then
                 formulaResultado = Replace(formulaResultado, _
-                                           "'" & rngNombre.Worksheet.Name & "'!" & rngNombre.Address, nm.Name)
+                                           "'" & rngNombre.Worksheet.Name & "'!" & rngNombre.Address, NM.Name)
             Else
                 formulaResultado = Replace(formulaResultado, _
-                                           rngNombre.Worksheet.Name & "!" & rngNombre.Address, nm.Name)
+                                           rngNombre.Worksheet.Name & "!" & rngNombre.Address, NM.Name)
             End If
         End If
-    Next nm
+    Next NM
     
     AplicarNombresAFormula = formulaResultado
 End Function
@@ -209,7 +209,7 @@ End Sub
 '@Category: Validaciones de datos
 Public Function ActualizarValidacionCelda(ByVal celda As Range) As Boolean
 Attribute ActualizarValidacionCelda.VB_Description = "[modAPPBudgetQuotesUtilids] Actualiza una validación de datos de una celda reemplazando rangos por nombres. Aplica a: Cells Range\r\nM.D.:celda individual"
-Attribute ActualizarValidacionCelda.VB_ProcData.VB_Invoke_Func = " \n23"
+Attribute ActualizarValidacionCelda.VB_ProcData.VB_Invoke_Func = " \n21"
     Dim actualizado As Boolean
     Dim formula1Original As String, formula1Nueva As String
     Dim formula2Original As String, formula2Nueva As String

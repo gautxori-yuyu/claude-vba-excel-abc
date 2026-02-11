@@ -21,7 +21,7 @@ Attribute VB_Exposed = False
 ' ==================================================================
 
 '@IgnoreModule MissingAnnotationArgument
-'@Folder "2-Infraestructura"
+'@Folder "2-Infraestructura.FS"
 Option Explicit
 
 Private Const MODULE_NAME As String = "clsFileManager"
@@ -77,18 +77,18 @@ Public Sub SetActiveFile(f As clsFileXLS)
 
     ' Calcular y almacenar IsOpportunityFile (decisión del Manager)
     If f Is Nothing Then
-        mFileState.isOpportunityFile = False
+        mFileState.IsOpportunityFile = False
     Else
         Dim isOpp As Boolean
         isOpp = False
         On Error Resume Next
         isOpp = f.EsOportunidad
         On Error GoTo 0
-        mFileState.isOpportunityFile = isOpp
+        mFileState.IsOpportunityFile = isOpp
     End If
 
     LogDebug MODULE_NAME, "[SetActiveFile] " & mFileState.GetCurrentFileName() & _
-                          ", IsOpportunity=" & mFileState.isOpportunityFile
+                          ", IsOpportunity=" & mFileState.IsOpportunityFile
 
     ' Notificar cambio (evento del Manager)
     RaiseEvent ActiveFileChanged(f)
@@ -136,37 +136,37 @@ End Sub
 '@Returns: clsFileXLS asociado al Workbook
 Public Function GetOrTrackWorkbook(Wb As Workbook) As clsFileXLS
     If Wb Is Nothing Then Exit Function
-    
+
     On Error GoTo ErrHandler
-    
+
     ' Crear instancia temporal para obtener su clave
     Dim f As clsFileXLS
     Set f = New clsFileXLS
     f.BindTo Wb
-    
+
     Dim key As Double
     key = GetFileKey(f)
-    
+
     ' Validar que la clave es válida
     If key = 0 Then
         LogError MODULE_NAME, "[GetOrTrackWorkbook] ObjectKey inválido para " & Wb.Name
         Exit Function
     End If
-    
+
     ' Si ya existe, devolver la instancia existente (descartar temporal)
     If mTrackedFiles.Exists(key) Then
         Set GetOrTrackWorkbook = mTrackedFiles(key)
         Exit Function
     End If
-    
+
     ' Agregar al diccionario
     mTrackedFiles.Add key, f
-    
+
     LogDebug MODULE_NAME, "[GetOrTrackWorkbook] Nuevo archivo tracked: " & f.Path & " (total: " & mTrackedFiles.Count & ")"
-    
+
     Set GetOrTrackWorkbook = f
     Exit Function
-    
+
 ErrHandler:
     LogCurrentError MODULE_NAME, "[GetOrTrackWorkbook]"
 End Function
@@ -238,22 +238,26 @@ End Sub
 
 '@Description: Analiza un workbook y devuelve su información
 '@Returns: T_InfoArchivo con el análisis completo
-Public Function AnalizarArchivo(fich As Object) As mod_ConstantsGlobals.T_InfoArchivo
-    Dim info As mod_ConstantsGlobals.T_InfoArchivo
+Public Function AnalizarArchivo(fich As Object) As TipoArchivo
     Select Case TypeName(fich)
-    Case "Nothing", "Empty"
-        info.EsValido = False
-        AnalizarArchivo = info
-    Case "Workbook"
-        Dim f As clsFileXLS, owb As Workbook
-        Set owb = fich
-        Set f = GetOrTrackWorkbook(owb)
-        AnalizarArchivo = f.info
-    Case "FileSystemObject"
-        ' HABRIA QUE PROCESAR DOCUMENTOS DE WORD, DE PDF, etc.
-    Case Else
-        ' ... (puedo pasar enteros, strings, ...)
+        Case "Nothing", "Empty"
+            AnalizarArchivo = TipoArchivo.UnDef
+        Case "Workbook"
+            Dim f As clsFileXLS, owb As Workbook
+            Set owb = fich
+            Set f = GetOrTrackWorkbook(owb)
+            AnalizarArchivo = f.tipo
+        Case "FileSystemObject"
+            ' HABRIA QUE PROCESAR DOCUMENTOS DE WORD, DE PDF, etc.
+            ' TODO: procesarlos también como clsFileXLS, clsFilePDF,
+            ' etc: NO se abren, luego NO hay acceso a Workbook, o contenido...
+            ' pero SI se pueden usar funciones como clsFileXLS.AnalizarWorkBook,
+            ' O HABRA QUE ADAPTAR clsFileXLS.TipoPorNombreFichero, O CREAR FUNCIONES
+            ' NUEVAS, QUE SAQUEN INFORMACION DE LOS FICHEROS SIN ESTAR ABIERTOS
+        Case Else
+            ' ... (puedo pasar enteros, strings, ...)
     End Select
+
 End Function
 
 '@Description: Analiza el workbook activo actual
@@ -276,13 +280,13 @@ End Function
 '@Returns: clsFileXLS si está tracked, Nothing si no
 Private Function FindTrackedWorkbook(Wb As Workbook) As clsFileXLS
     If Wb Is Nothing Then Exit Function
-    
+
     ' Crear instancia temporal solo para obtener la clave
     Dim fTemp As clsFileXLS
     Set fTemp = New clsFileXLS
     Dim key As Double
     key = fTemp.CreateFromWorkbook(Wb).ObjectKey
-    
+
     If mTrackedFiles.Exists(key) Then
         Set FindTrackedWorkbook = mTrackedFiles(key)
     End If

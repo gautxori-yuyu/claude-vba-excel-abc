@@ -23,7 +23,7 @@ Attribute VB_Exposed = False
 ' El modelo del compresor se deriva del resultado de los calculos.
 ' ==================================================================
 
-'@Folder "6-DOMINIO-Oportunidades y compresores"
+'@Folder "3-Dominio"
 Option Explicit
 
 Private Const MODULE_NAME As String = "clsCompressor"
@@ -65,8 +65,8 @@ Public Property Get Model() As String
     Model = mModel
 End Property
 
-Public Property Let Model(ByVal value As String)
-    mModel = value
+Public Property Let Model(ByVal Value As String)
+    mModel = Value
 End Property
 
 '@Description: Indice del compresor dentro de la oportunidad (ej: "01")
@@ -74,8 +74,8 @@ Public Property Get Index() As String
     Index = mIndex
 End Property
 
-Public Property Let Index(ByVal value As String)
-    mIndex = value
+Public Property Let Index(ByVal Value As String)
+    mIndex = Value
 End Property
 
 '@Description: Identificador unico del compresor (Model + Index)
@@ -111,13 +111,13 @@ Public Function AddCalculation(calc As ITechnicalCalc) As Boolean
     ' Verificar que no este duplicado (por CalcOption)
     Dim existing As ITechnicalCalc
     For Each existing In mCalculations
-        If existing.CalcOption = calc.CalcOption Then
-            LogWarning MODULE_NAME, "[AddCalculation] Calculo ya existe: " & calc.CalcOption
+        If existing.calcOption = calc.calcOption Then
+            LogWarning MODULE_NAME, "[AddCalculation] Calculo ya existe: " & calc.calcOption
             Exit Function
         End If
     Next existing
 
-    mCalculations.Add calc, calc.CalcOption
+    mCalculations.Add calc, calc.calcOption
 
     ' Actualizar modelo si no esta definido
     If Len(mModel) = 0 And Len(calc.CompressorModel) > 0 Then
@@ -161,11 +161,11 @@ Public Function AddQuote(quote As IEconomicQuote) As Boolean
 
     ' Verificar que no este duplicado (por QuoteId + Revision)
     Dim key As String
-    key = quote.QuoteId & "_rev" & quote.Revision
+    key = quote.quoteId & "_rev" & quote.Revision
 
     Dim existing As IEconomicQuote
     For Each existing In mQuotes
-        If existing.QuoteId & "_rev" & existing.Revision = key Then
+        If existing.quoteId & "_rev" & existing.Revision = key Then
             LogWarning MODULE_NAME, "[AddQuote] Valoracion ya existe: " & key
             Exit Function
         End If

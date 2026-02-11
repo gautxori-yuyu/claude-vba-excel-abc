@@ -17,7 +17,7 @@ Attribute VB_Exposed = False
 ' Implementada por: FileSystemOpportunityProvider (infraestructura)
 ' ==================================================================
 
-'@Folder "6-DOMINIO-Oportunidades y compresores"
+'@Folder "3-Dominio"
 Option Explicit
 
 '@Description: Obtiene los nombres de las carpetas de oportunidad validas, ordenados para presentacion

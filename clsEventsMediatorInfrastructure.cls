@@ -29,12 +29,11 @@ Public Event InfraContextReinitialized()
 '@Description: El archivo activo ha cambiado (traduccion de ActiveFileChanged)
 '@Param filePath: Ruta del archivo activo (vacio si ninguno)
 '@Param isOpportunityFile: True si el archivo es de una oportunidad
-Public Event ActiveFileSessionChanged(ByVal FilePath As String, ByVal isOpportunityFile As Boolean)
+Public Event ActiveFileSessionChanged(ByVal FilePath As String, ByVal IsOpportunityFile As Boolean)
 
 ' ==================================================================
 ' REFERENCIAS INTERNAS
 ' ==================================================================
-Private mChartManager As clsChartMgr
 Private WithEvents mCtxMgr As clsExecutionContextMgr
 Attribute mCtxMgr.VB_VarHelpID = -1
 
@@ -52,15 +51,10 @@ Private Sub Class_Terminate()
     Terminate
     LogInfo MODULE_NAME, "[Class_Terminate]"
 End Sub
-Public Sub Initialize(oFileMgr As clsFileManager, oChartManager As clsChartMgr, oCtxMgr As clsExecutionContextMgr)
+Public Sub Initialize(oFileMgr As clsFileManager, oCtxMgr As clsExecutionContextMgr)
     On Error GoTo ErrHandler
-    
-    Set mChartManager = oChartManager
-    
     Set mCtxMgr = oCtxMgr
-    
     Set mFileMgr = oFileMgr
-    
     Exit Sub
 ErrHandler:
     LogCurrentError MODULE_NAME, "[Initialize]"
@@ -70,13 +64,8 @@ End Sub
 
 Public Sub Terminate()
     On Error GoTo ErrHandler
-    
-    Set mChartManager = Nothing
-    
     Set mCtxMgr = Nothing
-    
     Set mFileMgr = Nothing
-    
     Exit Sub
 ErrHandler:
     LogCurrentError MODULE_NAME, "[Terminate]"
@@ -107,8 +96,7 @@ Private Sub mCtxMgr_WorkbookActivated(ByVal Wb As Workbook)
         Set f = mFileMgr.GetOrTrackWorkbook(Wb)
         mFileMgr.SetActiveFile f
     End If
-
-    mChartManager.RefreshCurrentSheet
+    ' Chart refresh: delegado a clsExecutionContextMgr (composicion interna)
 End Sub
 
 '@Description: Se dispara al activar una hoja; inicia vigilancia de graficos
@@ -117,25 +105,22 @@ End Sub
 '@ArgumentDescriptions: sh As Object
 
 Private Sub mCtxMgr_SheetActivated(ByVal Sh As Object)
+    ' WatchSheet delegado a clsExecutionContextMgr (composicion interna con clsChartMgr)
     On Error GoTo ErrHandler
 
     LogDebug MODULE_NAME, "[mCtx_SheetActivated] " & Sh.Name & "'"
-    mChartManager.WatchSheet Sh
+
     Exit Sub
 ErrHandler:
     LogError MODULE_NAME, "[mCtx_SheetActivated] Error", , Err.Description
 End Sub
 
-'@Description: Se dispara al desactivar una hoja; detiene vigilancia de graficos
-'@Category: Gráficos
-'@Scope: Grafico seleccionado
-'@ArgumentDescriptions: sh As Object
-
 Private Sub mCtxMgr_SheetDeactivated(ByVal Sh As Object)
+    ' StopWatching delegado a clsExecutionContextMgr (composicion interna con clsChartMgr)
     On Error GoTo ErrHandler
 
     LogDebug MODULE_NAME, "[mCtx_SheetDeactivated] '" & Sh.Name & "'"
-    mChartManager.StopWatching
+
     Exit Sub
 ErrHandler:
     LogError MODULE_NAME, "[mCtx_SheetDeactivated] Error", , Err.Description
@@ -148,11 +133,6 @@ End Sub
 '@Description: Callback cuando se abre un workbook
 Private Sub mCtxMgr_WorkbookOpened(ByVal Wb As Workbook)
     LogDebug MODULE_NAME, "[mCtx_WorkbookOpened] " & Wb.Name
-    ' TODO: asegurarse de que aquí NO HACE FALTA indexar el fichero en clsFileManager, porque YA SE HACE
-    ' EN mCtxMgr_WorkbookActivated
-'    If Not mFileMgr Is Nothing Then
-'        mFileMgr.GetOrTrackWorkbook Wb
-'    End If
 End Sub
 
 '@Description: Callback cuando se cierra un workbook
@@ -173,11 +153,7 @@ Private Sub mCtxMgr_ContextInvalidated()
     On Error Resume Next
     LogWarning MODULE_NAME, "[mCtxMgr_ContextInvalidated] Contexto invalidado, liberando recursos"
 
-    ' Detener vigilancia de charts (pueden tener referencias muertas)
-    If Not mChartManager Is Nothing Then
-        mChartManager.StopWatching
-    End If
-
+    ' StopWatching de charts delegado a clsExecutionContextMgr (composicion interna)
     ' Emitir evento semantico para que el dominio pueda reaccionar
     RaiseEvent InfraContextInvalidated
 
@@ -197,11 +173,7 @@ Private Sub mCtxMgr_ContextReinitialized()
         mFileMgr.GetOrTrackWorkbook Wb
     End If
 
-    ' Refrescar el ChartManager con la hoja actual
-    If Not mChartManager Is Nothing Then
-        mChartManager.RefreshCurrentSheet
-    End If
-
+    ' RefreshCurrentSheet delegado a clsExecutionContextMgr (composicion interna)
     ' Emitir evento semantico para que el dominio pueda reaccionar
     RaiseEvent InfraContextReinitialized
 
@@ -227,7 +199,7 @@ Private Sub mFileMgr_ActiveFileChanged(f As clsFileXLS)
         isOpp = False
     Else
         FilePath = f.Path
-        isOpp = mFileMgr.State.isOpportunityFile
+        isOpp = mFileMgr.State.IsOpportunityFile
     End If
 
     LogDebug MODULE_NAME, "[mFileMgr_ActiveFileChanged] -> ActiveFileSessionChanged: " & FilePath
@@ -239,3 +211,5 @@ Private Sub mFileMgr_ActiveFileChanged(f As clsFileXLS)
 ErrHandler:
     LogError MODULE_NAME, "[mFileMgr_ActiveFileChanged] Error traduciendo evento", , Err.Description
 End Sub
+
+

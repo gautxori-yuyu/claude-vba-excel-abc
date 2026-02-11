@@ -77,21 +77,6 @@ End Sub
 ' CONSULTAS DE CONTEXTO
 ' ==========================================
 
-'@Description: Indica si hay un archivo de oportunidad activo
-'@Returns: True si hay archivo activo Y es de oportunidad Y hay oportunidad seleccionada
-Public Function IsOpportunityFileActive() As Boolean
-    IsOpportunityFileActive = mFileState.isOpportunityFile And mOpportunityState.HasCurrentOpportunity()
-End Function
-
-'@Description: Indica si el contexto de ejecucion Excel es valido
-Public Property Get IsContextValid() As Boolean
-    If mCtxState Is Nothing Then
-        IsContextValid = False
-    Else
-        IsContextValid = mCtxState.IsContextValid
-    End If
-End Property
-
 '@Description: Indica si la aplicacion esta completamente inicializada
 '@Returns: True si todos los subestados criticos han sido inyectados
 '@Note: Util para detectar estados parciales tras un reset de VBA
@@ -102,6 +87,28 @@ Public Property Get IsInitialized() As Boolean
                     Not (mOpportunityState Is Nothing) And _
                     Not (mFileState Is Nothing)
 End Property
+
+'@Description: Indica si el contexto de ejecucion Excel es valido
+Public Property Get IsContextValid() As Boolean
+    If mCtxState Is Nothing Then
+        IsContextValid = False
+    Else
+        IsContextValid = mCtxState.IsContextValid
+    End If
+End Property
+
+'@Description: Indica si las dependencias de dominio (mOpportunities, mFileMgr)
+'              han sido inyectadas. Condiciona por ejemplo si el modo
+'              Ribbon_OpportunityOnly esta soportado. Si alguna es Nothing, el modo no tiene sentido.
+Public Function IsOpportunityMgrEnabled() As Boolean
+    IsOpportunityMgrEnabled = Not (mOpportunityState Is Nothing) And Not (mFileState Is Nothing)
+End Function
+
+'@Description: Indica si hay un archivo de oportunidad activo
+'@Returns: True si hay archivo activo Y es de oportunidad Y hay oportunidad seleccionada
+Public Function IsOpportunityFileActive() As Boolean
+    IsOpportunityFileActive = mFileState.IsOpportunityFile And mOpportunityState.HasCurrentOpportunity()
+End Function
 
 '@Description: Obtiene informacion de diagnostico sobre el estado de inicializacion
 '@Returns: String con el estado de cada subestado

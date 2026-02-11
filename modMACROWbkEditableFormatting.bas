@@ -1,22 +1,22 @@
 Attribute VB_Name = "modMACROWbkEditableFormatting"
-'@Folder "6-DOMINIO-Oportunidades y compresores.d-Ofertas.Plantillas"
+'@Folder "3-Dominio.d-Ofertas.Plantillas"
 Option Explicit
 
 Private Const MODULE_NAME As String = "modMACROWbkEditableFormatting"
 
 ' Declaraciones para Win32 API (64 bits)
 Private Declare PtrSafe Function CreateDC Lib "gdi32" Alias "CreateDCA" (ByVal lpDriverName As String, ByVal lpDeviceName As String, ByVal lpOutput As String, ByVal lpInitData As LongPtr) As LongPtr
-Private Declare PtrSafe Function CreateFont Lib "gdi32" Alias "CreateFontA" (ByVal H As Long, ByVal W As Long, ByVal E As Long, ByVal O As Long, ByVal Wt As Long, ByVal IsIt As Long, ByVal Und As Long, ByVal Str As Long, ByVal CharSet As Long, ByVal OutPr As Long, ByVal ClipPr As Long, ByVal Qual As Long, ByVal PitchAndFam As Long, ByVal Facename As String) As LongPtr
-Private Declare PtrSafe Function DeleteDC Lib "gdi32" (ByVal hdc As LongPtr) As Long
-Private Declare PtrSafe Function SelectObject Lib "gdi32" (ByVal hdc As LongPtr, ByVal hgdiobj As LongPtr) As LongPtr
-Private Declare PtrSafe Function GetTextExtentPoint32 Lib "gdi32" Alias "GetTextExtentPoint32A" (ByVal hdc As LongPtr, ByVal lpsz As String, ByVal cbString As Long, lpSize As SIZE) As Long
+Private Declare PtrSafe Function CreateFont Lib "gdi32" Alias "CreateFontA" (ByVal H As Long, ByVal W As Long, ByVal e As Long, ByVal O As Long, ByVal Wt As Long, ByVal IsIt As Long, ByVal Und As Long, ByVal Str As Long, ByVal CharSet As Long, ByVal OutPr As Long, ByVal ClipPr As Long, ByVal Qual As Long, ByVal PitchAndFam As Long, ByVal Facename As String) As LongPtr
+Private Declare PtrSafe Function DeleteDC Lib "gdi32" (ByVal hDC As LongPtr) As Long
+Private Declare PtrSafe Function SelectObject Lib "gdi32" (ByVal hDC As LongPtr, ByVal hgdiobj As LongPtr) As LongPtr
+Private Declare PtrSafe Function GetTextExtentPoint32 Lib "gdi32" Alias "GetTextExtentPoint32A" (ByVal hDC As LongPtr, ByVal lpsz As String, ByVal cbString As Long, lpSize As SIZE) As Long
 Private Type RECT: Left As Long: Top As Long: Right As Long: Bottom As Long: End Type
-Private Type SIZE: cx As Long: cy As Long: End Type
+Private Type SIZE: CX As Long: CY As Long: End Type
 
 Private Declare PtrSafe Function DrawText Lib "user32" Alias "DrawTextA" _
-    (ByVal hdc As LongPtr, ByVal lpStr As String, ByVal nCount As Long, _
+    (ByVal hDC As LongPtr, ByVal lpStr As String, ByVal nCount As Long, _
      lpRect As RECT, ByVal wFormat As Long) As Long
-Private Declare PtrSafe Function GetDeviceCaps Lib "gdi32" (ByVal hdc As LongPtr, ByVal nIndex As Long) As Long
+Private Declare PtrSafe Function GetDeviceCaps Lib "gdi32" (ByVal hDC As LongPtr, ByVal nIndex As Long) As Long
 
 ' Constantes para DrawText
 Private Const DT_CALCRECT As Long = &H400
@@ -94,16 +94,16 @@ Attribute AjustarAltoFilasSegunColor.VB_ProcData.VB_Invoke_Func = " \n0"
     'MsgBox "Ajuste de altura de filas completado.", vbInformation
 End Sub
 
-Private Function HideQTRow(r As Range) As Double
-    If r.Hidden Then HideQTRow = True: Exit Function
-    Select Case r.Parent.Name
+Private Function HideQTRow(R As Range) As Double
+    If R.Hidden Then HideQTRow = True: Exit Function
+    Select Case R.Parent.Name
         Case "GEN_FEATS_STDS"
         Case "1._SCOPE_OF_SUPPLY"
         Case "2._SALES_TERMS"
         Case "3._TECHNICAL_DESCRIPTION"
-            HideQTRow = Left(r.Cells(1, 1), 3) = "TC." And Right(r.Cells(1, 2), 6) = " STAGE" And r.Cells(1, 4) = "-"
+            HideQTRow = Left(R.Cells(1, 1), 3) = "TC." And Right(R.Cells(1, 2), 6) = " STAGE" And R.Cells(1, 4) = "-"
     End Select
-    If HideQTRow Then r.Hidden = True
+    If HideQTRow Then R.Hidden = True
 End Function
 
 ' Función auxiliar para detectar Marcadores
@@ -458,9 +458,9 @@ End Sub
 
 Function GetPrintHeightMultiLine(ByVal c As Range) As Double
 Attribute GetPrintHeightMultiLine.VB_Description = "[modMACROWbkEditableFormatting] Get Print Height Multi Line (función personalizada). Aplica a: Cells Range"
-Attribute GetPrintHeightMultiLine.VB_ProcData.VB_Invoke_Func = " \n23"
-    Dim hdc As LongPtr, hFont As LongPtr, hOldFont As LongPtr
-    Dim r As RECT
+Attribute GetPrintHeightMultiLine.VB_ProcData.VB_Invoke_Func = " \n21"
+    Dim hDC As LongPtr, hFont As LongPtr, hOldFont As LongPtr
+    Dim R As RECT
     Dim sz As SIZE
     Dim dpiX As Long, dpiY As Long
     Dim colWidthPts As Double, colWidthPx As Long
@@ -475,11 +475,11 @@ Attribute GetPrintHeightMultiLine.VB_ProcData.VB_Invoke_Func = " \n23"
     
     ' Crear el contexto de dispositivo (HDC)
     ' "WINSPOOL" es el driver estándar para impresoras en Win32
-    hdc = CreateDC("WINSPOOL", printerName, vbNullString, 0)
-    If hdc = 0 Then hdc = CreateDC("DISPLAY", vbNullString, vbNullString, 0)
+    hDC = CreateDC("WINSPOOL", printerName, vbNullString, 0)
+    If hDC = 0 Then hDC = CreateDC("DISPLAY", vbNullString, vbNullString, 0)
     
-    dpiX = GetDeviceCaps(hdc, 88) ' LOGPIXELSX
-    dpiY = GetDeviceCaps(hdc, 90) ' LOGPIXELSY
+    dpiX = GetDeviceCaps(hDC, 88) ' LOGPIXELSX
+    dpiY = GetDeviceCaps(hDC, 90) ' LOGPIXELSY
     
     angulo = c.Orientation * 10
     bVert = (c.Orientation = xlVertical Or Abs(c.Orientation) = 90)
@@ -501,40 +501,40 @@ Attribute GetPrintHeightMultiLine.VB_ProcData.VB_Invoke_Func = " \n23"
     ' CreateFont permite especificar el ángulo en el 3er y 4º parámetro (Escapement y Orientation)
     hFont = CreateFont(fontSizePx, 0, angulo, angulo, IIf(c.Cells(1, 1).Font.Bold, 700, 400), _
                        IIf(c.Cells(1, 1).Font.Italic, 1, 0), 0, 0, 0, OUT_TT_ONLY_PRECIS, 0, 0, 0, c.Cells(1, 1).Font.Name)
-    hOldFont = SelectObject(hdc, hFont)
+    hOldFont = SelectObject(hDC, hFont)
     
     If c.WrapText = False And Abs(angulo) <> 900 Then
-        GetTextExtentPoint32 hdc, c.Cells(1, 1).Value, Len(c.Cells(1, 1).Value), sz
-        GetPrintHeightMultiLine = (sz.cy * 72) / dpiY ' Altura de una sola línea
+        GetTextExtentPoint32 hDC, c.Cells(1, 1).Value, Len(c.Cells(1, 1).Value), sz
+        GetPrintHeightMultiLine = (sz.CY * 72) / dpiY ' Altura de una sola línea
     ElseIf bVert Then
         ' Si es puramente vertical, medimos la extensión de una sola línea pero
         ' el valor de 'ancho' de esa línea será el 'alto' de nuestra fila.
-        GetTextExtentPoint32 hdc, c.Cells(1, 1).Value, Len(c.Cells(1, 1).Value), sz
+        GetTextExtentPoint32 hDC, c.Cells(1, 1).Value, Len(c.Cells(1, 1).Value), sz
         ' En vertical, el ancho del texto (sz.cx) se convierte en la altura de la fila
-        GetPrintHeightMultiLine = (sz.cx * 72) / dpiY
+        GetPrintHeightMultiLine = (sz.CX * 72) / dpiY
     Else
         ' 4.2. Definir rectángulo de cálculo (ancho fijo, alto variable)
-        r.Left = 0
-        r.Top = 0
-        r.Right = colWidthPx
-        r.Bottom = 0
+        R.Left = 0
+        R.Top = 0
+        R.Right = colWidthPx
+        R.Bottom = 0
         
         ' 5. Ejecutar DrawText con DT_CALCRECT para que calcule el alto (r.Bottom)
         ' DT_WORDBREAK permite el ajuste de línea como en Excel
-        DrawText hdc, c.Cells(1, 1).Value, Len(c.Cells(1, 1).Value), r, DT_CALCRECT Or DT_WORDBREAK Or DT_EDITCONTROL
+        DrawText hDC, c.Cells(1, 1).Value, Len(c.Cells(1, 1).Value), R, DT_CALCRECT Or DT_WORDBREAK Or DT_EDITCONTROL
         
         ' 6. Convertir el alto calculado de píxeles a Puntos de Excel
-        GetPrintHeightMultiLine = (r.Bottom * 72) / dpiY
+        GetPrintHeightMultiLine = (R.Bottom * 72) / dpiY
     End If
     
     ' Limpieza
-    SelectObject hdc, hOldFont
-    DeleteDC hdc
+    SelectObject hDC, hOldFont
+    DeleteDC hDC
 End Function
 
 Function GetAbsoluteUsedRange(ws As Worksheet) As Range
 Attribute GetAbsoluteUsedRange.VB_Description = "[modMACROWbkEditableFormatting] Get Absolute Used Range (función personalizada). Aplica a: Cells Range"
-Attribute GetAbsoluteUsedRange.VB_ProcData.VB_Invoke_Func = " \n23"
+Attribute GetAbsoluteUsedRange.VB_ProcData.VB_Invoke_Func = " \n21"
     Dim ultFila As Long
     Dim ultCol As Long
     
@@ -584,7 +584,7 @@ End Function
 
 Function GetRealUsedRange(ws As Worksheet) As Range
 Attribute GetRealUsedRange.VB_Description = "[modMACROWbkEditableFormatting] Get Real Used Range (función personalizada). Aplica a: Cells Range"
-Attribute GetRealUsedRange.VB_ProcData.VB_Invoke_Func = " \n23"
+Attribute GetRealUsedRange.VB_ProcData.VB_Invoke_Func = " \n21"
     Dim ultimaFila As Long
     Dim ultimaCol As Long
     
@@ -616,7 +616,7 @@ End Function
 
 Function GetPhysicalPaperHeight(ws As Worksheet) As Double
 Attribute GetPhysicalPaperHeight.VB_Description = "[modMACROWbkEditableFormatting] Get Physical Paper Height (función personalizada)"
-Attribute GetPhysicalPaperHeight.VB_ProcData.VB_Invoke_Func = " \n23"
+Attribute GetPhysicalPaperHeight.VB_ProcData.VB_Invoke_Func = " \n21"
     ' Altura física total del papel en puntos (1 pulgada = 72 pts)
     Select Case ws.PageSetup.PaperSize
         Case xlPaperA4:      GetPhysicalPaperHeight = 841.89 ' (210mm x 297mm)
@@ -628,7 +628,7 @@ End Function
 
 Function GetUsablePrintHeight(ws As Worksheet) As Double
 Attribute GetUsablePrintHeight.VB_Description = "[modMACROWbkEditableFormatting] Get Usable Print Height (función personalizada)"
-Attribute GetUsablePrintHeight.VB_ProcData.VB_Invoke_Func = " \n23"
+Attribute GetUsablePrintHeight.VB_ProcData.VB_Invoke_Func = " \n21"
     Dim totalHeight As Double
     totalHeight = GetPhysicalPaperHeight(ws)
     
@@ -640,7 +640,7 @@ End Function
 
 Sub ConfigurarSaltosDePagina(ws As Worksheet, ultimaFila As Long)
 Attribute ConfigurarSaltosDePagina.VB_ProcData.VB_Invoke_Func = " \n0"
-    Dim i As Long, j As Long
+    Dim i As Long, J As Long
     Dim npb As Long
     Dim prevScreenUpdating As Boolean
     
@@ -722,11 +722,11 @@ Attribute ConfigurarSaltosDePagina.VB_ProcData.VB_Invoke_Func = " \n0"
         ' --- 4. Aplicar ajuste si se encontró un marcador ---
         If mejorFilaMarcador > 0 And mejorDistancia < 15 Then  ' umbral: <15 pts - 0.2 cm
             ' Ajustar filas vacías *solo en esta página*
-            For j = filaInicio To mejorFilaMarcador - 1
-                If IsEmptyRow(ws.Rows(j)) Then
-                    ws.Rows(j).RowHeight = ws.Rows(j).RowHeight * mejorFactorF
+            For J = filaInicio To mejorFilaMarcador - 1
+                If IsEmptyRow(ws.Rows(J)) Then
+                    ws.Rows(J).RowHeight = ws.Rows(J).RowHeight * mejorFactorF
                 End If
-            Next j
+            Next J
             
             ' Insertar salto *justo antes* del marcador (reemplazando el automático)
             If pagina <= npb Then
@@ -754,7 +754,7 @@ End Sub
 Sub ConfigurarSaltosDePagina_v2(ws As Worksheet, ultimaFila As Long)
 Attribute ConfigurarSaltosDePagina_v2.VB_ProcData.VB_Invoke_Func = " \n0"
     Dim altoPaginaReal As Double
-    Dim i As Long, j As Long, filaInicioPagina As Long
+    Dim i As Long, J As Long, filaInicioPagina As Long
     Dim altoAcumulado As Double
     Dim factorF As Double
     Dim mejorF As Double, minimaDistancia As Double
@@ -815,17 +815,17 @@ Attribute ConfigurarSaltosDePagina_v2.VB_ProcData.VB_Invoke_Func = " \n0"
         ' --- 2. APLICACIÓN DE LOS RESULTADOS ---
         If filaMarcador > 0 Then
             ' Retroceder hasta la primera fila no vacía/marcador
-            Do While j > filaInicioPagina And (EsMarcador(ws.Cells(filaMarcador - 1, 1)) Or IsEmptyRow(ws.Rows(filaMarcador - 1)))
+            Do While J > filaInicioPagina And (EsMarcador(ws.Cells(filaMarcador - 1, 1)) Or IsEmptyRow(ws.Rows(filaMarcador - 1)))
                 filaMarcador = filaMarcador - 1
             Loop
             ' Aplicamos el factor 'mejorF' a las filas en blanco de esta página
             altoAcumulado = 0
-            For j = filaInicioPagina To filaMarcador - 1
-                If IsEmptyRow(ws.Rows(j)) Then
-                    ws.Rows(j).RowHeight = ws.Rows(j).RowHeight * mejorF
-                    LogInfo MODULE_NAME, "[ConfigurarSaltosDePagina_v2] Fila " & j & ": RowHeight ajustado a " & Round(ws.Rows(j).RowHeight, 1) & " (f=" & Round(mejorF, 2) & ")"
+            For J = filaInicioPagina To filaMarcador - 1
+                If IsEmptyRow(ws.Rows(J)) Then
+                    ws.Rows(J).RowHeight = ws.Rows(J).RowHeight * mejorF
+                    LogInfo MODULE_NAME, "[ConfigurarSaltosDePagina_v2] Fila " & J & ": RowHeight ajustado a " & Round(ws.Rows(J).RowHeight, 1) & " (f=" & Round(mejorF, 2) & ")"
                 End If
-            Next j
+            Next J
             
             ' Insertar salto manual justo antes del marcador óptimo
             ws.HPageBreaks.Add before:=ws.Rows(filaMarcador)
@@ -849,11 +849,11 @@ Attribute ConfigurarSaltosDePagina_v2.VB_ProcData.VB_Invoke_Func = " \n0"
                 ' Tomar el primer salto automático válido
                 For k = 1 To ws.HPageBreaks.Count
                     If ws.HPageBreaks(k).Location.Row > filaInicioPagina Then
-                        j = ws.HPageBreaks(k).Location.Row
-                        ws.HPageBreaks.Add before:=ws.Rows(j)
+                        J = ws.HPageBreaks(k).Location.Row
+                        ws.HPageBreaks.Add before:=ws.Rows(J)
                         npb = npb + 1
-                        filaInicioPagina = j
-                        LogInfo MODULE_NAME, "[ConfigurarSaltosDePagina_v2] Salto automático adoptado en fila " & j
+                        filaInicioPagina = J
+                        LogInfo MODULE_NAME, "[ConfigurarSaltosDePagina_v2] Salto automático adoptado en fila " & J
                         Exit For
                     End If
                 Next k
@@ -882,7 +882,7 @@ End Sub
 Sub ConfigurarSaltosDePagina_old(ws As Worksheet, ultimaFila As Long)
 Attribute ConfigurarSaltosDePagina_old.VB_ProcData.VB_Invoke_Func = " \n0"
     Dim altoPaginaReal As Double
-    Dim i As Long, j As Long, filaInicioPagina As Long
+    Dim i As Long, J As Long, filaInicioPagina As Long
     Dim altoAcumulado As Double
     Dim factorF As Double
     Dim mejorF As Double, minimaDistancia As Double
@@ -940,11 +940,11 @@ Attribute ConfigurarSaltosDePagina_old.VB_ProcData.VB_Invoke_Func = " \n0"
             Loop
             ' Aplicamos el factor 'mejorF' a las filas en blanco de esta página
             altoAcumulado = 0
-            For j = filaInicioPagina To filaMarcador - 1
-                If IsEmptyRow(ws.Rows(j)) Then
-                    ws.Rows(j).RowHeight = ws.Rows(j).RowHeight * mejorF
+            For J = filaInicioPagina To filaMarcador - 1
+                If IsEmptyRow(ws.Rows(J)) Then
+                    ws.Rows(J).RowHeight = ws.Rows(J).RowHeight * mejorF
                 End If
-            Next j
+            Next J
             
             ' Insertar salto manual justo antes del marcador óptimo
             ws.HPageBreaks.Add before:=ws.Rows(filaMarcador)
@@ -977,7 +977,7 @@ Attribute ConfigurarSaltosDePagina_old.VB_ProcData.VB_Invoke_Func = " \n0"
 End Sub
 Function SaltoVerticalCortaRango(ws As Worksheet, targetRange As Range) As Boolean
 Attribute SaltoVerticalCortaRango.VB_Description = "[modMACROWbkEditableFormatting] Salto Vertical Corta Rango (función personalizada). Aplica a: Cells Range"
-Attribute SaltoVerticalCortaRango.VB_ProcData.VB_Invoke_Func = " \n23"
+Attribute SaltoVerticalCortaRango.VB_ProcData.VB_Invoke_Func = " \n21"
     ' Devuelve True si el rango excede el primer salto de página vertical
     
     Dim primerSaltoColumna As Long
@@ -1009,7 +1009,7 @@ End Function
 Sub CompactarAreaDeImpresion(ws As Worksheet, ByRef estado As CompactacionEstado)
 Attribute CompactarAreaDeImpresion.VB_ProcData.VB_Invoke_Func = " \n0"
     Dim printAreas As Variant
-    Dim i As Long, j As Long
+    Dim i As Long, J As Long
     Dim totalRange As Range
     Dim addr As String
     Dim minRow As Long, maxRow As Long, minCol As Long, maxCol As Long
@@ -1077,9 +1077,9 @@ Attribute CompactarAreaDeImpresion.VB_ProcData.VB_Invoke_Func = " \n0"
         estado.FilasEstado(i) = Not ws.Rows(i).Hidden  ' True = visible originalmente
     Next i
     
-    For j = minCol To maxCol
-        estado.ColumnasEstado(j) = Not ws.Columns(j).Hidden
-    Next j
+    For J = minCol To maxCol
+        estado.ColumnasEstado(J) = Not ws.Columns(J).Hidden
+    Next J
     
     ' --- 5. Ocultar huecos internos (solo dentro del rango global) ---
     Dim filasOcultas As Long, colsOcultas As Long
@@ -1100,21 +1100,21 @@ Attribute CompactarAreaDeImpresion.VB_ProcData.VB_Invoke_Func = " \n0"
         End If
     Next i
     
-    For j = minCol To maxCol
+    For J = minCol To maxCol
         Dim debeOcultarCol As Boolean
         debeOcultarCol = True
         For Each rng In totalRange.Areas
-            If j >= rng.Column And j <= (rng.Column + rng.Columns.Count - 1) Then
+            If J >= rng.Column And J <= (rng.Column + rng.Columns.Count - 1) Then
                 debeOcultarCol = False
                 Exit For
             End If
         Next rng
         
-        If debeOcultarCol And Not ws.Columns(j).Hidden Then
-            ws.Columns(j).Hidden = True
+        If debeOcultarCol And Not ws.Columns(J).Hidden Then
+            ws.Columns(J).Hidden = True
             colsOcultas = colsOcultas + 1
         End If
-    Next j
+    Next J
     
     ' --- 6. Unificar área de impresión ---
     Dim unifiedRange As Range
@@ -1153,7 +1153,7 @@ Attribute RestaurarAreaDeImpresion.VB_ProcData.VB_Invoke_Func = " \n0"
     End If
     
     ' --- 2. Restaurar visibilidad de filas (solo en rango guardado) ---
-    Dim i As Long, j As Long
+    Dim i As Long, J As Long
     Dim filasRestauradas As Long, colsRestauradas As Long
     
     For i = estado.MinFila To estado.MaxFila
@@ -1163,12 +1163,12 @@ Attribute RestaurarAreaDeImpresion.VB_ProcData.VB_Invoke_Func = " \n0"
         End If
     Next i
     
-    For j = estado.minCol To estado.maxCol
-        If j >= LBound(estado.ColumnasEstado) And j <= UBound(estado.ColumnasEstado) Then
-            ws.Columns(j).Hidden = Not estado.ColumnasEstado(j)
-            If Not ws.Columns(j).Hidden Then colsRestauradas = colsRestauradas + 1
+    For J = estado.minCol To estado.maxCol
+        If J >= LBound(estado.ColumnasEstado) And J <= UBound(estado.ColumnasEstado) Then
+            ws.Columns(J).Hidden = Not estado.ColumnasEstado(J)
+            If Not ws.Columns(J).Hidden Then colsRestauradas = colsRestauradas + 1
         End If
-    Next j
+    Next J
     
     LogInfo MODULE_NAME, "[RestaurarAreaDeImpresion] área original = '" & estado.PrintAreaOriginal & "'"
     LogInfo MODULE_NAME, "[CompactarAreaDeImpresion] Filas restauradas a visible: " & filasRestauradas

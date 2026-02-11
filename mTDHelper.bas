@@ -1,5 +1,5 @@
 Attribute VB_Name = "mTDHelper"
-'@Folder "3-UI.TaskDialog"
+'@Folder "4-UI.TaskDialog"
 Option Explicit
 
 Private Const MODULE_NAME As String = "mTDHelper"

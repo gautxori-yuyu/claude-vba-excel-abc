@@ -130,7 +130,7 @@ End Sub
 ' -------------------------------------------------------------
 
 '@Description: Evento semantico: el archivo activo ha cambiado
-Private Sub mInfraMediador_ActiveFileSessionChanged(ByVal FilePath As String, ByVal isOpportunityFile As Boolean)
+Private Sub mInfraMediador_ActiveFileSessionChanged(ByVal FilePath As String, ByVal IsOpportunityFile As Boolean)
     Dim fileName As String
     If Len(FilePath) = 0 Then
         fileName = "(ninguno)"
@@ -146,7 +146,7 @@ Private Sub mInfraMediador_ActiveFileSessionChanged(ByVal FilePath As String, By
     End If
 
     LogInfo MODULE_NAME, "[InfraMediador_ActiveFileSessionChanged] File=" & fileName & _
-                         ", IsOpportunity=" & isOpportunityFile
+                         ", IsOpportunity=" & IsOpportunityFile
 End Sub
 
 ' -------------------------------------------------------------

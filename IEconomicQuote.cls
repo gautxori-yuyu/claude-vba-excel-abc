@@ -23,7 +23,7 @@ Attribute VB_Exposed = False
 ' Implementada por: ExcelEconomicQuoteSource (infraestructura)
 ' ==================================================================
 
-'@Folder "6-DOMINIO-Oportunidades y compresores"
+'@Folder "3-Dominio"
 Option Explicit
 
 ' ==================================================================
@@ -31,7 +31,7 @@ Option Explicit
 ' ==================================================================
 
 '@Description: Numero de oferta/valoracion (9 digitos, ej: "412601015")
-Public Property Get QuoteNumber() As String
+Public Property Get quoteNumber() As String
 End Property
 
 '@Description: Numero de compresor dentro de la oferta (ej: "01", "02")
@@ -39,7 +39,7 @@ Public Property Get CompressorIndex() As String
 End Property
 
 '@Description: Identificador completo (QuoteNumber + CompressorIndex si aplica)
-Public Property Get QuoteId() As String
+Public Property Get quoteId() As String
 End Property
 
 '@Description: Numero de revision de la valoracion (0 si es original)
@@ -51,7 +51,7 @@ Public Property Get FilePath() As String
 End Property
 
 '@Description: Nombre del fichero (sin ruta)
-Public Property Get FileName() As String
+Public Property Get fileName() As String
 End Property
 
 ' ==================================================================

@@ -13,7 +13,6 @@ Option Explicit
 
 Private Const MODULE_NAME As String = "clsApplication"
 
-Private mChartManager As clsChartMgr
 Private mCtxMgr As clsExecutionContextMgr
 
 Private mEventDispatcher As clsEventDispatcher
@@ -33,7 +32,7 @@ Private mRibbon As clsRibbon
 Private mApplicationState As clsApplicationState
 
 Public Property Get ChartManager() As clsChartMgr
-    Set ChartManager = mChartManager
+    If Not mCtxMgr Is Nothing Then Set ChartManager = mCtxMgr.ChartMgr
 End Property
 
 Public Property Get ExecutionContextMgr() As clsExecutionContextMgr
@@ -87,7 +86,7 @@ Private Sub Class_Initialize()
     
     InitializeInfrastructure
     
-    'InitializeDomain
+    InitializeDomain
 
     InitializeUI
 
@@ -104,23 +103,16 @@ Private Sub InitializeInfrastructure()
     ' INFRAESTRUCTURA
     Set mCtxMgr = New clsExecutionContextMgr
     ' ESTADO CENTRALIZADO - Inyectar referencias a subestados (Dependency Injection)
-    mApplicationState.Initialize CtxState:=mCtxMgr.State
-    
-    ' FIXME: Es mejor UNIFICAR, o HACER COMPOSICION, de clsChartMgr, dentro de clsExecutionContext (ChartMgr PERTENECE al exec context,
-    ' mas que depender de él; actualmente parece que la relación está invertida, está asi para minimizar los cambios al resto del codigo...)
-    Set mChartManager = New clsChartMgr
-    mChartManager.Initialize mCtxMgr.State
-    ' ESTADO CENTRALIZADO - Inyectar referencias a subestados (Dependency Injection)
-    mApplicationState.Initialize ChartState:=mChartManager.State
+    ' clsChartMgr nace como composicion interna de clsExecutionContextMgr
+    mApplicationState.Initialize CtxState:=mCtxMgr.State, ChartState:=mCtxMgr.ChartMgr.State
 
     Set mFileMgr = New clsFileManager
     mFileMgr.Init mCtxMgr.Application.Workbooks
-    ' ESTADO CENTRALIZADO - Inyectar referencias a subestados (Dependency Injection)
     mApplicationState.Initialize FileState:=mFileMgr.State
 
     ' GESTOR DE EVENTOS DE INFRAESTRUCTURA
     Set mEvMediatorInfrastructure = New clsEventsMediatorInfrastructure
-    Call mEvMediatorInfrastructure.Initialize(mFileMgr, mChartManager, mCtxMgr)
+    Call mEvMediatorInfrastructure.Initialize(mFileMgr, mCtxMgr)
     
     Exit Sub
 ErrHandler:
@@ -138,14 +130,14 @@ Private Sub InitializeDomain()
     mFSMonitoringCoord.IniciarMonitoreo mConfiguration.oDicFoldersToWatch
 
     ' PROVIDER DE OPORTUNIDADES (infraestructura)
-    Set mOpportunityProvider = New FileSystemOpportunityProvider
-    mOpportunityProvider.Initialize mFileMgr, mConfiguration
+    'Set mOpportunityProvider = New FileSystemOpportunityProvider
+    'mOpportunityProvider.Initialize mFileMgr, mConfiguration
 
     ' DOMINIO - Crear managers (ellos crean sus estados internamente)
-    Set mOpportunities = New clsOpportunitiesMgr
-    mOpportunities.Initialize mOpportunityProvider
+    'Set mOpportunities = New clsOpportunitiesMgr
+    'mOpportunities.Initialize mOpportunityProvider
     ' ESTADO CENTRALIZADO - Inyectar referencias a subestados (Dependency Injection)
-    mApplicationState.Initialize OpportunityState:=mOpportunities.State
+    'mApplicationState.Initialize OpportunityState:=mOpportunities.State
 
     ' MEDIADOR DE EVENTOS DE DOMINIO
     ' Escucha eventos SEMANTICOS del mediador de infraestructura (no directamente de mCtxMgr)
@@ -167,7 +159,7 @@ Private Sub InitializeUI()
     Set mEventDispatcher = New clsEventDispatcher
     
     Set mRibbon = New clsRibbon
-    mRibbon.Initialize mOpportunities, mFileMgr, mChartManager, mCtxMgr
+    mRibbon.Initialize mOpportunities, mFileMgr, mCtxMgr.ChartMgr, mCtxMgr
     ' ESTADO CENTRALIZADO - Inyectar referencias a subestados (Dependency Injection)
     mApplicationState.Initialize RibbonState:=mRibbon.State
 
@@ -211,9 +203,7 @@ Private Sub DisposeInfrastructure()
     ' Liberar gestor de archivos
     Set mFileMgr = Nothing
 
-    ' Liberar gestor de graficos
-    Set mChartManager = Nothing
-
+    ' clsChartMgr liberado internamente por clsExecutionContextMgr (composicion)
     ' Liberar contexto de ejecucion (primero en instanciarse, ultimo en liberarse)
     Set mCtxMgr = Nothing
 End Sub
@@ -246,4 +236,5 @@ Private Sub DisposeUI()
     ' Liberar dispatcher de eventos
     Set mEventDispatcher = Nothing
 End Sub
+
 

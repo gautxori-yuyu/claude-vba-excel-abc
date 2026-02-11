@@ -60,7 +60,7 @@ End Sub
 '@Returns: Boolean | True si se creó correctamente
 Function ComprimirCarpetaAZip(rutaCarpeta As String, rutaZipDestino As String) As Boolean
 Attribute ComprimirCarpetaAZip.VB_Description = "[modUTILSShellCmd] Comprime una carpeta completa en un archivo ZIP usando 7-Zip o Shell.Application (fallback)"
-Attribute ComprimirCarpetaAZip.VB_ProcData.VB_Invoke_Func = " \n23"
+Attribute ComprimirCarpetaAZip.VB_ProcData.VB_Invoke_Func = " \n21"
     Dim metodo As String
     Dim resultado As Boolean
     
@@ -103,7 +103,7 @@ End Function
 '@Returns: Boolean | True si 7-Zip funcionó correctamente
 Function ComprimirCon7Zip(rutaCarpeta As String, rutaZipDestino As String) As Boolean
 Attribute ComprimirCon7Zip.VB_Description = "[modUTILSShellCmd] MÉTODO 1: COMPRESIÓN CON 7-ZIP Intenta comprimir usando 7-Zip si está instalado"
-Attribute ComprimirCon7Zip.VB_ProcData.VB_Invoke_Func = " \n23"
+Attribute ComprimirCon7Zip.VB_ProcData.VB_Invoke_Func = " \n21"
     Dim ruta7Zip As String
     Dim comando As String
     Dim fso As Object
@@ -204,7 +204,7 @@ End Function
 '@Returns: Boolean | True si la compresión funcionó
 Function ComprimirConShellApplication(rutaCarpeta As String, rutaZipDestino As String) As Boolean
 Attribute ComprimirConShellApplication.VB_Description = "[modUTILSShellCmd] MÉTODO 2: COMPRESIÓN CON SHELL.APPLICATION (MEJORADO) Comprime usando Shell.Application con sincronización robusta (basado en código de Gustav Brock)"
-Attribute ComprimirConShellApplication.VB_ProcData.VB_Invoke_Func = " \n23"
+Attribute ComprimirConShellApplication.VB_ProcData.VB_Invoke_Func = " \n21"
     Dim fso As Object
     Dim shellApp As Object
     Dim carpetaOrigen As Object
@@ -379,7 +379,7 @@ Private Function ContarArchivosRecursivo(carpeta As Object) As Long
     total = 0
     
     ' Contar archivos en esta carpeta
-    For Each archivo In carpeta.Files
+    For Each archivo In carpeta.files
         total = total + 1
     Next archivo
     

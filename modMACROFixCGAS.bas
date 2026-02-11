@@ -1,7 +1,7 @@
 Attribute VB_Name = "modMACROFixCGAS"
 ' ===== Módulo: modFixCGAS =====
 
-'@Folder "6-DOMINIO-Oportunidades y compresores.b-Calculos técnicos"
+'@Folder "3-Dominio.b-Calculos técnicos"
 Option Explicit
 
 Private Const MODULE_NAME As String = "modMACROFixCGAS"

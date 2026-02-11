@@ -8,17 +8,21 @@ Private Const MODULE_NAME As String = "UDFs_CGASING"
 ' Variable global para evitar múltiples mensajes
 Private bMessageGases As Boolean
 
+' =====================================================
+' VALIDACION DEL CONTENIDO DEL LIBRO, POR HOJAS (UDFS)
+' =====================================================
+
 '@UDF
-'@Description: Comprueba si la hoja activa tiene el formato C-GAS-ING por defecto (sin modificar)
+'@Description: Comprueba si una hoja (por defecto la activa) tiene el formato
+' C-GAS-ING por defecto (sin modificar)
 '@Category: Comprobación de formato de ficheros
 '@ArgumentDescriptions: (sin argumentos)
-Public Function IsDefaultCGasIngSheet() As Boolean
+Public Function IsDefaultCGasIngSheet(Optional ws As Worksheet = Nothing) As Boolean
 Attribute IsDefaultCGasIngSheet.VB_Description = "[UDFs_CGASING] Comprueba si la hoja activa tiene el formato C-GAS-ING por defecto (sin modificar). Aplica a: ActiveSheet|Cells Range"
-Attribute IsDefaultCGasIngSheet.VB_ProcData.VB_Invoke_Func = " \n23"
+Attribute IsDefaultCGasIngSheet.VB_ProcData.VB_Invoke_Func = " \n21"
     On Error GoTo NoSheet
     
-    Dim ws As Worksheet
-    Set ws = ActiveSheet
+    If ws Is Nothing Then Set ws = ActiveSheet
     If ws Is Nothing Then GoTo NoSheet
     
     ' Verificar etiquetas clave
@@ -45,10 +49,13 @@ End Function
 '@Description: Verifica si una hoja tiene el formato C-GAS-ING estándar (modificado)
 '@Category: Comprobación de formato de ficheros
 '@ArgumentDescriptions: Hoja de excel a verificar
-Public Function IsCGASING(ws As Worksheet) As Boolean
+Public Function IsCGASING(Optional ws As Worksheet = Nothing) As Boolean
 Attribute IsCGASING.VB_Description = "[UDFs_CGASING] Verifica si una hoja tiene el formato C-GAS-ING estándar (modificado). Aplica a: Cells Range"
-Attribute IsCGASING.VB_ProcData.VB_Invoke_Func = " \n23"
+Attribute IsCGASING.VB_ProcData.VB_Invoke_Func = " \n21"
     On Error GoTo NoSheet
+    
+    If ws Is Nothing Then Set ws = ActiveSheet
+    If ws Is Nothing Then GoTo NoSheet
     
     If UCase(Trim(ws.Cells(2, 2).Value)) <> "CALCULATION - GAS" Then GoTo NoSheet
     If UCase(Trim(ws.Cells(15, 1).Value)) <> "INPUT DATA" Then GoTo NoSheet
@@ -66,9 +73,14 @@ End Function
 '@Description: Extrae y concatena nombres de gases con sus porcentajes, identificando tipos comunes (SYNGAS, BIOGAS, NATURAL GAS)
 '@Category: Análisis de Gases
 '@ArgumentDescriptions: Rango de celdas con nombres de gases|Separador entre gases (por defecto ", ")|Hoja C-GAS-ING (opcional)
-Public Function Gases(r As Range, Optional d As String = ", ", Optional CGASINGSheet As Worksheet) As String
+'@Returns: String:Cadena descriptiva de gases, composicion
+'@Dependencies: fileName
+'@Note:
+
+'@TODO: revisar esta función, mezcla de todo: Mensajes de usuario (poner LT/LGT, etc), chequeos en nombres y hojas de excel, ...
+Public Function Gases(R As Range, Optional d As String = ", ", Optional CGASINGSheet As Worksheet) As String
 Attribute Gases.VB_Description = "[UDFs_CGASING] Extrae y concatena nombres de gases con sus porcentajes, identificando tipos comunes (SYNGAS, BIOGAS, NATURAL GAS). Aplica a: Cells Range"
-Attribute Gases.VB_ProcData.VB_Invoke_Func = " \n23"
+Attribute Gases.VB_ProcData.VB_Invoke_Func = " \n21"
     Dim s As String, c As Range
     Dim cCellPc As Double
     Dim oGasesPC As Object
@@ -98,23 +110,23 @@ Attribute Gases.VB_ProcData.VB_Invoke_Func = " \n23"
     ' Determinar multiplicador de porcentaje
     pcMultiplier = 1
     On Error GoTo ErrorHandler
-    total = Application.WorksheetFunction.Sum(r.Offset(0, 1))
+    total = Application.WorksheetFunction.Sum(R.Offset(0, 1))
     On Error GoTo 0
     If total < 1.5 And total > 0 Then pcMultiplier = 100
     
     ' Procesar cada gas
-    For Each c In r
+    For Each c In R
         If Len(c.Text) > 0 Then
             ' Validación de coherencia (solo mostrar una vez)
             If Not bMessageGases Then
                 If InStr(LCase(c.Text), "air") > 0 And _
-                   InStr(fileName, "LT") > 0 And _
-                   InStr(fileName, "GT") > 0 Then
+                   InStr(modAPPFileNames.getContextWbkFileName, "LT") > 0 And _
+                   InStr(modAPPFileNames.getContextWbkFileName, "GT") > 0 Then
                     MsgBox "La referencia del compresor debe terminar en 'LT', por ser compresor de aire"
                 End If
                 
                 If Trim(LCase(Replace(c.Text, ":", ""))) = "h2" And _
-                   InStr(fileName(), "LGT") = 0 Then
+                   InStr(modAPPFileNames.getContextWbkFileName(), "LGT") = 0 Then
                     MsgBox "La referencia del compresor debe terminar en 'LGT', por ser compresor de HIDRÓGENO - requiere distanciador largo"
                 End If
                 
@@ -166,7 +178,7 @@ End Function
 '@ArgumentDescriptions: Hoja C-GAS-ING con los datos del compresor (opcional)
 Public Function strModelName(Optional CGASINGSheet As Worksheet = Nothing) As String
 Attribute strModelName.VB_Description = "[UDFs_CGASING] Genera el nombre del modelo de compresor basado en configuración de cilindros y presiones. Aplica a: ActiveSheet|Cells Range"
-Attribute strModelName.VB_ProcData.VB_Invoke_Func = " \n23"
+Attribute strModelName.VB_ProcData.VB_Invoke_Func = " \n21"
     Dim strCils As String, nEtapa As Long
     Dim c As Long, d As String, i As Long
     Dim bEtapaReqForjado As Boolean, bEtapaConvieneCamisa As Boolean
@@ -268,7 +280,7 @@ End Function
 '@ArgumentDescriptions: Libro de excel al que se aplica (opcional)
 Public Function HojasCGASING(Optional Wb As Workbook = Nothing) As Variant
 Attribute HojasCGASING.VB_Description = "[UDFs_CGASING] Devuelve un array con los nombres de todas las hojas C-GAS-ING del libro activo. Aplica a: ActiveWorkbook"
-Attribute HojasCGASING.VB_ProcData.VB_Invoke_Func = " \n23"
+Attribute HojasCGASING.VB_ProcData.VB_Invoke_Func = " \n21"
     Dim ws As Worksheet
     Dim tmp() As String
     Dim n As Long
@@ -303,7 +315,7 @@ End Function
 '@ArgumentDescriptions: Celda donde buscar el valor de potencia
 Public Function MaximaPotencia(ByVal CeldaBuscada As Range) As Variant
 Attribute MaximaPotencia.VB_Description = "[UDFs_CGASING] Devuelve el máximo valor de potencia encontrado en todas las hojas C-GAS-ING del libro. Aplica a: Cells Range"
-Attribute MaximaPotencia.VB_ProcData.VB_Invoke_Func = " \n23"
+Attribute MaximaPotencia.VB_ProcData.VB_Invoke_Func = " \n21"
     Dim strHoja As Variant
     Dim maxVal As Double, val As Variant
     Dim valorTexto As String

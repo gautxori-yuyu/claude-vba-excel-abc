@@ -62,7 +62,7 @@ Public Property Get State() As clsRibbonState
 End Property
 
 ' ==========================================
-' INICIALIZACION Y LIMPIEZA
+' INICIALIZACION, CONTROL DEL CICLO DE VIDA
 ' ==========================================
 
 Private Sub Class_Initialize()
@@ -71,7 +71,7 @@ Private Sub Class_Initialize()
     Set mStateRibbon = New clsRibbonState
     ' Modo inicial: Ribbon_User (seguro, sin dependencias).
     ' Ribbon_OpportunityOnly solo se permite cuando mOpportunities y mFileMgr esten inyectados.
-    mStateRibbon.Modo = Ribbon_Hidden
+    mStateRibbon.Modo = DEFAULT_RIBBONMODE
     
     mWasEverInitialized = False
     mIsRecovering = False
@@ -115,9 +115,85 @@ Public Sub StopEvents()
     Set mCtxMgr = Nothing
 End Sub
 
+'@Description: Verifica si el objeto ribbonUI esta disponible y funcional
+Private Function IsRibbonUIAvailable() As Boolean
+    If mribbonUI Is Nothing Then IsRibbonUIAvailable = False: Exit Function
+    
+    On Error Resume Next
+    Dim testType As String
+    testType = TypeName(mribbonUI)
+    If Err.Number <> 0 Then
+        IsRibbonUIAvailable = False
+        Err.Clear
+    ElseIf testType = "Nothing" Or testType = "Empty" Then
+        IsRibbonUIAvailable = False
+    Else
+        IsRibbonUIAvailable = True
+    End If
+End Function
+
+'@Description: Intenta recuperar el Ribbon automaticamente
+Private Function TryAutoRecover() As Boolean
+    On Error GoTo ErrHandler
+
+    mIsRecovering = True
+    LogInfo MODULE_NAME, "[TryAutoRecover] Iniciando"
+
+    ' PRIMERO: Intentar recuperación con CopyMemory (más rápido y menos invasivo)
+    Dim recoveredRibbon As IRibbonUI
+    Set recoveredRibbon = GetRibbonFromMemory()
+
+    If Not recoveredRibbon Is Nothing Then
+        Set mribbonUI = recoveredRibbon
+        LogInfo MODULE_NAME, "[TryAutoRecover] Ribbon recuperado via CopyMemory"
+        mIsRecovering = False
+        TryAutoRecover = True
+        Exit Function
+    End If
+
+    ' SEGUNDO: Si CopyMemory falla, usar el modulo de recuperacion tradicional
+    LogWarning MODULE_NAME, "[TryAutoRecover] CopyMemory fallido, intentando recuperación tradicional..."
+    TryAutoRecover = TryRecoverRibbon()
+
+    mIsRecovering = False
+    Exit Function
+
+ErrHandler:
+    LogCurrentError MODULE_NAME, "[TryAutoRecover]"
+    mIsRecovering = False
+    TryAutoRecover = False
+End Function
+
+'@Description: Indica si el Ribbon esta en proceso de recuperacion
+Public Property Get IsRecovering() As Boolean
+    IsRecovering = mIsRecovering
+End Property
+
+'@Description: Diagnostico rapido del estado del Ribbon
+Public Function GetQuickDiagnostics() As String
+    Dim info As String
+    info = "RibbonUI: "
+
+    If Not IsRibbonUIAvailable() Then
+        info = info & "Nothing"
+    Else
+        On Error Resume Next
+        info = info & TypeName(mribbonUI)
+        If Err.Number <> 0 Then
+            info = info & "Corrupted"
+            Err.Clear
+        End If
+        On Error GoTo 0
+    End If
+
+    info = info & " | WasInit: " & mWasEverInitialized
+    info = info & " | Recovering: " & mIsRecovering
+
+    GetQuickDiagnostics = info
+End Function
 
 ' ==========================================
-'
+' CONTROL DE MODO DE VISUALIZACION
 ' ==========================================
 Public Sub ToggleModo()
     ' Logica de toggle movida desde clsRibbonState (el Mgr decide, no el State)
@@ -131,14 +207,14 @@ Public Sub ToggleModo()
         mStateRibbon.Modo = Ribbon_Admin
     Case Ribbon_Admin
         ' Solo pasar a OpportunityOnly si las dependencias de dominio estan disponibles
-        If IsOpportunityMgrEnabled() Then
+        If App.AppState.IsOpportunityMgrEnabled() Then
             mStateRibbon.Modo = Ribbon_OpportunityOnly
         Else
             mStateRibbon.Modo = Ribbon_User
         End If
     Case Else
         ' Fallback seguro: nunca aterrizar en OpportunityOnly sin soporte
-        If IsOpportunityMgrEnabled() Then
+        If App.AppState.IsOpportunityMgrEnabled() Then
             mStateRibbon.Modo = Ribbon_OpportunityOnly
         Else
             mStateRibbon.Modo = Ribbon_User
@@ -177,6 +253,43 @@ Friend Sub ActivarTab(tabId As String)
     End If
 End Sub
 
+'@Description: Determina si la pestana principal del Ribbon debe ser visible
+'@Note: La decision de visibilidad vive en el Mgr (no en State). El Mgr consulta
+'       su propio State (Modo) y, si hace falta, el estado de la aplicacion.
+'@Returns: True si la pestana debe mostrarse segun el modo actual
+Public Function IsTabVisible() As Boolean
+    On Error GoTo ErrHandler
+    Select Case mStateRibbon.Modo
+        Case Ribbon_Admin
+            IsTabVisible = True
+        Case Ribbon_User
+            IsTabVisible = True
+        Case Ribbon_OpportunityOnly
+            ' Este modo solo es valido si las dependencias de dominio estan disponibles.
+            ' Si no lo estan (p.ej. durante inicializacion progresiva), el modo no debe
+            ' haberse alcanzado, pero lo tratamos defensivamente devolviendo False.
+            If App().AppState Is Nothing Then
+                IsTabVisible = False
+            ElseIf Not App.AppState.IsOpportunityMgrEnabled() Then
+                IsTabVisible = False
+            Else
+                IsTabVisible = App().AppState.IsOpportunityFileActive()
+            End If
+        Case Else
+            IsTabVisible = False
+    End Select
+    Exit Function
+ErrHandler:
+    IsTabVisible = False
+End Function
+
+Public Function IsAdminGroupVisible() As Boolean
+    IsAdminGroupVisible = (mStateRibbon.Modo = Ribbon_Admin)
+End Function
+
+' ==========================================
+' INVALIDACION
+' ==========================================
 '@Description: Invalida todo el Ribbon, forzando recarga de callbacks
 '@Note: Intenta recuperacion automatica si el Ribbon esta perdido
 Public Sub InvalidarRibbon()
@@ -249,163 +362,9 @@ ErrHandler:
     LogError MODULE_NAME, "[InvalidarControl] Error en control " & idControl, , Err.Description
 End Sub
 
-'@Description: Indica si las dependencias de dominio (mOpportunities, mFileMgr)
-'              han sido inyectadas. Condiciona por ejemplo si el modo
-'              Ribbon_OpportunityOnly esta soportado. Si alguna es Nothing, el modo no tiene sentido.
-Public Function IsOpportunityMgrEnabled() As Boolean
-    IsOpportunityMgrEnabled = Not (mOpportunities Is Nothing) And Not (mFileMgr Is Nothing)
-End Function
-
-'@Description: Verifica si el objeto ribbonUI esta disponible y funcional
-Private Function IsRibbonUIAvailable() As Boolean
-    If mribbonUI Is Nothing Then IsRibbonUIAvailable = False: Exit Function
-    
-    On Error Resume Next
-    Dim testType As String
-    testType = TypeName(mribbonUI)
-    If Err.Number <> 0 Then
-        IsRibbonUIAvailable = False
-        Err.Clear
-    ElseIf testType = "Nothing" Or testType = "Empty" Then
-        IsRibbonUIAvailable = False
-    Else
-        IsRibbonUIAvailable = True
-    End If
-End Function
-
-'@Description: Intenta recuperar el Ribbon automaticamente
-Private Function TryAutoRecover() As Boolean
-    On Error GoTo ErrHandler
-
-    mIsRecovering = True
-    LogInfo MODULE_NAME, "[TryAutoRecover] Iniciando"
-
-    ' PRIMERO: Intentar recuperación con CopyMemory (más rápido y menos invasivo)
-    Dim recoveredRibbon As IRibbonUI
-    Set recoveredRibbon = GetRibbonFromMemory()
-
-    If Not recoveredRibbon Is Nothing Then
-        Set mribbonUI = recoveredRibbon
-        LogInfo MODULE_NAME, "[TryAutoRecover] Ribbon recuperado via CopyMemory"
-        mIsRecovering = False
-        TryAutoRecover = True
-        Exit Function
-    End If
-
-    ' SEGUNDO: Si CopyMemory falla, usar el modulo de recuperacion tradicional
-    LogWarning MODULE_NAME, "[TryAutoRecover] CopyMemory fallido, intentando recuperación tradicional..."
-    TryAutoRecover = TryRecoverRibbon()
-
-    mIsRecovering = False
-    Exit Function
-
-ErrHandler:
-    LogCurrentError MODULE_NAME, "[TryAutoRecover]"
-    mIsRecovering = False
-    TryAutoRecover = False
-End Function
-
-'@Description: Indica si el Ribbon esta en proceso de recuperacion
-Public Property Get IsRecovering() As Boolean
-    IsRecovering = mIsRecovering
-End Property
-
-
-'@Description: Determina si la pestana principal del Ribbon debe ser visible
-'@Note: La decision de visibilidad vive en el Mgr (no en State). El Mgr consulta
-'       su propio State (Modo) y, si hace falta, el estado de la aplicacion.
-'@Returns: True si la pestana debe mostrarse segun el modo actual
-Public Function IsTabVisible() As Boolean
-    On Error GoTo ErrHandler
-    Select Case mStateRibbon.Modo
-    Case Ribbon_Admin
-        IsTabVisible = True
-    Case Ribbon_User
-        IsTabVisible = True
-    Case Ribbon_OpportunityOnly
-        ' Este modo solo es valido si las dependencias de dominio estan disponibles.
-        ' Si no lo estan (p.ej. durante inicializacion progresiva), el modo no debe
-        ' haberse alcanzado, pero lo tratamos defensivamente devolviendo False.
-        If Not IsOpportunityMgrEnabled() Then
-            IsTabVisible = False
-        ElseIf App().AppState Is Nothing Then
-            IsTabVisible = False
-        Else
-            IsTabVisible = App().AppState.IsOpportunityFileActive()
-        End If
-    Case Else
-        IsTabVisible = False
-    End Select
-    Exit Function
-ErrHandler:
-    IsTabVisible = False
-End Function
-
-'@Description: Diagnostico rapido del estado del Ribbon
-Public Function GetQuickDiagnostics() As String
-    Dim info As String
-    info = "RibbonUI: "
-
-    If Not IsRibbonUIAvailable() Then
-        info = info & "Nothing"
-    Else
-        On Error Resume Next
-        info = info & TypeName(mribbonUI)
-        If Err.Number <> 0 Then
-            info = info & "Corrupted"
-            Err.Clear
-        End If
-        On Error GoTo 0
-    End If
-
-    info = info & " | WasInit: " & mWasEverInitialized
-    info = info & " | Recovering: " & mIsRecovering
-
-    GetQuickDiagnostics = info
-End Function
-
 ' ==========================================
 ' HANDLERS DE EVENTOS (UI escucha a los Managers)
 ' ==========================================
-
-Private Sub mOpportunities_OpportunityCollectionUpdated(ByVal reason As String)
-    InvalidarControl "ddlOportunidades"
-End Sub
-
-Private Sub mOpportunities_CurrentOpportunityChanged(ByVal opportunityName As String, ByVal opportunityPath As String)
-    ' En modo OpportunityOnly, mostrar ribbon cuando hay oportunidad
-    If mStateRibbon.Modo = Ribbon_OpportunityOnly Then
-        mStateRibbon.Visible = True
-    End If
-    InvalidarControl "btnGenerarGraficos"
-    InvalidarControl "dropdownOportunidades"
-    InvalidarControl "btnNuevaOp"
-    InvalidarControl "grpOportunidades"
-End Sub
-
-Private Sub mFileMgr_ActiveFileChanged(f As clsFileXLS)
-    ' Sincronizar estado del ribbon desde el libro activo
-    If Not f Is Nothing Then
-        mStateRibbon.SyncFromBookState f.RibbonBookState
-        LogDebug MODULE_NAME, "[mFileMgr_ActiveFileChanged] Sincronizado estado ribbon desde libro: " & f.Name
-    End If
-
-    InvalidarControl "btnGenerarGraficos"
-    InvalidarControl "btnExportarPDF"
-    InvalidarControl "btnLimpiarFormato"
-    InvalidarControl "btnAjustarFilas"
-
-    ' Invalidar todo el ribbon para reflejar el nuevo estado
-    InvalidarRibbon
-End Sub
-
-Private Sub mChartMgr_ChartActivated(cht As Chart)
-    InvalidarControl "btnInvertirSeries"
-End Sub
-
-Private Sub mChartMgr_ChartDeactivated(cht As Chart)
-    InvalidarControl "btnInvertirSeries"
-End Sub
 
 Private Sub mCtxMgr_WorkbookActivated(ByVal Wb As Workbook)
     ' CRÍTICO: Invalidar TODO el ribbon al cambiar de libro
@@ -427,4 +386,42 @@ Private Sub mCtxMgr_SheetDeactivated(ByVal Sh As Object)
     InvalidarControl "btnCGASING"
 End Sub
 
+Private Sub mChartMgr_ChartActivated(cht As Chart)
+    InvalidarControl "btnInvertirSeries"
+End Sub
+
+Private Sub mChartMgr_ChartDeactivated(cht As Chart)
+    InvalidarControl "btnInvertirSeries"
+End Sub
+
+Private Sub mFileMgr_ActiveFileChanged(f As clsFileXLS)
+    ' Sincronizar estado del ribbon desde el libro activo
+    If Not f Is Nothing Then
+        mStateRibbon.Modo = f.RibbonMode
+        LogDebug MODULE_NAME, "[mFileMgr_ActiveFileChanged] Sincronizado estado ribbon desde libro: " & f.Name
+    End If
+
+    InvalidarControl "btnGenerarGraficos"
+    InvalidarControl "btnExportarPDF"
+    InvalidarControl "btnLimpiarFormato"
+    InvalidarControl "btnAjustarFilas"
+
+    ' Invalidar todo el ribbon para reflejar el nuevo estado
+    InvalidarRibbon
+End Sub
+
+Private Sub mOpportunities_OpportunityCollectionUpdated(ByVal reason As String)
+    InvalidarControl "ddlOportunidades"
+End Sub
+
+Private Sub mOpportunities_CurrentOpportunityChanged(ByVal opportunityName As String, ByVal opportunityPath As String)
+    ' En modo OpportunityOnly, mostrar ribbon cuando hay oportunidad
+'    If mStateRibbon.Modo = Ribbon_OpportunityOnly Then
+'        mStateRibbon.Visible = True
+'    End If
+    InvalidarControl "btnGenerarGraficos"
+    InvalidarControl "dropdownOportunidades"
+    InvalidarControl "btnNuevaOp"
+    InvalidarControl "grpOportunidades"
+End Sub
 

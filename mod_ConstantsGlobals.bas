@@ -141,23 +141,112 @@ Attribute VB_Name = "mod_ConstantsGlobals"
 'Documentar: Añadir TODOs para futuras mejoras
 'Validar: Ejecutar todos los tests
 
+' ==========================================================
+' 1. ANOTACIONES RUBBERDUCK (Nivel de Módulo)
+' ==========================================================
+'@ModuleDescription ("Definición de constantes y variables globales")
+' ==========================================================
 '@IgnoreModule MissingAnnotationArgument
-'@Folder "2-Infraestructura.Configuracion"
+'@Folder "1-Aplicacion.5-Configuracion"
+
+' ==========================================
+' Directivas de Compilación
+' ==========================================
 
 Option Explicit
 
-Private Const MODULE_NAME As String = "mod_ConstantsGlobals"
+' =========================================================
+' Constantes de compilación (**SON PRIVADAS al modulo**)
+' Si necesitas una constante de compilación global,
+' debes definirla en Propiedades del Proyecto > Argumentos
+' de compilación condicional
+' =========================================================
 
-' constantes de compilación
 #Const RubberduckTest = 1 'True
 #Const DebugMode = 1 'True
+
+' ==========================================
+' Declaraciones de API (External Procedures)
+' ==========================================
+
+#If Win64 Then
+    ' Código para Excel 64-bit
+    Public Declare PtrSafe Function GetTickCount Lib "kernel32" () As Long
+#Else
+    ' Código para Excel 32-bit
+    Public Declare Function GetTickCount Lib "kernel32" () As Long
+#End If
+#If VBA7 Then
+    ' Office 2010+
+    ' Usar PtrSafe en declares
+    Public Declare PtrSafe Sub Sleep Lib "kernel32" (ByVal dwMilliseconds As LongPtr)
+#Else
+    ' Office 2007-
+    ' Declares antiguos sin PtrSafe
+    Public Declare Sub Sleep Lib "kernel32" (ByVal dwMilliseconds As Long)
+#End If
+
+' ==========================================
+' Constantes
+' ==========================================
+
+Private Const MODULE_NAME As String = "mod_ConstantsGlobals"
+
+'--------------------------------------------------------------
+' @Description: registro de UDFs
+'--------------------------------------------------------------
+
+Public Const DEFAULT_CATEGORY As String = "Funciones Personalizadas"
+Public Const DEFAULT_NOPARAMS As String = "(sin parámetros)"
+Public Const DEFAULT_NORETURNS As String = "(ninguno)"
+Public Const DEFAULT_NOARGS As String = "(sin argumentos)"
+
+'--------------------------------------------------------------
+' @Description: File System Watcher
+'--------------------------------------------------------------
+
+' Polling de cambios en carpetas
+Public Const CFG_FW_HEARTBEAT As String = "Heartbeat"
+Public Const POLLING_SECONDS As Integer = 8
+Public Const INACTIVITY_MINUTES As Integer = 10
+Public Const WARMUP_MAX_CHECKS As Long = 5       ' Checks antes de verificar heartbeat (5 == 40 segundos aprox)
+
+'--------------------------------------------------------------
+' @Description: NOMBRES FICHEROS - OPORTUNIDADES
+'--------------------------------------------------------------
+' Patrones para parsing de nombres de archivo Y DE CARPETAS, DE 'OPORTUNIDADES' (genericos)
+Public Const QUOTENR_PATTERN As String = "\d{9}(?:[\-_]\d+)?"
+Public Const QUOTENR_REV_PATTERN As String = "(" & QUOTENR_PATTERN & ")(?:[ \-_]*rev\.?[ \-_]*(\d+)\b)?"
+Public Const CUSTOMER_PATTERN As String = "(?:.(?! \- ))+." '"((?:.(?! \- ))+?.(?:\s*[\-_]\s*(?:.(?! \- ))+.)*?)"
+Public Const PROJECT_OTHERS_PATTERN As String = "(?:.(?! \- ))+." '"((?:.(?! \- ))+?.(?:\s*[\-_]\s*(?:.(?! \- ))+.)*?)"
+Public Const MODEL_PATTERN As String = "(\d)\s?T?\s*E\s?(H[AGPX])\s?\-\s?(\d)\s?\-\s?[LGT]{2,3}"
+Public Const FULLMODEL_PATTERN As String = MODEL_PATTERN & "(?:\-\d\x\d+T?)+(?: (?:NACE|ATEX))*"
+' en el caso de la descripcion de la oportunidad, se acepta poner XXXXX como modelo, si no está aún definido
+Public Const OPPORTUNITY_MODEL_PATTERN As String = "((?:(?:" & MODEL_PATTERN & ")[ ,y]*)+|X{3,})"
+Public Const FILEORFOLDERNAME_QUOTE_CUSTOMER_OTHER_PATTERN As String = "^(" & QUOTENR_PATTERN & _
+")\s*\-(?:[#-]-)?\s*(" & CUSTOMER_PATTERN & ")(?:\s*\-\s*(" & PROJECT_OTHERS_PATTERN & "))??"
+Public Const FILEORFOLDERNAME_QUOTE_CUSTOMER_OTHER_MODEL_PATTERN As String = FILEORFOLDERNAME_QUOTE_CUSTOMER_OTHER_PATTERN & _
+"\s*\-\s*" & OPPORTUNITY_MODEL_PATTERN
+
+' Patrones para calculos de GasVBNet
+Public Const GASVBNET_NAME_PATTERN  As String = "^[A-Z]{3}\d{5}_\d{2}"
+
+' Patrones para nombres de PLANTILLAS DE OFERTAS
+Public Const PLANTILLABUDGET_PATTERN As String = "^BUDGET_QUOTE_TEMPLATE_.+\.xls.?$"
+Public Const PLANTILLAQUOTATION_PATTERN As String = "^QUOTATION_TEMPLATE\-OILGAS\-.+\.xls.?$"
+
+'--------------------------------------------------------------
+' @Description: UI - CONFIGURACION OPORTUNIDADES - PERSISTENCIA
+'--------------------------------------------------------------
+' Ruta de almacenamiento
+Public Const CFG_BASEFOLDER As String = "HKEY_CURRENT_USER\Software\VB and VBA Program Settings\"
 
 ' Constantes para organizar la configuración
 Public Const APP_NAME As String = "ABC_ofertas maquina especial"
 Public Const FOLDERWATCHERCOM_NAME As String = "FolderWatcherCOM.dll"
 
 ' Nombres de las configuraciones
-Public Const CFG_BASEFOLDER As String = "HKEY_CURRENT_USER\Software\VB and VBA Program Settings\"
+Public Const CFG_RUTA_UDFS As String = CFG_BASEFOLDER & APP_NAME & "\UDFsRegistradas"
 
 Public Const CFG_SAM As Integer = 41
 Public Const CFG_PATH_SAM As String = CFG_BASEFOLDER & APP_NAME & "\SAM"
@@ -183,36 +272,12 @@ Public Const CFG_RUTA_COMPRIMGS_DEFAULT As String = "C:\abc compressors\INTRANET
 Public Const CFG_RUTA_COMPRDRAWPID As String = "BaseFolderPlanosPIDs"
 Public Const CFG_RUTA_COMPRDRAWPID_DEFAULT As String = "C:\abc compressors\INTRANET\OilGas\5_DOCUMENTACION TECNICA\ADJUNTOS OFERTAS\3-1-PLANOS\|C:\abc compressors\INTRANET\OilGas\1_COMUNICACION\0- MARKETING\2- FOTOS\Fotos y planos\PLANOS"
 
-' Polling de cambios en carpetas
-Public Const CFG_FW_HEARTBEAT As String = "Heartbeat"
-Public Const POLLING_SECONDS As Integer = 8
-Public Const INACTIVITY_MINUTES As Integer = 10
-Public Const WARMUP_MAX_CHECKS As Long = 5       ' Checks antes de verificar heartbeat (5 == 40 segundos aprox)
-
-' Configuracion de registro de UDFs
-Public Const CFG_RUTA_UDFS As String = CFG_BASEFOLDER & APP_NAME & "\UDFsRegistradas"
-Public Const DEFAULT_CATEGORY As String = "Funciones Personalizadas"
-Public Const DEFAULT_NOPARAMS As String = "(sin parámetros)"
-Public Const DEFAULT_NORETURNS As String = "(ninguno)"
-Public Const DEFAULT_NOARGS As String = "(sin argumentos)"
-
-' Patrones para parsing de nombres de archivo
-Public Const QUOTENR_PATTERN As String = "\d{9}(?:[\-_]\d+)?"
-Public Const QUOTENR_REV_PATTERN As String = "(" & QUOTENR_PATTERN & ")(?:[ \-_]*rev\.?[ \-_]*(\d+)\b)?"
-Public Const CUSTOMER_PATTERN As String = "(?:.(?! \- ))+." '"((?:.(?! \- ))+?.(?:\s*[\-_]\s*(?:.(?! \- ))+.)*?)"
-Public Const PROJECT_OTHERS_PATTERN As String = "(?:.(?! \- ))+." '"((?:.(?! \- ))+?.(?:\s*[\-_]\s*(?:.(?! \- ))+.)*?)"
-Public Const MODEL_PATTERN As String = "(\d)\s?T?\s*E\s?(H[AGPX])\s?\-\s?(\d)\s?\-\s?[LGT]{2,3}"
-Public Const FULLMODEL_PATTERN As String = MODEL_PATTERN & "(?:\-\d\x\d+T?)+(?: (?:NACE|ATEX))*"
-' en el caso de la descripcion de la oportunidad, se acepta poner XXXXX como modelo, si no está aún definido
-Public Const OPPORTUNITY_MODEL_PATTERN As String = "((?:(?:" & MODEL_PATTERN & ")[ ,y]*)+|X{3,})"
-Public Const FILEORFOLDERNAME_QUOTE_CUSTOMER_OTHER_PATTERN As String = "^(" & QUOTENR_PATTERN & _
-")\s*\-(?:[#-]-)?\s*(" & CUSTOMER_PATTERN & ")(?:\s*\-\s*(" & PROJECT_OTHERS_PATTERN & "))??"
-Public Const FILEORFOLDERNAME_QUOTE_CUSTOMER_OTHER_MODEL_PATTERN As String = FILEORFOLDERNAME_QUOTE_CUSTOMER_OTHER_PATTERN & _
-"\s*\-\s*" & OPPORTUNITY_MODEL_PATTERN
+' ==========================================
+' Enums
+' ==========================================
 
 '--------------------------------------------------------------
-'@Scope: Tipos definidos por el usuario en el proyecto VBA (nivel de módulo o global)
-'@ArgumentDescriptions: (ninguno) - estructuras estáticas, no reciben argumentos
+' @Description: registro de UDFs
 '--------------------------------------------------------------
 Public Enum ProcType
     Macro
@@ -239,7 +304,10 @@ Public Enum ProcContainerType
     Sheet = 100
 End Enum
 
-'@Category: UI / Ribbon
+'--------------------------------------------------------------
+' @Description: UI - RIBBON
+'--------------------------------------------------------------
+
 Public Enum eRibbonMode
     Ribbon_Undefined = 0                         ' no inicializado
     Ribbon_OpportunityOnly = 1                   ' solo visible si el libro es de oportunidad
@@ -247,68 +315,34 @@ Public Enum eRibbonMode
     Ribbon_Hidden = 3                            ' no se muestra
     Ribbon_Admin = 4                             ' todo visible permanentemente
 End Enum
+Public Const DEFAULT_RIBBONMODE As Long = eRibbonMode.Ribbon_Hidden
 
 '--------------------------------------------------------------
-' @Description: Estado del Ribbon específico por libro
-' @Note: Se vincula a cada clsFileXLS para gestionar el ribbon por libro
+' @Description: NOMBRES FICHEROS - OPORTUNIDADES
 '--------------------------------------------------------------
-Public Type T_RibbonBookState
-    Modo As eRibbonMode                          ' Modo del ribbon para este libro
-    Visible As Boolean                           ' Visibilidad del ribbon para este libro
-    ' Extensible: añadir más atributos por libro según necesidad futura
-End Type
-
-'--------------------------------------------------------------
-' @Description: Tipos de archivo soportados
-'--------------------------------------------------------------
+' Enumeración de tipos soportados
 Public Enum TipoArchivo
-    UnDef = 0
-    Unknown = 1
-    oportunidad = 2                              ' Archivos de oportunidades
-    CGASING_CurvasRendimiento = 3                ' Performance curves
-    CGASING_Calcs = 4                            ' Cálculos C-GAS-ING
-    PlantillaBudget = 5                          ' Budget
-    PlantillaOferta = 6                          ' Quotation
+    UnDef
+    Unknown
+    oportunidad                              ' Archivos de oportunidades
+    CGASING_CalcResults                      ' Fichero de carculos gasVBnet generico
+    CGASING_CalcOpc                            ' Cálculo C-GAS-ING
+    CGASING_CurvasRendimiento                ' Performance curves
+    PlantillaBudget                          ' Budget
+    PlantillaOferta                          ' Quotation
 End Enum
 
-'--------------------------------------------------------------
-' @Description: Información generica de los archivos de Excel, relacionada con mi aplicación
-'--------------------------------------------------------------
-Public Type T_InfoArchivo
-    EsValido As Boolean
-    TipoDetectado As TipoArchivo
-    Customer As String
-    OpportunityNr As String
-End Type
-
-'--------------------------------------------------------------
+' ==========================================
+' Tipos de Usuario (Type)
+' ==========================================
 '@Description: Estructura de datos que encapsula toda la información relevante de un bloque de código VBA
 '@Returns: N/A - se utiliza como tipo compuesto de datos
 '@Category: Parsing de Procedimientos y Análisis de Código
-'--------------------------------------------------------------
 Public Type T_CodeBlock
     strCode As String
     procStartLine As Long
     procSignatureLine As Long
     procNumLines As Long
-    'procWrongEndLines As Long
 End Type
-
-#If Win64 Then
-    ' Código para Excel 64-bit
-    Public Declare PtrSafe Function GetTickCount Lib "kernel32" () As Long
-#Else
-    ' Código para Excel 32-bit
-    Public Declare Function GetTickCount Lib "kernel32" () As Long
-#End If
-#If VBA7 Then
-    ' Office 2010+
-    ' Usar PtrSafe en declares
-    Public Declare PtrSafe Sub Sleep Lib "kernel32" (ByVal dwMilliseconds As LongPtr)
-#Else
-    ' Office 2007-
-    ' Declares antiguos sin PtrSafe
-    Public Declare Sub Sleep Lib "kernel32" (ByVal dwMilliseconds As Long)
-#End If
 
 

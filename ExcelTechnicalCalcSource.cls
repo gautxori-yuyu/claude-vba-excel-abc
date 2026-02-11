@@ -24,7 +24,7 @@ Attribute VB_Exposed = False
 ' - ABC_Gas_Cooler-*.xlsx, ABC_Aircooler-*.xlsx, etc. (auxiliares)
 ' ==================================================================
 
-'@Folder "2-Infraestructura.Sources"
+'@Folder "2-Infraestructura.5-1-Adaptadores.Excel"
 Option Explicit
 Implements ITechnicalCalc
 
@@ -72,15 +72,15 @@ End Sub
 '@Description: Inicializa el source con la informacion parseada del nombre de fichero
 '@Param filePath: Ruta completa del fichero de calculo
 '@Param parsedInfo: Dictionary con CalcOption, CalcNumber, Revision, etc.
-Public Sub Initialize(ByVal filePath As String, parsedInfo As Object)
+Public Sub Initialize(ByVal FilePath As String, parsedInfo As Object)
     On Error GoTo ErrHandler
 
-    mFilePath = filePath
+    mFilePath = FilePath
 
     ' Extraer nombre de fichero
     Dim fso As Object
     Set fso = CreateObject("Scripting.FileSystemObject")
-    mFileName = fso.GetFileName(filePath)
+    mFileName = fso.GetFileName(FilePath)
 
     ' Establecer datos parseados
     If Not parsedInfo Is Nothing Then
@@ -168,12 +168,12 @@ End Property
 ' PROPIEDADES PUBLICAS
 ' ==================================================================
 
-Public Property Get CalcNumber() As String
-    CalcNumber = mCalcNumber
+Public Property Get calcNumber() As String
+    calcNumber = mCalcNumber
 End Property
 
-Public Property Get CalcOption() As String
-    CalcOption = mCalcOption
+Public Property Get calcOption() As String
+    calcOption = mCalcOption
 End Property
 
 Public Property Get Revision() As Long
@@ -184,8 +184,8 @@ Public Property Get FilePath() As String
     FilePath = mFilePath
 End Property
 
-Public Property Get FileName() As String
-    FileName = mFileName
+Public Property Get fileName() As String
+    fileName = mFileName
 End Property
 
 Public Property Get CompressorModel() As String
@@ -318,7 +318,7 @@ Private Sub FindAssociatedFiles()
 
     ' Buscar ficheros que coincidan con la opcion de calculo
     Dim file As Object
-    For Each file In folder.Files
+    For Each file In folder.files
         ' Ignorar ficheros temporales
         If Left(file.Name, 2) = "~$" Then GoTo NextFile
 

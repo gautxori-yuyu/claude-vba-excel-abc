@@ -231,23 +231,23 @@ End Function
 
 ' Función auxiliar para convertir arrays en formato {a,b;c,d}
 Private Function ConvertirMatrizAString(ByVal arr As Variant) As String
-    Dim res As String, r As Long, c As Long
+    Dim res As String, R As Long, c As Long
     Dim vTmp As String
     
     res = "{"
     On Error Resume Next ' Por si es una matriz de una sola dimensión
-    For r = LBound(arr, 1) To UBound(arr, 1)
+    For R = LBound(arr, 1) To UBound(arr, 1)
         For c = LBound(arr, 2) To UBound(arr, 2)
-            vTmp = ConvertirAStringFormula(arr(r, c))
+            vTmp = ConvertirAStringFormula(arr(R, c))
             res = res & vTmp & IIf(c < UBound(arr, 2), ",", "")
         Next c
-        res = res & IIf(r < UBound(arr, 1), ";", "")
-    Next r
+        res = res & IIf(R < UBound(arr, 1), ";", "")
+    Next R
     If Err.Number <> 0 Then ' Fallback para 1D
         Err.Clear
-        For r = LBound(arr) To UBound(arr)
-            res = res & ConvertirAStringFormula(arr(r)) & IIf(r < UBound(arr), ",", "")
-        Next r
+        For R = LBound(arr) To UBound(arr)
+            res = res & ConvertirAStringFormula(arr(R)) & IIf(R < UBound(arr), ",", "")
+        Next R
     End If
     ConvertirMatrizAString = res & "}"
 End Function

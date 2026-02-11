@@ -21,7 +21,7 @@ Attribute VB_Exposed = False
 ' GasVBNetExportedFNamesPattern = (complejo, multiples tipos de fichero)
 ' ==================================================================
 
-'@Folder "2-Infraestructura.Providers"
+'@Folder "2-Infraestructura.5-2-Providers.FS"
 Option Explicit
 Implements ITechnicalCalcProvider
 
@@ -128,16 +128,16 @@ Public Function GetCalculations(ByVal opportunityPath As String) As Collection
     Dim fileName As Variant
     Dim parsed As Object
     Dim calcSource As ExcelTechnicalCalcSource
-    Dim filePath As String
+    Dim FilePath As String
 
     For Each fileName In files
         Set parsed = ParseCalculationFileName(CStr(fileName))
         If Not parsed Is Nothing Then
             If parsed("IsMainCalc") Then
                 ' Crear ExcelTechnicalCalcSource
-                filePath = calcFolder & "\" & CStr(fileName)
+                FilePath = calcFolder & "\" & CStr(fileName)
                 Set calcSource = New ExcelTechnicalCalcSource
-                calcSource.Initialize filePath, parsed
+                calcSource.Initialize FilePath, parsed
 
                 ' Agregar a la coleccion usando CalcOption como key
                 On Error Resume Next
@@ -171,7 +171,7 @@ Public Function GetCalculationsByNumber(ByVal opportunityPath As String, ByVal c
 
     Dim calc As ITechnicalCalc
     For Each calc In allCalcs
-        If calc.CalcNumber = calcNumber Then
+        If calc.calcNumber = calcNumber Then
             result.Add calc
         End If
     Next calc
@@ -193,7 +193,7 @@ Public Function GetCalculationByOption(ByVal opportunityPath As String, ByVal ca
 
     Dim calc As ITechnicalCalc
     For Each calc In allCalcs
-        If calc.CalcOption = calcOption Then
+        If calc.calcOption = calcOption Then
             Set GetCalculationByOption = calc
             Exit Function
         End If
@@ -215,14 +215,14 @@ Public Function GetCalculationsByCompressorModel(ByVal opportunityPath As String
     Set allCalcs = GetCalculations(opportunityPath)
 
     Dim calc As ITechnicalCalc
-    Dim model As String
+    Dim Model As String
     For Each calc In allCalcs
-        model = calc.CompressorModel
-        If Len(model) > 0 Then
-            If Not result.Exists(model) Then
-                result.Add model, New Collection
+        Model = calc.CompressorModel
+        If Len(Model) > 0 Then
+            If Not result.Exists(Model) Then
+                result.Add Model, New Collection
             End If
-            result(model).Add calc
+            result(Model).Add calc
         End If
     Next calc
 
@@ -260,7 +260,7 @@ Public Function IdentifyCalculationFiles(ByVal opportunityPath As String) As Col
     Set folder = fso.GetFolder(calcFolder)
 
     Dim file As Object
-    For Each file In folder.Files
+    For Each file In folder.files
         If IsValidCalculationFile(file.Name) Then
             result.Add file.Name
         End If

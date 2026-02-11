@@ -559,7 +559,7 @@ ErrHandler:
 End Sub
 Public Sub GetOpGrpEnabled(control As IRibbonControl, ByRef Visible)
     On Error GoTo ErrHandler
-    Visible = App.ribbon.IsOpportunityMgrEnabled
+    Visible = App.AppState.IsOpportunityMgrEnabled
     Exit Sub
 
 ErrHandler:
@@ -572,7 +572,7 @@ End Sub
 Public Sub GetGrpDeveloperAdminVisible(control As IRibbonControl, ByRef Visible)
 Attribute GetGrpDeveloperAdminVisible.VB_ProcData.VB_Invoke_Func = " \n0"
     On Error GoTo ErrHandler
-    Visible = App.ribbon.State.IsAdminGroupVisible
+    Visible = App.ribbon.IsAdminGroupVisible
     Exit Sub
 
 ErrHandler:

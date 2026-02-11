@@ -15,7 +15,7 @@ Attribute VB_Name = "modAPPFSWatcher"
 ' - clsApplication.Terminate() llama a Dispose antes de Set = Nothing
 ' =====================================================
 
-'@Folder "4-Servicios.Archivos.Supervision"
+'@Folder "2-Infraestructura.4-Servicios.FSWatcher"
 Option Explicit
 
 Private Const MODULE_NAME As String = "modAPPFSWatcher"

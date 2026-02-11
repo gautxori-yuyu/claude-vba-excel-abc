@@ -7,7 +7,7 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
-'@Folder "4-Servicios.DBs"
+'@Folder "2-Infraestructura.4-Servicios.DBs"
 Option Explicit
 
 Private Const MODULE_NAME As String = "clsDBContext"

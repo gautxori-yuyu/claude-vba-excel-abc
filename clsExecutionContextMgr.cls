@@ -29,6 +29,7 @@ Public Event ContextInvalidated()
 Public Event ContextReinitialized()
 
 Private mState As clsExecutionContextState
+Private mChartMgr As clsChartMgr
 
 ' ==========================================
 ' INICIALIZACIóN
@@ -37,10 +38,17 @@ Private mState As clsExecutionContextState
 Private Sub Class_Initialize()
     Set mState = New clsExecutionContextState
     RefreshContextState
+    ' clsChartMgr es composicion: nace y muere con el contexto de ejecucion
+    Set mChartMgr = New clsChartMgr
+    mChartMgr.Initialize mState
     LogInfo MODULE_NAME, "[Initialize] Contexto inicializado"
 End Sub
 
 Private Sub Class_Terminate()
+    If Not mChartMgr Is Nothing Then
+        mChartMgr.StopWatching
+        Set mChartMgr = Nothing
+    End If
     Set mState = Nothing
 End Sub
 
@@ -72,6 +80,11 @@ End Property
 Public Property Get ActiveChart() As Chart
     Set ActiveChart = mState.Chart
 End Property
+
+'@Description: Expone el gestor de graficos (composicion interna del contexto)
+Public Property Get ChartMgr() As clsChartMgr
+    Set ChartMgr = mChartMgr
+End Property
 ' ==========================================
 ' MóTODOS DEL LISTENER (llamados por ThisWorkbook)
 ' ==========================================
@@ -84,6 +97,7 @@ End Sub
 Public Sub OnWorkbookActivated(ByVal Wb As Workbook)
     LogDebug MODULE_NAME, "[OnWorkbookActivated] " & Wb.Name
     mState.UpdateWorkbook Wb
+    mChartMgr.RefreshCurrentSheet
     RaiseEvent WorkbookActivated(Wb)
 End Sub
 
@@ -100,14 +114,16 @@ Public Sub OnSheetActivated(ByVal Sh As Object)
         mState.UpdateWorksheet Sh
         RaiseEvent WorksheetActivated(Sh)
     End If
-    ' Detectar chart en la nueva hoja
+    ' Detectar chart en la nueva hoja y arrancar vigilancia de eventos
     DetectChart
+    mChartMgr.WatchSheet Sh
     RaiseEvent SheetActivated(Sh)
 End Sub
 
 Public Sub OnSheetDeactivated(ByVal Sh As Object)
     LogDebug MODULE_NAME, "[OnSheetDeactivated] " & Sh.Name
     mState.InvalidateChart
+    mChartMgr.StopWatching
     If TypeOf Sh Is Worksheet Then
         RaiseEvent WorksheetDeactivated(Sh)
     End If
@@ -121,6 +137,7 @@ End Sub
 '@Description: Shutdown del contexto (llamado por ThisWorkbook en BeforeClose)
 Public Sub Shutdown()
     LogInfo MODULE_NAME, "[Shutdown]"
+    mChartMgr.StopWatching
     mState.InvalidateContext
     RaiseEvent ContextInvalidated
 End Sub
@@ -133,6 +150,7 @@ Public Sub ReInitializeContext()
     RaiseEvent ContextInvalidated
     RefreshContextState
     mState.ValidateContext
+    mChartMgr.RefreshCurrentSheet
     RaiseEvent ContextReinitialized
     LogInfo MODULE_NAME, "[ReInitializeContext] Contexto reinicializado tras reset"
 End Sub
@@ -262,5 +280,4 @@ Private Sub DetectChart()
 ErrHandler:
     LogCurrentError MODULE_NAME, "[DetectChart]"
 End Sub
-
 

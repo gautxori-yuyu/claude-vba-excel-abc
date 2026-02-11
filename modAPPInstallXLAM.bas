@@ -16,7 +16,7 @@ Attribute VB_Name = "modAPPInstallXLAM"
 ' IMPORTANTE: El COM debe estar embebido dentro del XLAM (carpeta xl/embeddings)
 ' ==========================================
 
-'@Folder "1-Inicio e Instalacion.Instalacion"
+'@Folder "1-Aplicacion.1-Instalacion"
 '@IgnoreModule ProcedureNotUsed
 
 Option Private Module

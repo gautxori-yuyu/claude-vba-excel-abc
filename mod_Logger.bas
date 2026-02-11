@@ -6,7 +6,7 @@ Attribute VB_Name = "mod_Logger"
 ' Soporta diferentes niveles de log y salida a Debug.Print o archivo.
 ' ==========================================
 
-'@Folder "4-Servicios.Configuracion"
+'@Folder "1-Aplicacion.6-Servicios"
 Option Explicit
 
 Private Const MODULE_NAME As String = "mod_Logger"
@@ -69,25 +69,25 @@ End Sub
 ' ==========================================
 
 '@Description: Registra un mensaje de debug (solo en modo desarrollo)
-Public Sub LogDebug(ByVal source As String, ByVal message As String)
+Public Sub LogDebug(ByVal Source As String, ByVal message As String)
 Attribute LogDebug.VB_ProcData.VB_Invoke_Func = " \n0"
-    WriteLog LOG_DEBUG, source, message
+    WriteLog LOG_DEBUG, Source, message
 End Sub
 
 '@Description: Registra un mensaje informativo
-Public Sub LogInfo(ByVal source As String, ByVal message As String)
+Public Sub LogInfo(ByVal Source As String, ByVal message As String)
 Attribute LogInfo.VB_ProcData.VB_Invoke_Func = " \n0"
-    WriteLog LOG_INFO, source, message
+    WriteLog LOG_INFO, Source, message
 End Sub
 
 '@Description: Registra una advertencia
-Public Sub LogWarning(ByVal source As String, ByVal message As String)
+Public Sub LogWarning(ByVal Source As String, ByVal message As String)
 Attribute LogWarning.VB_ProcData.VB_Invoke_Func = " \n0"
-    WriteLog LOG_WARNING, source, message
+    WriteLog LOG_WARNING, Source, message
 End Sub
 
 '@Description: Registra un error
-Public Sub LogError(ByVal source As String, ByVal message As String, _
+Public Sub LogError(ByVal Source As String, ByVal message As String, _
                     Optional ByVal errNumber As Long = 0, _
                     Optional ByVal errDescription As String = "")
 Attribute LogError.VB_ProcData.VB_Invoke_Func = " \n0"
@@ -98,11 +98,11 @@ Attribute LogError.VB_ProcData.VB_Invoke_Func = " \n0"
         fullMessage = fullMessage & " [Error " & errNumber & ": " & errDescription & "]"
     End If
 
-    WriteLog LOG_ERROR, source, fullMessage
+    WriteLog LOG_ERROR, Source, fullMessage
 End Sub
 
 '@Description: Registra un error critico
-Public Sub LogCritical(ByVal source As String, ByVal message As String, _
+Public Sub LogCritical(ByVal Source As String, ByVal message As String, _
                        Optional ByVal errNumber As Long = 0, _
                        Optional ByVal errDescription As String = "")
 Attribute LogCritical.VB_ProcData.VB_Invoke_Func = " \n0"
@@ -113,11 +113,11 @@ Attribute LogCritical.VB_ProcData.VB_Invoke_Func = " \n0"
         fullMessage = fullMessage & " [Error " & errNumber & ": " & errDescription & "]"
     End If
 
-    WriteLog LOG_CRITICAL, source, fullMessage
+    WriteLog LOG_CRITICAL, Source, fullMessage
 End Sub
 
 '@Description: Registra el error actual del objeto Err
-Public Sub LogCurrentError(ByVal source As String, Optional ByVal additionalInfo As String = "")
+Public Sub LogCurrentError(ByVal Source As String, Optional ByVal additionalInfo As String = "")
 Attribute LogCurrentError.VB_ProcData.VB_Invoke_Func = " \n0"
     If Err.Number = 0 Then Exit Sub
 
@@ -125,20 +125,20 @@ Attribute LogCurrentError.VB_ProcData.VB_Invoke_Func = " \n0"
     message = "Error capturado"
     If additionalInfo <> "" Then message = message & " - " & additionalInfo
 
-    LogError source, message, Err.Number, Err.Description
+    LogError Source, message, Err.Number, Err.Description
 End Sub
 
 ' ==========================================
 ' FUNCIONES PRIVADAS
 ' ==========================================
 
-Private Sub WriteLog(ByVal level As LogLevel, ByVal source As String, ByVal message As String)
+Private Sub WriteLog(ByVal level As LogLevel, ByVal Source As String, ByVal message As String)
     ' Verificar nivel minimo
     If level < mMinLevel Then Exit Sub
 
     ' Construir mensaje formateado
     Dim logMessage As String
-    logMessage = FormatLogMessage(level, source, message)
+    logMessage = FormatLogMessage(level, Source, message)
 
     ' Salida a Debug.Print
     Debug.Print logMessage
@@ -150,11 +150,11 @@ Private Sub WriteLog(ByVal level As LogLevel, ByVal source As String, ByVal mess
 End Sub
 
 Private Function FormatLogMessage(ByVal level As LogLevel, _
-                                  ByVal source As String, _
+                                  ByVal Source As String, _
                                   ByVal message As String) As String
     Dim prefix As String
     Dim source64 As String * 32
-    LSet source64 = "[" & Left(source, 30) & "]" ' Alinea a la izquierda y rellena con espacios hasta 64
+    LSet source64 = "[" & Left(Source, 30) & "]" ' Alinea a la izquierda y rellena con espacios hasta 64
 
     ' Prefijo segun nivel
     Select Case level
@@ -194,7 +194,7 @@ End Sub
 '@Description: Obtiene el nombre del nivel de log
 Public Function GetLevelName(ByVal level As LogLevel) As String
 Attribute GetLevelName.VB_Description = "[mod_Logger] UTILIDADES Obtiene el nombre del nivel de log"
-Attribute GetLevelName.VB_ProcData.VB_Invoke_Func = " \n23"
+Attribute GetLevelName.VB_ProcData.VB_Invoke_Func = " \n21"
     Select Case level
         Case LOG_DEBUG:    GetLevelName = "DEBUG"
         Case LOG_INFO:     GetLevelName = "INFO"
@@ -220,6 +220,6 @@ End Sub
 '@Description: Obtiene la ruta del archivo de log actual
 Public Function GetLogFilePath() As String
 Attribute GetLogFilePath.VB_Description = "[mod_Logger] Obtiene la ruta del archivo de log actual"
-Attribute GetLogFilePath.VB_ProcData.VB_Invoke_Func = " \n23"
+Attribute GetLogFilePath.VB_ProcData.VB_Invoke_Func = " \n21"
     GetLogFilePath = mLogFilePath
 End Function

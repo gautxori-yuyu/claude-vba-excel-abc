@@ -7,7 +7,7 @@ Attribute VB_Name = "modMACROProceduresToWorksheet"
 ' y todas las propiedades de clsVBAProcedure
 ' ==========================================
 
-'@Folder "1-Inicio e Instalacion.Gestion de modulos y procs"
+'@Folder "1-Aplicacion.2-Gestion de modulos y procs"
 Option Explicit
 
 Private Const MODULE_NAME As String = "modMACROProceduresToWorksheet"

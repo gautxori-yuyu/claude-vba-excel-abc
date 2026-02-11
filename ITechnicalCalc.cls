@@ -23,7 +23,7 @@ Attribute VB_Exposed = False
 ' Implementada por: ExcelTechnicalCalcSource (infraestructura)
 ' ==================================================================
 
-'@Folder "6-DOMINIO-Oportunidades y compresores"
+'@Folder "3-Dominio"
 Option Explicit
 
 ' ==================================================================
@@ -31,11 +31,11 @@ Option Explicit
 ' ==================================================================
 
 '@Description: Codigo del calculo (3 letras + 5 digitos, ej: "ABC12345")
-Public Property Get CalcNumber() As String
+Public Property Get calcNumber() As String
 End Property
 
 '@Description: Opcion del calculo (CalcNumber + "_" + 2 digitos, ej: "ABC12345_01")
-Public Property Get CalcOption() As String
+Public Property Get calcOption() As String
 End Property
 
 '@Description: Numero de revision del calculo (0 si es original)
@@ -47,7 +47,7 @@ Public Property Get FilePath() As String
 End Property
 
 '@Description: Nombre del fichero (sin ruta)
-Public Property Get FileName() As String
+Public Property Get fileName() As String
 End Property
 
 ' ==================================================================
