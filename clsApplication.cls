@@ -13,7 +13,6 @@ Option Explicit
 
 Private Const MODULE_NAME As String = "clsApplication"
 
-Private mChartManager As clsChartMgr
 Private mCtxMgr As clsExecutionContextMgr
 
 Private mEventDispatcher As clsEventDispatcher
@@ -29,11 +28,11 @@ Private mEvMediatorDomain As clsEventsMediatorDomain
 
 Private mRibbon As clsRibbon
 
-' Estado centralizado de la aplicación
+' Estado centralizado de la aplicaciï¿½n
 Private mApplicationState As clsApplicationState
 
 Public Property Get ChartManager() As clsChartMgr
-    Set ChartManager = mChartManager
+    If Not mCtxMgr Is Nothing Then Set ChartManager = mCtxMgr.ChartMgr
 End Property
 
 Public Property Get ExecutionContextMgr() As clsExecutionContextMgr
@@ -65,21 +64,21 @@ Public Property Get Configuration() As clsConfiguration
     Set Configuration = mConfiguration
 End Property
 
-'@Description: Obtiene el gestor de estado centralizado de la aplicación
+'@Description: Obtiene el gestor de estado centralizado de la aplicaciï¿½n
 Public Property Get AppState() As clsApplicationState
     Set AppState = mApplicationState
 End Property
 
 ' -------------------------------------------------------------
-' Class_Initialize: SOLO inicialización mínima (ligera y segura)
+' Class_Initialize: SOLO inicializaciï¿½n mï¿½nima (ligera y segura)
 ' NO debe hacer trabajo pesado ni depender de App
 ' -------------------------------------------------------------
 Private Sub Class_Initialize()
     On Error GoTo ErrHandler
 
     LogInfo MODULE_NAME, "[Class_Initialize] Iniciando aplicacion"
-    ' fixme: revisar que el orden de instanciación de cada componente es EL CORRECTO!!
-    ' (se ha intentado respetar el orden Infraestructura -> dominio -> UI -> Aplicación;
+    ' fixme: revisar que el orden de instanciaciï¿½n de cada componente es EL CORRECTO!!
+    ' (se ha intentado respetar el orden Infraestructura -> dominio -> UI -> Aplicaciï¿½n;
     ' y dentro de cada capa, primero los managers (que crean ellos mismos los State), luego
     ' los servicios y la configuracion de la capa; y finalmente mediadores de eventos, y coordinadores
 
@@ -91,36 +90,29 @@ Private Sub Class_Initialize()
 
     InitializeUI
 
-    LogInfo MODULE_NAME, "[Class_Initialize] inicialización completada"
+    LogInfo MODULE_NAME, "[Class_Initialize] inicializaciï¿½n completada"
     
     Exit Sub
 ErrHandler:
     LogCurrentError MODULE_NAME, "[Class_Initialize]"
     Err.Raise Err.Number, MODULE_NAME & "[Class_Initialize]", _
-              "Error inicializando aplicación: " & Err.Description
+              "Error inicializando aplicaciï¿½n: " & Err.Description
 End Sub
 Private Sub InitializeInfrastructure()
     On Error GoTo ErrHandler
     ' INFRAESTRUCTURA
     Set mCtxMgr = New clsExecutionContextMgr
     ' ESTADO CENTRALIZADO - Inyectar referencias a subestados (Dependency Injection)
-    mApplicationState.Initialize CtxState:=mCtxMgr.State
-    
-    ' FIXME: Es mejor UNIFICAR, o HACER COMPOSICION, de clsChartMgr, dentro de clsExecutionContext (ChartMgr PERTENECE al exec context,
-    ' mas que depender de él; actualmente parece que la relación está invertida, está asi para minimizar los cambios al resto del codigo...)
-    Set mChartManager = New clsChartMgr
-    mChartManager.Initialize mCtxMgr.State
-    ' ESTADO CENTRALIZADO - Inyectar referencias a subestados (Dependency Injection)
-    mApplicationState.Initialize ChartState:=mChartManager.State
+    ' clsChartMgr nace como composicion interna de clsExecutionContextMgr
+    mApplicationState.Initialize CtxState:=mCtxMgr.State, ChartState:=mCtxMgr.ChartMgr.State
 
     Set mFileMgr = New clsFileManager
     mFileMgr.Init mCtxMgr.Application.Workbooks
-    ' ESTADO CENTRALIZADO - Inyectar referencias a subestados (Dependency Injection)
     mApplicationState.Initialize FileState:=mFileMgr.State
 
     ' GESTOR DE EVENTOS DE INFRAESTRUCTURA
     Set mEvMediatorInfrastructure = New clsEventsMediatorInfrastructure
-    Call mEvMediatorInfrastructure.Initialize(mFileMgr, mChartManager, mCtxMgr)
+    Call mEvMediatorInfrastructure.Initialize(mFileMgr, mCtxMgr)
     
     Exit Sub
 ErrHandler:
@@ -167,7 +159,7 @@ Private Sub InitializeUI()
     Set mEventDispatcher = New clsEventDispatcher
     
     Set mRibbon = New clsRibbon
-    mRibbon.Initialize mOpportunities, mFileMgr, mChartManager, mCtxMgr
+    mRibbon.Initialize mOpportunities, mFileMgr, mCtxMgr.ChartMgr, mCtxMgr
     ' ESTADO CENTRALIZADO - Inyectar referencias a subestados (Dependency Injection)
     mApplicationState.Initialize RibbonState:=mRibbon.State
 
@@ -183,7 +175,7 @@ End Sub
 Private Sub Class_Terminate()
     LogInfo MODULE_NAME, "[Terminate] Iniciando limpieza de la aplicacion"
 
-    On Error Resume Next  ' Asegurar que la limpieza continúa aunque haya errores
+    On Error Resume Next  ' Asegurar que la limpieza continï¿½a aunque haya errores
 
     ' ORDEN INVERSO A LA INSTANCIACION:
     ' Instanciacion: CtxMgr -> ChartMgr -> EventDispatcher -> FileMgr -> Configuration
@@ -211,9 +203,7 @@ Private Sub DisposeInfrastructure()
     ' Liberar gestor de archivos
     Set mFileMgr = Nothing
 
-    ' Liberar gestor de graficos
-    Set mChartManager = Nothing
-
+    ' clsChartMgr liberado internamente por clsExecutionContextMgr (composicion)
     ' Liberar contexto de ejecucion (primero en instanciarse, ultimo en liberarse)
     Set mCtxMgr = Nothing
 End Sub
@@ -227,7 +217,7 @@ Private Sub DisposeDomain()
     ' 4. Liberar proveedor de oportunidades
     Set mOpportunityProvider = Nothing
 
-    ' 5. Apagado explícito del monitor de archivos
+    ' 5. Apagado explï¿½cito del monitor de archivos
     If Not mFSMonitoringCoord Is Nothing Then
         mFSMonitoringCoord.Shutdown
         Set mFSMonitoringCoord = Nothing

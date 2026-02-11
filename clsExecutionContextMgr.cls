@@ -7,8 +7,8 @@ Attribute VB_GlobalNameSpace = False
 Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
-'@Description: Manager del contexto de ejecución Excel. Recibe eventos del Listener (ThisWorkbook),
-'              actualiza State, emite eventos semónticos de infraestructura.
+'@Description: Manager del contexto de ejecuciï¿½n Excel. Recibe eventos del Listener (ThisWorkbook),
+'              actualiza State, emite eventos semï¿½nticos de infraestructura.
 '@Category: Manager
 '@Folder "2-Infraestructura"
 Option Explicit
@@ -16,7 +16,7 @@ Option Explicit
 Private Const MODULE_NAME As String = "clsExecutionContextMgr"
 
 ' ==========================================
-' EVENTOS SEMóNTICOS DE INFRAESTRUCTURA
+' EVENTOS SEMï¿½NTICOS DE INFRAESTRUCTURA
 ' ==========================================
 Public Event WorkbookOpened(ByVal Wb As Workbook)
 Public Event WorkbookActivated(ByVal Wb As Workbook)
@@ -29,18 +29,26 @@ Public Event ContextInvalidated()
 Public Event ContextReinitialized()
 
 Private mState As clsExecutionContextState
+Private mChartMgr As clsChartMgr
 
 ' ==========================================
-' INICIALIZACIóN
+' INICIALIZACIï¿½N
 ' ==========================================
 
 Private Sub Class_Initialize()
     Set mState = New clsExecutionContextState
     RefreshContextState
+    ' clsChartMgr es composicion: nace y muere con el contexto de ejecucion
+    Set mChartMgr = New clsChartMgr
+    mChartMgr.Initialize mState
     LogInfo MODULE_NAME, "[Initialize] Contexto inicializado"
 End Sub
 
 Private Sub Class_Terminate()
+    If Not mChartMgr Is Nothing Then
+        mChartMgr.StopWatching
+        Set mChartMgr = Nothing
+    End If
     Set mState = Nothing
 End Sub
 
@@ -50,7 +58,7 @@ Public Property Get State() As clsExecutionContextState
 End Property
 
 ' ==========================================
-' MóTODOS DE ESTADO DE CONVENIENCIA
+' Mï¿½TODOS DE ESTADO DE CONVENIENCIA
 ' ==========================================
 '@Description: Expone el State para lectura por consumidores
 Public Property Get ActiveWorkbook() As Workbook
@@ -72,8 +80,13 @@ End Property
 Public Property Get ActiveChart() As Chart
     Set ActiveChart = mState.Chart
 End Property
+
+'@Description: Expone el gestor de graficos (composicion interna del contexto)
+Public Property Get ChartMgr() As clsChartMgr
+    Set ChartMgr = mChartMgr
+End Property
 ' ==========================================
-' MóTODOS DEL LISTENER (llamados por ThisWorkbook)
+' Mï¿½TODOS DEL LISTENER (llamados por ThisWorkbook)
 ' ==========================================
 
 Public Sub OnWorkbookOpened(ByVal Wb As Workbook)
@@ -84,6 +97,7 @@ End Sub
 Public Sub OnWorkbookActivated(ByVal Wb As Workbook)
     LogDebug MODULE_NAME, "[OnWorkbookActivated] " & Wb.Name
     mState.UpdateWorkbook Wb
+    mChartMgr.RefreshCurrentSheet
     RaiseEvent WorkbookActivated(Wb)
 End Sub
 
@@ -100,14 +114,16 @@ Public Sub OnSheetActivated(ByVal Sh As Object)
         mState.UpdateWorksheet Sh
         RaiseEvent WorksheetActivated(Sh)
     End If
-    ' Detectar chart en la nueva hoja
+    ' Detectar chart en la nueva hoja y arrancar vigilancia de eventos
     DetectChart
+    mChartMgr.WatchSheet Sh
     RaiseEvent SheetActivated(Sh)
 End Sub
 
 Public Sub OnSheetDeactivated(ByVal Sh As Object)
     LogDebug MODULE_NAME, "[OnSheetDeactivated] " & Sh.Name
     mState.InvalidateChart
+    mChartMgr.StopWatching
     If TypeOf Sh Is Worksheet Then
         RaiseEvent WorksheetDeactivated(Sh)
     End If
@@ -121,6 +137,7 @@ End Sub
 '@Description: Shutdown del contexto (llamado por ThisWorkbook en BeforeClose)
 Public Sub Shutdown()
     LogInfo MODULE_NAME, "[Shutdown]"
+    mChartMgr.StopWatching
     mState.InvalidateContext
     RaiseEvent ContextInvalidated
 End Sub
@@ -133,6 +150,7 @@ Public Sub ReInitializeContext()
     RaiseEvent ContextInvalidated
     RefreshContextState
     mState.ValidateContext
+    mChartMgr.RefreshCurrentSheet
     RaiseEvent ContextReinitialized
     LogInfo MODULE_NAME, "[ReInitializeContext] Contexto reinicializado tras reset"
 End Sub
@@ -209,7 +227,7 @@ Private Sub RefreshContextState()
 End Sub
 
 ' ==========================================
-' ELECCIÓN DE CHART (lógica privada del Mgr)
+' ELECCIï¿½N DE CHART (lï¿½gica privada del Mgr)
 ' ==========================================
 
 Private Sub DetectChart()

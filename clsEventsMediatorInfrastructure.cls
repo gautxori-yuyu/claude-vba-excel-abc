@@ -34,7 +34,6 @@ Public Event ActiveFileSessionChanged(ByVal FilePath As String, ByVal isOpportun
 ' ==================================================================
 ' REFERENCIAS INTERNAS
 ' ==================================================================
-Private mChartManager As clsChartMgr
 Private WithEvents mCtxMgr As clsExecutionContextMgr
 Attribute mCtxMgr.VB_VarHelpID = -1
 
@@ -42,7 +41,7 @@ Private WithEvents mFileMgr As clsFileManager
 Attribute mFileMgr.VB_VarHelpID = -1
 
 '--------------------------------------------------------------
-' Inicialización
+' Inicializaciï¿½n
 '--------------------------------------------------------------
 Private Sub Class_Initialize()
     LogInfo MODULE_NAME, "[Class_Initialize]"
@@ -52,36 +51,26 @@ Private Sub Class_Terminate()
     Terminate
     LogInfo MODULE_NAME, "[Class_Terminate]"
 End Sub
-Public Sub Initialize(oFileMgr As clsFileManager, oChartManager As clsChartMgr, oCtxMgr As clsExecutionContextMgr)
+Public Sub Initialize(oFileMgr As clsFileManager, oCtxMgr As clsExecutionContextMgr)
     On Error GoTo ErrHandler
-    
-    Set mChartManager = oChartManager
-    
     Set mCtxMgr = oCtxMgr
-    
     Set mFileMgr = oFileMgr
-    
     Exit Sub
 ErrHandler:
     LogCurrentError MODULE_NAME, "[Initialize]"
     Err.Raise Err.Number, MODULE_NAME & " [Initialize]", _
-              "Error inicializando aplicación: " & Err.Description
+              "Error inicializando aplicaciï¿½n: " & Err.Description
 End Sub
 
 Public Sub Terminate()
     On Error GoTo ErrHandler
-    
-    Set mChartManager = Nothing
-    
     Set mCtxMgr = Nothing
-    
     Set mFileMgr = Nothing
-    
     Exit Sub
 ErrHandler:
     LogCurrentError MODULE_NAME, "[Terminate]"
     Err.Raise Err.Number, MODULE_NAME & " [Terminate]", _
-              "Error finalizando aplicación: " & Err.Description
+              "Error finalizando aplicaciï¿½n: " & Err.Description
 End Sub
 
 ' ==================================================================
@@ -93,13 +82,12 @@ End Sub
 ' -------------------------------------------------------------
 
 '@Description: Se dispara cuando se activa un workbook
-'@Category: Gráficos
+'@Category: Grï¿½ficos
 '@Scope: Grafico seleccionado
 '@ArgumentDescriptions: wb As Workbook
 
 Private Sub mCtxMgr_WorkbookActivated(ByVal Wb As Workbook)
     LogDebug MODULE_NAME, "[mCtx_WorkbookActivated] " & Wb.Name
-
     ' Actualizar el archivo activo en FileManager
     ' Esto dispara ActiveFileChanged -> sincroniza estado del ribbon
     If Not mFileMgr Is Nothing Then
@@ -107,38 +95,22 @@ Private Sub mCtxMgr_WorkbookActivated(ByVal Wb As Workbook)
         Set f = mFileMgr.GetOrTrackWorkbook(Wb)
         mFileMgr.SetActiveFile f
     End If
-
-    mChartManager.RefreshCurrentSheet
+    ' Chart refresh: delegado a clsExecutionContextMgr (composicion interna)
 End Sub
 
 '@Description: Se dispara al activar una hoja; inicia vigilancia de graficos
-'@Category: Gráficos
+'@Category: Grï¿½ficos
 '@Scope: Grafico seleccionado
 '@ArgumentDescriptions: sh As Object
 
 Private Sub mCtxMgr_SheetActivated(ByVal Sh As Object)
-    On Error GoTo ErrHandler
-
-    LogDebug MODULE_NAME, "[mCtx_SheetActivated] " & Sh.Name & "'"
-    mChartManager.WatchSheet Sh
-    Exit Sub
-ErrHandler:
-    LogError MODULE_NAME, "[mCtx_SheetActivated] Error", , Err.Description
+    ' WatchSheet delegado a clsExecutionContextMgr (composicion interna con clsChartMgr)
+    LogDebug MODULE_NAME, "[mCtx_SheetActivated] " & Sh.Name
 End Sub
 
-'@Description: Se dispara al desactivar una hoja; detiene vigilancia de graficos
-'@Category: Gráficos
-'@Scope: Grafico seleccionado
-'@ArgumentDescriptions: sh As Object
-
 Private Sub mCtxMgr_SheetDeactivated(ByVal Sh As Object)
-    On Error GoTo ErrHandler
-
-    LogDebug MODULE_NAME, "[mCtx_SheetDeactivated] '" & Sh.Name & "'"
-    mChartManager.StopWatching
-    Exit Sub
-ErrHandler:
-    LogError MODULE_NAME, "[mCtx_SheetDeactivated] Error", , Err.Description
+    ' StopWatching delegado a clsExecutionContextMgr (composicion interna con clsChartMgr)
+    LogDebug MODULE_NAME, "[mCtx_SheetDeactivated] " & Sh.Name
 End Sub
 
 ' -------------------------------------------------------------
@@ -148,7 +120,7 @@ End Sub
 '@Description: Callback cuando se abre un workbook
 Private Sub mCtxMgr_WorkbookOpened(ByVal Wb As Workbook)
     LogDebug MODULE_NAME, "[mCtx_WorkbookOpened] " & Wb.Name
-    ' TODO: asegurarse de que aquí NO HACE FALTA indexar el fichero en clsFileManager, porque YA SE HACE
+    ' TODO: asegurarse de que aquï¿½ NO HACE FALTA indexar el fichero en clsFileManager, porque YA SE HACE
     ' EN mCtxMgr_WorkbookActivated
 '    If Not mFileMgr Is Nothing Then
 '        mFileMgr.GetOrTrackWorkbook Wb
@@ -173,11 +145,7 @@ Private Sub mCtxMgr_ContextInvalidated()
     On Error Resume Next
     LogWarning MODULE_NAME, "[mCtxMgr_ContextInvalidated] Contexto invalidado, liberando recursos"
 
-    ' Detener vigilancia de charts (pueden tener referencias muertas)
-    If Not mChartManager Is Nothing Then
-        mChartManager.StopWatching
-    End If
-
+    ' StopWatching de charts delegado a clsExecutionContextMgr (composicion interna)
     ' Emitir evento semantico para que el dominio pueda reaccionar
     RaiseEvent InfraContextInvalidated
 
@@ -197,11 +165,7 @@ Private Sub mCtxMgr_ContextReinitialized()
         mFileMgr.GetOrTrackWorkbook Wb
     End If
 
-    ' Refrescar el ChartManager con la hoja actual
-    If Not mChartManager Is Nothing Then
-        mChartManager.RefreshCurrentSheet
-    End If
-
+    ' RefreshCurrentSheet delegado a clsExecutionContextMgr (composicion interna)
     ' Emitir evento semantico para que el dominio pueda reaccionar
     RaiseEvent InfraContextReinitialized
 
