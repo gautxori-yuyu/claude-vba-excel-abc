@@ -134,32 +134,32 @@ End Sub
 
 '@Description: Obtiene o crea el tracker para un Workbook
 '@Returns: clsFileXLS asociado al Workbook
+'@Note: La clave se calcula directamente con ObjPtr(Wb), sin instanciar clsFileXLS temporalmente.
+'       clsFileXLS (y su AnalizarWorkBook) solo se crea si el Workbook no estaba aun tracked.
 Public Function GetOrTrackWorkbook(Wb As Workbook) As clsFileXLS
     If Wb Is Nothing Then Exit Function
 
     On Error GoTo ErrHandler
 
-    ' Crear instancia temporal para obtener su clave
-    Dim f As clsFileXLS
-    Set f = New clsFileXLS
-    f.BindTo Wb
-
+    ' Calcular clave directamente: no hace falta instanciar clsFileXLS para esto
     Dim key As Double
-    key = GetFileKey(f)
-
-    ' Validar que la clave es válida
+    key = WorkbookKey(Wb)
     If key = 0 Then
-        LogError MODULE_NAME, "[GetOrTrackWorkbook] ObjectKey inválido para " & Wb.Name
+        LogError MODULE_NAME, "[GetOrTrackWorkbook] ObjPtr invalido para " & Wb.Name
         Exit Function
     End If
 
-    ' Si ya existe, devolver la instancia existente (descartar temporal)
+    ' Si ya existe, devolver instancia existente sin coste adicional
     If mTrackedFiles.Exists(key) Then
         Set GetOrTrackWorkbook = mTrackedFiles(key)
         Exit Function
     End If
 
-    ' Agregar al diccionario
+    ' Solo si NO existe: crear la instancia completa (BindTo + AnalizarWorkBook)
+    Dim f As clsFileXLS
+    Set f = New clsFileXLS
+    f.BindTo Wb
+
     mTrackedFiles.Add key, f
 
     LogDebug MODULE_NAME, "[GetOrTrackWorkbook] Nuevo archivo tracked: " & f.Path & " (total: " & mTrackedFiles.Count & ")"
@@ -281,15 +281,18 @@ End Function
 Private Function FindTrackedWorkbook(Wb As Workbook) As clsFileXLS
     If Wb Is Nothing Then Exit Function
 
-    ' Crear instancia temporal solo para obtener la clave
-    Dim fTemp As clsFileXLS
-    Set fTemp = New clsFileXLS
     Dim key As Double
-    key = fTemp.CreateFromWorkbook(Wb).ObjectKey
+    key = WorkbookKey(Wb)
 
     If mTrackedFiles.Exists(key) Then
         Set FindTrackedWorkbook = mTrackedFiles(key)
     End If
+End Function
+
+'@Description: Obtiene la clave de indexacion para un Workbook (ObjPtr del objeto COM)
+'@Note: Clave pura basada en puntero; no requiere instanciar clsFileXLS
+Private Function WorkbookKey(Wb As Workbook) As Double
+    If Not Wb Is Nothing Then WorkbookKey = ObjPtr(Wb)
 End Function
 
 '@Description: Obtiene la clave de un archivo que implementa IFile
