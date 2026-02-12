@@ -499,7 +499,7 @@ IF "%CLAUDE_BEHIND_REMOTE%"=="1" (
 )
 
 rem Ojo al siguiente cambio realizado por mí 
-IF %CLAUDE_EFFECTIVE_DIFF% EQU 0 (
+IF "%CLAUDE_EFFECTIVE_DIFF%"=="0" (
 	echo   No se han detectado diferencias reales entre la carpeta local y el repositorio remoto.
 	echo   Los siguientes mensajes de advertencia podrían ser imprecisos.
 	echo.
@@ -523,7 +523,7 @@ IF "%CLAUDE_HAS_LOCAL_CHANGES%"=="1" (
 	echo.
 )
 rem Ojo al siguiente cambio realizado por mí 
-IF "%CLAUDE_SYNC_STATE%"=="OK" SET "%HAS_RECOMMENDATIONS%"=="0"
+IF "%CLAUDE_SYNC_STATE%"=="OK" SET "%HAS_RECOMMENDATIONS%=0"
 IF "%HAS_RECOMMENDATIONS%"=="0" (
 	echo ^[OK^] Todo esta sincronizado correctamente.
 	echo      No hay acciones pendientes.
@@ -2688,7 +2688,7 @@ IF "%HAS_WORKING_CHANGES%"=="0" (
 	choice /M "Continuar con el commit y publicación"
 	IF ERRORLEVEL 2 GOTO :RETURN_MENU
 
-	set /p COMMIT_MSG=Describe los cambios ^(Enter para mensaje por defecto^):
+	set /p COMMIT_MSG=Describe los cambios (Enter para mensaje por defecto):
 	IF "!COMMIT_MSG!"=="" SET "COMMIT_MSG=Cambios de Sergio - %DATE%"
 	echo.
 	echo Guardando cambios ^(commit^)...
@@ -2976,15 +2976,15 @@ IF EXIST "%BASEDIR%\%CLAUDE_DIR%" (
 REM Caso 2: Estamos dentro de MAIN_DIR
 FOR %%I IN ("%BASEDIR%") DO SET CURRENT_FOLDER=%%~nxI
 IF "%CURRENT_FOLDER%"=="%MAIN_DIR%" (
-	cd /d "%BASEDIR%\.."
-	SET BASEDIR=%CD%
+	cd /d "%BASEDIR%\.." 2>nul
+	SET BASEDIR=!CD!
 	EXIT /B 0
 )
 
 REM Caso 3: Estamos dentro de CLAUDE_DIR
 IF "%CURRENT_FOLDER%"=="%CLAUDE_DIR%" (
-	cd /d "%BASEDIR%\.."
-	SET BASEDIR=%CD%
+	cd /d "%BASEDIR%\.." 2>nul
+	SET BASEDIR=!CD!
 	EXIT /B 0
 )
 
