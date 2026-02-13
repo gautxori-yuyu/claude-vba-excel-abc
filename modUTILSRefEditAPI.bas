@@ -165,8 +165,7 @@ Attribute StoreTextboxWidth.VB_ProcData.VB_Invoke_Func = " \n0"
 End Sub
 
 Public Function IsFormModal(frm As Object) As Boolean
-Attribute IsFormModal.VB_Description = "[modUTILSRefEditAPI] Is Form Modal (función personalizada)"
-Attribute IsFormModal.VB_ProcData.VB_Invoke_Func = " \n21"
+Attribute IsFormModal.VB_ProcData.VB_Invoke_Func = " \n0"
     IsFormModal = Not CBool(SetFocus(Application.hwnd))
     Call IUnknown_GetWindow(frm, VarPtr(hwndFrm))
     Call SetFocus(hwndFrm)

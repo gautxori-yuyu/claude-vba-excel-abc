@@ -34,8 +34,7 @@ End Function
 
 ' Codifica un array de bytes en Base64
 Function Base64EncodeFromBytes(bytes() As Byte) As String
-Attribute Base64EncodeFromBytes.VB_Description = "[modMACROBase64Encoding] Codifica un array de bytes en Base64"
-Attribute Base64EncodeFromBytes.VB_ProcData.VB_Invoke_Func = " \n21"
+Attribute Base64EncodeFromBytes.VB_ProcData.VB_Invoke_Func = " \n0"
     Dim xml As Object
     Dim nodo As Object
     

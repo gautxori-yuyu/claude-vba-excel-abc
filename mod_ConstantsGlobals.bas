@@ -230,6 +230,9 @@ Public Const FILEORFOLDERNAME_QUOTE_CUSTOMER_OTHER_MODEL_PATTERN As String = FIL
 
 ' Patrones para calculos de GasVBNet
 Public Const GASVBNET_NAME_PATTERN  As String = "^[A-Z]{3}\d{5}_\d{2}"
+' Sub-patrones para ficheros exportados por GasVBNet
+' (Antipul_, ABC_Gas_Cooler-, etc. son auxiliares; _calc y _calc_multi son el calculo principal)
+Public Const GASVBNET_AUXILIARY_PREFIX_PATTERN As String = "^(?:Antipul_|ABC_(?:Gas_Cooler|Aircooler|Reducer|Main Motor|Instrumentation|Gas_Filter|Frequency Converter|Cooling Water Pump|Dryer|Piston_rider_ring_selection|Cooling Water Tower|Pressure_Safety_Valve|Valves_selection)\-)"
 
 ' Patrones para nombres de PLANTILLAS DE OFERTAS
 Public Const PLANTILLABUDGET_PATTERN As String = "^BUDGET_QUOTE_TEMPLATE_.+\.xls.?$"
@@ -322,14 +325,19 @@ Public Const DEFAULT_RIBBONMODE As Long = eRibbonMode.Ribbon_Hidden
 '--------------------------------------------------------------
 ' Enumeración de tipos soportados
 Public Enum TipoArchivo
-    UnDef
-    Unknown
-    oportunidad                              ' Archivos de oportunidades
-    CGASING_CalcResults                      ' Fichero de carculos gasVBnet generico
-    CGASING_CalcOpc                            ' Cálculo C-GAS-ING
-    CGASING_CurvasRendimiento                ' Performance curves
-    PlantillaBudget                          ' Budget
-    PlantillaOferta                          ' Quotation
+    UnDef = 0
+    Unknown = 1
+    oportunidad = 2                          ' Archivos de oportunidades (identificado por nombre)
+    CGASING_CalcResults = 3                  ' Fichero calculo gasVBNet generico (auxiliar o sin tipo definido)
+    CGASING_CalcOpc = 4                      ' Calculo C-GAS-ING principal (_calc o _calc_multi)
+    CGASING_CurvasRendimiento = 5            ' Performance curves (hojas numericas con tablas de datos)
+    PlantillaBudget = 6                      ' Budget (hoja BUDGET_QUOTE + C._TEXTS)
+    PlantillaOferta = 7                      ' Quotation (hoja 1._SCOPE_OF_SUPPLY + A._DATA_ENTRY)
+    OferGas = 8                              ' Valoracion economica OferGas (hoja Hoja 2 con campos Cliente, Fecha Oferta, etc.)
+    Hojas_API = 9                            ' Hojas de datos API (API1-SI, API2-SI, API3-SI)
+    Spares_8000h = 10                        ' Repuestos 8000h (hoja PRESUPUESTO + auxiliares)
+    APIDeviations = 11                       ' Desviaciones API (celdas 6.2 Bolting, 6.8 Compressor cylinders, etc.)
+    CommissioningSpares = 12                 ' Repuestos de puesta en marcha (COMMISSIONING SPARE PARTS)
 End Enum
 
 ' ==========================================

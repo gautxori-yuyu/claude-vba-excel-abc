@@ -193,8 +193,7 @@ End Sub
 
 '@Description: Obtiene el nombre del nivel de log
 Public Function GetLevelName(ByVal level As LogLevel) As String
-Attribute GetLevelName.VB_Description = "[mod_Logger] UTILIDADES Obtiene el nombre del nivel de log"
-Attribute GetLevelName.VB_ProcData.VB_Invoke_Func = " \n21"
+Attribute GetLevelName.VB_ProcData.VB_Invoke_Func = " \n0"
     Select Case level
         Case LOG_DEBUG:    GetLevelName = "DEBUG"
         Case LOG_INFO:     GetLevelName = "INFO"

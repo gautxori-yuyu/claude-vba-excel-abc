@@ -35,6 +35,7 @@ Private bRibbonWasInitialized As Boolean
 ' CALLBACK: Se llama al cargar el Ribbon
 ' ==========================================
 Sub RibbonOnLoad(xlRibbon As IRibbonUI)
+Attribute RibbonOnLoad.VB_ProcData.VB_Invoke_Func = " \n0"
     LogInfo MODULE_NAME, "[callback: RibbonOnLoad] Inicio"
     On Error GoTo ErrorHandler
 
@@ -62,6 +63,7 @@ End Sub
 '@Description: Obtiene el objeto IRibbonUI, recuperándolo con CopyMemory si se perdió
 '@Returns: IRibbonUI o Nothing si no se puede recuperar
 Public Function GetRibbonFromMemory() As IRibbonUI
+Attribute GetRibbonFromMemory.VB_ProcData.VB_Invoke_Func = " \n0"
     ' Si tenemos la referencia directa, usarla
     If Not gobjRibbonUI Is Nothing Then
         Set GetRibbonFromMemory = gobjRibbonUI
@@ -104,12 +106,14 @@ End Function
 
 '@Description: Indica si el ribbon fue inicializado alguna vez en esta sesión
 Public Function WasRibbonInitialized() As Boolean
+Attribute WasRibbonInitialized.VB_ProcData.VB_Invoke_Func = " \n0"
     WasRibbonInitialized = bRibbonWasInitialized
 End Function
 
 '@Description: Obtiene el puntero guardado del Ribbon (para diagnóstico)
 #If VBA7 Then
 Public Function GetRibbonPointer() As LongPtr
+Attribute GetRibbonPointer.VB_ProcData.VB_Invoke_Func = " \n0"
 #Else
 Public Function GetRibbonPointer() As Long
 #End If
@@ -558,6 +562,7 @@ ErrHandler:
               "Error determinando la visibilidad del ribbon: " & Err.Description
 End Sub
 Public Sub GetOpGrpEnabled(control As IRibbonControl, ByRef Visible)
+Attribute GetOpGrpEnabled.VB_ProcData.VB_Invoke_Func = " \n0"
     On Error GoTo ErrHandler
     Visible = App.AppState.IsOpportunityMgrEnabled
     Exit Sub

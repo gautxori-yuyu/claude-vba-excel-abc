@@ -369,7 +369,8 @@ End Function
 '@Scope: Privado
 '@ArgumentDescriptions: carpeta: Objeto Folder
 '@Returns: Long | Número total de archivos
-Private Function ContarArchivosRecursivo(carpeta As Object) As Long
+Function ContarArchivosRecursivo(carpeta As Object) As Long
+Attribute ContarArchivosRecursivo.VB_ProcData.VB_Invoke_Func = " \n0"
     Dim archivo As Object
     Dim subcarpeta As Object
     Dim total As Long
@@ -397,7 +398,8 @@ End Function
 '@Scope: Privado
 '@ArgumentDescriptions: shellApp: Objeto Shell.Application | rutaZip: Ruta al ZIP
 '@Returns: Long | Número de items en el ZIP (0 si error)
-Private Function ContarItemsEnZip(shellApp As Object, rutaZip As String) As Long
+Function ContarItemsEnZip(shellApp As Object, rutaZip As String) As Long
+Attribute ContarItemsEnZip.VB_ProcData.VB_Invoke_Func = " \n0"
     On Error Resume Next
     
     ContarItemsEnZip = shellApp.Namespace(CVar(rutaZip)).Items.Count

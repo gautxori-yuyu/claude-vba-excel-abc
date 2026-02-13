@@ -45,41 +45,30 @@ Attribute ExportarComponentesVBA.VB_ProcData.VB_Invoke_Func = " \n0"
     ' Carpeta donde se guardarán los archivos exportados
     rutaExportacion = Wb.Path
     
-    ' Crear carpeta si no existe
-    If Dir(rutaExportacion, vbDirectory) = "" Then
-        MkDir rutaExportacion
-    End If
-    
-    ' Recorrer todos los componentes del proyecto VBA
-    For Each vbComp In Wb.VBProject.VBComponents
-        Select Case vbComp.Type
-        Case 1: nombreArchivo = vbComp.Name & ".bas" ' Módulo estándar
-        Case 2, 100: nombreArchivo = vbComp.Name & ".cls" ' Clase
-        Case 3: nombreArchivo = vbComp.Name & ".frm" ' Formulario
-        Case Else: nombreArchivo = vbComp.Name & ".txt"
-        End Select
-        
-        ' Exportar el componente
-        If vbComp.CodeModule.CountOfLines = 0 And InStr(vbComp.Name, "Hoja") > 0 Then
-        Else
-            vbComp.Export rutaExportacion & "\" & nombreArchivo
-        End If
-    Next vbComp
+    ExportarFichsVBAaCarpeta Wb, rutaExportacion
     
     MsgBox "Componentes exportados a: " & rutaExportacion, vbInformation
+End Sub
+
+Sub ExportarComponentesVBAdesdeThisWorkbookXLAM()
+Attribute ExportarComponentesVBAdesdeThisWorkbookXLAM.VB_ProcData.VB_Invoke_Func = " \n0"
+    ' Carpeta donde se guardarán los archivos exportados
+    Dim rutaExportacion As String
+    rutaExportacion = ThisWorkbook.Path
+    
+    ExportarFichsVBAaCarpeta ThisWorkbook, rutaExportacion
+    
+    MsgBox "Exportación completada en: " & rutaExportacion, vbInformation
 End Sub
 
 '@Description: Exporta componentes VBA sin mostrar mensajes al usuario
 '@Scope: Privado
 '@ArgumentDescriptions: wb: Workbook de origen | rutaDestino: Carpeta donde exportar
-Sub ExportarComponentesVBASilencioso(Wb As Workbook, rutaDestino As String)
-Attribute ExportarComponentesVBASilencioso.VB_ProcData.VB_Invoke_Func = " \n0"
-    Dim vbComp As Object
-    Dim nombreArchivo As String
-    Dim fso As Object
+Private Sub ExportarFichsVBAaCarpeta(Wb As Workbook, rutaDestino As String)
     
     On Error Resume Next
     
+    Dim fso As Object
     Set fso = CreateObject("Scripting.FileSystemObject")
     
     ' Asegurar que existe la carpeta
@@ -87,6 +76,8 @@ Attribute ExportarComponentesVBASilencioso.VB_ProcData.VB_Invoke_Func = " \n0"
         fso.CreateFolder rutaDestino
     End If
     
+    Dim vbComp As Object
+    Dim nombreArchivo As String
     ' Recorrer todos los componentes del proyecto VBA
     For Each vbComp In Wb.VBProject.VBComponents
         Select Case vbComp.Type
@@ -96,8 +87,10 @@ Attribute ExportarComponentesVBASilencioso.VB_ProcData.VB_Invoke_Func = " \n0"
             Case Else: nombreArchivo = vbComp.Name & ".txt"
         End Select
         
-        ' Exportar solo si tiene código
-        If vbComp.CodeModule.CountOfLines > 0 Then
+        ' Exportar solo si tiene código, Y SI NO ES CODIGO EN UNA HOJA DE CALCULO SIN RENOMBRAR
+        ' (por evitar exportar codigo "de pruebas")
+        If vbComp.CodeModule.CountOfLines = 0 And InStr(vbComp.Name, "Hoja") > 0 Then
+        Else
             vbComp.Export rutaDestino & "\" & nombreArchivo
         End If
     Next vbComp
@@ -133,21 +126,8 @@ Attribute ImportarComponentesVBA.VB_ProcData.VB_Invoke_Func = " \n0"
     ' Carpeta desde donde se importarán los archivos
     rutaImportacion = Wb.Path
     
-    If Dir(rutaImportacion, vbDirectory) = "" Then
-        MsgBox "La carpeta de importación no existe: " & rutaImportacion, vbExclamation
-        Exit Sub
-    End If
-    
-    Set fso = CreateObject("Scripting.FileSystemObject")
-    Set carpeta = fso.GetFolder(rutaImportacion)
-    
-    For Each archivo In carpeta.files
-        extension = LCase(fso.GetExtensionName(archivo.Name))
-        If extension = "bas" Or extension = "cls" Or extension = "frm" Then
-            Wb.VBProject.VBComponents.Import archivo.Path
-        End If
-    Next archivo
-    
+    ImportarFichsVBAenCarpeta rutaImportacion
+       
     MsgBox "Importación completada desde: " & rutaImportacion, vbInformation
 End Sub
 
@@ -181,6 +161,16 @@ Attribute RestaurarBackupVBADesdeZip.VB_ProcData.VB_Invoke_Func = " \n0"
         Exit Sub
     End If
     
+    ' Confirmar restauración
+    If MsgBox("¿Desea restaurar el código VBA desde este backup?" & vbCrLf & vbCrLf & _
+              "ADVERTENCIA: Se eliminarán todos los módulos actuales" & vbCrLf & _
+              "y se cargarán los del backup.", vbExclamation + vbYesNo, "Confirmar restauración") <> vbYes Then
+        Exit Sub
+    End If
+    
+    Dim nfichs
+    nfichs = ContarItemsEnZip(shellApp, rutaZip)
+    
     ' Crear carpeta temporal para descomprimir
     timestampStr = Format(Now, "yyyymmdd_hhnnss")
     rutaTempDescompresion = Environ("TEMP") & "\VBA_Restore_" & timestampStr
@@ -193,24 +183,102 @@ Attribute RestaurarBackupVBADesdeZip.VB_ProcData.VB_Invoke_Func = " \n0"
     ' Esperar a que termine la descompresión
     Dim intentos As Integer
     intentos = 0
-    Do While fso.GetFolder(rutaTempDescompresion).files.Count = 0 And intentos < 50
+    Do While ContarArchivosRecursivo(rutaTempDescompresion) < nfichs And intentos < 50
         DoEvents
         Sleep 200
         intentos = intentos + 1
     Loop
+        
+    ImportarFichsVBAenCarpeta rutaTempDescompresion
     
-    ' Confirmar restauración
-    If MsgBox("¿Desea restaurar el código VBA desde este backup?" & vbCrLf & vbCrLf & _
-              "ADVERTENCIA: Se eliminarán todos los módulos actuales" & vbCrLf & _
-              "y se cargarán los del backup.", vbExclamation + vbYesNo, "Confirmar restauración") = vbYes Then
+    ' Limpiar carpeta temporal
+    On Error Resume Next
+    fso.DeleteFolder rutaTempDescompresion, True
+    On Error GoTo 0
         
-        ' Importar componentes
-        Dim archivo As Object
-        Dim extension As String
+    MsgBox "Restauración completada desde: " & rutaZip, vbInformation, "Restauración completada"
+    
+    Exit Sub
+    
+ErrorHandler:
+    LogCurrentError MODULE_NAME, "[RestaurarBackupVBADesdeZip]"
+    MsgBox "Error al restaurar backup: " & Err.Description, vbCritical, "Error"
+End Sub
+
+'@Description: Importa ficheros VBA al XLAM actual; incluye dependencias (inyeccion en el XLAM)
+Sub ImportarComponentesVBAaThisWorkbookXLAM()
+Attribute ImportarComponentesVBAaThisWorkbookXLAM.VB_ProcData.VB_Invoke_Func = " \n0"
+    ' Carpeta desde donde se importarán los archivos
+    Dim rutaImportacion As String
+    rutaImportacion = ThisWorkbook.Path
+    
+    ImportarFichsVBAenCarpeta rutaImportacion
+    
+    If MsgBox("¿Importar Hojas de calculo desde XLAM ABC?", vbYesNo + vbQuestion, "Importar dependencias") = vbYes Then
+        ImportarDependencias
+    End If
+    
+    If MsgBox("¿Inyectar ficheros a descomprimir desde subcarpeta embeddings (XLAM ABC)?", vbYesNo + vbQuestion, "Importar dependencias") = vbYes Then
+        InyectarEmbeddings
+    End If
+    
+    MsgBox "Importación completada desde: " & rutaImportacion, vbInformation
+End Sub
+
+Private Sub ImportarDependencias()
+    Dim rutaLibro As Variant
+    Dim wbOrigen As Workbook
+    Dim ws As Worksheet
+    Dim nombreHojaBorrar As String: nombreHojaBorrar = "Hoja1" ' Nombre estándar
+    
+    rutaLibro = Application.GetOpenFilename("Excel Files (*.xlam; *.xlsm), *.xlam; *.xlsm", , "Seleccionar versión previa")
+    
+    If rutaLibro <> False Then
+        Set wbOrigen = Workbooks.Open(fileName:=rutaLibro, ReadOnly:=True)
         
-        For Each archivo In fso.GetFolder(rutaTempDescompresion).files
-            extension = LCase(fso.GetExtensionName(archivo.Name))
-            If extension = "bas" Or extension = "cls" Or extension = "frm" Then
+        For Each ws In wbOrigen.Worksheets
+            If InStr(ws.Name, "Hoja") = 0 Then
+                ' Copiar cada hoja RENOMBRADA al final del libro actual
+                ws.Copy After:=ThisWorkbook.Sheets(ThisWorkbook.Sheets.Count)
+            End If
+        Next ws
+        
+        wbOrigen.Close SaveChanges:=False
+        
+        ' 2. Intentar eliminar la hoja inicial si existe
+        On Error Resume Next
+        Set wsBorrar = ThisWorkbook.Sheets(nombreHojaBorrar)
+        If Not wsBorrar Is Nothing Then
+            Application.DisplayAlerts = False
+            wsBorrar.Delete
+            Application.DisplayAlerts = True
+        End If
+        On Error GoTo 0
+    End If
+End Sub
+
+Private Sub ImportarFichsVBAenCarpeta(rutaImportacion As String)
+    Dim fso As Object, archivo As Object, carpeta As Object, extension As String
+    Set fso = CreateObject("Scripting.FileSystemObject")
+    Set carpeta = fso.GetFolder(rutaImportacion)
+    
+    If Dir(rutaImportacion, vbDirectory) = "" Then
+        MsgBox "La carpeta de importación no existe: " & rutaImportacion, vbExclamation
+        Exit Sub
+    End If
+    On Error Resume Next
+    
+    For Each archivo In carpeta.files
+        extension = LCase(fso.GetExtensionName(archivo.Name))
+        If extension = "bas" Or extension = "cls" Or extension = "frm" Then
+            If archivo.Name = "ThisWorkbook.cls" Then
+                Dim vbComp As Object
+                Set vbComp = ThisWorkbook.VBProject.VBComponents("ThisWorkbook")
+                ' Limpiar código existente antes de inyectar el nuevo
+                vbComp.CodeModule.DeleteLines 1, vbComp.CodeModule.CountOfLines
+                ' Insertar el contenido del archivo
+                vbComp.CodeModule.AddFromFile rutaArchivo
+            Else
                 ' Intentar eliminar componente existente
                 On Error Resume Next
                 Dim nombreComp As String
@@ -221,68 +289,10 @@ Attribute RestaurarBackupVBADesdeZip.VB_ProcData.VB_Invoke_Func = " \n0"
                 ' Importar
                 ThisWorkbook.VBProject.VBComponents.Import archivo.Path
             End If
-        Next archivo
-        
-        MsgBox "Restauración completada desde: " & rutaZip, vbInformation, "Restauración completada"
-    End If
-    
-    ' Limpiar carpeta temporal
-    On Error Resume Next
-    fso.DeleteFolder rutaTempDescompresion, True
-    On Error GoTo 0
-    
-    Exit Sub
-    
-ErrorHandler:
-    LogCurrentError MODULE_NAME, "[RestaurarBackupVBADesdeZip]"
-    MsgBox "Error al restaurar backup: " & Err.Description, vbCritical, "Error"
-End Sub
-
-Sub ImportarComponentesVBAaThisWorkbookXLAM()
-Attribute ImportarComponentesVBAaThisWorkbookXLAM.VB_ProcData.VB_Invoke_Func = " \n0"
-    ' Carpeta desde donde se importarán los archivos
-    Dim fso As Object, archivo As Object, carpeta As Object, rutaImportacion As String, extension As String
-    rutaImportacion = ThisWorkbook.Path
-    
-    If Dir(rutaImportacion, vbDirectory) = "" Then
-        MsgBox "La carpeta de importación no existe: " & rutaImportacion, vbExclamation
-        Exit Sub
-    End If
-    
-    Set fso = CreateObject("Scripting.FileSystemObject")
-    Set carpeta = fso.GetFolder(rutaImportacion)
-    
-    For Each archivo In carpeta.files
-        extension = LCase(fso.GetExtensionName(archivo.Name))
-        If extension = "bas" Or extension = "cls" Or extension = "frm" Then
-            ThisWorkbook.VBProject.VBComponents.Import archivo.Path
         End If
     Next archivo
     
-    MsgBox "Importación completada desde: " & rutaImportacion, vbInformation
-End Sub
-
-Sub ExportarComponentesVBAdesdeThisWorkbookXLAM()
-Attribute ExportarComponentesVBAdesdeThisWorkbookXLAM.VB_ProcData.VB_Invoke_Func = " \n0"
-    ' Carpeta donde se guardarán los archivos exportados
-    Dim rutaExportacion As String, nombreArchivo As String, vbComp
-    rutaExportacion = ThisWorkbook.Path
-    
-    ' Crear carpeta si no existe
-    If Dir(rutaExportacion, vbDirectory) = "" Then
-        MkDir rutaExportacion
-    End If
-    
-    ' Recorrer todos los componentes del proyecto VBA
-    For Each vbComp In ThisWorkbook.VBProject.VBComponents
-        Select Case vbComp.Type
-        Case 1: nombreArchivo = vbComp.Name & ".bas" ' Módulo estándar
-        Case 2, 100: nombreArchivo = vbComp.Name & ".cls" ' Clase
-        Case 3: nombreArchivo = vbComp.Name & ".frm" ' Formulario
-        Case Else: nombreArchivo = vbComp.Name & ".txt"
-        End Select
-        If vbComp.CodeModule.CountOfLines > 0 Then vbComp.Export rutaExportacion & "\" & nombreArchivo
-    Next vbComp
-    
-    MsgBox "Exportación completada en: " & rutaExportacion, vbInformation
+ErrorHandler:
+    LogCurrentError MODULE_NAME, "[ImportarFichsVBAenCarpeta]"
+    MsgBox "Error al importar fichero: " & Err.Description, vbCritical, "Error"
 End Sub

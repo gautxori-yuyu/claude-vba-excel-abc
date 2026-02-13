@@ -20,6 +20,7 @@ Private mLastInitTime As Double    ' Timestamp de ultima inicializacion
 ' ==========================================
 
 Public Function App() As clsApplication
+Attribute App.VB_ProcData.VB_Invoke_Func = " \n0"
     Set App = ThisWorkbook.App
 End Function
 
@@ -34,6 +35,7 @@ End Function
 
 '@Description: Fuerza el reinicio completo de la aplicacion
 Public Sub ReiniciarAplicacion()
+Attribute ReiniciarAplicacion.VB_ProcData.VB_Invoke_Func = " \n0"
     Dim result As TDRESULT
 
     result = ShowTaskDialogYesNo("Reiniciar Aplicación", _
@@ -77,6 +79,7 @@ End Sub
 '@Note: Esta funcion usa una variable Static que sobrevive entre llamadas
 '       pero se reinicia si VBA hace reset. El patron detecta ese reset.
 Public Function DetectVBAResetOccurred() As Boolean
+Attribute DetectVBAResetOccurred.VB_ProcData.VB_Invoke_Func = " \n0"
     Static sInitFlag As Boolean
 
     If Not sInitFlag Then
@@ -129,6 +132,7 @@ Attribute DesactivarModoAddin.VB_ProcData.VB_Invoke_Func = " \n0"
         ThisWorkbook.IsAddin = False     ' Hace que el libro se muestre
         LogInfo MODULE_NAME, "[DesactivarModoAddin] XLAM visible temporalmente"
     End If
+    Exit Sub
 ErrHandler:
     Err.Raise Err.Number, "modMACROBackups.DesactivarModoAddin", _
               "Error desactivando el modo de AddIn: " & Err.Description
@@ -146,8 +150,9 @@ Attribute RestaurarModoAddin.VB_ProcData.VB_Invoke_Func = " \n0"
     ThisWorkbook.IsAddin = True
     LogInfo MODULE_NAME, "[RestaurarModoAddin] XLAM restaurado como Add-in"
 ErrHandler:
-    Err.Raise Err.Number, "modMACROBackups.DesactivarModoAddin", _
-              "Error desactivando el modo de AddIn: " & Err.Description
+    Exit Sub
+    Err.Raise Err.Number, "modMACROBackups.RestaurarModoAddin", _
+              "Error activando el modo de AddIn: " & Err.Description
 End Sub
 
 ' ==========================================

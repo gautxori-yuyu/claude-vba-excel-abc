@@ -33,7 +33,7 @@ Attribute WriteProcedimientosSheet.VB_ProcData.VB_Invoke_Func = " \n0"
     End If
     
     ' Verificar si existe la hoja
-    bSheetExisted = SheetExists(ThisWorkbook, SHEET_NAME)
+    bSheetExisted = SheetExists(SHEET_NAME, ThisWorkbook)
     
     If bSheetExisted Then
         ' Leer hoja existente y comparar
@@ -75,7 +75,7 @@ Attribute WriteProcedimientosSheet_ConBackup.VB_ProcData.VB_Invoke_Func = " \n0"
     End If
     
     ' Verificar si existe la hoja
-    bSheetExisted = SheetExists(ThisWorkbook, SHEET_NAME)
+    bSheetExisted = SheetExists(SHEET_NAME, ThisWorkbook)
     
     If bSheetExisted Then
         ' Leer hoja existente y comparar (CON BACKUP)

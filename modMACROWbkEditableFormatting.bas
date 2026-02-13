@@ -533,8 +533,7 @@ Attribute GetPrintHeightMultiLine.VB_ProcData.VB_Invoke_Func = " \n21"
 End Function
 
 Function GetAbsoluteUsedRange(ws As Worksheet) As Range
-Attribute GetAbsoluteUsedRange.VB_Description = "[modMACROWbkEditableFormatting] Get Absolute Used Range (función personalizada). Aplica a: Cells Range"
-Attribute GetAbsoluteUsedRange.VB_ProcData.VB_Invoke_Func = " \n21"
+Attribute GetAbsoluteUsedRange.VB_ProcData.VB_Invoke_Func = " \n0"
     Dim ultFila As Long
     Dim ultCol As Long
     
@@ -583,8 +582,7 @@ Attribute GetAbsoluteUsedRange.VB_ProcData.VB_Invoke_Func = " \n21"
 End Function
 
 Function GetRealUsedRange(ws As Worksheet) As Range
-Attribute GetRealUsedRange.VB_Description = "[modMACROWbkEditableFormatting] Get Real Used Range (función personalizada). Aplica a: Cells Range"
-Attribute GetRealUsedRange.VB_ProcData.VB_Invoke_Func = " \n21"
+Attribute GetRealUsedRange.VB_ProcData.VB_Invoke_Func = " \n0"
     Dim ultimaFila As Long
     Dim ultimaCol As Long
     
@@ -615,8 +613,7 @@ Attribute GetRealUsedRange.VB_ProcData.VB_Invoke_Func = " \n21"
 End Function
 
 Function GetPhysicalPaperHeight(ws As Worksheet) As Double
-Attribute GetPhysicalPaperHeight.VB_Description = "[modMACROWbkEditableFormatting] Get Physical Paper Height (función personalizada)"
-Attribute GetPhysicalPaperHeight.VB_ProcData.VB_Invoke_Func = " \n21"
+Attribute GetPhysicalPaperHeight.VB_ProcData.VB_Invoke_Func = " \n0"
     ' Altura física total del papel en puntos (1 pulgada = 72 pts)
     Select Case ws.PageSetup.PaperSize
         Case xlPaperA4:      GetPhysicalPaperHeight = 841.89 ' (210mm x 297mm)
@@ -627,8 +624,7 @@ Attribute GetPhysicalPaperHeight.VB_ProcData.VB_Invoke_Func = " \n21"
 End Function
 
 Function GetUsablePrintHeight(ws As Worksheet) As Double
-Attribute GetUsablePrintHeight.VB_Description = "[modMACROWbkEditableFormatting] Get Usable Print Height (función personalizada)"
-Attribute GetUsablePrintHeight.VB_ProcData.VB_Invoke_Func = " \n21"
+Attribute GetUsablePrintHeight.VB_ProcData.VB_Invoke_Func = " \n0"
     Dim totalHeight As Double
     totalHeight = GetPhysicalPaperHeight(ws)
     
@@ -976,8 +972,7 @@ Attribute ConfigurarSaltosDePagina_old.VB_ProcData.VB_Invoke_Func = " \n0"
     'MsgBox "Paginación optimizada aplicada.", vbInformation
 End Sub
 Function SaltoVerticalCortaRango(ws As Worksheet, targetRange As Range) As Boolean
-Attribute SaltoVerticalCortaRango.VB_Description = "[modMACROWbkEditableFormatting] Salto Vertical Corta Rango (función personalizada). Aplica a: Cells Range"
-Attribute SaltoVerticalCortaRango.VB_ProcData.VB_Invoke_Func = " \n21"
+Attribute SaltoVerticalCortaRango.VB_ProcData.VB_Invoke_Func = " \n0"
     ' Devuelve True si el rango excede el primer salto de página vertical
     
     Dim primerSaltoColumna As Long

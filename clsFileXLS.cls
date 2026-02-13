@@ -125,13 +125,7 @@ Public Sub BindTo(Wb As Workbook)
     AnalizarWorkBook
     LogDebug MODULE_NAME, "[BindTo] Asociado a: " & Me.Path & " (key: " & p_ObjectKey & ")"
 End Sub
-' Factory Method estático: "Creador especializado"
-Public Static Function CreateFromWorkbook(Wb As Workbook) As clsFileXLS
-    Dim instance As clsFileXLS
-    Set instance = New clsFileXLS
-    instance.BindTo Wb
-    Set CreateFromWorkbook = instance
-End Function
+' (CreateFromWorkbook eliminado: clsFileManager calcula la clave via ObjPtr directamente)
 '--------------------------------------------------------------
 ' @Description: Acceso seguro al Workbook subyacente.
 '               Lanza error si el wb ya no es válido.
@@ -176,7 +170,7 @@ End Property
 '--------------------------------------------------------------
 Public Sub AnalizarWorkBook(Optional ByVal Wb As Workbook = Nothing)
     If p_ObjectKey = 0 Then Exit Sub
-    
+
     If Not Wb Is Nothing And p_wb Is Nothing Then
         BindTo Wb
     ElseIf Not Wb Is Nothing And Not (p_wb Is Wb) Then
@@ -185,32 +179,35 @@ Public Sub AnalizarWorkBook(Optional ByVal Wb As Workbook = Nothing)
         Err.Raise vbObjectError + 573, MODULE_NAME, _
                   "Esta instancia ya esta asociada a un Workbook diferente. (no debería pasar, revisa tu codigo)"
     End If
-    
-    ' Determinar tipo por nombre de fichero
+
+    ' PASO 1: tipo por nombre (rapido, sin abrir contenido)
     p_WbTipoFichero = TipoPorNombreFichero()
-    
-    ' Determinar tipo por CONTENIDO de fichero
-    
+
+    ' PASO 2: refinar por contenido si el nombre no fue suficientemente preciso
     Select Case p_WbTipoFichero
-        Case TipoArchivo.CGASING_CurvasRendimiento, _
-                TipoArchivo.CGASING_CalcOpc, _
-                TipoArchivo.PlantillaBudget, _
-                TipoArchivo.PlantillaOferta
+        Case TipoArchivo.CGASING_CalcOpc, _
+             TipoArchivo.CGASING_CurvasRendimiento, _
+             TipoArchivo.PlantillaBudget, _
+             TipoArchivo.PlantillaOferta
+            ' Tipo determinado con precision por nombre; no es necesario analizar contenido
         Case TipoArchivo.CGASING_CalcResults
             ' TODO: SE PUEDE SEGUIR FILTRANDO POR NOMBRES, ver en VBScript
             ' ...
-            p_WbTipoFichero = TipoPorContenidoLibro
+            ' Puede ser CurvasRendimiento; verificar por contenido
+            Dim tCalc As TipoArchivo
+            tCalc = TipoPorContenidoLibro()
+            If tCalc <> TipoArchivo.UnDef Then p_WbTipoFichero = tCalc
         Case TipoArchivo.oportunidad
             ' de momento NO HAY CRITERIO FIJO para el nombre de fichero
             ' que acote tipos con precisión (PTE)...
             ' y requeriría analizar contenido
-            p_WbTipoFichero = TipoPorContenidoLibro
         Case Else
-            ' Aqui puede haber de todo, PTE seguir fijando criterios... o descartando ficheros
-            
-            ' p_WbTipoFichero = TipoPorContenidoLibro
+            ' Unknown, oportunidad u otro: intentar identificar por contenido
+            Dim tElse As TipoArchivo
+            tElse = TipoPorContenidoLibro()
+            If tElse <> TipoArchivo.UnDef Then p_WbTipoFichero = tElse
     End Select
-    
+
     LogInfo MODULE_NAME, "[AnalizarWorkBook] " & p_wb.Name & " identificado como " & TipoFicheroToString(p_WbTipoFichero)
     ' TODO: Esto NO va a aqui, va en cada ExcelXXXSource
     ' Extraer información del nombre DE LA CARPETA DE OPORTUNIDAD, ... o de otros ficheros en ella!!!
@@ -219,61 +216,205 @@ Public Sub AnalizarWorkBook(Optional ByVal Wb As Workbook = Nothing)
 End Sub
 
 '--------------------------------------------------------------
-' @Description: Determinan el tipo de archivo según nombre
+' @Description: Determina el tipo de archivo según su nombre.
+'   Orden de prioridad: GasVBNet > Plantillas > Oportunidad > Unknown
 '--------------------------------------------------------------
 Private Function TipoPorNombreFichero() As TipoArchivo
-    Dim nombreArchivo As String
-    nombreArchivo = p_wb.Name
-    
-    Dim re As Object: Set re = CreateObject("VBScript.RegExp")
+    Dim nombre As String
+    nombre = p_wb.Name
+
+    Dim re As Object
+    Set re = CreateObject("VBScript.RegExp")
     re.IgnoreCase = True
-    
-    ' Verificar patrones en el nombre
+
+    ' --- GasVBNet: patron base ^[A-Z]{3}\d{5}_\d{2} ---
     re.Pattern = GASVBNET_NAME_PATTERN
-    If re.Test(p_wb.Name) And TipoPorNombreFichero = UnDef Then
-        If InStr(1, nombreArchivo, "_calc", vbTextCompare) > 0 Then
+    If re.Test(nombre) Then
+        ' Auxiliares exportados por GasVBNet (Antipul_, ABC_Gas_Cooler-, etc.)
+        re.Pattern = GASVBNET_AUXILIARY_PREFIX_PATTERN
+        If re.Test(nombre) Then
+            TipoPorNombreFichero = TipoArchivo.CGASING_CalcResults
+        ' Calculo principal: _calc o _calc_multi
+        ElseIf InStr(1, nombre, "_calc", vbTextCompare) > 0 Then
             TipoPorNombreFichero = TipoArchivo.CGASING_CalcOpc
         Else
-            ' Define un tippo genérico de calculo gasVBNet
+            ' Resultado generico sin sufijo _calc (ej: exportacion directa sin procesar)
             ' TODO: seguir fijando criterios para ficheros GasVBNet
             TipoPorNombreFichero = TipoArchivo.CGASING_CalcResults
         End If
+        Exit Function
     End If
-    
+
+    ' --- Plantilla Budget ---
     re.Pattern = PLANTILLABUDGET_PATTERN
-    If re.Test(p_wb.Name) And TipoPorNombreFichero = UnDef Then
+    If re.Test(nombre) Then
         TipoPorNombreFichero = TipoArchivo.PlantillaBudget
+        Exit Function
     End If
-    
+
+    ' --- Plantilla Oferta ---
     re.Pattern = PLANTILLAQUOTATION_PATTERN
-    If re.Test(p_wb.Name) And TipoPorNombreFichero = UnDef Then
+    If re.Test(nombre) Then
         TipoPorNombreFichero = TipoArchivo.PlantillaOferta
+        Exit Function
     End If
-    
-    If modAPPFileNames.QuoteNrInFileName(p_wb) <> "" And modAPPFileNames.CustomerInFileName(p_wb) <> "" _
-             And TipoPorNombreFichero = UnDef Then
-        ' si tiene el patrón de oportunidad
+
+    ' --- Fichero de oportunidad: tiene QuoteNr + Customer en el nombre ---
+    If modAPPFileNames.QuoteNrInFileName(p_wb) <> "" And _
+       modAPPFileNames.CustomerInFileName(p_wb) <> "" Then
         TipoPorNombreFichero = TipoArchivo.oportunidad
+        Exit Function
     End If
+
+    ' --- Sin patron reconocido por nombre; se intentara por contenido ---
+    TipoPorNombreFichero = TipoArchivo.Unknown
 End Function
 
 '--------------------------------------------------------------
-' @Description: Determinan el tipo de archivo según contenido
+' @Description: Determina el tipo por contenido del libro.
+'   Fase 1: por hojas presentes (rapido).
+'   Fase 2: por busqueda de texto en celdas (mas lento, fallback).
+'   Basado en checkXLWBKType de cOportunidad.vbs
 '--------------------------------------------------------------
 Private Function TipoPorContenidoLibro() As TipoArchivo
-    Select Case p_WbTipoFichero
-        Case TipoArchivo.CGASING_CalcResults
-            ' Filtrar qué tipo de resultado es, según contenido
-            If EsContenidoLibroTablasCurvasRto Then
-                TipoPorContenidoLibro = TipoArchivo.CGASING_CurvasRendimiento
-            End If
-        Case Else
-            ' Si NO tiene un contenido predefinido... habría que pasarlo por TODAS las comprobaciones??
-    End Select
+    TipoPorContenidoLibro = TipoArchivo.UnDef
+
+    ' ===== FASE 1: deteccion por hojas presentes =====
+
+    ' C-GAS-ING o GAS-ING: calculo gasVBNet (ABCAire)
+    If SheetExists("C-GAS-ING", p_wb) Or SheetExists("GAS-ING", p_wb) Then
+        If EsContenidoCalcGasCGASING() Then
+            TipoPorContenidoLibro = TipoArchivo.CGASING_CalcOpc
+            Exit Function
+        End If
+    End If
+
+    ' Plantilla Budget: BUDGET_QUOTE + C._TEXTS
+    If SheetExists("BUDGET_QUOTE", p_wb) And SheetExists("C._TEXTS", p_wb) Then
+        TipoPorContenidoLibro = TipoArchivo.PlantillaBudget
+        Exit Function
+    End If
+
+    ' Plantilla Oferta: 1._SCOPE_OF_SUPPLY + A._DATA_ENTRY
+    If SheetExists("1._SCOPE_OF_SUPPLY", p_wb) And SheetExists("A._DATA_ENTRY", p_wb) Then
+        TipoPorContenidoLibro = TipoArchivo.PlantillaOferta
+        Exit Function
+    End If
+
+    ' Hojas API: API1-SI, API2-SI, API3-SI
+    If SheetExists("API1-SI", p_wb) And SheetExists("API2-SI", p_wb) And SheetExists("API3-SI", p_wb) Then
+        TipoPorContenidoLibro = TipoArchivo.Hojas_API
+        Exit Function
+    End If
+
+    ' Repuestos 8000h completo: PRESUPUESTO + hojas auxiliares
+    If SheetExists("PRESUPUESTO", p_wb) And SheetExists("Filtros de aceite y carter", p_wb) And _
+       SheetExists("Alimentador", p_wb) And SheetExists("AXAPTA", p_wb) And SheetExists("DENOMINACION VALVULAS", p_wb) Then
+        TipoPorContenidoLibro = TipoArchivo.Spares_8000h
+        Exit Function
+    End If
+
+    ' Performance curves: CGASING_CalcResults con hojas numericas y tablas de datos
+    If p_WbTipoFichero = TipoArchivo.CGASING_CalcResults Then
+        If EsContenidoLibroTablasCurvasRto() Then
+            TipoPorContenidoLibro = TipoArchivo.CGASING_CurvasRendimiento
+            Exit Function
+        End If
+    End If
+
+    ' OferGas: hoja "Hoja 2" o "Hoja2" con campos de valoracion economica
+    Dim shOferGas As String
+    If SheetExists("Hoja 2", p_wb) Then
+        shOferGas = "Hoja 2"
+    ElseIf SheetExists("Hoja2", p_wb) Then
+        shOferGas = "Hoja2"
+    End If
+    If shOferGas <> "" Then
+        If CeldaContiene(shOferGas, "A1", "Cliente") And _
+           CeldaContiene(shOferGas, "K1", "Fecha Oferta") And _
+           CeldaContiene(shOferGas, "H3", "Comercial") Then
+            TipoPorContenidoLibro = TipoArchivo.OferGas
+            Exit Function
+        End If
+    End If
+
+    ' ===== FASE 2: deteccion por busqueda de texto en celdas =====
+
+    ' OferGas renombrado (sin nombre de hoja estandar, identificable por contenido)
+    If BuscarEnHojas("Cliente : ", "Usuario Final : ", "Comercial : ") Then
+        TipoPorContenidoLibro = TipoArchivo.OferGas
+        Exit Function
+    End If
+
+    ' Desviaciones API 618
+    If BuscarEnHojas("6.2 Bolting", "6.8 Compressor cylinders") Then
+        TipoPorContenidoLibro = TipoArchivo.APIDeviations
+        Exit Function
+    End If
+
+    ' Repuestos de puesta en marcha
+    If BuscarEnHojas("COMMISSIONING SPARE PARTS", "QUOTATION/OFERTA:") Then
+        TipoPorContenidoLibro = TipoArchivo.CommissioningSpares
+        Exit Function
+    End If
+
+    ' Repuestos 8000h (version simplificada, sin todas las hojas de plantilla)
+    If BuscarEnHojas("Valvulas de Aspiracion", "Coeficiente general", "Modelo origen") Then
+        TipoPorContenidoLibro = TipoArchivo.Spares_8000h
+        Exit Function
+    End If
+
 End Function
 
+'--------------------------------------------------------------
+' @Description: Devuelve True si TODOS los textos se encuentran en la misma hoja del libro
+'--------------------------------------------------------------
+Private Function BuscarEnHojas(ParamArray terminos() As Variant) As Boolean
+    Dim ws As Worksheet
+    Dim i As Long
+    Dim todosEncontrados As Boolean
+
+    For Each ws In p_wb.Worksheets
+        todosEncontrados = True
+        For i = LBound(terminos) To UBound(terminos)
+            If ws.Cells.Find(CStr(terminos(i)), LookIn:=xlValues, LookAt:=xlPart) Is Nothing Then
+                todosEncontrados = False
+                Exit For
+            End If
+        Next i
+        If todosEncontrados Then
+            BuscarEnHojas = True
+            Exit Function
+        End If
+    Next ws
+    BuscarEnHojas = False
+End Function
+
+'--------------------------------------------------------------
+' @Description: Verifica si la hoja GAS-ING tiene el contenido esperado de un calculo ABCAire
+'   Criterio: B2 contiene "CALCULATION - GAS", A10 contiene "CALCULATION", G5 contiene "Author"
+'--------------------------------------------------------------
+Private Function EsContenidoCalcGasCGASING() As Boolean
+    Dim shName As String
+    If SheetExists("C-GAS-ING", p_wb) Then
+        shName = "C-GAS-ING"
+    ElseIf SheetExists("GAS-ING", p_wb) Then
+        shName = "GAS-ING"
+    Else
+        Exit Function
+    End If
+    EsContenidoCalcGasCGASING = CeldaContiene(shName, "B2", "CALCULATION - GAS") And _
+                                 CeldaContiene(shName, "A10", "CALCULATION") And _
+                                 CeldaContiene(shName, "G5", "Author")
+End Function
+
+'--------------------------------------------------------------
+' @Description: Verifica si el libro contiene tablas de curvas de rendimiento
+'   Criterio: hojas con nombre numerico, una sola tabla desde A1,
+'             encabezados con "(" y datos numericos
+'--------------------------------------------------------------
 Private Function EsContenidoLibroTablasCurvasRto() As Boolean
-    'On Error GoTo ErrorHandler
+    On Error GoTo ErrorHandler
     Dim hoja As Worksheet
     Dim R As Range
     Dim encabezados As Range, datos As Range
@@ -309,32 +450,29 @@ Siguiente:
 ErrorHandler:
     EsContenidoLibroTablasCurvasRto = False
 End Function
-Public Function TipoFicheroToString(ByVal tipo As TipoArchivo) As String
-    Dim descripcion As String
-    
-    Select Case tipo
-        Case TipoArchivo.UnDef
-            descripcion = "No definido"
-        Case TipoArchivo.Unknown
-            descripcion = "Desconocido"
-        Case TipoArchivo.oportunidad
-            descripcion = "Archivo de oportunidades"
-        Case TipoArchivo.CGASING_CalcResults
-            descripcion = "Fichero de cálculos gasVBnet genérico"
-        Case TipoArchivo.CGASING_CalcOpc
-            descripcion = "Cálculo C-GAS-ING"
-        Case TipoArchivo.CGASING_CurvasRendimiento
-            descripcion = "Curvas de rendimiento (Performance curves)"
-        Case TipoArchivo.PlantillaBudget
-            descripcion = "Plantilla de presupuesto (Budget)"
-        Case TipoArchivo.PlantillaOferta
-            descripcion = "Plantilla de oferta (Quotation)"
-        Case Else
-            descripcion = "Tipo de archivo no catalogado"
+
+'--------------------------------------------------------------
+' @Description: Devuelve el nombre legible del TipoArchivo para logging
+'--------------------------------------------------------------
+Private Function TipoFicheroToString(t As TipoArchivo) As String
+    Select Case t
+        Case TipoArchivo.UnDef:                     TipoFicheroToString = "UnDef"
+        Case TipoArchivo.Unknown:                   TipoFicheroToString = "Unknown"
+        Case TipoArchivo.oportunidad:               TipoFicheroToString = "Oportunidad"
+        Case TipoArchivo.CGASING_CalcResults:       TipoFicheroToString = "Calculo GasVBNet (generico)"
+        Case TipoArchivo.CGASING_CalcOpc:           TipoFicheroToString = "Calculo C-GAS-ING"
+        Case TipoArchivo.CGASING_CurvasRendimiento: TipoFicheroToString = "Curvas de rendimiento (Performance curves)"
+        Case TipoArchivo.PlantillaBudget:           TipoFicheroToString = "Plantilla Budget"
+        Case TipoArchivo.PlantillaOferta:           TipoFicheroToString = "Plantilla Oferta (Quotation)"
+        Case TipoArchivo.OferGas:                   TipoFicheroToString = "Valoracion economica OferGas"
+        Case TipoArchivo.Hojas_API:                 TipoFicheroToString = "Hojas API 618"
+        Case TipoArchivo.Spares_8000h:              TipoFicheroToString = "Repuestos 8000h"
+        Case TipoArchivo.APIDeviations:             TipoFicheroToString = "Desviaciones API"
+        Case TipoArchivo.CommissioningSpares:       TipoFicheroToString = "Repuestos Commissioning"
+        Case Else:                                  TipoFicheroToString = "Desconocido (" & t & ")"
     End Select
-    
-    TipoFicheroToString = descripcion
 End Function
+
 ' ==================================================================
 '
 ' ==================================================================

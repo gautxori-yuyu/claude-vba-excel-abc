@@ -356,6 +356,8 @@ Attribute FixCGASING.VB_ProcData.VB_Invoke_Func = " \n0"
             End If
         Next
     End If
+    Call ReplaceInAllCells(ws.Cells, "ºC", "°C", bSave)
+    Call ReplaceInAllCells(ws.Cells, "ºF", "°F", bSave)
     ' Eliminar RPM en los datos de entrada, si se ha puesto caudal > 0
     regEx.Pattern = "^\d+\s*(\(\s*RPM Limit = \d+\s*\))?"
     If ws.Range("B21") <> "-" Then If regEx.Test(ws.Range("B31")) Then ws.Range("B31").Value = regEx.Replace(ws.Range("B31").Value, "--$1")
@@ -370,9 +372,35 @@ Attribute FixCGASING.VB_ProcData.VB_Invoke_Func = " \n0"
     'Stop
     ws.Range("A1").Select
     
-    ' Recalcular si se requiere
-    LogInfo MODULE_NAME, "[FixCGASING] Recalculando hoja 'C-GAS-ING'."
-    ws.Calculate
+    Application.PrintCommunication = False
+    With ActiveSheet.PageSetup
+        .LeftHeader = ""
+        .CenterHeader = ""
+        .RightHeader = ""
+        .LeftFooter = ""
+        .CenterFooter = ""
+        .RightFooter = ""
+        .LeftMargin = 15
+        .RightMargin = 15
+        .TopMargin = 60
+        .BottomMargin = 15
+        .HeaderMargin = 25
+        .FooterMargin = 15
+        .PrintHeadings = False
+        .PrintGridlines = False
+        .PrintComments = xlPrintNoComments
+        .PrintQuality = 600
+        .CenterHorizontally = True
+        .CenterVertically = False
+        .Orientation = xlPortrait
+        .Draft = False
+        .PaperSize = xlPaperA4
+        .FirstPageNumber = xlAutomatic
+        .FitToPagesWide = 1
+        .FitToPagesTall = 1
+        .PrintErrors = xlPrintErrorsDisplayed
+    End With
+    Application.PrintCommunication = True
     
 CleanUp:
     ' Restaurar propiedades de Excel
@@ -380,6 +408,10 @@ CleanUp:
     Application.ScreenUpdating = prevScreen
     Application.EnableEvents = prevEvents
     Application.DisplayAlerts = prevAlerts
+    
+    ' Recalcular si se requiere
+    LogInfo MODULE_NAME, "[FixCGASING] Recalculando hoja 'C-GAS-ING'."
+    ws.Calculate
     
     If bSave Then If MsgBox("¿Guardar los cambios?", vbYesNo Or vbDefaultButton2 Or vbQuestion) = 6 Then ActiveWorkbook.Save
     Exit Sub

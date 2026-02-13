@@ -8,7 +8,7 @@ Attribute VB_Creatable = False
 Attribute VB_PredeclaredId = False
 Attribute VB_Exposed = False
 '@Description: Manager del contexto de ejecución Excel. Recibe eventos del Listener (ThisWorkbook),
-'              actualiza State, emite eventos semónticos de infraestructura.
+'              actualiza State, emite eventos semánticos de infraestructura.
 '@Category: Manager
 '@Folder "2-Infraestructura"
 Option Explicit
@@ -16,7 +16,7 @@ Option Explicit
 Private Const MODULE_NAME As String = "clsExecutionContextMgr"
 
 ' ==========================================
-' EVENTOS SEMóNTICOS DE INFRAESTRUCTURA
+' EVENTOS SEMÁNTICOS DE INFRAESTRUCTURA
 ' ==========================================
 Public Event WorkbookOpened(ByVal Wb As Workbook)
 Public Event WorkbookActivated(ByVal Wb As Workbook)
@@ -32,7 +32,7 @@ Private mState As clsExecutionContextState
 Private mChartMgr As clsChartMgr
 
 ' ==========================================
-' INICIALIZACIóN
+' INICIALIZACIÓN
 ' ==========================================
 
 Private Sub Class_Initialize()
@@ -58,7 +58,7 @@ Public Property Get State() As clsExecutionContextState
 End Property
 
 ' ==========================================
-' MóTODOS DE ESTADO DE CONVENIENCIA
+' MÉTODOS DE ESTADO DE CONVENIENCIA
 ' ==========================================
 '@Description: Expone el State para lectura por consumidores
 Public Property Get ActiveWorkbook() As Workbook
@@ -86,7 +86,7 @@ Public Property Get ChartMgr() As clsChartMgr
     Set ChartMgr = mChartMgr
 End Property
 ' ==========================================
-' MóTODOS DEL LISTENER (llamados por ThisWorkbook)
+' MÉTODOS DEL LISTENER (llamados por ThisWorkbook)
 ' ==========================================
 
 Public Sub OnWorkbookOpened(ByVal Wb As Workbook)

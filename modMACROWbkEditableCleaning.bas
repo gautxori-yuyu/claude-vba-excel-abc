@@ -12,7 +12,7 @@ Private Const MODULE_NAME As String = "modMACROWbkEditableCleaning"
 
 Public Sub LimpiarLibroActual()
 Attribute LimpiarLibroActual.VB_ProcData.VB_Invoke_Func = " \n0"
-    If SheetExists(ActiveWorkbook, "BUDGET_QUOTE") And SheetExists(ActiveWorkbook, "BUDGET_QUOTE") Then
+    If SheetExists("BUDGET_QUOTE", ActiveWorkbook) And SheetExists("BUDGET_QUOTE", ActiveWorkbook) Then
         MsgBox ("DE MOMENTO ESTE PROCEDIMIENTO NO ES APLICABLE A BUDGET QUOTES, PTE REVISAR ERRORES EN FORMULAS")
         Exit Sub
     End If
@@ -118,8 +118,7 @@ End Sub
 '   Long - número de celdas con error de fórmula
 ' =========================================================
 Public Function ContarYListarErroresEnHoja(ws As Worksheet) As Long
-Attribute ContarYListarErroresEnHoja.VB_Description = "[modMACROWbkEditableCleaning] Función: ContarYListarErroresEnHoja. Propósito: Recalcula la hoja con máxima garantía y lista. todos los errores de fórmula en Debug.Print. Parámetro:. ws (Worksheet) - hoja a verificar. Retorna:. Long - número de celdas con "
-Attribute ContarYListarErroresEnHoja.VB_ProcData.VB_Invoke_Func = " \n21"
+Attribute ContarYListarErroresEnHoja.VB_ProcData.VB_Invoke_Func = " \n0"
     Dim rngErrores As Range
     Dim cell As Range
     Dim nErrores As Long

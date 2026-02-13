@@ -18,7 +18,7 @@ Private bMessageGases As Boolean
 '@Category: Comprobación de formato de ficheros
 '@ArgumentDescriptions: (sin argumentos)
 Public Function IsDefaultCGasIngSheet(Optional ws As Worksheet = Nothing) As Boolean
-Attribute IsDefaultCGasIngSheet.VB_Description = "[UDFs_CGASING] Comprueba si la hoja activa tiene el formato C-GAS-ING por defecto (sin modificar). Aplica a: ActiveSheet|Cells Range"
+Attribute IsDefaultCGasIngSheet.VB_Description = "[UDFs_CGASING] VALIDACION DEL CONTENIDO DEL LIBRO, POR HOJAS (UDFS) Comprueba si una hoja (por defecto la activa) tiene el formato C-GAS-ING por defecto (sin modificar). Aplica a: ActiveSheet|Cells Range"
 Attribute IsDefaultCGasIngSheet.VB_ProcData.VB_Invoke_Func = " \n21"
     On Error GoTo NoSheet
     
@@ -50,7 +50,7 @@ End Function
 '@Category: Comprobación de formato de ficheros
 '@ArgumentDescriptions: Hoja de excel a verificar
 Public Function IsCGASING(Optional ws As Worksheet = Nothing) As Boolean
-Attribute IsCGASING.VB_Description = "[UDFs_CGASING] Verifica si una hoja tiene el formato C-GAS-ING estándar (modificado). Aplica a: Cells Range"
+Attribute IsCGASING.VB_Description = "[UDFs_CGASING] Verifica si una hoja tiene el formato C-GAS-ING estándar (modificado). Aplica a: ActiveSheet|Cells Range"
 Attribute IsCGASING.VB_ProcData.VB_Invoke_Func = " \n21"
     On Error GoTo NoSheet
     
@@ -79,7 +79,7 @@ End Function
 
 '@TODO: revisar esta función, mezcla de todo: Mensajes de usuario (poner LT/LGT, etc), chequeos en nombres y hojas de excel, ...
 Public Function Gases(R As Range, Optional d As String = ", ", Optional CGASINGSheet As Worksheet) As String
-Attribute Gases.VB_Description = "[UDFs_CGASING] Extrae y concatena nombres de gases con sus porcentajes, identificando tipos comunes (SYNGAS, BIOGAS, NATURAL GAS). Aplica a: Cells Range"
+Attribute Gases.VB_Description = "[UDFs_CGASING] Extrae y concatena nombres de gases con sus porcentajes, identificando tipos comunes (SYNGAS, BIOGAS, NATURAL GAS)  @TODO: revisar esta función, mezcla de todo: Mensajes de usuario (poner LT/LGT, etc), chequeos en nombres y hojas de excel, "
 Attribute Gases.VB_ProcData.VB_Invoke_Func = " \n21"
     Dim s As String, c As Range
     Dim cCellPc As Double
