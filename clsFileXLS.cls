@@ -198,7 +198,8 @@ Public Sub AnalizarWorkBook(Optional ByVal Wb As Workbook = Nothing)
                 TipoArchivo.PlantillaOferta
         Case TipoArchivo.CGASING_CalcResults
             ' TODO: SE PUEDE SEGUIR FILTRANDO POR NOMBRES, ver en VBScript
-            
+            ' ...
+            p_WbTipoFichero = TipoPorContenidoLibro
         Case TipoArchivo.oportunidad
             ' de momento NO HAY CRITERIO FIJO para el nombre de fichero
             ' que acote tipos con precisión (PTE)...
@@ -210,6 +211,7 @@ Public Sub AnalizarWorkBook(Optional ByVal Wb As Workbook = Nothing)
             ' p_WbTipoFichero = TipoPorContenidoLibro
     End Select
     
+    LogInfo MODULE_NAME, "[AnalizarWorkBook] " & p_wb.Name & " identificado como " & TipoFicheroToString(p_WbTipoFichero)
     ' TODO: Esto NO va a aqui, va en cada ExcelXXXSource
     ' Extraer información del nombre DE LA CARPETA DE OPORTUNIDAD, ... o de otros ficheros en ella!!!
     ' p_WbTipoFichero.Customer = Customer(p_wb)
@@ -234,7 +236,6 @@ Private Function TipoPorNombreFichero() As TipoArchivo
         Else
             ' Define un tippo genérico de calculo gasVBNet
             ' TODO: seguir fijando criterios para ficheros GasVBNet
-            Stop
             TipoPorNombreFichero = TipoArchivo.CGASING_CalcResults
         End If
     End If
@@ -251,11 +252,8 @@ Private Function TipoPorNombreFichero() As TipoArchivo
     
     If modAPPFileNames.QuoteNrInFileName(p_wb) <> "" And modAPPFileNames.CustomerInFileName(p_wb) <> "" _
              And TipoPorNombreFichero = UnDef Then
-        Stop
         ' si tiene el patrón de oportunidad
         TipoPorNombreFichero = TipoArchivo.oportunidad
-    Else
-        TipoPorNombreFichero = TipoArchivo.Unknown
     End If
 End Function
 
@@ -311,7 +309,32 @@ Siguiente:
 ErrorHandler:
     EsContenidoLibroTablasCurvasRto = False
 End Function
-
+Public Function TipoFicheroToString(ByVal tipo As TipoArchivo) As String
+    Dim descripcion As String
+    
+    Select Case tipo
+        Case TipoArchivo.UnDef
+            descripcion = "No definido"
+        Case TipoArchivo.Unknown
+            descripcion = "Desconocido"
+        Case TipoArchivo.oportunidad
+            descripcion = "Archivo de oportunidades"
+        Case TipoArchivo.CGASING_CalcResults
+            descripcion = "Fichero de cálculos gasVBnet genérico"
+        Case TipoArchivo.CGASING_CalcOpc
+            descripcion = "Cálculo C-GAS-ING"
+        Case TipoArchivo.CGASING_CurvasRendimiento
+            descripcion = "Curvas de rendimiento (Performance curves)"
+        Case TipoArchivo.PlantillaBudget
+            descripcion = "Plantilla de presupuesto (Budget)"
+        Case TipoArchivo.PlantillaOferta
+            descripcion = "Plantilla de oferta (Quotation)"
+        Case Else
+            descripcion = "Tipo de archivo no catalogado"
+    End Select
+    
+    TipoFicheroToString = descripcion
+End Function
 ' ==================================================================
 '
 ' ==================================================================
