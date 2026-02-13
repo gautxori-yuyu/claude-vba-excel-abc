@@ -240,7 +240,7 @@ End Function
 '@ArgumentDescriptions:
 Public Function GetContextWb(Optional Wb As Workbook = Nothing) As Workbook
     Select Case True
-        Case Not Wb Is Nothing                       ' Wb explícito → usarlo directamente
+        Case Not Wb Is Nothing                       ' Wb explicito -> usarlo directamente
             Set GetContextWb = Wb
         Case TypeOf Application.Caller Is Range      ' se procesa en contexto UDF
             Set GetContextWb = Application.Caller.Worksheet.Parent
