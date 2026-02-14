@@ -75,18 +75,6 @@ Public Sub SetActiveFile(f As clsFileXLS)
     ' Almacenar archivo en estado (memoria pura)
     Set mFileState.CurrentFile = f
 
-    ' Calcular y almacenar IsOpportunityFile (decisión del Manager)
-    If f Is Nothing Then
-        mFileState.IsOpportunityFile = False
-    Else
-        Dim isOpp As Boolean
-        isOpp = False
-        On Error Resume Next
-        isOpp = f.EsOportunidad
-        On Error GoTo 0
-        mFileState.IsOpportunityFile = isOpp
-    End If
-
     LogDebug MODULE_NAME, "[SetActiveFile] " & mFileState.GetCurrentFileName() & _
                           ", IsOpportunity=" & mFileState.IsOpportunityFile
 

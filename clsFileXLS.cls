@@ -157,7 +157,8 @@ End Property
 '--------------------------------------------------------------
 Public Property Get IsOpportunityFile() As Boolean
     ' Si está en una carpeta de oportunidad... o es de gasnet, valoracion, oferta, ...
-    IsOpportunityFile = (p_WbTipoFichero > TipoArchivo.Unknown)
+    ' Usa tipo (Property Get) para garantizar que AnalizarWorkBook se ejecuta si UnDef
+    IsOpportunityFile = (tipo > TipoArchivo.Unknown)
 End Property
 
 Public Property Get EsOportunidad() As Boolean
