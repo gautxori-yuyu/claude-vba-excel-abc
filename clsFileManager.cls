@@ -26,14 +26,15 @@ Option Explicit
 
 Private Const MODULE_NAME As String = "clsFileManager"
 
+Private fso As Scripting.FileSystemObject
 ' ==========================================
 ' EVENTOS
 ' ==========================================
 
 Public Event ActiveFileChanged(f As clsFileXLS)
 
-Private mTrackedFiles As Object                 ' Diccionario de TODOS los ficheros de excel, en TODAS las oportunidades procesadas
-Private mFileState As clsFileState              ' Estado de archivo activo (composición)
+Private mTrackedFiles As Object                  ' Diccionario de TODOS los ficheros de excel, en TODAS las oportunidades procesadas
+Private mFileState As clsFileState               ' Estado de archivo activo (composición)
 
 ' ==========================================
 ' SUSCRIPCION A EVENTOS DE APPLICATION
@@ -48,6 +49,8 @@ Attribute mXLApp.VB_VarHelpID = -1
 Private Sub Class_Initialize()
     LogInfo MODULE_NAME, "[Class_Initialize]"
 
+    Set fso = CreateObject("Scripting.FileSystemObject")
+    
     ' Crear estado de archivo (composición - Manager posee el estado)
     Set mFileState = New clsFileState
 
@@ -88,7 +91,7 @@ Public Sub SetActiveFile(f As clsFileXLS)
     End If
 
     LogDebug MODULE_NAME, "[SetActiveFile] " & mFileState.GetCurrentFileName() & _
-                          ", IsOpportunity=" & mFileState.IsOpportunityFile
+                         ", IsOpportunity=" & mFileState.IsOpportunityFile
 
     ' Notificar cambio (evento del Manager)
     RaiseEvent ActiveFileChanged(f)
@@ -240,22 +243,22 @@ End Sub
 '@Returns: TipoArchivo
 Public Function AnalizarArchivo(fich As Object) As TipoArchivo
     Select Case TypeName(fich)
-        Case "Nothing", "Empty"
-            AnalizarArchivo = TipoArchivo.UnDef
-        Case "Workbook"
-            Dim f As clsFileXLS, owb As Workbook
-            Set owb = fich
-            Set f = GetOrTrackWorkbook(owb)
-            AnalizarArchivo = f.tipo
-        Case "FileSystemObject"
-            ' HABRIA QUE PROCESAR DOCUMENTOS DE WORD, DE PDF, etc.
-            ' TODO: procesarlos también como clsFileXLS, clsFilePDF,
-            ' etc: NO se abren, luego NO hay acceso a Workbook, o contenido...
-            ' pero SI se pueden usar funciones como clsFileXLS.AnalizarWorkBook,
-            ' O HABRA QUE ADAPTAR clsFileXLS.TipoPorNombreFichero, O CREAR FUNCIONES
-            ' NUEVAS, QUE SAQUEN INFORMACION DE LOS FICHEROS SIN ESTAR ABIERTOS
-        Case Else
-            ' ... (puedo pasar enteros, strings, ...)
+    Case "Nothing", "Empty"
+        AnalizarArchivo = TipoArchivo.UnDef
+    Case "Workbook"
+        Dim f As clsFileXLS, owb As Workbook
+        Set owb = fich
+        Set f = GetOrTrackWorkbook(owb)
+        AnalizarArchivo = f.tipo
+    Case "FileSystemObject"
+        ' HABRIA QUE PROCESAR DOCUMENTOS DE WORD, DE PDF, etc.
+        ' TODO: procesarlos también como clsFileXLS, clsFilePDF,
+        ' etc: NO se abren, luego NO hay acceso a Workbook, o contenido...
+        ' pero SI se pueden usar funciones como clsFileXLS.AnalizarWorkBook,
+        ' O HABRA QUE ADAPTAR clsFileXLS.TipoPorNombreFichero, O CREAR FUNCIONES
+        ' NUEVAS, QUE SAQUEN INFORMACION DE LOS FICHEROS SIN ESTAR ABIERTOS
+    Case Else
+        ' ... (puedo pasar enteros, strings, ...)
     End Select
 
 End Function
@@ -303,7 +306,7 @@ Private Function GetFileKey(f As Object) As Double
 
     ' Validar que el objeto implementa IFile
     Dim IFile As IFile
-    Set IFile = f  ' Esto falla si no implementa IFile
+    Set IFile = f                                ' Esto falla si no implementa IFile
 
     ' Usar ObjectKey de la interfaz
     GetFileKey = IFile.ObjectKey
@@ -349,11 +352,11 @@ Public Function GetTrackedFilesInfo() As String
         info = info & "  - [" & TypeName(f) & "] " & GetFilePath(f) & vbCrLf
     Next
     
-'    If Not ActiveExcelFile Is Nothing Then
-'        info = info & vbCrLf & "Archivo activo: " & GetFilePath(ActiveExcelFile)
-'    Else
-'        info = info & vbCrLf & "Archivo activo: (ninguno)"
-'    End If
+    '    If Not ActiveExcelFile Is Nothing Then
+    '        info = info & vbCrLf & "Archivo activo: " & GetFilePath(ActiveExcelFile)
+    '    Else
+    '        info = info & vbCrLf & "Archivo activo: (ninguno)"
+    '    End If
     
     GetTrackedFilesInfo = info
 End Function
@@ -373,11 +376,8 @@ Public Function ListarSubcarpetas(rutaBase As String) As Collection
 
     On Error GoTo ErrHandler
 
-    Dim fso As Object
     Dim carpeta As Object
     Dim subcarpeta As Object
-
-    Set fso = CreateObject("Scripting.FileSystemObject")
 
     If Not fso.FolderExists(rutaBase) Then
         LogWarning MODULE_NAME, "[ListarSubcarpetas] Carpeta no existe: " & rutaBase
@@ -409,9 +409,6 @@ End Function
 Public Function CopiarCarpeta(rutaOrigen As String, rutaDestino As String) As Boolean
     On Error GoTo ErrHandler
 
-    Dim fso As Object
-    Set fso = CreateObject("Scripting.FileSystemObject")
-
     If Not fso.FolderExists(rutaOrigen) Then
         LogError MODULE_NAME, "[CopiarCarpeta] Carpeta origen no existe: " & rutaOrigen
         CopiarCarpeta = False
@@ -442,9 +439,6 @@ End Function
 Public Function ExisteCarpeta(ruta As String) As Boolean
     On Error GoTo ErrHandler
 
-    Dim fso As Object
-    Set fso = CreateObject("Scripting.FileSystemObject")
-
     ExisteCarpeta = fso.FolderExists(ruta)
     Exit Function
 
@@ -460,9 +454,6 @@ End Function
 '@Example: ConstruirRuta("C:\Base", "Subfolder", "File.txt") -> "C:\Base\Subfolder\File.txt"
 Public Function ConstruirRuta(ParamArray componentes() As Variant) As String
     On Error GoTo ErrHandler
-
-    Dim fso As Object
-    Set fso = CreateObject("Scripting.FileSystemObject")
 
     Dim rutaFinal As String
     Dim i As Long
@@ -493,9 +484,6 @@ End Function
 Public Function ObtenerCarpeta(ruta As String) As Object
     On Error GoTo ErrHandler
 
-    Dim fso As Object
-    Set fso = CreateObject("Scripting.FileSystemObject")
-
     If Not fso.FolderExists(ruta) Then
         Set ObtenerCarpeta = Nothing
         Exit Function
@@ -508,4 +496,5 @@ ErrHandler:
     LogError MODULE_NAME, "[ObtenerCarpeta] Error obteniendo carpeta", Err.Number, Err.Description
     Set ObtenerCarpeta = Nothing
 End Function
+
 

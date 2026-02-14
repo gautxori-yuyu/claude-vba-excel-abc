@@ -65,8 +65,8 @@ Public Property Get Configuration() As clsConfiguration
 End Property
 
 '@Description: Obtiene el gestor de estado centralizado de la aplicación
-Public Property Get AppState() As clsApplicationState
-    Set AppState = mApplicationState
+Public Property Get State() As clsApplicationState
+    Set State = mApplicationState
 End Property
 
 ' -------------------------------------------------------------
