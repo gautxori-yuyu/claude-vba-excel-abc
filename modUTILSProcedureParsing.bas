@@ -54,8 +54,7 @@ ErrorHandler:
 End Function
 ' Parsea todos los procedimientos del proyecto VBA (CON Y SIN metadatos)
 Public Function ParsearProcs(ByVal vbProj As Object) As Object
-Attribute ParsearProcs.VB_Description = "[modUTILSProcedureParsing] Parsea todos los procedimientos del proyecto VBA (CON Y SIN metadatos)"
-Attribute ParsearProcs.VB_ProcData.VB_Invoke_Func = " \n21"
+Attribute ParsearProcs.VB_ProcData.VB_Invoke_Func = " \n0"
     Dim vbComp As VBIDE.VBComponent
     
     Dim procName As String

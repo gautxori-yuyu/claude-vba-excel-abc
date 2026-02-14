@@ -174,6 +174,7 @@ End Function
 '@Returns: Boolean | True si ambos archivos (DLL y manifest) existen
 '@Category: Instalación COM
 Public Function ComprobarCOMInstalado() As Boolean
+Attribute ComprobarCOMInstalado.VB_ProcData.VB_Invoke_Func = " \n0"
     Dim fso As Object
     Dim rutaDestino As String
 

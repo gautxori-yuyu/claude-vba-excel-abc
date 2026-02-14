@@ -19,11 +19,12 @@ End Function
 '@Scope: Privado
 '@ArgumentDescriptions: wb: Workbook donde buscar | sheetName: Nombre de la hoja
 '@Returns: Boolean | True si la hoja existe
-Function SheetExists(Wb As Workbook, ByVal sheetName As String) As Boolean
+Function SheetExists(ByVal sheetName As String, Optional Wb As Workbook = Nothing) As Boolean
 Attribute SheetExists.VB_Description = "[UDFs_UtilsExcel] Verifica si una hoja existe en un workbook"
 Attribute SheetExists.VB_ProcData.VB_Invoke_Func = " \n21"
     Dim ws As Worksheet
     On Error Resume Next
+    Set Wb = GetContextWb(Wb)
     Set ws = Wb.Worksheets(sheetName)
     SheetExists = Not ws Is Nothing
     On Error GoTo 0
@@ -96,6 +97,18 @@ Attribute GetFirstTableName.VB_ProcData.VB_Invoke_Func = " \n21"
     
 ErrorHandler:
     GetFirstTableName = "#ERROR"
+End Function
+
+'--------------------------------------------------------------
+' @Description: Devuelve True si la celda de la hoja indicada contiene el texto
+'--------------------------------------------------------------
+Public Function CeldaContiene(nombreHoja As String, celda As String, texto As String, Optional Wb As Workbook = Nothing) As Boolean
+Attribute CeldaContiene.VB_Description = "[UDFs_UtilsExcel] Devuelve True si la celda de la hoja indicada contiene el texto . Aplica a: Cells Range"
+Attribute CeldaContiene.VB_ProcData.VB_Invoke_Func = " \n21"
+    On Error Resume Next
+    Set Wb = GetContextWb(Wb)
+    CeldaContiene = InStr(1, CStr(Wb.Sheets(nombreHoja).Range(celda).Value), texto, vbTextCompare) > 0
+    On Error GoTo 0
 End Function
 
 '@UDF

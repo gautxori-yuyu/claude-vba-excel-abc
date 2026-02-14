@@ -16,6 +16,7 @@ Attribute VB_Exposed = False
 
 
 
+
 ' ==============================================================================================================
 ' FORMULARIO: frmConfiguracion
 ' DESCRIPCIÓN: Formulario para configurar los parámetros de la aplicación ABC_ofertas. Permite al usuario

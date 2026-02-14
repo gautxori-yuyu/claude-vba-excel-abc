@@ -148,7 +148,8 @@ Private Function TipoProcedimiento(ByVal firmaNormalizada As String) As ProcType
         ' UNA UDF solo puede tener como parametros, VALORES (numero, texto, boolean) o RANGEs
         TipoProcedimiento = ProcType.udf
     Else
-        LogError MODULE_NAME, "[TipoProcedimiento] Tipo de procedimiento no reconocido: " & tipo
+        TipoProcedimiento = ProcType.internalPrivate
+        'LogDebug MODULE_NAME, "[TipoProcedimiento] Tipo de procedimiento no reconocido: " & vbTab & tipo & vbTab & firmaNormalizada
     End If
     
     ' FIXME: establece los valores de PKind y Returns, en funcion del parsing realizado en este procedimiento
@@ -188,9 +189,23 @@ Private Function EsFirmaUDFCompleta(ByVal linea As String) As Boolean
     ' Tipos nativos que Excel puede procesar en una celda
     tipos = "Range|Variant|String|Boolean|Double|Long|Integer|Date|Single"
     
+    Dim valorDefecto As String
+    ' Valor por defecto puede ser:
+    ' - String entre comillas: "cualquier cosa, incluso comas"
+    ' - Palabra clave: Nothing, True, False, Empty, Null
+    ' - Número o expresión sin comas ni paréntesis de cierre
+    valorDefecto = "(?:""[^""]*""|Nothing|True|False|Empty|Null|[^,)]+)"
+    
     Dim pParametros As String
-    ' Valida parámetros normales (opcionales, ByVal/ByRef, tipos y valores por defecto)
-    pParametros = "(?:\s*(?:Optional\s+)?(?:ByVal\s+|ByRef\s+)?(?:[a-z_]\w*)\s*(?:As\s+(?:" & tipos & "))?(?:\s*=\s*[^,)]+)?\s*(?:,\s*|(?=\s*\))))?"
+    ' Tres casos válidos:
+    ' 1. Parámetro con tipo compatible (opcional o no, con o sin valor por defecto)
+    ' 2. Optional con tipo incompatible pero CON valor por defecto
+    ' 3. Optional con tipo incompatible SIN valor por defecto (será Nothing)
+    pParametros = "(?:\s*(?:" & _
+                  "(?:Optional\s+)?(?:ByVal\s+|ByRef\s+)?[a-z_]\w*\s*(?:As\s+(?:" & tipos & "))?(?:\s*=\s*" & valorDefecto & ")?" & _
+                  "|" & _
+                  "Optional\s+(?:ByVal\s+|ByRef\s+)?[a-z_]\w*\s*As\s+\w+(?:\s*=\s*" & valorDefecto & ")?" & _
+                  ")\s*(?:,\s*|(?=\s*\))))"
     
     Dim pParamArray As String
     ' Valida el ParamArray final (opcional)
@@ -199,10 +214,10 @@ Private Function EsFirmaUDFCompleta(ByVal linea As String) As Boolean
     With regEx
         .IgnoreCase = True
         .Global = False
-        .Pattern = "^\s*(?:Public\s+)?Function\s+[a-z_]\w*\s*(?:\(" & _
+        .Pattern = "^\s*(?:Public\s+)?Function\s+[a-z_]\w*\s*\(" & _
                    pParametros & "*" & _
                    pParamArray & _
-                   "\s*\))?\s*(?:As\s+(?:" & tipos & "))?\s*$"
+                   "\s*\)\s*(?:As\s+(?:" & tipos & "))?\s*$"
     End With
     
     EsFirmaUDFCompleta = regEx.Test(linea)
@@ -215,7 +230,7 @@ Private Function EsFirmaMacro(ByVal linea As String) As Boolean
     With regEx
         .IgnoreCase = True
         .Global = False
-        .Pattern = "(?i)^\s*(?:Public\s+)?Sub\s+[a-z_]\w*\s*\((?:\s*(?:Optional\s+)?(?:ByVal\s+|ByRef\s+)?" & _
+        .Pattern = "^\s*(?:Public\s+)?Sub\s+[a-z_]\w*\s*\((?:\s*(?:Optional\s+)?(?:ByVal\s+|ByRef\s+)?" & _
                    "(?:[a-z_]\w*)\s*(?:As\s+[^,)]+)?(?:\s*=\s*[^,)]+)?\s*(?:,\s*|$))*\)\s*$"
     End With
 

@@ -93,8 +93,7 @@ End Function
 '@ArgumentDescriptions: ws: Worksheet a duplicar
 '@Returns: Boolean | True si se creó correctamente
 Function CrearBackupHojaExcel(ws As Worksheet) As Boolean
-Attribute CrearBackupHojaExcel.VB_Description = "[UDFs_Backups] FUNCIÓN 2: BACKUP DE HOJA EXCEL Crea una copia de seguridad de una hoja Excel añadiendo sufijo _bkp (VERSIÓN PARA XLAM). Aplica a: Cells Range\r\nM.D.:Privado"
-Attribute CrearBackupHojaExcel.VB_ProcData.VB_Invoke_Func = " \n21"
+Attribute CrearBackupHojaExcel.VB_ProcData.VB_Invoke_Func = " \n0"
     Dim nombreBackup As String
     Dim wsBackup As Worksheet
     Dim respuesta As VbMsgBoxResult

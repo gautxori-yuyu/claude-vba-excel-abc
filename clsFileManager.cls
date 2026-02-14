@@ -237,7 +237,7 @@ End Sub
 ' ==================================================================
 
 '@Description: Analiza un workbook y devuelve su información
-'@Returns: T_InfoArchivo con el análisis completo
+'@Returns: TipoArchivo
 Public Function AnalizarArchivo(fich As Object) As TipoArchivo
     Select Case TypeName(fich)
         Case "Nothing", "Empty"
@@ -261,8 +261,8 @@ Public Function AnalizarArchivo(fich As Object) As TipoArchivo
 End Function
 
 '@Description: Analiza el workbook activo actual
-'@Returns: T_InfoArchivo del workbook activo, o estructura vacía si no hay activo
-'Public Function AnalizarArchivoActivo() As mod_ConstantsGlobals.T_InfoArchivo
+'@Returns: TipoArchivo del workbook activo
+'Public Function AnalizarArchivoActivo() As TipoArchivo
 '    AnalizarArchivoActivo = AnalizarArchivo(mXlApp.ActiveWorkbook)
 'End Function
 
