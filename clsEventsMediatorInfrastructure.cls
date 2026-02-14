@@ -198,8 +198,8 @@ Private Sub mFileMgr_ActiveFileChanged(f As clsFileXLS)
         FilePath = ""
         isOpp = False
     Else
-        FilePath = f.Path
-        isOpp = mFileMgr.State.IsOpportunityFile
+        FilePath = f.path
+        isOpp = f.IsOpportunityFile
     End If
 
     LogDebug MODULE_NAME, "[mFileMgr_ActiveFileChanged] -> ActiveFileSessionChanged: " & FilePath

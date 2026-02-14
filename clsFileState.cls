@@ -18,7 +18,6 @@ Private Const MODULE_NAME As String = "clsFileState"
 ' ESTADO DE ARCHIVO
 ' ==========================================
 Private mCurrentFile As clsFileXLS
-Private mIsOpportunityFile As Boolean
 
 ' ==========================================
 ' INICIALIZACIÓN
@@ -26,7 +25,6 @@ Private mIsOpportunityFile As Boolean
 
 Private Sub Class_Initialize()
     Set mCurrentFile = Nothing
-    mIsOpportunityFile = False
 End Sub
 
 Private Sub Class_Terminate()
@@ -49,11 +47,8 @@ End Property
 
 '@Description: Indica si el archivo actual es un archivo de oportunidad
 Public Property Get IsOpportunityFile() As Boolean
-    IsOpportunityFile = mIsOpportunityFile
-End Property
-
-Friend Property Let IsOpportunityFile(Value As Boolean)
-    mIsOpportunityFile = Value
+    If mCurrentFile Is Nothing Then Exit Property
+    IsOpportunityFile = mCurrentFile.IsOpportunityFile
 End Property
 
 ' ==========================================
@@ -87,7 +82,7 @@ Public Function GetCurrentFilePath() As String
         GetCurrentFilePath = ""
     Else
         On Error Resume Next
-        GetCurrentFilePath = mCurrentFile.Path
+        GetCurrentFilePath = mCurrentFile.path
         If Err.Number <> 0 Then
             GetCurrentFilePath = ""
         End If

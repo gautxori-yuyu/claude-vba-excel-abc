@@ -78,18 +78,6 @@ Public Sub SetActiveFile(f As clsFileXLS)
     ' Almacenar archivo en estado (memoria pura)
     Set mFileState.CurrentFile = f
 
-    ' Calcular y almacenar IsOpportunityFile (decisión del Manager)
-    If f Is Nothing Then
-        mFileState.IsOpportunityFile = False
-    Else
-        Dim isOpp As Boolean
-        isOpp = False
-        On Error Resume Next
-        isOpp = f.EsOportunidad
-        On Error GoTo 0
-        mFileState.IsOpportunityFile = isOpp
-    End If
-
     LogDebug MODULE_NAME, "[SetActiveFile] " & mFileState.GetCurrentFileName() & _
                          ", IsOpportunity=" & mFileState.IsOpportunityFile
 
@@ -165,7 +153,7 @@ Public Function GetOrTrackWorkbook(Wb As Workbook) As clsFileXLS
 
     mTrackedFiles.Add key, f
 
-    LogDebug MODULE_NAME, "[GetOrTrackWorkbook] Nuevo archivo tracked: " & f.Path & " (total: " & mTrackedFiles.Count & ")"
+    LogDebug MODULE_NAME, "[GetOrTrackWorkbook] Nuevo archivo tracked: " & f.path & " (total: " & mTrackedFiles.Count & ")"
 
     Set GetOrTrackWorkbook = f
     Exit Function
@@ -331,7 +319,7 @@ Private Function GetFilePath(f As Object) As String
     Dim IFile As IFile
     Set IFile = f
     
-    GetFilePath = IFile.Path
+    GetFilePath = IFile.path
     Exit Function
     
 ErrHandler:
