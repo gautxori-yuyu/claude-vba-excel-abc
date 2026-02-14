@@ -258,10 +258,8 @@ Private Function IsValidOpportunityName(ByVal folderName As String, regEx As Obj
     ' Si no cumple, probar patron sin modelo
     regEx.Pattern = FILEORFOLDERNAME_QUOTE_CUSTOMER_OTHER_PATTERN
     If regEx.Test(folderName) Then
-        ' Aunque no tenga modelo, es valida si cumple patron basico
-        ' pero verificamos de nuevo con patron completo para consistencia
-        regEx.Pattern = FILEORFOLDERNAME_QUOTE_CUSTOMER_OTHER_MODEL_PATTERN
-        IsValidOpportunityName = regEx.Test(folderName)
+        ' Valida aunque no tenga modelo asociado
+        IsValidOpportunityName = True
     End If
 End Function
 

@@ -130,14 +130,14 @@ Private Sub InitializeDomain()
     mFSMonitoringCoord.IniciarMonitoreo mConfiguration.oDicFoldersToWatch
 
     ' PROVIDER DE OPORTUNIDADES (infraestructura)
-    'Set mOpportunityProvider = New FileSystemOpportunityProvider
-    'mOpportunityProvider.Initialize mFileMgr, mConfiguration
+    Set mOpportunityProvider = New FileSystemOpportunityProvider
+    mOpportunityProvider.Initialize mFileMgr, mConfiguration
 
     ' DOMINIO - Crear managers (ellos crean sus estados internamente)
-    'Set mOpportunities = New clsOpportunitiesMgr
-    'mOpportunities.Initialize mOpportunityProvider
+    Set mOpportunities = New clsOpportunitiesMgr
+    mOpportunities.Initialize mOpportunityProvider
     ' ESTADO CENTRALIZADO - Inyectar referencias a subestados (Dependency Injection)
-    'mApplicationState.Initialize OpportunityState:=mOpportunities.State
+    mApplicationState.Initialize OpportunityState:=mOpportunities.State
 
     ' MEDIADOR DE EVENTOS DE DOMINIO
     ' Escucha eventos SEMANTICOS del mediador de infraestructura (no directamente de mCtxMgr)

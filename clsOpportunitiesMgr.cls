@@ -370,7 +370,7 @@ Private Function GetCustomerNameFromUser(ByVal opCode As String) As String
                 ' 3. Validar el nombre introducido
                 IsValid = regEx.Test(opCode & " - " & strCustomer & " - XXX")
                 ' Evitamos caracteres especiales del sistema de archivos
-                IsValid = IsValid And (strCustomer Like "*[\/:*?""<>|]*")
+                IsValid = IsValid And Not (strCustomer Like "*[\/:*?""<>|]*")
                 If Not IsValid Then
                     .MainInstruction = "Nombre NO VALIDO"
                     .IconMain = TD_WARNING_ICON
