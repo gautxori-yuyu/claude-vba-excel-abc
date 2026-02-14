@@ -30,7 +30,6 @@ Private mribbonUI As IRibbonUI
 
 Private mStateRibbon As clsRibbonState
 
-Private mIsRecovering As Boolean              ' Flag para evitar recursion durante recuperacion
 Private mWasEverInitialized As Boolean        ' Flag para distinguir "nunca inicializado" de "perdido"
 
 ' ==========================================
@@ -74,7 +73,6 @@ Private Sub Class_Initialize()
     mStateRibbon.Modo = DEFAULT_RIBBONMODE
     
     mWasEverInitialized = False
-    mIsRecovering = False
 End Sub
 
 Private Sub Class_Terminate()
@@ -114,83 +112,6 @@ Public Sub StopEvents()
     Set mChartMgr = Nothing
     Set mCtxMgr = Nothing
 End Sub
-
-'@Description: Verifica si el objeto ribbonUI esta disponible y funcional
-Private Function IsRibbonUIAvailable() As Boolean
-    If mribbonUI Is Nothing Then IsRibbonUIAvailable = False: Exit Function
-    
-    On Error Resume Next
-    Dim testType As String
-    testType = TypeName(mribbonUI)
-    If Err.Number <> 0 Then
-        IsRibbonUIAvailable = False
-        Err.Clear
-    ElseIf testType = "Nothing" Or testType = "Empty" Then
-        IsRibbonUIAvailable = False
-    Else
-        IsRibbonUIAvailable = True
-    End If
-End Function
-
-'@Description: Intenta recuperar el Ribbon automaticamente
-Private Function TryAutoRecover() As Boolean
-    On Error GoTo ErrHandler
-
-    mIsRecovering = True
-    LogInfo MODULE_NAME, "[TryAutoRecover] Iniciando"
-
-    ' PRIMERO: Intentar recuperación con CopyMemory (más rápido y menos invasivo)
-    Dim recoveredRibbon As IRibbonUI
-    Set recoveredRibbon = GetRibbonFromMemory()
-
-    If Not recoveredRibbon Is Nothing Then
-        Set mribbonUI = recoveredRibbon
-        LogInfo MODULE_NAME, "[TryAutoRecover] Ribbon recuperado via CopyMemory"
-        mIsRecovering = False
-        TryAutoRecover = True
-        Exit Function
-    End If
-
-    ' SEGUNDO: Si CopyMemory falla, usar el modulo de recuperacion tradicional
-    LogWarning MODULE_NAME, "[TryAutoRecover] CopyMemory fallido, intentando recuperación tradicional..."
-    TryAutoRecover = TryRecoverRibbon()
-
-    mIsRecovering = False
-    Exit Function
-
-ErrHandler:
-    LogCurrentError MODULE_NAME, "[TryAutoRecover]"
-    mIsRecovering = False
-    TryAutoRecover = False
-End Function
-
-'@Description: Indica si el Ribbon esta en proceso de recuperacion
-Public Property Get IsRecovering() As Boolean
-    IsRecovering = mIsRecovering
-End Property
-
-'@Description: Diagnostico rapido del estado del Ribbon
-Public Function GetQuickDiagnostics() As String
-    Dim info As String
-    info = "RibbonUI: "
-
-    If Not IsRibbonUIAvailable() Then
-        info = info & "Nothing"
-    Else
-        On Error Resume Next
-        info = info & TypeName(mribbonUI)
-        If Err.Number <> 0 Then
-            info = info & "Corrupted"
-            Err.Clear
-        End If
-        On Error GoTo 0
-    End If
-
-    info = info & " | WasInit: " & mWasEverInitialized
-    info = info & " | Recovering: " & mIsRecovering
-
-    GetQuickDiagnostics = info
-End Function
 
 ' ==========================================
 ' CONTROL DE MODO DE VISUALIZACION
@@ -248,7 +169,7 @@ End Sub
 '@Category: UI / Ribbon
 Friend Sub ActivarTab(tabId As String)
     On Error Resume Next
-    If IsRibbonUIAvailable() Then
+    If Not mribbonUI Is Nothing Then
         mribbonUI.ActivateTab tabId
     End If
 End Sub
@@ -291,75 +212,39 @@ End Function
 ' INVALIDACION
 ' ==========================================
 '@Description: Invalida todo el Ribbon, forzando recarga de callbacks
-'@Note: Intenta recuperacion automatica si el Ribbon esta perdido
+'@Note: Si el ribbon se pierde, usar RecuperarRibbon() en modMACROAppLifecycle
 Public Sub InvalidarRibbon()
     On Error GoTo ErrHandler
 
-    ' Verificar si el Ribbon esta disponible
-    If Not IsRibbonUIAvailable() Then
-        ' IMPORTANTE: Solo intentar recuperacion si el ribbon FUE inicializado alguna vez
-        ' Esto evita que durante Class_Initialize se intente recuperar un ribbon que
-        ' aun no ha sido configurado (el callback RibbonOnLoad aun no ha terminado)
-        If Not mWasEverInitialized Then
-            LogDebug MODULE_NAME, "[InvalidarRibbon] Ribbon aun no inicializado, omitiendo"
-            Exit Sub
-        End If
-
-        ' Intentar recuperacion automatica (solo si no estamos ya recuperando)
-        If Not mIsRecovering Then
-            LogWarning MODULE_NAME, "[InvalidarRibbon] Ribbon perdido, intentando recuperacion..."
-            If TryAutoRecover() Then
-                LogDebug MODULE_NAME, "[InvalidarRibbon] Recuperacion exitosa"
-            Else
-                LogError MODULE_NAME, "[InvalidarRibbon] Recuperacion fallida"
-                Exit Sub
-            End If
-        Else
-            LogDebug MODULE_NAME, "[InvalidarRibbon] Recuperacion en curso, omitiendo"
-            Exit Sub
-        End If
+    If mribbonUI Is Nothing Then
+        If mWasEverInitialized Then LogWarning MODULE_NAME, "[InvalidarRibbon] ribbonUI no disponible"
+        Exit Sub
     End If
 
-    ' Invalidar el Ribbon
     mribbonUI.Invalidate
     Exit Sub
 
 ErrHandler:
-    LogError MODULE_NAME, "[InvalidarRibbon] Error", Err.Description
-    ' No propagar el error, solo loguear
+    LogError MODULE_NAME, "[InvalidarRibbon] Error - marcando ribbon como perdido"
+    Set mribbonUI = Nothing
 End Sub
 
 '@Description: Invalida un control especifico del Ribbon
-'@Note: Intenta recuperacion automatica si el Ribbon esta perdido
+'@Note: Si el ribbon se pierde, usar RecuperarRibbon() en modMACROAppLifecycle
 Public Sub InvalidarControl(idControl As String)
     On Error GoTo ErrHandler
 
-    ' Verificar si el Ribbon esta disponible
-    If Not IsRibbonUIAvailable() Then
-        ' IMPORTANTE: Solo intentar recuperacion si el ribbon FUE inicializado alguna vez
-        If Not mWasEverInitialized Then
-            LogDebug MODULE_NAME, "[InvalidarControl] Ribbon aun no inicializado, omitiendo: " & idControl
-            Exit Sub
-        End If
-
-        ' Intentar recuperacion automatica
-        If Not mIsRecovering Then
-            LogWarning MODULE_NAME, "[InvalidarControl] Ribbon perdido, intentando recuperacion..."
-            If Not TryAutoRecover() Then
-                LogError MODULE_NAME, "[InvalidarControl] Recuperacion fallida para control: " & idControl
-                Exit Sub
-            End If
-        Else
-            Exit Sub
-        End If
+    If mribbonUI Is Nothing Then
+        If mWasEverInitialized Then LogDebug MODULE_NAME, "[InvalidarControl] ribbonUI no disponible: " & idControl
+        Exit Sub
     End If
 
-    ' Invalidar el control
     mribbonUI.InvalidateControl idControl
     Exit Sub
 
 ErrHandler:
-    LogError MODULE_NAME, "[InvalidarControl] Error en control " & idControl, , Err.Description
+    LogError MODULE_NAME, "[InvalidarControl] Error en control " & idControl & " - marcando ribbon como perdido"
+    Set mribbonUI = Nothing
 End Sub
 
 ' ==========================================

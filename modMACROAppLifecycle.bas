@@ -11,6 +11,24 @@ Option Explicit
 
 Private Const MODULE_NAME As String = "modMACROAppLifecycle"
 
+' ==========================================
+' RIBBON RECOVERY - ALMACENAMIENTO EN NOMBRES EXCEL4
+' ==========================================
+' Los nombres de Excel4 persisten mientras Excel este abierto,
+' incluso tras un reset de VBA (a diferencia de variables de modulo).
+' Esta es la ubicacion "mas estatica" disponible dentro del proceso Excel.
+' ==========================================
+
+#If VBA7 Then
+    Private Declare PtrSafe Sub CopyMemory Lib "kernel32" Alias "RtlMoveMemory" _
+        (ByRef Destination As Any, ByRef Source As Any, ByVal Length As LongPtr)
+#Else
+    Private Declare Sub CopyMemory Lib "kernel32" Alias "RtlMoveMemory" _
+        (ByRef Destination As Any, ByRef Source As Any, ByVal Length As Long)
+#End If
+
+Private Const RIBBON_PTR_EXCEL_NAME As String = "ABC_RibbonPtr"
+
 ' RECUPERACION DE LA APLICACION
 Private mInitCounter As Long       ' Contador de inicializaciones (persistente en sesion)
 Private mLastInitTime As Double    ' Timestamp de ultima inicializacion
@@ -38,9 +56,9 @@ Public Sub ReiniciarAplicacion()
 Attribute ReiniciarAplicacion.VB_ProcData.VB_Invoke_Func = " \n0"
     Dim result As TDRESULT
 
-    result = ShowTaskDialogYesNo("Reiniciar Aplicación", _
-                                 "¿Reiniciar el complemento ABC?", _
-                                 "Se cerrará y volverá a inicializar la aplicación.")
+    result = ShowTaskDialogYesNo("Reiniciar Aplicacion", _
+                                 "Reiniciar el complemento ABC?", _
+                                 "Se cerrara y volvera a inicializar la aplicacion.")
 
     If result <> vbYes Then Exit Sub
 
@@ -65,12 +83,12 @@ Attribute ReiniciarAplicacion.VB_ProcData.VB_Invoke_Func = " \n0"
     ' Verificar estado
     If IsRibbonAvailable() Then
         ShowTaskDialogError "Reinicio Exitoso", _
-                            "Aplicación reiniciada correctamente", _
-                            App.ribbon.GetQuickDiagnostics()
+                            "Aplicacion reiniciada correctamente", _
+                            GetRibbonDiagnostics()
     Else
         ShowTaskDialogError "Reinicio Parcial", _
-                            "Aplicación reiniciada con advertencias", _
-                            "El Ribbon puede requerir atención adicional. Ejecute 'RecuperarRibbon' si es necesario."
+                            "Aplicacion reiniciada con advertencias", _
+                            "El Ribbon puede requerir atencion. Ejecute 'RecuperarRibbon' si es necesario."
     End If
 End Sub
 
@@ -120,44 +138,36 @@ End Property
 ' ==========================================
 
 '@Description: Activa temporalmente la visibilidad del XLAM para operaciones de copia
-'              Muestra el libro que contiene este XLAM, haciéndolo visible en la interfaz de Excel.
 '@Scope: Manipula el libro host del complemento XLAM cargado.
-'@ArgumentDescriptions: (no tiene argumentos)
-'@Returns: (ninguno)
 '@Category: ComplementosExcel
 Sub DesactivarModoAddin()
 Attribute DesactivarModoAddin.VB_ProcData.VB_Invoke_Func = " \n0"
     On Error GoTo ErrHandler
     If ThisWorkbook.IsAddin Then
-        ThisWorkbook.IsAddin = False     ' Hace que el libro se muestre
+        ThisWorkbook.IsAddin = False
         LogInfo MODULE_NAME, "[DesactivarModoAddin] XLAM visible temporalmente"
     End If
     Exit Sub
 ErrHandler:
-    Err.Raise Err.Number, "modMACROBackups.DesactivarModoAddin", _
+    Err.Raise Err.Number, "modMACROAppLifecycle.DesactivarModoAddin", _
               "Error desactivando el modo de AddIn: " & Err.Description
 End Sub
 
 '@Description: Restaura el estado de IsAddin del XLAM
-'              Oculta el libro que contiene este XLAM, dejando el complemento operativo pero sin mostrar su ventana.
-'@Scope: Manipula el libro host del complemento XLAM cargado.
-'@ArgumentDescriptions: (no tiene argumentos)
-'@Returns: (ninguno)
 '@Category: ComplementosExcel
 Sub RestaurarModoAddin()
 Attribute RestaurarModoAddin.VB_ProcData.VB_Invoke_Func = " \n0"
     On Error GoTo ErrHandler
     ThisWorkbook.IsAddin = True
     LogInfo MODULE_NAME, "[RestaurarModoAddin] XLAM restaurado como Add-in"
-ErrHandler:
     Exit Sub
-    Err.Raise Err.Number, "modMACROBackups.RestaurarModoAddin", _
+ErrHandler:
+    Err.Raise Err.Number, "modMACROAppLifecycle.RestaurarModoAddin", _
               "Error activando el modo de AddIn: " & Err.Description
 End Sub
 
 ' ==========================================
 ' GESTION DEL RIBBON
-' MACROS PUBLICAS (Accesibles por el usuario)
 ' ==========================================
 
 '@Description: Procedimiento puente para el atajo de teclado
@@ -177,37 +187,100 @@ ErrHandler:
               "Error cambiando el modo del ribbon: " & Err.Description
 End Sub
 
-'@Description: Macro publica para recuperar el Ribbon manualmente
-'@Note: Ejecutar esta macro si el Ribbon desaparece o no responde
+' ------------------------------------------
+' ALMACENAMIENTO DEL PUNTERO - SET.NAME (Excel4)
+' ------------------------------------------
+
+'@Description: Almacena el puntero IRibbonUI en nombres de Excel4.
+'              Llamar desde RibbonOnLoad para garantizar persistencia tras resets de VBA.
+'@Note: Los nombres Excel4 sobreviven a resets de VBA porque viven en el
+'       espacio de nombre del proceso Excel, no del proyecto VBA.
+Public Sub StoreRibbonInExcelNames(ByRef ribbon As IRibbonUI)
+    On Error GoTo ErrExit
+    If ribbon Is Nothing Then Exit Sub
+
+    Dim ptr As LongPtr
+    ptr = ObjPtr(ribbon)
+    Application.ExecuteExcel4Macro "SET.NAME(""" & RIBBON_PTR_EXCEL_NAME & """, """ & CStr(ptr) & """)"
+    LogDebug MODULE_NAME, "[StoreRibbonInExcelNames] puntero guardado en nombre Excel4: " & CStr(ptr)
+    Exit Sub
+
+ErrExit:
+    LogCurrentError MODULE_NAME, "[StoreRibbonInExcelNames]"
+End Sub
+
+'@Description: Recupera IRibbonUI desde nombres de Excel4.
+'              Funciona incluso despues de un reset de VBA porque el nombre persiste.
+'@Note: Si el puntero almacenado esta obsoleto (Excel invalido el ribbon), la llamada
+'       fallara al acceder al objeto. El On Error del caller debe capturar esto.
+'@Returns: IRibbonUI recuperado, o Nothing si no hay puntero valido almacenado
+Public Function RecoverRibbonFromExcelNames() As IRibbonUI
+    On Error GoTo ErrExit
+
+    Dim ptrStr As String
+    ptrStr = Application.ExecuteExcel4Macro(RIBBON_PTR_EXCEL_NAME)
+
+    ' "False" es lo que devuelve ExecuteExcel4Macro cuando el nombre no existe
+    If Len(ptrStr) = 0 Or ptrStr = "0" Or ptrStr = "False" Then Exit Function
+
+    Dim ptr As LongPtr
+    ptr = CLngPtr(ptrStr)
+    If ptr = 0 Then Exit Function
+
+    ' Reconstruir la referencia COM desde la direccion de memoria
+    Dim obj As IRibbonUI
+    CopyMemory obj, ptr, LenB(ptr)
+
+    Set RecoverRibbonFromExcelNames = obj
+
+    ' Prevenir doble-liberacion del refcount COM (es critico dejar el variable local a 0)
+    Dim ptrZero As LongPtr
+    CopyMemory obj, ptrZero, LenB(ptrZero)
+
+    LogDebug MODULE_NAME, "[RecoverRibbonFromExcelNames] referencia reconstruida desde ptr=" & CStr(ptr)
+    Exit Function
+
+ErrExit:
+    ' El puntero puede estar obsoleto: fallo silencioso, devolver Nothing
+    Set RecoverRibbonFromExcelNames = Nothing
+End Function
+
+' ------------------------------------------
+' RECUPERACION DEL RIBBON
+' ------------------------------------------
+
+'@Description: Macro publica para recuperar el Ribbon manualmente.
+'@Note: Ejecutar si el Ribbon desaparece o no responde.
 '@Category: Ribbon / Recuperacion
 Public Sub RecuperarRibbon()
 Attribute RecuperarRibbon.VB_ProcData.VB_Invoke_Func = " \n0"
-    Dim result As TDRESULT
-
     LogInfo MODULE_NAME, "[RecuperarRibbon] Solicitado por usuario"
     LogDebug MODULE_NAME, "[RecuperarRibbon] Diagnosticos: " & GetRibbonDiagnostics()
 
     ' Si ya esta disponible, no hacer nada
     If IsRibbonAvailable() Then
-        ShowTaskDialogError "Ribbon OK", "Estado correcto", "El Ribbon ya está funcionando correctamente."
+        ShowTaskDialogError "Ribbon OK", "Estado correcto", "El Ribbon ya esta funcionando correctamente."
         Exit Sub
     End If
 
-    ' Confirmar con el usuario
-    result = ShowTaskDialogYesNo("Recuperar Ribbon", _
-                                 "El Ribbon no está disponible", _
-                                 "Se intentará recuperar. Esto puede requerir recargar el complemento temporalmente. ¿Desea continuar?")
+    ' PASO 1: Intentar recuperar desde nombres Excel4 (rapido, no disruptivo)
+    If TryRecoverRibbon() Then
+        ShowTaskDialogError "Recuperacion Exitosa", "Ribbon recuperado", GetRibbonDiagnostics()
+        Exit Sub
+    End If
 
+    ' PASO 2: Toggle del add-in (disruptivo: Excel recarga el ribbon y llama a onLoad)
+    Dim result As TDRESULT
+    result = ShowTaskDialogYesNo("Recuperar Ribbon", _
+                                 "Recuperacion rapida fallida", _
+                                 "Se desactivara y reactivara el complemento." & vbCrLf & _
+                                 "Excel recargara la cinta de opciones. Continuar?")
     If result <> vbYes Then Exit Sub
 
-    ' Intentar recuperacion
-    If TryRecoverRibbon() Then
-        ShowTaskDialogError "Recuperación Exitosa", _
-                            "Ribbon recuperado", _
-                            App.ribbon.GetQuickDiagnostics()
+    If RecoverByAddinToggle() Then
+        ShowTaskDialogError "Recuperacion Exitosa", "Ribbon recargado", GetRibbonDiagnostics()
     Else
-        ShowTaskDialogError "Recuperación Fallida", _
-                            "No se pudo recuperar automáticamente", _
+        ShowTaskDialogError "Recuperacion Fallida", "Sin solucion automatica", _
                             "Recomendaciones:" & vbCrLf & _
                             "1. Cierre Excel completamente" & vbCrLf & _
                             "2. Vuelva a abrir Excel"
@@ -217,8 +290,8 @@ End Sub
 '@Description: Muestra el diagnostico del Ribbon en un cuadro de dialogo
 Public Sub MostrarDiagnosticoRibbon()
 Attribute MostrarDiagnosticoRibbon.VB_ProcData.VB_Invoke_Func = " \n0"
-    LogInfo MODULE_NAME, "MostrarDiagnosticoRibbon - Solicitado"
-    ShowTaskDialogError "Diagnóstico del Ribbon", "Estado actual del  ribbon", GetRibbonDiagnostics()
+    LogInfo MODULE_NAME, "[MostrarDiagnosticoRibbon] Solicitado"
+    ShowTaskDialogError "Diagnostico del Ribbon", "Estado actual del ribbon", GetRibbonDiagnostics()
 End Sub
 
 ' ------------------------------------------
@@ -226,15 +299,12 @@ End Sub
 ' ------------------------------------------
 
 '@Description: Obtiene informacion de diagnostico del estado del Ribbon
-'@Returns: String | Descripcion del estado actual
+'@Returns: String - Descripcion del estado actual
 Public Function GetRibbonDiagnostics() As String
 Attribute GetRibbonDiagnostics.VB_ProcData.VB_Invoke_Func = " \n0"
     Dim info As String
-
-    'info = "=== DIAGNOSTICO DEL RIBBON ===" & vbCrLf
-    info = info & "Fecha/Hora: " & Now & vbCrLf
-    info = info & "Log Path: " & GetLogFilePath() & vbCrLf
-    info = info & vbCrLf
+    info = "Fecha/Hora: " & Now & vbCrLf
+    info = info & "Log Path: " & GetLogFilePath() & vbCrLf & vbCrLf
 
     ' Estado de App
     Dim mApp As clsApplication
@@ -253,180 +323,119 @@ Attribute GetRibbonDiagnostics.VB_ProcData.VB_Invoke_Func = " \n0"
     Else
         info = info & "[OK] App.Ribbon: Disponible" & vbCrLf
 
-        ' Diagnostico detallado
-        info = info & "    -> " & mApp.ribbon.GetQuickDiagnostics() & vbCrLf
-
         ' Estado de ribbonUI (IRibbonUI)
         On Error Resume Next
         If mApp.ribbon.ribbonUI Is Nothing Then
             info = info & "[X] ribbonUI: Nothing (PERDIDO)" & vbCrLf
-            info = info & "    -> El Ribbon necesita recuperacion" & vbCrLf
+            info = info & "    -> puntero en Excel4: " & SafeGetExcelName() & vbCrLf
         Else
-            info = info & "[OK] ribbonUI: Conectado" & vbCrLf
-            info = info & "    -> Tipo: " & TypeName(App.ribbon.ribbonUI) & vbCrLf
+            info = info & "[OK] ribbonUI: Conectado (" & TypeName(mApp.ribbon.ribbonUI) & ")" & vbCrLf
         End If
         On Error GoTo 0
     End If
 
     ' Estado de Ribbon.State
-    If mApp.ribbon.State Is Nothing Then
+    On Error Resume Next
+    If mApp.ribbon Is Nothing Then
+        info = info & "[X] Ribbon State: sin ribbon" & vbCrLf
+    ElseIf mApp.ribbon.State Is Nothing Then
         info = info & "[X] Ribbon State: Nothing" & vbCrLf
     Else
         info = info & "[OK] Ribbon State: " & mApp.ribbon.State.Description & vbCrLf
     End If
+    On Error GoTo 0
+
+    ' Estado del nombre Excel4
+    info = info & "Excel4 Name: " & SafeGetExcelName() & vbCrLf
 
     GetRibbonDiagnostics = info
 End Function
 
 '@Description: Verifica si el Ribbon esta disponible y funcional
-'    DESDE EL CONTEXTO GLOBAL
-'@Returns: Boolean | True si el Ribbon esta operativo
+'@Returns: Boolean - True si el Ribbon esta operativo
 Public Function IsRibbonAvailable() As Boolean
 Attribute IsRibbonAvailable.VB_ProcData.VB_Invoke_Func = " \n0"
     On Error Resume Next
+
     Dim mApp As clsApplication
-    ' Verificar que App existe
     Set mApp = App
-    If mApp Is Nothing Then
-        LogDebug MODULE_NAME, "IsRibbonAvailable: App Is Nothing"
-        IsRibbonAvailable = False
-        Exit Function
-    End If
+    If mApp Is Nothing Then IsRibbonAvailable = False: Exit Function
+    If mApp.ribbon Is Nothing Then IsRibbonAvailable = False: Exit Function
+    If mApp.ribbon.ribbonUI Is Nothing Then IsRibbonAvailable = False: Exit Function
 
-    ' Verificar que Ribbon existe
-    If mApp.ribbon Is Nothing Then
-        LogDebug MODULE_NAME, "IsRibbonAvailable: App.Ribbon Is Nothing"
-        IsRibbonAvailable = False
-        Exit Function
-    End If
-
-    ' Verificar que ribbonUI existe
-    If mApp.ribbon.ribbonUI Is Nothing Then
-        LogDebug MODULE_NAME, "IsRibbonAvailable: ribbonUI Is Nothing"
-        IsRibbonAvailable = False
-        Exit Function
-    End If
-
-    ' Intentar una operacion simple para verificar que funciona
-    Dim testResult As Boolean
-    testResult = Not (TypeName(mApp.ribbon.ribbonUI) = "Nothing")
-
+    IsRibbonAvailable = (TypeName(mApp.ribbon.ribbonUI) <> "Nothing")
     If Err.Number <> 0 Then
-        LogWarning MODULE_NAME, "IsRibbonAvailable: Error al verificar - " & Err.Description
         IsRibbonAvailable = False
         Err.Clear
-    Else
-        IsRibbonAvailable = testResult
     End If
 
     On Error GoTo 0
 End Function
 
 ' ------------------------------------------
-' FUNCIONES DE RECUPERACION
+' FUNCIONES DE RECUPERACION (privadas)
 ' ------------------------------------------
 
-'@Description: Intenta recuperar el Ribbon automaticamente
-'@Returns: Boolean | True si la recuperacion fue exitosa
+'@Description: Intenta recuperar ribbon desde nombres Excel4 (no disruptivo).
+'@Returns: Boolean - True si la recuperacion fue exitosa
 Public Function TryRecoverRibbon() As Boolean
 Attribute TryRecoverRibbon.VB_ProcData.VB_Invoke_Func = " \n0"
     On Error GoTo ErrHandler
 
-    LogInfo MODULE_NAME, "TryRecoverRibbon - Iniciando recuperacion..."
+    LogInfo MODULE_NAME, "[TryRecoverRibbon] Iniciando recuperacion"
 
-    ' METODO 1: Soft refresh (no invasivo)
-    If RecoverBySoftRefresh() Then
-        LogInfo MODULE_NAME, "TryRecoverRibbon - Exito via SoftRefresh"
+    ' Recuperar puntero desde nombres Excel4 (sobrevive resets de VBA)
+    Dim recoveredRibbon As IRibbonUI
+    Set recoveredRibbon = RecoverRibbonFromExcelNames()
+
+    If recoveredRibbon Is Nothing Then
+        LogWarning MODULE_NAME, "[TryRecoverRibbon] No hay puntero valido en nombres Excel4"
+        TryRecoverRibbon = False
+        Exit Function
+    End If
+
+    ' Validar que el objeto es usable (no solo que el puntero no sea 0)
+    On Error Resume Next
+    Dim testType As String
+    testType = TypeName(recoveredRibbon)
+    Dim errNum As Long
+    errNum = Err.Number
+    On Error GoTo ErrHandler
+
+    If errNum <> 0 Or Len(testType) = 0 Or testType = "Nothing" Then
+        LogWarning MODULE_NAME, "[TryRecoverRibbon] Puntero obsoleto (ribbon invalido): err=" & errNum
+        TryRecoverRibbon = False
+        Exit Function
+    End If
+
+    ' Actualizar la referencia en clsRibbon
+    If Not App.ribbon Is Nothing Then
+        App.ribbon.Init recoveredRibbon
+        LogInfo MODULE_NAME, "[TryRecoverRibbon] Ribbon recuperado correctamente desde nombres Excel4"
         TryRecoverRibbon = True
         Exit Function
     End If
 
-    ' METODO 2: UI Refresh
-    If RecoverByUIRefresh() Then
-        LogInfo MODULE_NAME, "TryRecoverRibbon - Exito via UIRefresh"
-        TryRecoverRibbon = True
-        Exit Function
-    End If
-
-    ' METODO 3: Toggle del add-in (ultimo recurso, solo en intento 2+)
-    If False Then
-        LogWarning MODULE_NAME, "TryRecoverRibbon - Intentando toggle del add-in (ultimo recurso)"
-        If RecoverByAddinToggle() Then
-            LogInfo MODULE_NAME, "TryRecoverRibbon - Exito via AddinToggle"
-            TryRecoverRibbon = True
-            Exit Function
-        End If
-    End If
-
-    LogError MODULE_NAME, "TryRecoverRibbon - Recuperacion fallida"
+    LogWarning MODULE_NAME, "[TryRecoverRibbon] App.ribbon no disponible"
     TryRecoverRibbon = False
     Exit Function
 
 ErrHandler:
-    LogError MODULE_NAME, "TryRecoverRibbon - Error", Err.Number, Err.Description
     TryRecoverRibbon = False
+    LogCurrentError MODULE_NAME, "[TryRecoverRibbon]"
 End Function
 
-'@Description: Intenta recuperar sin ningun reinicio
-Private Function RecoverBySoftRefresh() As Boolean
-    On Error Resume Next
-
-    LogDebug MODULE_NAME, "RecoverBySoftRefresh - Verificando puntero"
-
-    DoEvents
-
-    Dim dummy As Object
-    Set dummy = Nothing
-
-    DoEvents
-
-    RecoverBySoftRefresh = IsRibbonAvailable()
-
-    If RecoverBySoftRefresh Then
-        LogInfo MODULE_NAME, "RecoverBySoftRefresh - Puntero recuperado sin reinicio"
-    End If
-
-    On Error GoTo 0
-End Function
-
-'@Description: Intenta recuperar forzando redibujado de la UI
-Private Function RecoverByUIRefresh() As Boolean
-    On Error Resume Next
-
-    LogDebug MODULE_NAME, "RecoverByUIRefresh - Forzando redibujado de UI"
-
-    Application.ScreenUpdating = False
-    DoEvents
-    Application.ScreenUpdating = True
-    DoEvents
-
-    If Not ActiveWindow Is Nothing Then
-        ActiveWindow.Visible = True
-    End If
-    DoEvents
-
-    Application.Wait Now + TimeSerial(0, 0, 1)
-    DoEvents
-
-    RecoverByUIRefresh = IsRibbonAvailable()
-
-    If RecoverByUIRefresh Then
-        LogInfo MODULE_NAME, "RecoverByUIRefresh - Ribbon recuperado via UI refresh"
-    End If
-
-    On Error GoTo 0
-End Function
-
-'@Description: Recupera el Ribbon toggleando el estado del add-in
+'@Description: Recupera el Ribbon toggleando el estado del add-in.
+'              Esto fuerza una nueva llamada a onLoad con un IRibbonUI fresco.
+'              Solo llamar bajo confirmacion explicita del usuario.
 Private Function RecoverByAddinToggle() As Boolean
     On Error GoTo ErrHandler
 
-    LogInfo MODULE_NAME, "RecoverByAddinToggle - Iniciando toggle del add-in"
+    LogInfo MODULE_NAME, "[RecoverByAddinToggle] Iniciando toggle del add-in"
 
     Dim ai As AddIn
     Dim targetAddin As AddIn
 
-    ' Buscar nuestro add-in
     For Each ai In Application.AddIns
         If ai.Name = APP_NAME & ".xlam" Then
             Set targetAddin = ai
@@ -435,47 +444,51 @@ Private Function RecoverByAddinToggle() As Boolean
     Next ai
 
     If targetAddin Is Nothing Then
-        LogError MODULE_NAME, "RecoverByAddinToggle - Add-in no encontrado: " & APP_NAME & ".xlam"
+        LogError MODULE_NAME, "[RecoverByAddinToggle] Add-in no encontrado: " & APP_NAME & ".xlam"
         RecoverByAddinToggle = False
         Exit Function
     End If
 
-    ' Solo proceder si esta instalado
     If Not targetAddin.Installed Then
-        LogError MODULE_NAME, "RecoverByAddinToggle - Add-in no esta instalado"
+        LogError MODULE_NAME, "[RecoverByAddinToggle] Add-in no esta instalado"
         RecoverByAddinToggle = False
         Exit Function
     End If
 
-    ' Toggle: desactivar y reactivar
-    LogDebug MODULE_NAME, "RecoverByAddinToggle - Desactivando add-in..."
+    ' Toggle: desactivar y reactivar (fuerza nueva llamada a onLoad)
+    LogDebug MODULE_NAME, "[RecoverByAddinToggle] Desactivando add-in..."
     targetAddin.Installed = False
 
-    ' Pequeña pausa
     DoEvents
     Application.Wait Now + TimeSerial(0, 0, 1)
     DoEvents
 
-    LogDebug MODULE_NAME, "RecoverByAddinToggle - Reactivando add-in..."
+    LogDebug MODULE_NAME, "[RecoverByAddinToggle] Reactivando add-in..."
     targetAddin.Installed = True
 
-    ' Pausa para que se recargue
     DoEvents
     Application.Wait Now + TimeSerial(0, 0, 2)
     DoEvents
 
-    ' Verificar si se recupero
     RecoverByAddinToggle = IsRibbonAvailable()
 
     If RecoverByAddinToggle Then
-        LogInfo MODULE_NAME, "RecoverByAddinToggle - Ribbon recuperado via toggle"
+        LogInfo MODULE_NAME, "[RecoverByAddinToggle] Ribbon recuperado via toggle"
     Else
-        LogWarning MODULE_NAME, "RecoverByAddinToggle - Toggle completado pero Ribbon no disponible"
+        LogWarning MODULE_NAME, "[RecoverByAddinToggle] Toggle completado pero Ribbon no disponible"
     End If
 
     Exit Function
 
 ErrHandler:
-    LogError MODULE_NAME, "RecoverByAddinToggle - Error", Err.Number, Err.Description
+    LogCurrentError MODULE_NAME, "[RecoverByAddinToggle]"
     RecoverByAddinToggle = False
+End Function
+
+'@Description: Devuelve el valor almacenado en el nombre Excel4 (para diagnostico)
+Private Function SafeGetExcelName() As String
+    On Error Resume Next
+    SafeGetExcelName = Application.ExecuteExcel4Macro(RIBBON_PTR_EXCEL_NAME)
+    If Err.Number <> 0 Then SafeGetExcelName = "(error al leer)"
+    On Error GoTo 0
 End Function

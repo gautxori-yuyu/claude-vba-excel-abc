@@ -161,6 +161,16 @@ Private Sub InitializeUI()
     
     Set mRibbon = New clsRibbon
     mRibbon.Initialize mOpportunities, mFileMgr, mCtxMgr.ChartMgr, mCtxMgr
+
+    ' Recuperacion automatica tras reset de VBA: si el IRibbonUI sigue vivo en Excel4, reutilizarlo
+    Dim recoveredRibbon As IRibbonUI
+    Set recoveredRibbon = RecoverRibbonFromExcelNames()
+    If Not recoveredRibbon Is Nothing Then
+        mRibbon.Init recoveredRibbon
+        LogInfo MODULE_NAME, "[InitializeUI] Ribbon recuperado automaticamente de sesion anterior"
+    End If
+    Set recoveredRibbon = Nothing
+
     ' ESTADO CENTRALIZADO - Inyectar referencias a subestados (Dependency Injection)
     mApplicationState.Initialize RibbonState:=mRibbon.State
 
