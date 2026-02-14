@@ -64,7 +64,7 @@ End Sub
 '@Description: Exporta componentes VBA sin mostrar mensajes al usuario
 '@Scope: Privado
 '@ArgumentDescriptions: wb: Workbook de origen | rutaDestino: Carpeta donde exportar
-Private Sub ExportarFichsVBAaCarpeta(Wb As Workbook, rutaDestino As String)
+Public Sub ExportarFichsVBAaCarpeta(Wb As Workbook, rutaDestino As String)
     
     On Error Resume Next
     
@@ -183,7 +183,7 @@ Attribute RestaurarBackupVBADesdeZip.VB_ProcData.VB_Invoke_Func = " \n0"
     ' Esperar a que termine la descompresión
     Dim intentos As Integer
     intentos = 0
-    Do While ContarArchivosRecursivo(rutaTempDescompresion) < nfichs And intentos < 50
+    Do While ContarArchivosRecursivo(fso.GetFolder(rutaTempDescompresion)) < nfichs And intentos < 50
         DoEvents
         Sleep 200
         intentos = intentos + 1
@@ -218,11 +218,7 @@ Attribute ImportarComponentesVBAaThisWorkbookXLAM.VB_ProcData.VB_Invoke_Func = "
         ImportarDependencias
     End If
     
-    If MsgBox("¿Inyectar ficheros a descomprimir desde subcarpeta embeddings (XLAM ABC)?", vbYesNo + vbQuestion, "Importar dependencias") = vbYes Then
-        InyectarEmbeddings
-    End If
-    
-    MsgBox "Importación completada desde: " & rutaImportacion, vbInformation
+    MsgBox "Importación completada desde: " & rutaImportacion & ". Falta, en el 'proyecto ABC', inyectar los ficheros a descomprimir (FSWatcher). Requiere hacerlo con Excel cerrado, usar VBScript.", vbInformation
 End Sub
 
 Private Sub ImportarDependencias()
@@ -247,17 +243,17 @@ Private Sub ImportarDependencias()
         
         ' 2. Intentar eliminar la hoja inicial si existe
         On Error Resume Next
-        Set wsBorrar = ThisWorkbook.Sheets(nombreHojaBorrar)
-        If Not wsBorrar Is Nothing Then
+        Set ws = ThisWorkbook.Sheets(nombreHojaBorrar)
+        If Not ws Is Nothing Then
             Application.DisplayAlerts = False
-            wsBorrar.Delete
+            ws.Delete
             Application.DisplayAlerts = True
         End If
         On Error GoTo 0
     End If
 End Sub
 
-Private Sub ImportarFichsVBAenCarpeta(rutaImportacion As String)
+Private Sub ImportarFichsVBAenCarpeta(rutaImportacion As String, Optional bRemove As Boolean = False)
     Dim fso As Object, archivo As Object, carpeta As Object, extension As String
     Set fso = CreateObject("Scripting.FileSystemObject")
     Set carpeta = fso.GetFolder(rutaImportacion)
@@ -267,27 +263,51 @@ Private Sub ImportarFichsVBAenCarpeta(rutaImportacion As String)
         Exit Sub
     End If
     On Error Resume Next
+    Dim vbComp As Object
     
     For Each archivo In carpeta.files
         extension = LCase(fso.GetExtensionName(archivo.Name))
         If extension = "bas" Or extension = "cls" Or extension = "frm" Then
             If archivo.Name = "ThisWorkbook.cls" Then
-                Dim vbComp As Object
                 Set vbComp = ThisWorkbook.VBProject.VBComponents("ThisWorkbook")
-                ' Limpiar código existente antes de inyectar el nuevo
-                vbComp.CodeModule.DeleteLines 1, vbComp.CodeModule.CountOfLines
-                ' Insertar el contenido del archivo
-                vbComp.CodeModule.AddFromFile rutaArchivo
+                If vbComp.CodeModule.CountOfLines <= 1 Then
+                    ' Insertar el contenido del archivo
+                    vbComp.CodeModule.AddFromFile archivo.Path
+                Else
+                    Select Case True
+                        Case bRemove, MsgBox("¿Eliminar el componente ThisWorkbook?", vbYesNo + vbDefaultButton2, "Clase existente") = vbYes
+                            ' Limpiar código existente antes de inyectar el nuevo
+                            vbComp.CodeModule.DeleteLines 1, vbComp.CodeModule.CountOfLines
+                            
+                            ' Insertar el contenido del archivo
+                            vbComp.CodeModule.AddFromFile archivo.Path
+                    End Select
+                End If
             Else
                 ' Intentar eliminar componente existente
                 On Error Resume Next
                 Dim nombreComp As String
                 nombreComp = fso.GetBaseName(archivo.Name)
-                ThisWorkbook.VBProject.VBComponents.Remove ThisWorkbook.VBProject.VBComponents(nombreComp)
-                On Error GoTo ErrorHandler
                 
-                ' Importar
-                ThisWorkbook.VBProject.VBComponents.Import archivo.Path
+                On Error Resume Next
+                ' Intentamos asignar el componente a una variable
+                Set vbComp = ThisWorkbook.VBProject.VBComponents(nombreComp)
+                On Error GoTo 0
+                
+                ' Si la variable es (Nothing), el componente no existe
+                If Not vbComp Is Nothing Then
+                    ' Importar
+                    ThisWorkbook.VBProject.VBComponents.Import archivo.Path
+                Else
+                    Select Case True
+                        Case bRemove, MsgBox("¿Eliminar el componente " & nombreComp & "?", vbYesNo + vbDefaultButton2, "Clase existente") = vbYes
+                            ThisWorkbook.VBProject.VBComponents.Remove vbComp
+                                        
+                            ' Importar
+                            ThisWorkbook.VBProject.VBComponents.Import archivo.Path
+                    End Select
+                End If
+                On Error GoTo ErrorHandler
             End If
         End If
     Next archivo

@@ -40,12 +40,12 @@ Friend Property Get ObjectKey() As Double
 End Property
 
 ' @Description: Ruta completa (FullName), con fallback seguro.
-Public Property Get Path() As String
+Public Property Get path() As String
     On Error Resume Next
     If p_ObjectKey <> 0 Then
-        Path = p_wb.FullName
+        path = p_wb.FullName
     Else
-        Path = "(cerrado)"
+        path = "(cerrado)"
     End If
     On Error GoTo 0
 End Property
@@ -70,7 +70,7 @@ Private Property Get IFile_ObjectKey() As Double
 End Property
 
 Private Property Get IFile_Path() As String
-    IFile_Path = Me.Path
+    IFile_Path = Me.path
 End Property
 
 Private Property Get IFile_Name() As String
@@ -123,7 +123,7 @@ Public Sub BindTo(Wb As Workbook)
     Set p_wb = Wb
     p_ObjectKey = ObjPtr(p_wb)
     AnalizarWorkBook
-    LogDebug MODULE_NAME, "[BindTo] Asociado a: " & Me.Path & " (key: " & p_ObjectKey & ")"
+    LogDebug MODULE_NAME, "[BindTo] Asociado a: " & Me.path & " (key: " & p_ObjectKey & ")"
 End Sub
 ' (CreateFromWorkbook eliminado: clsFileManager calcula la clave via ObjPtr directamente)
 '--------------------------------------------------------------
@@ -492,7 +492,7 @@ Public Function DebeMoverseAOp(rutaOportunidadRelativa As String, rutaBaseOportu
     If Not EsFicheroOportunidad() Then Exit Function
     
     ' 2. Verificar si ya está en la carpeta correcta
-    If InStr(1, Wb.Path, rutaOportunidad, vbTextCompare) > 0 Then
+    If InStr(1, Wb.path, rutaOportunidad, vbTextCompare) > 0 Then
         ' Ya está en la carpeta correcta
         Exit Function
     End If

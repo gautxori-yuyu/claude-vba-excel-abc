@@ -60,7 +60,7 @@ Attribute CrearBackupCodigoVBA.VB_ProcData.VB_Invoke_Func = " \n21"
     End If
     
     ' Exportar todos los componentes VBA
-    Call ExportarComponentesVBASilencioso(ThisWorkbook, rutaTempExport)
+    Call ExportarFichsVBAaCarpeta(ThisWorkbook, rutaTempExport)
     
     ' Comprimir en ZIP
     Dim rutaZipCompleta As String

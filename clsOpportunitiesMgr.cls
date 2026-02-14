@@ -153,7 +153,7 @@ Public Sub SetCurrentOpportunity(ByVal opportunityName As String)
     LogInfo MODULE_NAME, "[SetCurrentOpportunity] -> " & opportunityName
 
     ' Notificar cambio
-    RaiseEvent CurrentOpportunityChanged(opportunityName, op.Path)
+    RaiseEvent CurrentOpportunityChanged(opportunityName, op.path)
 
     Exit Sub
 
@@ -302,7 +302,7 @@ Private Function CreateOpportunityFromName(ByVal opportunityName As String) As c
     Set op = New clsOpportunity
 
     op.Label = opportunityName
-    op.Path = mOpportunityProvider.GetFullPath(opportunityName)
+    op.path = mOpportunityProvider.GetFullPath(opportunityName)
 
     ' Extraer informacion del nombre
     ' Formato tipico: "412601015 - Cliente - Proyecto - Modelo"

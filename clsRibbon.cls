@@ -207,14 +207,14 @@ Public Sub ToggleModo()
         mStateRibbon.Modo = Ribbon_Admin
     Case Ribbon_Admin
         ' Solo pasar a OpportunityOnly si las dependencias de dominio estan disponibles
-        If App.AppState.IsOpportunityMgrEnabled() Then
+        If App.State.IsOpportunityMgrEnabled() Then
             mStateRibbon.Modo = Ribbon_OpportunityOnly
         Else
             mStateRibbon.Modo = Ribbon_User
         End If
     Case Else
         ' Fallback seguro: nunca aterrizar en OpportunityOnly sin soporte
-        If App.AppState.IsOpportunityMgrEnabled() Then
+        If App.State.IsOpportunityMgrEnabled() Then
             mStateRibbon.Modo = Ribbon_OpportunityOnly
         Else
             mStateRibbon.Modo = Ribbon_User
@@ -268,12 +268,12 @@ Public Function IsTabVisible() As Boolean
             ' Este modo solo es valido si las dependencias de dominio estan disponibles.
             ' Si no lo estan (p.ej. durante inicializacion progresiva), el modo no debe
             ' haberse alcanzado, pero lo tratamos defensivamente devolviendo False.
-            If App().AppState Is Nothing Then
+            If App().State Is Nothing Then
                 IsTabVisible = False
-            ElseIf Not App.AppState.IsOpportunityMgrEnabled() Then
+            ElseIf Not App.State.IsOpportunityMgrEnabled() Then
                 IsTabVisible = False
             Else
-                IsTabVisible = App().AppState.IsOpportunityFileActive()
+                IsTabVisible = App().State.IsOpportunityFileActive()
             End If
         Case Else
             IsTabVisible = False

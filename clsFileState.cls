@@ -82,7 +82,7 @@ Public Function GetCurrentFilePath() As String
         GetCurrentFilePath = ""
     Else
         On Error Resume Next
-        GetCurrentFilePath = mCurrentFile.Path
+        GetCurrentFilePath = mCurrentFile.path
         If Err.Number <> 0 Then
             GetCurrentFilePath = ""
         End If

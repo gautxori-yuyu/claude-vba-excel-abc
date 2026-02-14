@@ -65,8 +65,8 @@ Public Property Get Configuration() As clsConfiguration
 End Property
 
 '@Description: Obtiene el gestor de estado centralizado de la aplicación
-Public Property Get AppState() As clsApplicationState
-    Set AppState = mApplicationState
+Public Property Get State() As clsApplicationState
+    Set State = mApplicationState
 End Property
 
 ' -------------------------------------------------------------
@@ -134,10 +134,11 @@ Private Sub InitializeDomain()
     mOpportunityProvider.Initialize mFileMgr, mConfiguration
 
     ' DOMINIO - Crear managers (ellos crean sus estados internamente)
-    Set mOpportunities = New clsOpportunitiesMgr
-    mOpportunities.Initialize mOpportunityProvider
+    ' TODO: activar mOpportunities una vez revisado FileSystemOpportunityProvider
+    'Set mOpportunities = New clsOpportunitiesMgr
+    'mOpportunities.Initialize mOpportunityProvider
     ' ESTADO CENTRALIZADO - Inyectar referencias a subestados (Dependency Injection)
-    mApplicationState.Initialize OpportunityState:=mOpportunities.State
+    'mApplicationState.Initialize OpportunityState:=mOpportunities.State
 
     ' MEDIADOR DE EVENTOS DE DOMINIO
     ' Escucha eventos SEMANTICOS del mediador de infraestructura (no directamente de mCtxMgr)
