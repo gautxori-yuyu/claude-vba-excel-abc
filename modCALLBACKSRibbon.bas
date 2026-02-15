@@ -45,6 +45,9 @@ Attribute RibbonOnLoad.VB_ProcData.VB_Invoke_Func = " \n0"
     bRibbonWasInitialized = True
     LogDebug MODULE_NAME, "[callback: RibbonOnLoad] Puntero guardado: " & glngRibPtr
 
+    ' Persistir puntero en nombres Excel4 (sobrevive a resets de VBA)
+    StoreRibbonInExcelNames xlRibbon
+
     ' Inicializamos la referencia al ribbon en la aplicación
     Dim mApp As clsApplication
     Set mApp = App
@@ -79,8 +82,9 @@ Attribute GetRibbonFromMemory.VB_ProcData.VB_Invoke_Func = " \n0"
         CopyMemory tempObj, glngRibPtr, LenB(glngRibPtr)
         Set gobjRibbonUI = tempObj
 
-        ' Limpiar para evitar errores de referencia circular/memoria
-        CopyMemory tempObj, 0&, LenB(glngRibPtr)
+        ' Limpiar para evitar errores de referencia circular/memoria (64-bit safe: ptrZero es LongPtr)
+        Dim ptrZero As LongPtr
+        CopyMemory tempObj, ptrZero, LenB(ptrZero)
 
         ' Verificar que el objeto recuperado es válido
         Dim testType As String
@@ -219,7 +223,7 @@ Public Sub OnVBABackup(control As IRibbonControl)
 Attribute OnVBABackup.VB_ProcData.VB_Invoke_Func = " \n0"
     On Error GoTo ErrHandler
     App.Dispatcher.Dispatch (control.id)
-    LogInfo MODULE_NAME, "[callback: OnVBABackup] Creada copia de seguridad del código en " & ThisWorkbook.Path & "\Backups"
+    LogInfo MODULE_NAME, "[callback: OnVBABackup] Creada copia de seguridad del código en " & ThisWorkbook.path & "\Backups"
     ' Mensaje al usuario sin revelar la ruta completa (seguridad)
     ShowTaskDialogError "Copia de seguridad", _
                         "Backup completado", _

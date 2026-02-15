@@ -73,7 +73,7 @@ Attribute AutoInstalador.VB_ProcData.VB_Invoke_Func = " \n0"
     Dim rutaActual As String
     Dim rutaDestino As String
     
-    rutaActual = ThisWorkbook.Path & "\"
+    rutaActual = ThisWorkbook.path & "\"
     rutaDestino = Application.UserLibraryPath
     
     ' Si ya se ejecuta desde la carpeta destino, no hacer nada

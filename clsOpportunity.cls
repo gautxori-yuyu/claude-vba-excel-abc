@@ -61,11 +61,11 @@ Public Property Let Label(Value As String)
 End Property
 
 '@Description: Obtiene o establece la ruta completa a la carpeta
-Public Property Get Path() As String
-    Path = mPath
+Public Property Get path() As String
+    path = mPath
 End Property
 
-Public Property Let Path(Value As String)
+Public Property Let path(Value As String)
     mPath = Value
 End Property
 
@@ -112,7 +112,7 @@ Public Function Equals(op As clsOpportunity) As Boolean
     If op Is Nothing Then
         Equals = False
     Else
-        Equals = (LCase(mPath) = LCase(op.Path))
+        Equals = (LCase(mPath) = LCase(op.path))
     End If
 End Function
 

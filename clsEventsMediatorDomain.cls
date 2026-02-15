@@ -110,17 +110,21 @@ End Sub
 '      1. Delegarse a un servicio de infraestructura (FileLocationService?), o
 '      2. El mediador de infraestructura deberia exponer un evento/metodo semantico
 '      Pendiente de decision cuando se tenga la especificacion de dominio.
+'      El bloque de MoverAOp esta comentado hasta que se defina el servicio correcto.
 Private Sub mOpportunities_CurrentOpportunityChanged(ByVal opportunityName As String, ByVal opportunityPath As String)
     LogInfo MODULE_NAME, "[callback: clsOpportunitiesMgr CurrentOpportunityChanged] Oportunidad seleccionada: " & opportunityPath
 
-    ' TEMPORAL: Uso directo de clsFileXLS (ver TODO arriba)
-    Dim f As clsFileXLS
-    Set f = mFileMgr.GetOrTrackWorkbook(mCtxState.Workbook)
-    If Not f Is Nothing Then
-        If f.DebeMoverseAOp(opportunityPath, mOpportunities.BaseFolder) Then
-            f.MoverAOp opportunityPath, mOpportunities.BaseFolder
-        End If
-    End If
+    ' TEMPORAL (DESHABILITADO): Logica de "mover archivo a carpeta de oportunidad"
+    ' Requiere acceso a mOpportunities.BaseFolder que viola Demeter + la logica
+    ' de movimiento de archivos debe estar en un servicio de infraestructura.
+    ' Ver TODO arriba para la decision arquitectonica pendiente.
+'    Dim f As clsFileXLS
+'    Set f = mFileMgr.GetOrTrackWorkbook(mCtxState.Workbook)
+'    If Not f Is Nothing Then
+'        If f.DebeMoverseAOp(opportunityPath, baseFolder) Then
+'            f.MoverAOp opportunityPath, baseFolder
+'        End If
+'    End If
 End Sub
 
 
@@ -130,24 +134,57 @@ End Sub
 ' -------------------------------------------------------------
 
 '@Description: Evento semantico: el archivo activo ha cambiado
-Private Sub mInfraMediador_ActiveFileSessionChanged(ByVal FilePath As String, ByVal IsOpportunityFile As Boolean)
+Private Sub mInfraMediador_ActiveFileSessionChanged(ByVal filePath As String, ByVal IsOpportunityFile As Boolean)
     Dim fileName As String
-    If Len(FilePath) = 0 Then
+    If Len(filePath) = 0 Then
         fileName = "(ninguno)"
     Else
         ' Extraer solo el nombre del archivo del path
         Dim pos As Long
-        pos = InStrRev(FilePath, "\")
+        pos = InStrRev(filePath, "\")
         If pos > 0 Then
-            fileName = Mid$(FilePath, pos + 1)
+            fileName = Mid$(filePath, pos + 1)
         Else
-            fileName = FilePath
+            fileName = filePath
         End If
     End If
 
     LogInfo MODULE_NAME, "[InfraMediador_ActiveFileSessionChanged] File=" & fileName & _
                          ", IsOpportunity=" & IsOpportunityFile
+
+    ' Si hay oportunidades cargadas, intentar asociar el archivo con alguna
+    If Not mOpportunities Is Nothing And Len(filePath) > 0 Then
+        Dim matchedOp As clsOpportunity
+        Set matchedOp = FindOpportunityForFile(filePath)
+        If Not matchedOp Is Nothing Then
+            LogInfo MODULE_NAME, "[InfraMediador_ActiveFileSessionChanged] Oportunidad detectada: " & matchedOp.Label
+            mOpportunities.SetCurrentOpportunity matchedOp.Label
+        End If
+    End If
 End Sub
+
+'@Description: Busca en la coleccion de oportunidades si alguna contiene el archivo dado
+'@Param filePath ruta completa del archivo a buscar
+'@Returns clsOpportunity cuyo path es prefijo del filePath, o Nothing si no hay coincidencia
+Private Function FindOpportunityForFile(ByVal filePath As String) As clsOpportunity
+    If mOpportunities Is Nothing Then Exit Function
+    If Len(filePath) = 0 Then Exit Function
+
+    Dim opNames As Collection
+    Set opNames = mOpportunities.OpportunityNames
+
+    Dim Item As clsOpportunity
+    For Each Item In opNames
+        If Len(Item.path) > 0 Then
+            ' Verificar si el archivo esta dentro de la carpeta de la oportunidad
+            If InStr(1, filePath, Item.path, vbTextCompare) = 1 Then
+                Set FindOpportunityForFile = Item
+                Exit Function
+            End If
+        End If
+    Next Item
+    ' Devuelve Nothing si no hay coincidencia
+End Function
 
 ' -------------------------------------------------------------
 ' Eventos de mFSMonitoringCoord (cambios en sistema de archivos)

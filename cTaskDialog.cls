@@ -2564,13 +2564,13 @@ End Function
 
 Public Sub ReleaseButtonHold(ButtonID As Long)
 Dim lnew() As Long
-Dim i As Long, J As Long
+Dim i As Long, j As Long
 ReDim lnew(0)
 For i = 0 To UBound(lBtnHold)
     If lBtnHold(i) <> ButtonID Then
-        ReDim Preserve lnew(J)
-        lnew(J) = lBtnHold(i)
-        J = J + 1
+        ReDim Preserve lnew(j)
+        lnew(j) = lBtnHold(i)
+        j = j + 1
     End If
 Next i
 lBtnHold = lnew
@@ -3669,7 +3669,7 @@ Public Function zzGetWindowsButtonIconSize() As Long
 zzGetWindowsButtonIconSize = m_BtnLRSize
 End Function
 Private Function SetButtonIcons() As Boolean
-Dim i As Long, J As Long, k As Long
+Dim i As Long, j As Long, k As Long
 Dim lOffset As Long
 Dim hButton As LongPtr
 Dim stay As Boolean
@@ -3705,7 +3705,7 @@ If m_HasCustomButtons Then
             MakeSplitButton hButton
         End If
     Next i
-    J = UBound(m_uButtons) + 1
+    j = UBound(m_uButtons) + 1
 End If
 
 For i = 0 To 10
@@ -3716,7 +3716,7 @@ Next i
 If (stay = False) Or (uTDC.dwCommonButtons = 0) Then Exit Function
 i = 0
 If (uTDC.dwCommonButtons And TDCBF_OK_BUTTON) Then
-    hButton = m_hButton(J + lOffset)
+    hButton = m_hButton(j + lOffset)
     If icoDataN(0) Then
             If (uTDC.dwFlags And TDF_USE_SHELL32_ICONID_BUTTON) = TDF_USE_SHELL32_ICONID_BUTTON Then
                 hIco = LoadImage(hShell32, icoDataN(0), 1, m_BtnLRSize, m_BtnLRSize, 0)
@@ -3735,7 +3735,7 @@ If (uTDC.dwCommonButtons And TDCBF_OK_BUTTON) Then
     k = k + 1
 End If
 If (uTDC.dwCommonButtons And TDCBF_YES_BUTTON) Then
-    hButton = m_hButton(J + lOffset + k)
+    hButton = m_hButton(j + lOffset + k)
     If icoDataN(1) Then
         If (uTDC.dwFlags And TDF_USE_SHELL32_ICONID_BUTTON) = TDF_USE_SHELL32_ICONID_BUTTON Then
             hIco = LoadImage(hShell32, icoDataN(1), 1, m_BtnLRSize, m_BtnLRSize, 0)
@@ -3753,7 +3753,7 @@ If (uTDC.dwCommonButtons And TDCBF_YES_BUTTON) Then
     k = k + 1
 End If
 If (uTDC.dwCommonButtons And TDCBF_NO_BUTTON) Then
-    hButton = m_hButton(J + lOffset + k)
+    hButton = m_hButton(j + lOffset + k)
     If icoDataN(2) Then
         If (uTDC.dwFlags And TDF_USE_SHELL32_ICONID_BUTTON) = TDF_USE_SHELL32_ICONID_BUTTON Then
             hIco = LoadImage(hShell32, icoDataN(2), 1, m_BtnLRSize, m_BtnLRSize, 0)
@@ -3771,7 +3771,7 @@ If (uTDC.dwCommonButtons And TDCBF_NO_BUTTON) Then
     k = k + 1
 End If
 If (uTDC.dwCommonButtons And TDCBF_CANCEL_BUTTON) Then
-    hButton = m_hButton(J + lOffset + k)
+    hButton = m_hButton(j + lOffset + k)
     If icoDataN(3) Then
         If (uTDC.dwFlags And TDF_USE_SHELL32_ICONID_BUTTON) = TDF_USE_SHELL32_ICONID_BUTTON Then
             hIco = LoadImage(hShell32, icoDataN(3), 1, m_BtnLRSize, m_BtnLRSize, 0)
@@ -3789,7 +3789,7 @@ If (uTDC.dwCommonButtons And TDCBF_CANCEL_BUTTON) Then
     k = k + 1
 End If
 If (uTDC.dwCommonButtons And TDCBF_RETRY_BUTTON) Then
-    hButton = m_hButton(J + lOffset + k)
+    hButton = m_hButton(j + lOffset + k)
     If icoDataN(4) Then
         If (uTDC.dwFlags And TDF_USE_SHELL32_ICONID_BUTTON) = TDF_USE_SHELL32_ICONID_BUTTON Then
             hIco = LoadImage(hShell32, icoDataN(4), 1, m_BtnLRSize, m_BtnLRSize, 0)
@@ -3807,7 +3807,7 @@ If (uTDC.dwCommonButtons And TDCBF_RETRY_BUTTON) Then
     k = k + 1
 End If
 If (uTDC.dwCommonButtons And TDCBF_CLOSE_BUTTON) Then
-    hButton = m_hButton(J + lOffset + k)
+    hButton = m_hButton(j + lOffset + k)
     If icoDataN(5) Then
         If (uTDC.dwFlags And TDF_USE_SHELL32_ICONID_BUTTON) = TDF_USE_SHELL32_ICONID_BUTTON Then
             hIco = LoadImage(hShell32, icoDataN(5), 1, m_BtnLRSize, m_BtnLRSize, 0)
@@ -3825,7 +3825,7 @@ If (uTDC.dwCommonButtons And TDCBF_CLOSE_BUTTON) Then
     k = k + 1
 End If
 If (uTDC.dwCommonButtons And TDCBF_ABORT_BUTTON) Then
-    hButton = m_hButton(J + lOffset + k)
+    hButton = m_hButton(j + lOffset + k)
     If icoDataN(6) Then
         If (uTDC.dwFlags And TDF_USE_SHELL32_ICONID_BUTTON) = TDF_USE_SHELL32_ICONID_BUTTON Then
             hIco = LoadImage(hShell32, icoDataN(6), 1, m_BtnLRSize, m_BtnLRSize, 0)
@@ -3843,7 +3843,7 @@ If (uTDC.dwCommonButtons And TDCBF_ABORT_BUTTON) Then
     k = k + 1
 End If
 If (uTDC.dwCommonButtons And TDCBF_IGNORE_BUTTON) Then
-    hButton = m_hButton(J + lOffset + k)
+    hButton = m_hButton(j + lOffset + k)
     If icoDataN(7) Then
         If (uTDC.dwFlags And TDF_USE_SHELL32_ICONID_BUTTON) = TDF_USE_SHELL32_ICONID_BUTTON Then
             hIco = LoadImage(hShell32, icoDataN(7), 1, m_BtnLRSize, m_BtnLRSize, 0)
@@ -3861,7 +3861,7 @@ If (uTDC.dwCommonButtons And TDCBF_IGNORE_BUTTON) Then
     k = k + 1
 End If
 If (uTDC.dwCommonButtons And TDCBF_TRYAGAIN_BUTTON) Then
-    hButton = m_hButton(J + lOffset + k)
+    hButton = m_hButton(j + lOffset + k)
     If icoDataN(8) Then
         If (uTDC.dwFlags And TDF_USE_SHELL32_ICONID_BUTTON) = TDF_USE_SHELL32_ICONID_BUTTON Then
             hIco = LoadImage(hShell32, icoDataN(8), 1, m_BtnLRSize, m_BtnLRSize, 0)
@@ -3879,7 +3879,7 @@ If (uTDC.dwCommonButtons And TDCBF_TRYAGAIN_BUTTON) Then
     k = k + 1
 End If
 If (uTDC.dwCommonButtons And TDCBF_CONTINUE_BUTTON) Then
-    hButton = m_hButton(J + lOffset + k)
+    hButton = m_hButton(j + lOffset + k)
     If icoDataN(9) Then
         If (uTDC.dwFlags And TDF_USE_SHELL32_ICONID_BUTTON) = TDF_USE_SHELL32_ICONID_BUTTON Then
             hIco = LoadImage(hShell32, icoDataN(9), 1, m_BtnLRSize, m_BtnLRSize, 0)
@@ -3897,7 +3897,7 @@ If (uTDC.dwCommonButtons And TDCBF_CONTINUE_BUTTON) Then
     k = k + 1
 End If
 If (uTDC.dwCommonButtons And TDCBF_HELP_BUTTON) Then
-    hButton = m_hButton(J + lOffset + k)
+    hButton = m_hButton(j + lOffset + k)
     If icoDataN(10) Then
         If (uTDC.dwFlags And TDF_USE_SHELL32_ICONID_BUTTON) = TDF_USE_SHELL32_ICONID_BUTTON Then
             hIco = LoadImage(hShell32, icoDataN(10), 1, m_BtnLRSize, m_BtnLRSize, 0)
@@ -4412,7 +4412,7 @@ Private Function GetLeftmostCommonButtonX() As Long
 'and radio buttons. To size button-area controls, we need the furthest
 'left position of only the buttons that appear in the button area.
 Dim nButtonsNA As Long 'number of n/a buttons (radio+cmdlink)
-Dim i As Long, J As Long
+Dim i As Long, j As Long
 Dim arValid() As Long
 Dim CX As Long
 
@@ -4438,8 +4438,8 @@ If nButtonsNA > 0 Then
                          'eliminating the N/A buttons.
     ReDim arValid(UBound(arBtnX) - nButtonsNA)
     For i = nButtonsNA To UBound(arBtnX)
-        arValid(J) = arBtnX(i)
-        J = J + 1
+        arValid(j) = arBtnX(i)
+        j = j + 1
     Next i
 Else
     arValid = arBtnX

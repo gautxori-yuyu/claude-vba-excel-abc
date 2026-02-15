@@ -211,7 +211,7 @@ Attribute GetContextFileName.VB_ProcData.VB_Invoke_Func = " \n21"
     On Error GoTo ErrorHandler
     Select Case True
         Case TypeName(Item) = "File"                 ' Se procesa un Path
-            If EsLibroExcel(Item.Path) Then
+            If EsLibroExcel(Item.path) Then
                 GetContextFileName = Item.Name
             End If
         Case TypeOf Item Is Workbook                   ' se procesa un Workbook

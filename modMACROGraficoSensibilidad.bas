@@ -235,7 +235,7 @@ Attribute EjecutarGraficoEnLibroActivo.VB_ProcData.VB_Invoke_Func = " \n0"
 
     ' Exportar la hoja "Graficos" a PDF
     Dim rutaArchivo As String
-    rutaArchivo = Wb.Path & "\" & Left(Wb.Name, InStrRev(Wb.Name, ".") - 1) & "_Graficos.pdf"
+    rutaArchivo = Wb.path & "\" & Left(Wb.Name, InStrRev(Wb.Name, ".") - 1) & "_Graficos.pdf"
 
     On Error Resume Next
     chartSheet.ExportAsFixedFormat Type:=xlTypePDF, fileName:=rutaArchivo, Quality:=xlQualityStandard
@@ -764,15 +764,15 @@ Private Function ConcatenarTextosEntreParentesis(ws As Worksheet, cols() As Long
         If Len(texto) > 0 Then
             texto = ExtraerTextoEnParentesis(texto)
             If Len(texto) > 0 Then
-                Dim partes() As String, J As Long
+                Dim partes() As String, j As Long
                 partes = Split(texto, ",")
-                For J = LBound(partes) To UBound(partes)
+                For j = LBound(partes) To UBound(partes)
                     Dim parte As String
-                    parte = Trim(partes(J))
+                    parte = Trim(partes(j))
                     If Len(parte) > 0 And Not dictUniq.Exists(parte) Then
                         dictUniq.Add parte, True
                     End If
-                Next J
+                Next j
             End If
         End If
     Next i

@@ -75,18 +75,18 @@ End Sub
 '@Description: Inicializa el source con la informacion parseada del nombre de fichero
 '@Param filePath: Ruta completa del fichero de valoracion
 '@Param parsedInfo: Dictionary con QuoteNumber, CompressorIndex, Revision, etc.
-Public Sub Initialize(ByVal FilePath As String, parsedInfo As Object)
+Public Sub Initialize(ByVal filePath As String, parsedInfo As Object)
     On Error GoTo ErrHandler
 
-    mFilePath = FilePath
+    mFilePath = filePath
 
     ' Extraer nombre de fichero y fecha de modificacion
     Dim fso As Object
     Set fso = CreateObject("Scripting.FileSystemObject")
 
-    If fso.FileExists(FilePath) Then
-        mFileName = fso.GetFileName(FilePath)
-        mLastModified = fso.GetFile(FilePath).DateLastModified
+    If fso.FileExists(filePath) Then
+        mFileName = fso.GetFileName(filePath)
+        mLastModified = fso.GetFile(filePath).DateLastModified
         mIsNew = False
     Else
         mIsNew = True
@@ -215,8 +215,8 @@ Public Property Get Revision() As Long
     Revision = mRevision
 End Property
 
-Public Property Get FilePath() As String
-    FilePath = mFilePath
+Public Property Get filePath() As String
+    filePath = mFilePath
 End Property
 
 Public Property Get fileName() As String

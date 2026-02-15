@@ -20,6 +20,7 @@ Private mEvMediatorInfrastructure As clsEventsMediatorInfrastructure
 
 Private mFileMgr As clsFileManager
 Private mOpportunityProvider As FileSystemOpportunityProvider
+Private mCalcProvider As FileSystemTechnicalCalcProvider
 Private mOpportunities As clsOpportunitiesMgr
 Private mFSMonitoringCoord As clsFSMonitoringCoord
 Private mConfiguration As clsConfiguration
@@ -57,6 +58,10 @@ End Property
 
 Public Property Get OpportunitiesMgr() As clsOpportunitiesMgr
     Set OpportunitiesMgr = mOpportunities
+End Property
+
+Public Property Get CalcProvider() As ITechnicalCalcProvider
+    Set CalcProvider = mCalcProvider
 End Property
 
 '@Description: Obtiene la configuracion de la aplicacion
@@ -133,11 +138,15 @@ Private Sub InitializeDomain()
     Set mOpportunityProvider = New FileSystemOpportunityProvider
     mOpportunityProvider.Initialize mFileMgr, mConfiguration
 
-    ' DOMINIO - Crear managers (ellos crean sus estados internamente)
-    'Set mOpportunities = New clsOpportunitiesMgr
-    'mOpportunities.Initialize mOpportunityProvider
+    ' PROVIDER DE CALCULOS TECNICOS (infraestructura)
+    Set mCalcProvider = New FileSystemTechnicalCalcProvider
+    mCalcProvider.Initialize mFileMgr
+
+    ' DOMINIO - Crear manager de oportunidades (crea su estado internamente)
+    Set mOpportunities = New clsOpportunitiesMgr
+    mOpportunities.Initialize mOpportunityProvider
     ' ESTADO CENTRALIZADO - Inyectar referencias a subestados (Dependency Injection)
-    'mApplicationState.Initialize OpportunityState:=mOpportunities.State
+    mApplicationState.Initialize OpportunityState:=mOpportunities.State
 
     ' MEDIADOR DE EVENTOS DE DOMINIO
     ' Escucha eventos SEMANTICOS del mediador de infraestructura (no directamente de mCtxMgr)
@@ -160,6 +169,16 @@ Private Sub InitializeUI()
     
     Set mRibbon = New clsRibbon
     mRibbon.Initialize mOpportunities, mFileMgr, mCtxMgr.ChartMgr, mCtxMgr
+
+    ' Recuperacion automatica tras reset de VBA: si el IRibbonUI sigue vivo en Excel4, reutilizarlo
+    Dim recoveredRibbon As IRibbonUI
+    Set recoveredRibbon = RecoverRibbonFromExcelNames()
+    If Not recoveredRibbon Is Nothing Then
+        mRibbon.Init recoveredRibbon
+        LogInfo MODULE_NAME, "[InitializeUI] Ribbon recuperado automaticamente de sesion anterior"
+    End If
+    Set recoveredRibbon = Nothing
+
     ' ESTADO CENTRALIZADO - Inyectar referencias a subestados (Dependency Injection)
     mApplicationState.Initialize RibbonState:=mRibbon.State
 
@@ -214,8 +233,9 @@ Private Sub DisposeDomain()
     ' 3. Liberar gestor de oportunidades
     Set mOpportunities = Nothing
 
-    ' 4. Liberar proveedor de oportunidades
+    ' 4. Liberar proveedores
     Set mOpportunityProvider = Nothing
+    Set mCalcProvider = Nothing
 
     ' 5. Apagado explícito del monitor de archivos
     If Not mFSMonitoringCoord Is Nothing Then

@@ -45,7 +45,7 @@ Attribute CrearBackupCodigoVBA.VB_ProcData.VB_Invoke_Func = " \n21"
     timestampStr = Format(Now, "yyyymmdd_hhnnss")
     
     ' Rutas
-    rutaBackup = ThisWorkbook.Path & "\Backups"
+    rutaBackup = ThisWorkbook.path & "\Backups"
     nombreZip = "VBA_Backup_" & timestampStr & ".zip"
     rutaTempExport = Environ("TEMP") & "\VBA_Export_" & timestampStr
     

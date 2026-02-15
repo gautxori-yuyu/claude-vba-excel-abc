@@ -55,30 +55,28 @@ End Sub
 
 ' ==================================================================
 ' IMPLEMENTACION DE IOpportunityProvider
+' Stubs privados que delegan en los metodos publicos concretos.
+' Los nombres siguen la convencion VBA: IInterfaz_Metodo
 ' ==================================================================
 
-Private Function IOpportunityProvider_GetOpportunityFolders() As Collection
-    Set IOpportunityProvider_GetOpportunityFolders = GetOpportunityFolders()
+Private Function IOpportunityProvider_GetOpportunities() As Collection
+    Set IOpportunityProvider_GetOpportunities = BuildOpportunityObjects()
 End Function
 
-Private Function IOpportunityProvider_FolderExists(ByVal folderName As String) As Boolean
-    IOpportunityProvider_FolderExists = FolderExists(folderName)
+Private Function IOpportunityProvider_OpportunityExists(ByVal opportunityName As String) As Boolean
+    IOpportunityProvider_OpportunityExists = FolderExists(opportunityName)
 End Function
 
-Private Function IOpportunityProvider_CreateOpportunityFolder(ByVal opportunityName As String) As Boolean
-    IOpportunityProvider_CreateOpportunityFolder = CreateOpportunityFolder(opportunityName)
-End Function
-
-Private Property Get IOpportunityProvider_BasePath() As String
-    IOpportunityProvider_BasePath = BasePath
-End Property
-
-Private Function IOpportunityProvider_GetFullPath(ByVal folderName As String) As String
-    IOpportunityProvider_GetFullPath = GetFullPath(folderName)
+Private Function IOpportunityProvider_CreateOpportunity(ByVal opportunityName As String) As Boolean
+    IOpportunityProvider_CreateOpportunity = CreateOpportunityFolder(opportunityName)
 End Function
 
 Private Function IOpportunityProvider_GetNextOpportunityCode() As String
     IOpportunityProvider_GetNextOpportunityCode = GetNextOpportunityCode()
+End Function
+
+Private Function IOpportunityProvider_GetOpportunityPath(ByVal opportunityName As String) As String
+    IOpportunityProvider_GetOpportunityPath = GetFullPath(opportunityName)
 End Function
 
 ' ==================================================================
@@ -130,10 +128,10 @@ Public Function GetOpportunityFolders() As Collection
         ReDim Preserve arr(i - 1)
         arr = SortFoldersDescending(arr)
 
-        Dim J As Long
-        For J = LBound(arr) To UBound(arr)
-            result.Add arr(J)
-        Next J
+        Dim j As Long
+        For j = LBound(arr) To UBound(arr)
+            result.Add arr(j)
+        Next j
     End If
 
     LogDebug MODULE_NAME, "[GetOpportunityFolders] Encontradas " & result.Count & " oportunidades validas"
@@ -153,7 +151,7 @@ Public Function FolderExists(ByVal folderName As String) As Boolean
 End Function
 
 '@Description: Crea una nueva carpeta de oportunidad desde plantilla
-Private Function CreateOpportunityFolder(ByVal opportunityName As String) As Boolean
+Public Function CreateOpportunityFolder(ByVal opportunityName As String) As Boolean
     On Error GoTo ErrHandler
 
     If mFileManager Is Nothing Then
@@ -242,6 +240,40 @@ ErrHandler:
     GetNextOpportunityCode = ""
 End Function
 
+'@Description: Construye la coleccion de oportunidades como objetos clsOpportunity
+'@Note: Es la implementacion correcta de GetOpportunities() via IOpportunityProvider.
+'       El path queda sellado dentro de cada clsOpportunity, evitando que el dominio
+'       tenga que llamar GetOpportunityPath() para reconstruirlo.
+Public Function BuildOpportunityObjects() As Collection
+    Dim result As Collection
+    Set result = New Collection
+
+    Dim folders As Collection
+    Set folders = GetOpportunityFolders()
+
+    Dim folderName As Variant
+    For Each folderName In folders
+        Dim op As clsOpportunity
+        Set op = New clsOpportunity
+
+        op.Label = CStr(folderName)
+        op.path = GetFullPath(CStr(folderName))
+
+        On Error Resume Next
+        Dim parts() As String
+        parts = Split(CStr(folderName), " - ")
+        If UBound(parts) >= 0 Then op.Number = Trim(parts(0))
+        If UBound(parts) >= 1 Then op.Customer = Trim(parts(1))
+        If UBound(parts) >= 2 Then op.Project = Trim(parts(2))
+        On Error GoTo 0
+
+        result.Add op
+        Set op = Nothing
+    Next folderName
+
+    Set BuildOpportunityObjects = result
+End Function
+
 ' ==================================================================
 ' METODOS PRIVADOS - LOGICA DE INFRAESTRUCTURA
 ' ==================================================================
@@ -258,33 +290,31 @@ Private Function IsValidOpportunityName(ByVal folderName As String, regEx As Obj
     ' Si no cumple, probar patron sin modelo
     regEx.Pattern = FILEORFOLDERNAME_QUOTE_CUSTOMER_OTHER_PATTERN
     If regEx.Test(folderName) Then
-        ' Aunque no tenga modelo, es valida si cumple patron basico
-        ' pero verificamos de nuevo con patron completo para consistencia
-        regEx.Pattern = FILEORFOLDERNAME_QUOTE_CUSTOMER_OTHER_MODEL_PATTERN
-        IsValidOpportunityName = regEx.Test(folderName)
+        ' Valida aunque no tenga modelo asociado
+        IsValidOpportunityName = True
     End If
 End Function
 
 '@Description: Ordena array de carpetas en orden numerico descendente
 '@Note: Detecta el ultimo numero en el nombre de cada carpeta
 Private Function SortFoldersDescending(arr() As String) As String()
-    Dim i As Long, J As Long, tmp As String
+    Dim i As Long, j As Long, tmp As String
     Dim keyI As Double, keyJ As Double
 
     For i = LBound(arr) To UBound(arr) - 1
-        For J = i + 1 To UBound(arr)
+        For j = i + 1 To UBound(arr)
             keyI = ExtractNumericKey(arr(i))
-            keyJ = ExtractNumericKey(arr(J))
+            keyJ = ExtractNumericKey(arr(j))
 
             If keyI < keyJ Then
-                tmp = arr(i): arr(i) = arr(J): arr(J) = tmp
+                tmp = arr(i): arr(i) = arr(j): arr(j) = tmp
             ElseIf keyI = keyJ Then
                 ' Si tienen la misma clave numerica, ordenar alfabeticamente descendente
-                If StrComp(arr(i), arr(J), vbTextCompare) < 0 Then
-                    tmp = arr(i): arr(i) = arr(J): arr(J) = tmp
+                If StrComp(arr(i), arr(j), vbTextCompare) < 0 Then
+                    tmp = arr(i): arr(i) = arr(j): arr(j) = tmp
                 End If
             End If
-        Next J
+        Next j
     Next i
 
     SortFoldersDescending = arr

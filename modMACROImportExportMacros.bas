@@ -43,7 +43,7 @@ Attribute ExportarComponentesVBA.VB_ProcData.VB_Invoke_Func = " \n0"
     If Wb Is Nothing Then Exit Sub               ' Cancelado o error
     
     ' Carpeta donde se guardarán los archivos exportados
-    rutaExportacion = Wb.Path
+    rutaExportacion = Wb.path
     
     ExportarFichsVBAaCarpeta Wb, rutaExportacion
     
@@ -54,7 +54,7 @@ Sub ExportarComponentesVBAdesdeThisWorkbookXLAM()
 Attribute ExportarComponentesVBAdesdeThisWorkbookXLAM.VB_ProcData.VB_Invoke_Func = " \n0"
     ' Carpeta donde se guardarán los archivos exportados
     Dim rutaExportacion As String
-    rutaExportacion = ThisWorkbook.Path
+    rutaExportacion = ThisWorkbook.path
     
     ExportarFichsVBAaCarpeta ThisWorkbook, rutaExportacion
     
@@ -124,7 +124,7 @@ Attribute ImportarComponentesVBA.VB_ProcData.VB_Invoke_Func = " \n0"
     If Wb Is Nothing Then Exit Sub               ' Cancelado o error
     
     ' Carpeta desde donde se importarán los archivos
-    rutaImportacion = Wb.Path
+    rutaImportacion = Wb.path
     
     ImportarFichsVBAenCarpeta rutaImportacion
        
@@ -210,7 +210,7 @@ Sub ImportarComponentesVBAaThisWorkbookXLAM()
 Attribute ImportarComponentesVBAaThisWorkbookXLAM.VB_ProcData.VB_Invoke_Func = " \n0"
     ' Carpeta desde donde se importarán los archivos
     Dim rutaImportacion As String
-    rutaImportacion = ThisWorkbook.Path
+    rutaImportacion = ThisWorkbook.path
     
     ImportarFichsVBAenCarpeta rutaImportacion
     
@@ -272,7 +272,7 @@ Private Sub ImportarFichsVBAenCarpeta(rutaImportacion As String, Optional bRemov
                 Set vbComp = ThisWorkbook.VBProject.VBComponents("ThisWorkbook")
                 If vbComp.CodeModule.CountOfLines <= 1 Then
                     ' Insertar el contenido del archivo
-                    vbComp.CodeModule.AddFromFile archivo.Path
+                    vbComp.CodeModule.AddFromFile archivo.path
                 Else
                     Select Case True
                         Case bRemove, MsgBox("¿Eliminar el componente ThisWorkbook?", vbYesNo + vbDefaultButton2, "Clase existente") = vbYes
@@ -280,7 +280,7 @@ Private Sub ImportarFichsVBAenCarpeta(rutaImportacion As String, Optional bRemov
                             vbComp.CodeModule.DeleteLines 1, vbComp.CodeModule.CountOfLines
                             
                             ' Insertar el contenido del archivo
-                            vbComp.CodeModule.AddFromFile archivo.Path
+                            vbComp.CodeModule.AddFromFile archivo.path
                     End Select
                 End If
             Else
@@ -297,14 +297,14 @@ Private Sub ImportarFichsVBAenCarpeta(rutaImportacion As String, Optional bRemov
                 ' Si la variable es (Nothing), el componente no existe
                 If Not vbComp Is Nothing Then
                     ' Importar
-                    ThisWorkbook.VBProject.VBComponents.Import archivo.Path
+                    ThisWorkbook.VBProject.VBComponents.Import archivo.path
                 Else
                     Select Case True
                         Case bRemove, MsgBox("¿Eliminar el componente " & nombreComp & "?", vbYesNo + vbDefaultButton2, "Clase existente") = vbYes
                             ThisWorkbook.VBProject.VBComponents.Remove vbComp
                                         
                             ' Importar
-                            ThisWorkbook.VBProject.VBComponents.Import archivo.Path
+                            ThisWorkbook.VBProject.VBComponents.Import archivo.path
                     End Select
                 End If
                 On Error GoTo ErrorHandler

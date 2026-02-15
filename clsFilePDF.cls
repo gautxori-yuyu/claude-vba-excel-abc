@@ -50,8 +50,8 @@ Public Property Get ObjectKey() As Double
     ObjectKey = p_ObjectKey
 End Property
 
-Public Property Get Path() As String
-    Path = p_filePath
+Public Property Get path() As String
+    path = p_filePath
 End Property
 
 Public Property Get Name() As String
@@ -94,7 +94,7 @@ End Property
 ' Metodos publicos: vinculo entre Documento PDF y fichero
 ' ==================================================================
 ' Método específico de PDF
-Public Sub BindTo(FilePath As String)
+Public Sub BindTo(filePath As String)
     On Error GoTo ErrHandler
 
     If p_ObjectKey <> 0 Then
@@ -104,14 +104,14 @@ Public Sub BindTo(FilePath As String)
     Dim fso As Object
     Set fso = CreateObject("Scripting.FileSystemObject")
 
-    If Not fso.FileExists(FilePath) Then
-        Err.Raise vbObjectError + 581, TypeName(Me), "El archivo no existe: " & FilePath
+    If Not fso.FileExists(filePath) Then
+        Err.Raise vbObjectError + 581, TypeName(Me), "El archivo no existe: " & filePath
     End If
 
-    p_filePath = FilePath
+    p_filePath = filePath
     ' Para archivos en disco, usar hash del path como ObjectKey
-    p_ObjectKey = GetPathHashCode(FilePath)
-    LogInfo MODULE_NAME, "[BindTo] Asociado a: " & FilePath
+    p_ObjectKey = GetPathHashCode(filePath)
+    LogInfo MODULE_NAME, "[BindTo] Asociado a: " & filePath
     Exit Sub
 
 ErrHandler:
@@ -120,11 +120,11 @@ ErrHandler:
 End Sub
 
 ' Helper para generar ObjectKey consistente desde path
-Private Function GetPathHashCode(Path As String) As Double
+Private Function GetPathHashCode(path As String) As Double
     ' Implementación simple: sum de códigos ASCII
     Dim i As Long, hash As Double
-    For i = 1 To Len(Path)
-        hash = hash + Asc(Mid(Path, i, 1)) * i
+    For i = 1 To Len(path)
+        hash = hash + Asc(Mid(path, i, 1)) * i
     Next i
     GetPathHashCode = hash
 End Function

@@ -29,7 +29,7 @@ Public Event InfraContextReinitialized()
 '@Description: El archivo activo ha cambiado (traduccion de ActiveFileChanged)
 '@Param filePath: Ruta del archivo activo (vacio si ninguno)
 '@Param isOpportunityFile: True si el archivo es de una oportunidad
-Public Event ActiveFileSessionChanged(ByVal FilePath As String, ByVal IsOpportunityFile As Boolean)
+Public Event ActiveFileSessionChanged(ByVal filePath As String, ByVal IsOpportunityFile As Boolean)
 
 ' ==================================================================
 ' REFERENCIAS INTERNAS
@@ -191,21 +191,21 @@ End Sub
 Private Sub mFileMgr_ActiveFileChanged(f As clsFileXLS)
     On Error GoTo ErrHandler
 
-    Dim FilePath As String
+    Dim filePath As String
     Dim isOpp As Boolean
 
     If f Is Nothing Then
-        FilePath = ""
+        filePath = ""
         isOpp = False
     Else
-        FilePath = f.path
+        filePath = f.path
         isOpp = f.IsOpportunityFile
     End If
 
-    LogDebug MODULE_NAME, "[mFileMgr_ActiveFileChanged] -> ActiveFileSessionChanged: " & FilePath
+    LogDebug MODULE_NAME, "[mFileMgr_ActiveFileChanged] -> ActiveFileSessionChanged: " & filePath
 
     ' Emitir evento semantico (sin referencias a clsFileXLS)
-    RaiseEvent ActiveFileSessionChanged(FilePath, isOpp)
+    RaiseEvent ActiveFileSessionChanged(filePath, isOpp)
 
     Exit Sub
 ErrHandler:

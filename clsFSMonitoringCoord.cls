@@ -15,10 +15,8 @@ Private Const MODULE_NAME As String = "clsFSMonitoringCoord"
 Private WithEvents mFolderWatcher As clsFSWatcher
 Attribute mFolderWatcher.VB_VarHelpID = -1
 
-' Rutas almacenadas localmente (recibidas en IniciarMonitoreo)
-Private m_rutaOportunidades As String
-Private m_rutaPlantillas As String
-Private m_rutaGasVBNet As String
+' Clasificador de rutas (sabe a que tipo semantico pertenece cada carpeta)
+Private mFolderMgr As clsFolderMgr
 
 ' Estado de pausa del monitoreo
 Private m_IsPaused As Boolean
@@ -51,8 +49,9 @@ Public Event MonitoringReconnected(ByVal folder As String, ByVal attempts As Lon
 Public Event MonitoringFailed(ByVal folder As String, ByVal reason As String)
 
 ' -------------------------------------------------------------
-' Property: Acceso al FolderWatcher (para debugging)
+' Properties
 ' -------------------------------------------------------------
+'@Description: Acceso al FolderWatcher (para diagnostico y tests)
 Public Property Get FolderWatcher() As clsFSWatcher
     Set FolderWatcher = mFolderWatcher
 End Property
@@ -92,6 +91,7 @@ End Sub
 
 Private Sub Class_Initialize()
     Set mFolderWatcher = New clsFSWatcher
+    Set mFolderMgr = New clsFolderMgr
     mDisposed = False
 End Sub
 
@@ -113,6 +113,8 @@ Public Sub Shutdown()
         Set mFolderWatcher = Nothing
     End If
 
+    Set mFolderMgr = Nothing
+
     mDisposed = True
     LogDebug MODULE_NAME, "[Shutdown] Limpieza explícita completada"
 End Sub
@@ -123,48 +125,40 @@ End Sub
 ' -------------------------------------------------------------
 Friend Sub IniciarMonitoreo(ByVal oDicFolders As Object)
     LogInfo MODULE_NAME, "[IniciarMonitoreo]"
-    
+
     On Error GoTo ErrHandler
-    
+
     If oDicFolders Is Nothing Or oDicFolders.Count = 0 Then
         LogWarning MODULE_NAME, "[IniciarMonitoreo] No hay carpetas configuradas para monitorear"
         Exit Sub
     End If
 
-    ' Almacenar rutas localmente para usar en callbacks
-    If oDicFolders.Exists(CFG_RUTA_OPORTUNIDADES) Then
-        m_rutaOportunidades = oDicFolders(CFG_RUTA_OPORTUNIDADES)
-    End If
-    If oDicFolders.Exists(CFG_RUTA_PLANTILLAS) Then
-        m_rutaPlantillas = oDicFolders(CFG_RUTA_PLANTILLAS)
-    End If
-    If oDicFolders.Exists(CFG_RUTA_GAS_VBNET) Then
-        m_rutaGasVBNet = oDicFolders(CFG_RUTA_GAS_VBNET)
-    End If
+    ' Cargar el registro de rutas en el clasificador
+    mFolderMgr.Initialize oDicFolders
 
     ' Monitorear cada carpeta configurada usando las funciones helper
     Dim key As Variant
     For Each key In oDicFolders.Keys
         Dim rutaCarpeta As String
         rutaCarpeta = oDicFolders(key)
-        
+
         If RutaExiste(rutaCarpeta) Then
             Select Case key
             Case CFG_RUTA_OPORTUNIDADES
                 ' Usar función especializada para oportunidades
                 ConfigurarMonitoreoOportunidades rutaCarpeta
                 LogInfo MODULE_NAME, "[IniciarMonitoreo] Oportunidades monitoreadas: " & rutaCarpeta
-                    
+
             Case CFG_RUTA_PLANTILLAS
                 ' Usar función especializada para plantillas
                 ConfigurarMonitoreoPlantillas rutaCarpeta
                 LogInfo MODULE_NAME, "[IniciarMonitoreo] Plantillas monitoreadas: " & rutaCarpeta
-                    
+
             Case CFG_RUTA_GAS_VBNET
                 ' Usar función especializada para Gas
                 ConfigurarMonitoreoGasVBNet rutaCarpeta
                 LogInfo MODULE_NAME, "[IniciarMonitoreo] Gas monitoreado: " & rutaCarpeta
-                    
+
             Case Else
                 ' Monitoreo genérico para otras carpetas
                 mFolderWatcher.IniciarMonitoreo _
@@ -174,17 +168,17 @@ Friend Sub IniciarMonitoreo(ByVal oDicFolders As Object)
                     eventsToWatch:=Array("Created", "Changed"), _
                     inactivityMinutes:=10, _
                     foldersOnly:=False
-                    
+
                 LogInfo MODULE_NAME, "[IniciarMonitoreo] Monitoreo genérico: " & rutaCarpeta
             End Select
         Else
             LogWarning MODULE_NAME, "[IniciarMonitoreo] ADVERTENCIA: Ruta no existe: " & rutaCarpeta
         End If
     Next key
-    
+
     LogInfo MODULE_NAME, "[IniciarMonitoreo] Monitoreo iniciado en " & oDicFolders.Count & " carpetas"
     Exit Sub
-    
+
 ErrHandler:
     LogError MODULE_NAME, "[IniciarMonitoreo] Error", , Err.Description
 End Sub
@@ -201,8 +195,7 @@ Private Sub mFolderWatcher_SubfolderCreated(ByVal parentFolder As String, ByVal 
     LogDebug MODULE_NAME, "[SubfolderCreated] " & subfolderName & " en " & parentFolder
 
     ' Determinar tipo de carpeta padre
-    If EsRutaOportunidades(parentFolder) Then
-        ' Es una nueva oportunidad - delegar a OpportunitiesMgr
+    If mFolderMgr.ClassifyPath(parentFolder) = ftOpportunities Then
         LogInfo MODULE_NAME, "[SubfolderCreated] Nueva oportunidad: " & subfolderName
         RaiseEvent OpportunityCreated(parentFolder, subfolderName)
     End If
@@ -213,8 +206,7 @@ Private Sub mFolderWatcher_SubfolderDeleted(ByVal parentFolder As String, ByVal 
 
     LogDebug MODULE_NAME, "[SubfolderDeleted] " & subfolderName & " en " & parentFolder
 
-    If EsRutaOportunidades(parentFolder) Then
-        ' Oportunidad eliminada - delegar a OpportunitiesMgr
+    If mFolderMgr.ClassifyPath(parentFolder) = ftOpportunities Then
         LogInfo MODULE_NAME, "[SubfolderDeleted] Oportunidad eliminada: " & subfolderName
         RaiseEvent OpportunityDeleted(parentFolder, subfolderName)
     End If
@@ -225,7 +217,7 @@ Private Sub mFolderWatcher_SubfolderRenamed(ByVal parentFolder As String, ByVal 
 
     LogDebug MODULE_NAME, "[SubfolderRenamed] " & oldName & " -> " & newName & " en " & parentFolder
 
-    If EsRutaOportunidades(parentFolder) Then
+    If mFolderMgr.ClassifyPath(parentFolder) = ftOpportunities Then
         LogInfo MODULE_NAME, "[SubfolderRenamed] Oportunidad renombrada: " & oldName & " -> " & newName
         RaiseEvent OpportunityRenamed(parentFolder, oldName, newName)
     End If
@@ -238,24 +230,24 @@ Private Sub mFolderWatcher_FileCreated(ByVal folder As String, ByVal fileName As
     LogDebug MODULE_NAME, "[FileCreated] " & fileName & " en " & folder
 
     ' Para plantillas o archivos Gas - implementar según necesidad
-    If EsRutaPlantillas(folder) Then
+    Select Case mFolderMgr.ClassifyPath(folder)
+    Case ftTemplates
         LogInfo MODULE_NAME, "[FileCreated] Plantilla nueva: " & fileName
         ' TODO: Implementar lógica de actualización de plantillas
         RaiseEvent TemplateCreated(folder, fileName)
-    ElseIf EsRutaGasVBNet(folder) Then
+    Case ftGasVBNet
         LogInfo MODULE_NAME, "[FileCreated] Archivo Gas nuevo: " & fileName
         ' TODO: Implementar lógica de sincronización Gas
-         RaiseEvent GasFileCreated(folder, fileName)
-    End If
+        RaiseEvent GasFileCreated(folder, fileName)
+    End Select
 End Sub
 
 Private Sub mFolderWatcher_FileDeleted(ByVal folder As String, ByVal fileName As String)
     If m_IsPaused Then Exit Sub
 
     LogDebug MODULE_NAME, "[FileDeleted] " & fileName & " en " & folder
-    ' Implementar según necesidad
-    ' Determinar tipo de carpeta
-    If EsRutaOportunidades(folder) Then
+
+    If mFolderMgr.ClassifyPath(folder) = ftOpportunities Then
         LogInfo MODULE_NAME, "[FileDeleted] Item de oportunidad eliminado: " & fileName
         RaiseEvent OpportunityItemDeleted(folder, fileName)
     End If
@@ -267,24 +259,24 @@ Private Sub mFolderWatcher_FileChanged(ByVal folder As String, ByVal fileName As
     LogDebug MODULE_NAME, "[FileChanged] " & fileName & " en " & folder
 
     ' Detectar cambios en plantillas o archivos Gas
-    If EsRutaPlantillas(folder) Then
+    Select Case mFolderMgr.ClassifyPath(folder)
+    Case ftTemplates
         LogInfo MODULE_NAME, "[FileChanged] Plantilla modificada: " & fileName
         ' TODO: Notificar cambio en plantilla
         RaiseEvent TemplateChanged(folder, fileName)
-    ElseIf EsRutaGasVBNet(folder) Then
+    Case ftGasVBNet
         LogInfo MODULE_NAME, "[FileChanged] Archivo Gas modificado: " & fileName
         ' TODO: Actualizar referencias
         RaiseEvent GasFileChanged(folder, fileName)
-    End If
+    End Select
 End Sub
 
 Private Sub mFolderWatcher_FileRenamed(ByVal folder As String, ByVal oldName As String, ByVal newName As String)
     If m_IsPaused Then Exit Sub
 
     LogDebug MODULE_NAME, "[FileRenamed] " & oldName & " -> " & newName & " en " & folder
-    ' Implementar según necesidad
-    ' Determinar tipo de carpeta
-    If EsRutaOportunidades(folder) Then
+
+    If mFolderMgr.ClassifyPath(folder) = ftOpportunities Then
         LogInfo MODULE_NAME, "[FileRenamed] Item de oportunidad renombrado: " & oldName & " -> " & newName
         RaiseEvent OpportunityItemRenamed(folder, oldName, newName)
     End If
@@ -328,25 +320,6 @@ Private Sub mFolderWatcher_WatcherReconnectionFailed(ByVal folder As String, ByV
                         "Razón: " & reason & vbCrLf & vbCrLf & _
                         "Es posible que la carpeta no esté accesible o haya problemas de red."
 End Sub
-
-' -------------------------------------------------------------
-' Funciones helper privadas para comparar rutas
-' -------------------------------------------------------------
-
-Private Function EsRutaOportunidades(ByVal folder As String) As Boolean
-    If Len(m_rutaOportunidades) = 0 Then Exit Function
-    EsRutaOportunidades = (InStr(1, folder, m_rutaOportunidades, vbTextCompare) > 0)
-End Function
-
-Private Function EsRutaPlantillas(ByVal folder As String) As Boolean
-    If Len(m_rutaPlantillas) = 0 Then Exit Function
-    EsRutaPlantillas = (InStr(1, folder, m_rutaPlantillas, vbTextCompare) > 0)
-End Function
-
-Private Function EsRutaGasVBNet(ByVal folder As String) As Boolean
-    If Len(m_rutaGasVBNet) = 0 Then Exit Function
-    EsRutaGasVBNet = (InStr(1, folder, m_rutaGasVBNet, vbTextCompare) > 0)
-End Function
 
 ' =====================================================
 ' FUNCIONES DE CONFIGURACIÓN RÁPIDA
@@ -441,13 +414,13 @@ Public Sub VerEstadisticasMonitoreo()
         ShowTaskDialogError "FolderWatcher", "No disponible", "FolderWatcher no está activo"
         Exit Sub
     End If
-    
+
     On Error GoTo ErrHandler
-    
+
     ' Obtener carpetas activas
     Dim carpetas As Variant
     carpetas = mFolderWatcher.CarpetasActivas()
-    
+
     If Not IsArray(carpetas) Then
         ShowTaskDialogError "Estadísticas", "Sin datos", "No hay carpetas monitoreadas"
         Exit Sub
@@ -457,16 +430,16 @@ Public Sub VerEstadisticasMonitoreo()
         ShowTaskDialogError "Estadísticas", "Sin datos", "No hay carpetas monitoreadas"
         Exit Sub
     End If
-    
+
     ' Mostrar estadísticas de cada carpeta
     Dim msg As String
     msg = "CARPETAS MONITOREADAS:" & vbCrLf & vbCrLf
-    
+
     Dim i As Long
     For i = LBound(carpetas) To UBound(carpetas)
         Dim stats As Variant
         stats = mFolderWatcher.ObtenerEstadisticas(CStr(carpetas(i)))
-        
+
         If IsArray(stats) And UBound(stats) >= 8 Then
             msg = msg & "[i] " & stats(0) & vbCrLf
             msg = msg & "   Total eventos: " & stats(1) & vbCrLf
@@ -480,7 +453,7 @@ Public Sub VerEstadisticasMonitoreo()
             msg = msg & vbCrLf
         End If
     Next i
-    
+
     ShowTaskDialogError "Estadísticas FolderWatcher", "Monitoreo activo", msg
     Exit Sub
 
@@ -495,13 +468,13 @@ Public Sub VerHistorialMonitoreo(Optional ByVal lastMinutes As Long = 60)
         ShowTaskDialogError "FolderWatcher", "No disponible", "FolderWatcher no está activo"
         Exit Sub
     End If
-    
+
     On Error GoTo ErrHandler
-    
+
     ' Obtener historial
     Dim history As Variant
     history = mFolderWatcher.ObtenerHistorial(lastMinutes, "")
-    
+
     If Not IsArray(history) Then
         ShowTaskDialogError "Historial", "Sin datos", "No hay eventos en el historial"
         Exit Sub
@@ -511,24 +484,24 @@ Public Sub VerHistorialMonitoreo(Optional ByVal lastMinutes As Long = 60)
         ShowTaskDialogError "Historial", "Sin datos", "No hay eventos en el historial"
         Exit Sub
     End If
-    
+
     ' Crear hoja con historial
     Dim ws As Worksheet
     Set ws = ActiveWorkbook.Worksheets.Add
     ws.Name = "FW_Historial_" & Format(Now, "hhmmss")
-    
+
     ' Encabezados
     With ws
         .Range("A1:E1").Value = Array("Timestamp", "Evento", "Carpeta", "Archivo", "Tamaño (bytes)")
         .Range("A1:E1").Font.Bold = True
         .Range("A1:E1").Interior.Color = RGB(68, 114, 196)
         .Range("A1:E1").Font.Color = RGB(255, 255, 255)
-        
+
         ' Datos
         Dim rowCount As Long
         rowCount = UBound(history, 1) - LBound(history, 1) + 1
         .Range("A2").Resize(rowCount, 5).Value = history
-        
+
         ' Formato
         .Columns("A:A").NumberFormat = "dd/mm/yyyy hh:mm:ss"
         .Columns("E:E").NumberFormat = "#,##0"
@@ -536,7 +509,7 @@ Public Sub VerHistorialMonitoreo(Optional ByVal lastMinutes As Long = 60)
         .Columns("C:C").ColumnWidth = 50
         .Columns("D:D").ColumnWidth = 30
     End With
-    
+
     ShowTaskDialogError "Historial", "Generado correctamente", "Historial generado: " & rowCount & " eventos"
     Exit Sub
 
@@ -564,18 +537,18 @@ Public Sub VerConfiguracionWatcher()
         ShowTaskDialogError "FolderWatcher", "No disponible", "FolderWatcher no está activo"
         Exit Sub
     End If
-    
+
     Dim config As String
     config = mFolderWatcher.Configuracion
-    
+
     Dim carpetas As Variant
     carpetas = mFolderWatcher.CarpetasActivas()
-    
+
     Dim msg As String
     msg = "CONFIGURACIÓN DEL FOLDERWATCHER" & vbCrLf & vbCrLf
     msg = msg & config & vbCrLf & vbCrLf
     msg = msg & "CARPETAS ACTIVAS:" & vbCrLf
-    
+
     If IsArray(carpetas) Then
         Dim i As Long
         For i = LBound(carpetas) To UBound(carpetas)
@@ -584,131 +557,6 @@ Public Sub VerConfiguracionWatcher()
     Else
         msg = msg & "  (ninguna)" & vbCrLf
     End If
-    
+
     ShowTaskDialogError "Configuración FolderWatcher", "Estado actual", msg
 End Sub
-
-' =====================================================
-' FUNCIONES DE TEST Y DEBUGGING
-' =====================================================
-
-'@Description: Test de monitoreo de subcarpetas
-Sub TestMonitoreoSubcarpetas()
-    Dim rutaTest As String
-    rutaTest = Environ("TEMP") & "\TestFolderWatcher"
-    
-    ' Crear carpeta de test si no existe
-    If Not RutaExiste(rutaTest) Then
-        MkDir rutaTest
-    End If
-    
-    ' Configurar monitoreo
-    mFolderWatcher.IniciarMonitoreo _
-        folderPath:=rutaTest, _
-        includeSubdirs:=False, _
-        filterPattern:="*", _
-        eventsToWatch:=Array("Created", "Deleted", "Renamed"), _
-        inactivityMinutes:=5, _
-        foldersOnly:=True
-    
-    mFolderWatcher.ConfigurarFiltroSoloCarpetas rutaTest
-    
-    MsgBox "Monitoreo de test iniciado en:" & vbCrLf & rutaTest & vbCrLf & vbCrLf & _
-           "Ahora crea, renombra o elimina subcarpetas para probar.", vbInformation
-End Sub
-
-'@Description: Test de filtros de tamaño
-Sub TestFiltroTamaño()
-    Dim rutaTest As String
-    rutaTest = Environ("TEMP") & "\TestFiltros"
-    
-    If Not RutaExiste(rutaTest) Then
-        MkDir rutaTest
-    End If
-    
-    ' Monitorear solo archivos mayores a 1 KB
-    mFolderWatcher.IniciarMonitoreo _
-        folderPath:=rutaTest, _
-        includeSubdirs:=False, _
-        filterPattern:="*.*", _
-        eventsToWatch:=Array("Created"), _
-        inactivityMinutes:=5
-    
-    mFolderWatcher.ConfigurarFiltroTamaño rutaTest, 1024, 999999999
-    
-    MsgBox "Monitoreo con filtro de tamaño iniciado en:" & vbCrLf & rutaTest & vbCrLf & vbCrLf & _
-           "Solo detectará archivos mayores a 1 KB", vbInformation
-End Sub
-
-'@Description: Test de detección de rutas de red
-Sub TestDeteccionRutasRed()
-    Dim rutasPrueba As Variant
-    rutasPrueba = Array( _
-                  "C:\Windows", _
-                  "Z:\Compartido\Docs", _
-                  "\\servidor\publico", _
-                  "\\192.168.1.100\files" _
-                  )
-    
-    Dim ruta As Variant
-    For Each ruta In rutasPrueba
-        LogInfo MODULE_NAME, "[TestDeteccionRutasRed] " & ruta & " -> " & IIf(IsNetworkPath(CStr(ruta)), "RED", "LOCAL")
-    Next
-    
-    MsgBox "Ver resultados en Ventana Inmediato (Ctrl+G)", vbInformation
-End Sub
-
-'@Description: Test de acción automática de mover
-Sub TestAccionMover()
-    Dim rutaOrigen As String, rutaDestino As String
-    rutaOrigen = Environ("TEMP") & "\TestOrigen"
-    rutaDestino = Environ("TEMP") & "\TestDestino"
-    
-    ' Crear carpetas si no existen
-    If Not RutaExiste(rutaOrigen) Then MkDir rutaOrigen
-    If Not RutaExiste(rutaDestino) Then MkDir rutaDestino
-    
-    ' Configurar monitoreo con acción de mover
-    mFolderWatcher.IniciarMonitoreo _
-        folderPath:=rutaOrigen, _
-        includeSubdirs:=False, _
-        filterPattern:="*.txt", _
-        eventsToWatch:=Array("Created"), _
-        inactivityMinutes:=5
-    
-    mFolderWatcher.ConfigurarAccionMover rutaOrigen, rutaDestino
-    
-    MsgBox "Test de acción automática iniciado:" & vbCrLf & _
-           "Origen: " & rutaOrigen & vbCrLf & _
-           "Destino: " & rutaDestino & vbCrLf & vbCrLf & _
-           "Los archivos .txt se moverán automáticamente", vbInformation
-End Sub
-
-'@Description: Test completo del sistema
-Sub TestSistemaCompleto()
-    LogInfo MODULE_NAME, "[TestSistemaCompleto] ==== TEST COMPLETO FOLDERWATCHER ===="
-    LogInfo MODULE_NAME, "[TestSistemaCompleto] Configuración: " & mFolderWatcher.Configuracion
-    
-    Dim carpetas As Variant
-    carpetas = mFolderWatcher.CarpetasActivas()
-    
-    LogInfo MODULE_NAME, "[TestSistemaCompleto] Carpetas monitoreadas: " & IIf(IsArray(carpetas), UBound(carpetas) + 1, 0)
-    
-    If IsArray(carpetas) Then
-        Dim i As Long
-        For i = LBound(carpetas) To UBound(carpetas)
-            LogInfo MODULE_NAME, "[TestSistemaCompleto] " & i & ": " & carpetas(i)
-            
-            Dim stats As Variant
-            stats = mFolderWatcher.ObtenerEstadisticas(CStr(carpetas(i)))
-            
-            If IsArray(stats) Then
-                LogInfo MODULE_NAME, "[TestSistemaCompleto]     Eventos: " & stats(1) & " | Última actividad: " & stats(6)
-            End If
-        Next i
-    End If
-    
-    LogInfo MODULE_NAME, "[TestSistemaCompleto] FIN TEST"
-End Sub
-
-
