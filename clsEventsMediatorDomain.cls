@@ -151,7 +151,40 @@ Private Sub mInfraMediador_ActiveFileSessionChanged(ByVal FilePath As String, By
 
     LogInfo MODULE_NAME, "[InfraMediador_ActiveFileSessionChanged] File=" & fileName & _
                          ", IsOpportunity=" & IsOpportunityFile
+
+    ' Si hay oportunidades cargadas, intentar asociar el archivo con alguna
+    If Not mOpportunities Is Nothing And Len(FilePath) > 0 Then
+        Dim matchedOp As clsOpportunity
+        Set matchedOp = FindOpportunityForFile(FilePath)
+        If Not matchedOp Is Nothing Then
+            LogInfo MODULE_NAME, "[InfraMediador_ActiveFileSessionChanged] Oportunidad detectada: " & matchedOp.Label
+            mOpportunities.SetCurrentOpportunity matchedOp.Label
+        End If
+    End If
 End Sub
+
+'@Description: Busca en la coleccion de oportunidades si alguna contiene el archivo dado
+'@Param filePath ruta completa del archivo a buscar
+'@Returns clsOpportunity cuyo path es prefijo del filePath, o Nothing si no hay coincidencia
+Private Function FindOpportunityForFile(ByVal filePath As String) As clsOpportunity
+    If mOpportunities Is Nothing Then Exit Function
+    If Len(filePath) = 0 Then Exit Function
+
+    Dim opNames As Collection
+    Set opNames = mOpportunities.OpportunityNames
+
+    Dim Item As clsOpportunity
+    For Each Item In opNames
+        If Len(Item.path) > 0 Then
+            ' Verificar si el archivo esta dentro de la carpeta de la oportunidad
+            If InStr(1, filePath, Item.path, vbTextCompare) = 1 Then
+                Set FindOpportunityForFile = Item
+                Exit Function
+            End If
+        End If
+    Next Item
+    ' Devuelve Nothing si no hay coincidencia
+End Function
 
 ' -------------------------------------------------------------
 ' Eventos de mFSMonitoringCoord (cambios en sistema de archivos)

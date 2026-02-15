@@ -39,7 +39,7 @@ Public Event OpportunityCollectionUpdated(ByVal reason As String)
 ' ==================================================================
 Private mOpportunityProvider As IOpportunityProvider  ' Proveedor de oportunidades (inyectado)
 Private mOpportunityState As clsOpportunityState      ' Estado de oportunidad (composicion)
-Private mOpportunities As Collection                   ' Lista de nombres de oportunidades
+Private mOpportunities As Collection                   ' Collection<clsOpportunity> - construidos por el provider
 
 ' ==================================================================
 ' INICIALIZACION
@@ -96,7 +96,8 @@ Public Sub RefreshOpportunities()
         Exit Sub
     End If
 
-    ' Obtener oportunidades del Provider (ya ordenadas)
+    ' Obtener oportunidades del Provider como Collection<clsOpportunity> (ya ordenadas)
+    ' Cada elemento es un clsOpportunity con Label y path ya inicializados por el provider.
     Set mOpportunities = mOpportunityProvider.GetOpportunities()
 
     LogInfo MODULE_NAME, "[RefreshOpportunities] " & mOpportunities.Count & " oportunidades cargadas"
@@ -119,8 +120,11 @@ End Function
 Public Sub SetCurrentOpportunity(ByVal opportunityName As String)
     On Error GoTo ErrHandler
 
-    ' Verificar que existe en la coleccion
-    If Not OpportunityExists(opportunityName) Then
+    ' Buscar en la coleccion (items son clsOpportunity pre-construidos por el provider)
+    Dim op As clsOpportunity
+    Set op = FindInCollection(opportunityName)
+
+    If op Is Nothing Then
         LogWarning MODULE_NAME, "[SetCurrentOpportunity] Oportunidad no encontrada: " & opportunityName
         Exit Sub
     End If
@@ -132,14 +136,10 @@ Public Sub SetCurrentOpportunity(ByVal opportunityName As String)
         End If
     End If
 
-    ' Crear objeto clsOpportunity
-    Dim op As clsOpportunity
-    Set op = CreateOpportunityFromName(opportunityName)
-
-    ' Actualizar estado
+    ' Actualizar estado con el objeto ya construido (path sellado por el provider)
     Set mOpportunityState.CurrentOpportunity = op
 
-    ' Obtener indice para compatibilidad temporal
+    ' Obtener indice para compatibilidad con UI
     Dim idx As Long
     idx = GetIndexByName(opportunityName)
     mOpportunityState.CurrentIndex = idx
@@ -157,26 +157,31 @@ End Sub
 
 '@Description: Obtiene una oportunidad por nombre
 Public Function GetOpportunityByName(ByVal opportunityName As String) As clsOpportunity
-    If OpportunityExists(opportunityName) Then
-        Set GetOpportunityByName = CreateOpportunityFromName(opportunityName)
-    End If
+    Set GetOpportunityByName = FindInCollection(opportunityName)
 End Function
 
-'@Description: Obtiene una oportunidad por su ruta completa
+'@Description: Obtiene una oportunidad cuya ruta coincide con opportunityPath
 Public Function GetOpportunityByPath(ByVal opportunityPath As String) As clsOpportunity
-    ' Extraer nombre de la ruta
+    Dim Item As clsOpportunity
+    For Each Item In mOpportunities
+        If StrComp(Item.path, opportunityPath, vbTextCompare) = 0 Then
+            Set GetOpportunityByPath = Item
+            Exit Function
+        End If
+    Next Item
+    ' Fallback: intentar por nombre extraido de la ruta
     Dim parts() As String
     parts = Split(opportunityPath, "\")
     If UBound(parts) >= 0 Then
-        Set GetOpportunityByPath = GetOpportunityByName(parts(UBound(parts)))
+        Set GetOpportunityByPath = FindInCollection(parts(UBound(parts)))
     End If
 End Function
 
 '@Description: Verifica si una oportunidad existe en la coleccion
 Public Function OpportunityExists(ByVal opportunityName As String) As Boolean
-    Dim Item As Variant
+    Dim Item As clsOpportunity
     For Each Item In mOpportunities
-        If StrComp(CStr(Item), opportunityName, vbTextCompare) = 0 Then
+        If StrComp(Item.Label, opportunityName, vbTextCompare) = 0 Then
             OpportunityExists = True
             Exit Function
         End If
@@ -261,7 +266,9 @@ End Sub
 '@Description: Obtiene el nombre de una oportunidad por indice (para UI)
 Public Function GetOpportunityNameByIndex(ByVal idx As Long) As String
     If idx >= 0 And idx < mOpportunities.Count Then
-        GetOpportunityNameByIndex = mOpportunities(idx + 1)
+        Dim op As clsOpportunity
+        Set op = mOpportunities(idx + 1)
+        GetOpportunityNameByIndex = op.Label
     Else
         GetOpportunityNameByIndex = "(Sin datos)"
     End If
@@ -270,14 +277,18 @@ End Function
 '@Description: Obtiene la ruta de una oportunidad por indice (para UI)
 Public Function GetOpportunityPathByIndex(ByVal idx As Long) As String
     If idx >= 0 And idx < mOpportunities.Count Then
-        GetOpportunityPathByIndex = mOpportunityProvider.GetOpportunityPath(mOpportunities(idx + 1))
+        Dim op As clsOpportunity
+        Set op = mOpportunities(idx + 1)
+        GetOpportunityPathByIndex = op.path
     End If
 End Function
 
 '@Description: Establece la oportunidad actual por indice (para UI)
 Public Sub SetCurrentOpportunityByIndex(ByVal idx As Long)
     If idx >= 0 And idx < mOpportunities.Count Then
-        SetCurrentOpportunity mOpportunities(idx + 1)
+        Dim op As clsOpportunity
+        Set op = mOpportunities(idx + 1)
+        SetCurrentOpportunity op.Label
     End If
 End Sub
 
@@ -290,39 +301,28 @@ End Property
 ' METODOS PRIVADOS
 ' ==================================================================
 
-'@Description: Crea un objeto clsOpportunity desde un nombre
-Private Function CreateOpportunityFromName(ByVal opportunityName As String) As clsOpportunity
-    Dim op As clsOpportunity
-    Set op = New clsOpportunity
-
-    op.Label = opportunityName
-    op.path = mOpportunityProvider.GetOpportunityPath(opportunityName)
-
-    ' Extraer informacion del nombre
-    ' Formato tipico: "412601015 - Cliente - Proyecto - Modelo"
-    On Error Resume Next
-    Dim parts() As String
-    parts = Split(opportunityName, " - ")
-    If UBound(parts) >= 0 Then
-        op.Number = Trim(parts(0))
-    End If
-    If UBound(parts) >= 1 Then
-        op.Customer = Trim(parts(1))
-    End If
-    If UBound(parts) >= 2 Then
-        op.Project = Trim(parts(2))
-    End If
-    On Error GoTo 0
-
-    Set CreateOpportunityFromName = op
+'@Description: Busca un clsOpportunity en la coleccion por nombre (Label)
+'@Note: Sustituye a CreateOpportunityFromName - ya no construye el objeto,
+'       lo recupera directamente de la coleccion pre-construida por el provider.
+Private Function FindInCollection(ByVal opportunityName As String) As clsOpportunity
+    Dim Item As clsOpportunity
+    For Each Item In mOpportunities
+        If StrComp(Item.Label, opportunityName, vbTextCompare) = 0 Then
+            Set FindInCollection = Item
+            Exit Function
+        End If
+    Next Item
+    ' Devuelve Nothing si no encontrado
 End Function
 
 '@Description: Obtiene el indice de una oportunidad por nombre
 Private Function GetIndexByName(ByVal opportunityName As String) As Long
     GetIndexByName = -1
     Dim i As Long
+    Dim op As clsOpportunity
     For i = 1 To mOpportunities.Count
-        If StrComp(mOpportunities(i), opportunityName, vbTextCompare) = 0 Then
+        Set op = mOpportunities(i)
+        If StrComp(op.Label, opportunityName, vbTextCompare) = 0 Then
             GetIndexByName = i - 1
             Exit Function
         End If

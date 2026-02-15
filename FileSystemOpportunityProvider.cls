@@ -64,7 +64,7 @@ End Sub
 ' ==================================================================
 
 Private Function IOpportunityProvider_GetOpportunities() As Collection
-    Set IOpportunityProvider_GetOpportunities = GetOpportunityFolders()
+    Set IOpportunityProvider_GetOpportunities = BuildOpportunityObjects()
 End Function
 
 Private Function IOpportunityProvider_OpportunityExists(ByVal opportunityName As String) As Boolean
@@ -242,6 +242,40 @@ Public Function GetNextOpportunityCode() As String
 ErrHandler:
     LogCurrentError MODULE_NAME, "[GetNextOpportunityCode]"
     GetNextOpportunityCode = ""
+End Function
+
+'@Description: Construye la coleccion de oportunidades como objetos clsOpportunity
+'@Note: Es la implementacion correcta de GetOpportunities() via IOpportunityProvider.
+'       El path queda sellado dentro de cada clsOpportunity, evitando que el dominio
+'       tenga que llamar GetOpportunityPath() para reconstruirlo.
+Public Function BuildOpportunityObjects() As Collection
+    Dim result As Collection
+    Set result = New Collection
+
+    Dim folders As Collection
+    Set folders = GetOpportunityFolders()
+
+    Dim folderName As Variant
+    For Each folderName In folders
+        Dim op As clsOpportunity
+        Set op = New clsOpportunity
+
+        op.Label = CStr(folderName)
+        op.path = GetFullPath(CStr(folderName))
+
+        On Error Resume Next
+        Dim parts() As String
+        parts = Split(CStr(folderName), " - ")
+        If UBound(parts) >= 0 Then op.Number = Trim(parts(0))
+        If UBound(parts) >= 1 Then op.Customer = Trim(parts(1))
+        If UBound(parts) >= 2 Then op.Project = Trim(parts(2))
+        On Error GoTo 0
+
+        result.Add op
+        Set op = Nothing
+    Next folderName
+
+    Set BuildOpportunityObjects = result
 End Function
 
 ' ==================================================================
