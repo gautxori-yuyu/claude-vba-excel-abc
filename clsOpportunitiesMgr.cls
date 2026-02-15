@@ -212,6 +212,8 @@ End Sub
 Public Sub CreateNewOpportunity()
     On Error GoTo ErrHandler
 
+    LogDebug MODULE_NAME, "[CreateNewOpportunity] Iniciando creacion de nueva oportunidad"
+
     If mOpportunityProvider Is Nothing Then
         LogError MODULE_NAME, "[CreateNewOpportunity] Provider no ha sido inyectado"
         ShowTaskDialogError "Error Crítico", "Error interno: Provider no disponible", _
@@ -219,10 +221,10 @@ Public Sub CreateNewOpportunity()
         Exit Sub
     End If
 
-    ' Verificar que la carpeta base existe (nombre vacio -> verifica la raiz)
-    If Not mOpportunityProvider.OpportunityExists("") Then
+    ' Verificar que el almacenamiento esta disponible (usa flag, no re-consulta el FS)
+    If Not mOpportunityProvider.StorageAvailable() Then
         ShowTaskDialogError "Ruta no encontrada", "No se pudo abrir la ruta de oportunidades.", _
-                            "La carpeta configurada no está accesible: " & vbCrLf & mOpportunityProvider.GetOpportunityPath("")
+                            "La carpeta de oportunidades no esta accesible. Verifique la configuracion de rutas."
         Exit Sub
     End If
 

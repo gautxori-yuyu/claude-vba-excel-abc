@@ -31,6 +31,7 @@ Private Const MODULE_NAME As String = "FileSystemOpportunityProvider"
 ' ==================================================================
 Private mFileManager As clsFileManager
 Private mConfiguration As clsConfiguration
+Private mIsReady As Boolean   ' Flag: BasePath era accesible al inicializar
 
 ' ==================================================================
 ' INICIALIZACION
@@ -38,6 +39,7 @@ Private mConfiguration As clsConfiguration
 
 Private Sub Class_Initialize()
     LogInfo MODULE_NAME, "[Class_Initialize]"
+    mIsReady = False
 End Sub
 
 Private Sub Class_Terminate()
@@ -46,11 +48,27 @@ Private Sub Class_Terminate()
     Set mConfiguration = Nothing
 End Sub
 
-'@Description: Inyecta la dependencia de FileManager
-Public Sub Initialize(fm As clsFileManager, oConfiguration As clsConfiguration)
+'@Description: Inyecta las dependencias e inicializa el flag de disponibilidad
+'@Param fm: Gestor de sistema de archivos
+'@Param oConfiguration: Configuracion de la aplicacion
+'@Category: Inicializacion
+Public Sub Initialize(ByVal fm As clsFileManager, ByVal oConfiguration As clsConfiguration)
+    On Error GoTo ErrHandler
+
     Set mFileManager = fm
     Set mConfiguration = oConfiguration
-    LogDebug MODULE_NAME, "[Initialize] FileManager y clsConfiguration inyectados"
+
+    ' Comprobar disponibilidad UNA SOLA VEZ: evita re-consultas redundantes al FS
+    Dim basePath As String
+    basePath = mConfiguration.RutaOportunidades
+    mIsReady = Len(basePath) > 0 And mFileManager.ExisteCarpeta(basePath)
+
+    LogDebug MODULE_NAME, "[Initialize] FileManager y Configuration inyectados. StorageAvailable=" & mIsReady
+    Exit Sub
+
+ErrHandler:
+    LogCurrentError MODULE_NAME, "[Initialize]"
+    mIsReady = False
 End Sub
 
 ' ==================================================================
@@ -79,13 +97,21 @@ Private Function IOpportunityProvider_GetNextOpportunityCode() As String
     IOpportunityProvider_GetNextOpportunityCode = GetNextOpportunityCode()
 End Function
 
-Private Function IOpportunityProvider_GetOpportunityPath(ByVal opportunityName As String) As String
-    IOpportunityProvider_GetOpportunityPath = GetFullPath(opportunityName)
+Private Function IOpportunityProvider_StorageAvailable() As Boolean
+    IOpportunityProvider_StorageAvailable = StorageAvailable()
 End Function
 
 ' ==================================================================
 ' METODOS PUBLICOS (implementacion concreta)
 ' ==================================================================
+
+'@Description: Indica si el almacenamiento (BasePath) estaba disponible al inicializar.
+'              Devuelve el flag mIsReady sin re-consultar el filesystem.
+'@Returns: True si BasePath era accesible al llamar Initialize
+'@Category: Estado
+Public Function StorageAvailable() As Boolean
+    StorageAvailable = mIsReady
+End Function
 
 '@Description: Obtiene los nombres de carpetas de oportunidad validas, ordenados
 Public Function GetOpportunityFolders() As Collection
@@ -158,14 +184,16 @@ End Function
 Public Function CreateOpportunityFolder(ByVal opportunityName As String) As Boolean
     On Error GoTo ErrHandler
 
+    LogDebug MODULE_NAME, "[CreateOpportunityFolder] Iniciando creacion: " & opportunityName
+
     If mFileManager Is Nothing Then
         LogError MODULE_NAME, "[CreateOpportunityFolder] FileManager no ha sido inyectado"
         Exit Function
     End If
 
-    ' Verificar que la carpeta base existe
-    If Not mFileManager.ExisteCarpeta(BasePath) Then
-        LogError MODULE_NAME, "[CreateOpportunityFolder] BasePath no existe: " & BasePath
+    ' Usar flag mIsReady (evita re-consulta al FS - ya verificado en Initialize)
+    If Not mIsReady Then
+        LogError MODULE_NAME, "[CreateOpportunityFolder] BasePath no disponible: " & BasePath
         Exit Function
     End If
 
@@ -205,6 +233,8 @@ End Function
 '@Description: Genera el siguiente codigo de oportunidad disponible
 Public Function GetNextOpportunityCode() As String
     On Error GoTo ErrHandler
+
+    LogDebug MODULE_NAME, "[GetNextOpportunityCode] Calculando siguiente codigo de oportunidad"
 
     Dim folders As Collection
     Set folders = GetOpportunityFolders()

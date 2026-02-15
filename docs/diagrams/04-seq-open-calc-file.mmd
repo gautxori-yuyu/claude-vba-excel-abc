@@ -65,7 +65,8 @@ sequenceDiagram
     XL-->>CtxMgr: WorkbookOpen(wb)
     CtxMgr-->>InfraMed: WorkbookOpened(wb)
     InfraMed->>FileMgr: GetOrTrackWorkbook(wb)
-    FileMgr->>FileXLS: New clsFileXLS; BindTo(wb)
+    FileMgr->>FileXLS: New clsFileXLS
+    FileMgr->>FileXLS: BindTo(wb)
     FileMgr-->>InfraMed: clsFileXLS (IsOpportunityFile = False por defecto)
 
     InfraMed-->>EvDomain: ActiveFileSessionChanged(path, false)

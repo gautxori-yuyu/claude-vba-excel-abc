@@ -138,16 +138,16 @@ Public Sub TestOpportunityProvider()
     LogInfo MODULE_NAME, "[Test6] IOpportunityProvider.GetNextOpportunityCode() = '" & nextCodeInterface & "'"
     Debug.Print "  Via interfaz GetNextOpportunityCode(): " & nextCodeInterface
 
+    Dim storageOk As Boolean
+    storageOk = iProvider.StorageAvailable()
+    LogInfo MODULE_NAME, "[Test6] IOpportunityProvider.StorageAvailable() = " & storageOk
+    Debug.Print "  Via interfaz StorageAvailable: " & storageOk
+
     If folders.Count > 0 Then
         Dim existsInterface As Boolean
         existsInterface = iProvider.OpportunityExists(folders(1))
         LogInfo MODULE_NAME, "[Test6] IOpportunityProvider.OpportunityExists('" & folders(1) & "') = " & existsInterface
         Debug.Print "  Via interfaz OpportunityExists: " & existsInterface
-
-        Dim pathInterface As String
-        pathInterface = iProvider.GetOpportunityPath(folders(1))
-        LogInfo MODULE_NAME, "[Test6] IOpportunityProvider.GetOpportunityPath('" & folders(1) & "') = '" & pathInterface & "'"
-        Debug.Print "  Via interfaz GetOpportunityPath: " & pathInterface
     End If
 
     ' ------------------------------------------------------------------

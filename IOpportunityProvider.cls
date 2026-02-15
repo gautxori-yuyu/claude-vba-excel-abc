@@ -46,8 +46,8 @@ End Function
 Public Function GetNextOpportunityCode() As String
 End Function
 
-'@Description: Obtiene la ubicacion completa de una oportunidad a partir de su nombre
-'@Param opportunityName: Nombre de la oportunidad
-'@Returns: Ubicacion completa (implementacion concreta decide el formato)
-Public Function GetOpportunityPath(ByVal opportunityName As String) As String
+'@Description: Indica si el almacenamiento (carpeta base) esta disponible.
+'              No re-consulta el filesystem; usa el flag inicializado al crear el proveedor.
+'@Returns: True si la carpeta base era accesible al inicializar el proveedor
+Public Function StorageAvailable() As Boolean
 End Function
