@@ -1,0 +1,90 @@
+sequenceDiagram
+    %% ============================================================
+    %% FLUJO: El usuario elimina una carpeta de oportunidad
+    %%        desde el Explorador de Windows (externo a Excel)
+    %% ============================================================
+    title Eliminar Oportunidad (deteccion por FileSystemWatcher)
+
+    actor Usuario as Usuario\n(Explorador Windows)
+
+    box "Sistema Operativo"
+        participant OS as FileSystem\n(Windows)
+    end box
+
+    box "2-Infraestructura (bajo nivel)"
+        participant FSWatch as clsFSWatcher\n(COM Wrapper)
+        participant FSCoord as clsFSMonitoringCoord
+    end box
+
+    box "1-Aplicacion"
+        participant EvDomain as clsEventsMediatorDomain
+    end box
+
+    box "3-Dominio"
+        participant OppMgr as clsOpportunitiesMgr
+        participant OppState as clsOpportunityState
+    end box
+
+    box "2-Infraestructura (providers)"
+        participant OppProv as FileSystemOpportunityProvider
+        participant FileMgr as clsFileManager
+    end box
+
+    box "4-UI"
+        participant Ribbon as clsRibbon
+    end box
+
+    Note over Usuario,Ribbon: === PARTE 1: ELIMINACION FISICA ===
+
+    Usuario->>OS: Elimina carpeta\n"SAM2602001 - ClienteABC - ProyectoXYZ - XXX"
+    OS-->>FSWatch: [evento COM: FolderDeleted]
+    Note right of FSWatch: fw_FolderDeleted(parentPath, folderName)<br/>RaiseEvent SubfolderDeleted(parentPath, folderName)
+
+    FSWatch-->>FSCoord: SubfolderDeleted(parentPath, "SAM2602001 - ...")
+    Note right of FSCoord: mFolderWatcher_SubfolderDeleted()<br/>Clasifica: EsRutaOportunidades(parentPath)?
+    FSCoord->>FSCoord: EsRutaOportunidades(parentPath) = True
+    FSCoord-->>EvDomain: RaiseEvent OpportunityDeleted(parentPath, "SAM2602001 - ...")
+
+    Note over Usuario,Ribbon: === PARTE 2: ACTUALIZACION DEL DOMINIO ===
+
+    EvDomain->>OppMgr: ProcesarCambiosEnOportunidades("SAM2602001 - ...")
+    Note right of OppMgr: Verifica regex del nombre.<br/>Si es oportunidad valida -> RefreshOpportunities()
+    OppMgr->>OppProv: GetOpportunities()
+    OppProv->>FileMgr: ListarSubcarpetas(BasePath)
+    FileMgr-->>OppProv: Lista sin la carpeta eliminada
+    OppProv-->>OppMgr: Collection<String> [ACTUAL] /\nCollection<clsOpportunity> [OBJETIVO]\nsin "SAM2602001 - ..."
+
+    Note over OppMgr: === CASO CRITICO: La oportunidad eliminada ERA la actual ===
+
+    alt La oportunidad eliminada era la CurrentOpportunity
+        OppMgr->>OppState: CurrentOpportunity.Label == nombre eliminado?
+        OppState-->>OppMgr: True
+
+        Note over OppMgr: [OBJETIVO] ClearCurrentOpportunity()<br/>Limpia estado: CurrentOpportunity = Nothing,<br/>CurrentIndex = -1
+
+        OppMgr->>OppState: CurrentOpportunity = Nothing
+        OppMgr->>OppState: CurrentIndex = -1
+
+        OppMgr-->>EvDomain: RaiseEvent CurrentOpportunityChanged("", "")
+        Note right of EvDomain: Limpia IsOpportunityFileActive en AppState
+
+        OppMgr-->>Ribbon: RaiseEvent OpportunityCollectionUpdated("delete")
+        Ribbon->>Ribbon: InvalidarControl("ddlOportunidades")
+        Note right of Ribbon: Dropdown se actualiza:\nYa no muestra la oportunidad eliminada.\nbtnGenerarGraficos deshabilitado\n(no hay oportunidad activa)
+        Ribbon-->>Usuario: UI actualizada (sin la oportunidad eliminada)
+
+    else La oportunidad eliminada NO era la actual
+        OppMgr-->>Ribbon: RaiseEvent OpportunityCollectionUpdated("delete")
+        Ribbon->>Ribbon: InvalidarControl("ddlOportunidades")
+        Note right of Ribbon: Solo se actualiza la lista del dropdown.\nLa oportunidad activa se mantiene.
+        Ribbon-->>Usuario: Dropdown actualizado (sin la eliminada)
+    end
+
+    Note over Usuario,Ribbon: === CASO: SE RENOMDRA UNA OPORTUNIDAD ===
+
+    Note over FSWatch,FSCoord: Si el usuario renombra (Ctrl+Z o rename):
+    FSWatch-->>FSCoord: SubfolderRenamed(parent, oldName, newName)
+    FSCoord-->>EvDomain: RaiseEvent OpportunityRenamed(parent, old, new)
+    EvDomain->>OppMgr: ProcesarCambiosEnOportunidades(oldName)
+    EvDomain->>OppMgr: ProcesarCambiosEnOportunidades(newName)
+    Note over OppMgr: Dos llamadas a RefreshOpportunities()<br/>La segunda trae el nuevo nombre ya disponible.\n[OBJETIVO]: Una sola llamada a<br/>RefreshOpportunities() con ambos nombres.

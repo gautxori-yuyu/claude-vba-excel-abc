@@ -1,0 +1,505 @@
+@startuml 01-static-current
+' ==============================================================
+' ESTADO ACTUAL - Diagrama de clases estatico
+' Problemas arquitectonicos marcados con NOTE y color rojo
+' ==============================================================
+title Estado ACTUAL del sistema (con problemas marcados)
+
+skinparam classBackgroundColor #FEFEFE
+skinparam classBorderColor #333333
+skinparam noteBackgroundColor #FFF3CD
+skinparam noteBorderColor #FF8800
+skinparam ArrowColor #555555
+skinparam linetype ortho
+
+' ================================================================
+' INTERFACES
+' ================================================================
+
+interface IOpportunityProvider <<interface>> #LightCyan {
+    + GetOpportunities() : Collection
+    + OpportunityExists(opportunityName) : Boolean
+    + CreateOpportunity(opportunityName) : Boolean
+    + GetNextOpportunityCode() : String
+    + GetOpportunityPath(opportunityName) : String
+}
+note right of IOpportunityProvider #FFCCCC
+    PROBLEMA: GetOpportunities() devuelve
+    Collection<String>, NO Collection<clsOpportunity>
+    -> GetOpportunityPath() se filtra al dominio
+end note
+
+interface ITechnicalCalcProvider <<interface>> #LightCyan {
+    + GetCalculations() : Collection
+    + GetCalculationsByCompressorModel(model) : Collection
+    + MoveCalculationsToOpportunity(path) : Boolean
+}
+
+interface ITechnicalCalc <<interface>> #LightCyan {
+    + calcNumber : String
+    + calcOption : String
+    + FilePath : String
+    + CompressorModel : String
+    + GetGasData() : Object
+}
+
+interface IFile <<interface>> #LightCyan {
+    + ObjectKey : String
+    + Path : String
+    + Name : String
+    + IsOpportunityFile : Boolean
+}
+
+' ================================================================
+' CAPA 1 - APLICACION
+' ================================================================
+
+package "1-Aplicacion" #EEF {
+
+    class clsApplication {
+        - mCtxMgr : clsExecutionContextMgr
+        - mEventDispatcher : clsEventDispatcher
+        - mEvMediatorInfrastructure : clsEventsMediatorInfrastructure
+        - mFileMgr : clsFileManager
+        - mOpportunityProvider : FileSystemOpportunityProvider
+        - mOpportunities : clsOpportunitiesMgr
+        - mFSMonitoringCoord : clsFSMonitoringCoord
+        - mConfiguration : clsConfiguration
+        - mEvMediatorDomain : clsEventsMediatorDomain
+        - mRibbon : clsRibbon
+        - mApplicationState : clsApplicationState
+        --
+        + ChartManager : clsChartMgr
+        + ExecutionContextMgr : clsExecutionContextMgr
+        + ribbon : clsRibbon
+        + Dispatcher : clsEventDispatcher
+        + FileMgr : clsFileManager
+        + FSMonitoringCoord : clsFSMonitoringCoord
+        + OpportunitiesMgr : clsOpportunitiesMgr
+        + Configuration : clsConfiguration
+        + State : clsApplicationState
+        --
+        - InitializeInfrastructure()
+        - InitializeDomain()
+        - InitializeUI()
+    }
+    note right of clsApplication #FFCCCC
+        FileSystemTechnicalCalcProvider
+        NO instanciado!
+        clsCompressor NO instanciado!
+        ExcelOpportunitySource NO conectado!
+    end note
+
+    class clsApplicationState {
+        - mCtxState : clsExecutionContextState
+        - mFileState : clsFileState
+        - mOpportunityState : clsOpportunityState
+        - mChartState : clsChartState
+        - mRibbonState : clsRibbonState
+        --
+        + Initialize(CtxState, FileState, OpportunityState, ...)
+        + IsOpportunityMgrEnabled : Boolean
+        + IsOpportunityFileActive : Boolean
+        + IsContextValid : Boolean
+        + CurrentOpportunityName : String
+        + CurrentOpportunityPath : String
+        + HasCurrentFile : Boolean
+        + IsChartActive : Boolean
+    }
+
+    class clsEventDispatcher {
+        + Dispatch(eventName, args)
+        + GetRibbonItemsNr() : Long
+        + GetRibbonItemLabel(idx) : String
+        + SetRibbonSelectionIndex(idx)
+    }
+}
+
+' ================================================================
+' CAPA 2 - INFRAESTRUCTURA
+' ================================================================
+
+package "2-Infraestructura" #EFE {
+
+    class clsConfiguration {
+        - m_RutaOportunidades : String
+        - m_RutaPlantillas : String
+        - m_RutaGasVBNet : String
+        - m_SAM : String
+        --
+        + RutaOportunidades : String
+        + RutaPlantillas : String
+        + RutaGasVBNet : String
+        + SAM : String
+        + oDicFoldersToWatch : Object
+        + CargarDesdeRegistro()
+        + GuardarEnRegistro()
+    }
+
+    class clsExecutionContextMgr {
+        - m_xlApp : Application <<WithEvents>>
+        - mChartMgr : clsChartMgr
+        - mState : clsExecutionContextState
+        --
+        + State : clsExecutionContextState
+        + ChartMgr : clsChartMgr
+        + Application : Application
+        + OnWorkbookOpened(wb)
+        + OnWorkbookActivated(wb)
+        + ReInitializeContext()
+        --
+        <<event>> WorkbookOpened(wb)
+        <<event>> WorkbookActivated(wb)
+        <<event>> WorkbookBeforeClose(wb, Cancel)
+        <<event>> SheetActivated(sh)
+        <<event>> SheetDeactivated(sh)
+        <<event>> ContextInvalidated()
+        <<event>> ContextReinitialized()
+        <<event>> ChartActivated(ch)
+        <<event>> ChartDeactivated(ch)
+    }
+
+    class clsExecutionContextState {
+        + Workbook : Workbook
+        + Worksheet : Worksheet
+        + IsContextValid : Boolean
+        + UpdateWorkbook(wb)
+        + InvalidateContext()
+    }
+
+    class clsFileManager {
+        - mTrackedFiles : Object
+        - mState : clsFileState
+        --
+        + Init(workbooks)
+        + State : clsFileState
+        + GetOrTrackWorkbook(wb) : clsFileXLS
+        + ExisteCarpeta(path) : Boolean
+        + ListarSubcarpetas(path) : Collection
+        + ConstruirRuta(base, name) : String
+        + CopiarCarpeta(origen, destino) : Boolean
+    }
+
+    class clsFileState {
+        + CurrentFile : clsFileXLS
+        + IsOpportunityFile : Boolean
+        + HasCurrentFile : Boolean
+    }
+
+    class clsFileXLS {
+        - mWorkbook : Workbook
+        - mPath : String
+        --
+        + ObjectKey : String
+        + Path : String
+        + Name : String
+        + IsOpportunityFile : Boolean
+        + BindTo(wb)
+        + AnalizarWorkBook()
+        + DebeMoverseAOp(path, base) : Boolean
+        + MoverAOp(path, base)
+    }
+    note right of clsFileXLS #FFCCCC
+        IsOpportunityFile usa
+        patron regex en filename,
+        NO membership en OpportunitiesMgr!
+    end note
+
+    class FileSystemOpportunityProvider {
+        - mFileManager : clsFileManager
+        - mConfiguration : clsConfiguration
+        --
+        + Initialize(fm, cfg)
+        + BasePath : String
+        + GetOpportunityFolders() : Collection
+        + FolderExists(folderName) : Boolean
+        + CreateOpportunityFolder(name) : Boolean
+        + GetNextOpportunityCode() : String
+        + GetFullPath(folderName) : String
+    }
+
+    class FileSystemTechnicalCalcProvider {
+        - mFileManager : clsFileManager
+        - mConfiguration : clsConfiguration
+        --
+        + Initialize(fm, cfg)
+        + GetCalculations() : Collection
+        + GetCalculationsByCompressorModel(model) : Collection
+        + MoveCalculationsToOpportunity(path) : Boolean
+    }
+    note right of FileSystemTechnicalCalcProvider #FFCCCC
+        NO instanciado en clsApplication!
+        Existe pero no esta conectado.
+    end note
+
+    class ExcelOpportunitySource {
+        - mFileXLS : clsFileXLS
+        --
+        + BindToFile(fileXLS)
+        + IsOpportunity : Boolean
+        + GetOpportunityName() : String
+    }
+    note right of ExcelOpportunitySource #FFCCCC
+        NO conectado a ninguna
+        parte del sistema.
+    end note
+
+    class clsFolderMgr {
+        - mConfiguration : clsConfiguration
+        --
+        + Initialize(cfg)
+        + ClassifyPath(path) : String
+        + GetPath(tipo) : String
+    }
+    note right of clsFolderMgr #FFCCCC
+        Actualmente es solo un
+        clasificador de paths.
+        Deberia ser un gestor
+        de coleccion de carpetas
+        monitoreadas (como clsFileManager)
+    end note
+
+    class clsFSMonitoringCoord {
+        - mWatchers : Collection <<WithEvents>>
+        - mFolderMgr : clsFolderMgr
+        --
+        + IniciarMonitoreo(dicFolders)
+        + PausarMonitoreo()
+        + ReanudarMonitoreo()
+        + Shutdown()
+        --
+        <<event>> OpportunityCreated(parent, name)
+        <<event>> OpportunityDeleted(parent, name)
+        <<event>> OpportunityRenamed(parent, old, new)
+        <<event>> OpportunityItemDeleted(folder, file)
+        <<event>> OpportunityItemRenamed(folder, old, new)
+        <<event>> TemplateCreated(folder, file)
+        <<event>> TemplateChanged(folder, file)
+        <<event>> GasFileCreated(folder, file)
+        <<event>> GasFileChanged(folder, file)
+        <<event>> MonitoringError(folder, msg)
+        <<event>> MonitoringReconnected(folder, attempts)
+        <<event>> MonitoringFailed(folder, reason)
+    }
+
+    class clsFSWatcher {
+        - fw : Object (COM)
+        --
+        + Iniciar(rutas)
+        + Detener()
+        --
+        <<event>> SubfolderCreated(parent, name)
+        <<event>> SubfolderDeleted(parent, name)
+        <<event>> SubfolderRenamed(parent, old, new)
+        <<event>> FileCreated(folder, file)
+        <<event>> FileChanged(folder, file)
+        <<event>> FileRenamed(folder, old, new)
+        <<event>> ErrorOccurred(folder, msg)
+    }
+
+    class clsEventsMediatorInfrastructure {
+        - mFileMgr : clsFileManager <<WithEvents>>
+        - mCtxMgr : clsExecutionContextMgr <<WithEvents>>
+        --
+        + Initialize(fileMgr, ctxMgr)
+        --
+        <<event>> ActiveFileSessionChanged(path, isOpp)
+        <<event>> InfraContextInvalidated()
+        <<event>> InfraContextReinitialized()
+    }
+}
+
+' ================================================================
+' CAPA 3 - DOMINIO
+' ================================================================
+
+package "3-Dominio" #FFE {
+
+    class clsOpportunitiesMgr {
+        - mOpportunityProvider : IOpportunityProvider
+        - mOpportunityState : clsOpportunityState
+        - mOpportunities : Collection
+        --
+        + Initialize(provider)
+        + State : clsOpportunityState
+        + Count : Long
+        + OpportunityNames : Collection
+        + RefreshOpportunities()
+        + SetCurrentOpportunity(name)
+        + GetOpportunityByName(name) : clsOpportunity
+        + OpportunityExists(name) : Boolean
+        + CreateNewOpportunity()
+        + GetOpportunityNameByIndex(idx) : String
+        + GetOpportunityPathByIndex(idx) : String
+        + SetCurrentOpportunityByIndex(idx)
+        + CurrentIndex : Long
+        --
+        <<event>> CurrentOpportunityChanged(name, path)
+        <<event>> OpportunityCollectionUpdated(reason)
+    }
+    note right of clsOpportunitiesMgr #FFCCCC
+        mOpportunities = Collection<String>
+        NO Collection<clsOpportunity>
+        -> Llama GetOpportunityPath() en dominio
+        -> Detalle de FS filtrado hacia arriba
+    end note
+
+    class clsOpportunityState {
+        + CurrentOpportunity : clsOpportunity
+        + CurrentIndex : Long
+        + HasCurrentOpportunity : Boolean
+    }
+
+    class clsOpportunity {
+        + Label : String
+        + path : String
+        + Number : String
+        + Customer : String
+        + Project : String
+        + IsValid : Boolean
+    }
+
+    class clsCompressor {
+        + Model : String
+        + CompressorId : String
+        --
+        + AddCalculation(calc)
+        + GetCalculation(id) : ITechnicalCalc
+        + AddQuote(quote)
+    }
+    note right of clsCompressor #FFCCCC
+        NO instanciado.
+        Existe como entidad de dominio
+        pero sin wiring.
+    end note
+
+    class clsEventsMediatorDomain {
+        - mInfraMediador : clsEventsMediatorInfrastructure <<WithEvents>>
+        - mFSMonitoringCoord : clsFSMonitoringCoord <<WithEvents>>
+        - mOpportunities : clsOpportunitiesMgr <<WithEvents>>
+        - mCtxState : clsExecutionContextState
+        - mFileMgr : clsFileManager
+        --
+        + Initialize(ctxState, infraMed, fsCoord, opps, fileMgr)
+        + Terminate()
+    }
+    note right of clsEventsMediatorDomain #FFCCCC
+        MoverAOp comentado:
+        "viola Demeter + logica
+        debe estar en servicio
+        de infraestructura"
+        -> FindOpportunityForFile()
+        aun no implementado
+    end note
+}
+
+' ================================================================
+' CAPA 4 - UI
+' ================================================================
+
+package "4-UI" #FEF {
+
+    class clsRibbon {
+        - mribbonUI : IRibbonUI
+        - mWasEverInitialized : Boolean
+        --
+        + Initialize(opps, fileMgr, chartMgr, ctxMgr)
+        + Init(ribbonUI)
+        + StopEvents()
+        + InvalidarRibbon()
+        + InvalidarControl(id)
+        + OnGenerarGraficos()
+        + OnInvertirEjes()
+        + OnFormatearCGASING()
+        + OnNuevaOportunidad()
+        + OnConfigurador()
+        + GetRibbonControlEnabled(control) : Boolean
+        + GetDdlOportunidadesCount(control) : Long
+        + GetDdlOportunidadesLabel(control, idx) : String
+        + GetDdlOportunidadesSelectedIdx(control, idx)
+        + OnDdlOportunidadesChange(control, idx)
+        --
+        <<event>> GenerarGraficos()
+        <<event>> InvertirEjes()
+        <<event>> FormatearCGASING()
+        <<event>> NuevaOportunidad()
+        <<event>> Configurador()
+    }
+
+    class clsRibbonState {
+        + Modo : Long
+        + Description : String
+        --
+        + SetModo(modo)
+        + ToggleModo()
+    }
+
+    class clsChartState {
+        + IsChartActive : Boolean
+        + CanInvertAxes : Boolean
+    }
+}
+
+' ================================================================
+' RELACIONES
+' ================================================================
+
+' Realizaciones de interfaces
+FileSystemOpportunityProvider ..|> IOpportunityProvider
+FileSystemTechnicalCalcProvider ..|> ITechnicalCalcProvider
+clsFileXLS ..|> IFile
+
+' Composicion clsApplication
+clsApplication *-- clsApplicationState
+clsApplication *-- clsExecutionContextMgr
+clsApplication *-- clsFileManager
+clsApplication *-- clsConfiguration
+clsApplication *-- FileSystemOpportunityProvider
+clsApplication *-- clsOpportunitiesMgr
+clsApplication *-- clsFSMonitoringCoord
+clsApplication *-- clsEventsMediatorInfrastructure
+clsApplication *-- clsEventsMediatorDomain
+clsApplication *-- clsRibbon
+clsApplication *-- clsEventDispatcher
+
+' Estados
+clsApplicationState o-- clsExecutionContextState
+clsApplicationState o-- clsFileState
+clsApplicationState o-- clsOpportunityState
+clsApplicationState o-- clsChartState
+clsApplicationState o-- clsRibbonState
+
+' Infraestructura interna
+clsExecutionContextMgr *-- clsExecutionContextState
+clsFileManager *-- clsFileState
+clsFileManager "1" *-- "*" clsFileXLS
+clsFSMonitoringCoord "1" *-- "*" clsFSWatcher
+clsFSMonitoringCoord --> clsFolderMgr
+
+' Dominio
+clsOpportunitiesMgr --> IOpportunityProvider
+clsOpportunitiesMgr *-- clsOpportunityState
+clsOpportunitiesMgr "1" o-- "*" clsOpportunity
+
+' Mediadores
+clsEventsMediatorInfrastructure --> clsFileManager
+clsEventsMediatorInfrastructure --> clsExecutionContextMgr
+clsEventsMediatorDomain --> clsEventsMediatorInfrastructure
+clsEventsMediatorDomain --> clsFSMonitoringCoord
+clsEventsMediatorDomain --> clsOpportunitiesMgr
+clsEventsMediatorDomain --> clsFileManager
+clsEventsMediatorDomain --> clsExecutionContextState
+
+' Provider -> dependencias
+FileSystemOpportunityProvider --> clsFileManager
+FileSystemOpportunityProvider --> clsConfiguration
+FileSystemTechnicalCalcProvider --> clsFileManager
+FileSystemTechnicalCalcProvider --> clsConfiguration
+
+' UI
+clsRibbon --> clsOpportunitiesMgr
+clsRibbon --> clsFileManager
+clsRibbon --> clsApplicationState
+clsRibbon --> clsRibbonState
+
+@enduml

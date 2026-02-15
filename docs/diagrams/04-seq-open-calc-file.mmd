@@ -1,0 +1,92 @@
+sequenceDiagram
+    %% ============================================================
+    %% FLUJO: Abrir un fichero de calculo (.xlsx) que pertenece
+    %%        a una oportunidad existente
+    %% ============================================================
+    title Abrir Fichero de Calculo (ACTUAL vs OBJETIVO)
+
+    actor Usuario
+
+    box "Excel COM"
+        participant XL as Excel.Application
+    end box
+
+    box "2-Infraestructura"
+        participant CtxMgr as clsExecutionContextMgr
+        participant InfraMed as clsEventsMediatorInfrastructure
+        participant FileMgr as clsFileManager
+        participant FileXLS as clsFileXLS
+    end box
+
+    box "1-Aplicacion"
+        participant EvDomain as clsEventsMediatorDomain
+    end box
+
+    box "3-Dominio"
+        participant OppMgr as clsOpportunitiesMgr
+    end box
+
+    box "4-UI"
+        participant Ribbon as clsRibbon
+        participant AppState as clsApplicationState
+    end box
+
+    Note over Usuario,AppState: === ESTADO ACTUAL (PROBLEMAS MARCADOS) ===
+
+    Usuario->>XL: Abre "SAM2602001 - ClienteABC - ... - calculo.xlsx"
+    XL-->>CtxMgr: WorkbookOpen(wb)
+    Note right of CtxMgr: m_xlApp_WorkbookOpen(wb)<br/>RaiseEvent WorkbookOpened(wb)
+
+    CtxMgr-->>InfraMed: WorkbookOpened(wb)
+    InfraMed->>FileMgr: GetOrTrackWorkbook(wb)
+    FileMgr->>FileXLS: New clsFileXLS; BindTo(wb)
+    FileXLS->>FileXLS: AnalizarWorkBook()
+
+    Note over FileXLS: [PROBLEMA ACTUAL]<br/>IsOpportunityFile = usa regex en filename<br/>NO verifica membership en OppMgr!<br/>Puede dar falsos positivos/negativos.
+
+    FileXLS-->>FileMgr: clsFileXLS (con IsOpportunityFile por regex)
+    FileMgr->>FileMgr: Actualiza mState.CurrentFile
+
+    InfraMed-->>EvDomain: RaiseEvent ActiveFileSessionChanged(path, isOpportunity)
+    Note right of EvDomain: mInfraMediador_ActiveFileSessionChanged<br/>Solo loguea - NO hace SetCurrentOpportunity!
+
+    Note over EvDomain,OppMgr: [BRECHA ACTUAL]: El archivo abierto NO<br/>activa automaticamente la oportunidad<br/>correspondiente en OppMgr.
+
+    CtxMgr-->>Ribbon: [via AppState] Invalida controles
+
+    Note over Ribbon: GetRibbonControlEnabled()<br/>lee IsOpportunityFile desde AppState<br/>(que viene de clsFileXLS.IsOpportunityFile)<br/>= valor basado en regex, no en dominio
+
+    Note over Usuario,AppState: === ESTADO OBJETIVO (FLUJO CORRECTO) ===
+
+    Note over Usuario,AppState: (mismos pasos iniciales hasta clsFileXLS creado)
+
+    Usuario->>XL: Abre "SAM2602001 - ClienteABC - ... - calculo.xlsx"
+    XL-->>CtxMgr: WorkbookOpen(wb)
+    CtxMgr-->>InfraMed: WorkbookOpened(wb)
+    InfraMed->>FileMgr: GetOrTrackWorkbook(wb)
+    FileMgr->>FileXLS: New clsFileXLS; BindTo(wb)
+    FileMgr-->>InfraMed: clsFileXLS (IsOpportunityFile = False por defecto)
+
+    InfraMed-->>EvDomain: ActiveFileSessionChanged(path, false)
+
+    Note right of EvDomain: mInfraMediador_ActiveFileSessionChanged<br/>Ahora LLAMA FindOpportunityForFile(file)
+
+    EvDomain->>EvDomain: FindOpportunityForFile(fileXLS)
+    Note right of EvDomain: Itera mOpportunities.OpportunityNames<br/>Para cada opp: compara<br/>InStr(fileXLS.Path, opp.path) > 0
+
+    alt El archivo esta dentro de una carpeta de oportunidad
+        EvDomain-->>OppMgr: SetCurrentOpportunity(opp.Label)
+        OppMgr->>OppMgr: Actualiza CurrentOpportunity, CurrentIndex
+        OppMgr-->>EvDomain: RaiseEvent CurrentOpportunityChanged(name, path)
+        Note right of EvDomain: mOpportunities_CurrentOpportunityChanged<br/>Llama fileXLS.MarkAsOpportunityFile(True)
+        EvDomain->>FileXLS: MarkAsOpportunityFile(True)
+        FileXLS->>FileMgr: [propaga] mState.IsOpportunityFile = True
+        FileMgr->>AppState: Actualiza FileState.IsOpportunityFile = True
+        AppState-->>Ribbon: [invalidar]
+        Ribbon->>Ribbon: InvalidarRibbon()
+        Note over Ribbon: GetRibbonControlEnabled()<br/>btnGenerarGraficos.Enabled = True<br/>(porque IsOpportunityFileActive = True)
+        Ribbon-->>Usuario: Boton "Generar Graficos" habilitado
+        Note right of Ribbon: ddlOportunidades muestra la oportunidad<br/>correcta seleccionada
+    else El archivo NO esta en ninguna oportunidad
+        Note over EvDomain: fileXLS.MarkAsOpportunityFile(False)<br/>AppState.IsOpportunityFileActive = False<br/>Botones deshabilitados
+    end

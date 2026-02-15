@@ -1,0 +1,83 @@
+sequenceDiagram
+    %% ============================================================
+    %% FLUJO: Crear nueva oportunidad
+    %% Actor: Usuario hace clic en boton "Nueva Oportunidad" del Ribbon
+    %% ============================================================
+    title Crear Nueva Oportunidad (estado ACTUAL y OBJETIVO)
+
+    actor Usuario
+
+    box "4-UI"
+        participant Ribbon as clsRibbon
+    end box
+
+    box "1-Aplicacion"
+        participant App as clsApplication
+        participant EvDomain as clsEventsMediatorDomain
+    end box
+
+    box "3-Dominio"
+        participant OppMgr as clsOpportunitiesMgr
+    end box
+
+    box "2-Infraestructura"
+        participant OppProv as FileSystemOpportunityProvider
+        participant FileMgr as clsFileManager
+        participant FSCoord as clsFSMonitoringCoord
+        participant FSWatch as clsFSWatcher
+    end box
+
+    Note over Usuario,FSWatch: === PARTE 1: USUARIO CREA LA OPORTUNIDAD ===
+
+    Usuario->>Ribbon: Click "Nueva Oportunidad"
+    Ribbon-->>App: RaiseEvent NuevaOportunidad
+    Note right of App: evRibbon_NuevaOportunidad()
+    App->>OppMgr: CreateNewOpportunity()
+
+    OppMgr->>OppProv: OpportunityExists("") [verifica ruta base]
+    Note right of OppProv: Via IOpportunityProvider_OpportunityExists<br/>delega a FolderExists("")<br/>que llama mFileManager.ExisteCarpeta(BasePath)
+    OppProv->>FileMgr: ExisteCarpeta(BasePath)
+    FileMgr-->>OppProv: True
+    OppProv-->>OppMgr: True
+
+    OppMgr->>OppProv: GetNextOpportunityCode()
+    Note right of OppProv: Analiza carpetas existentes,<br/>genera codigo tipo "SAM2602001"
+    OppProv-->>OppMgr: "SAM2602001"
+
+    OppMgr->>Usuario: ShowTaskDialog (input nombre cliente)
+    Usuario-->>OppMgr: "ClienteABC - ProyectoXYZ"
+
+    Note over OppMgr: opportunityName = "SAM2602001 - ClienteABC - ProyectoXYZ - XXX"
+
+    OppMgr->>OppProv: CreateOpportunity("SAM2602001 - ClienteABC - ProyectoXYZ - XXX")
+    Note right of OppProv: Via IOpportunityProvider_CreateOpportunity<br/>delega a CreateOpportunityFolder(name)
+    OppProv->>FileMgr: CopiarCarpeta(rutaPlantilla, rutaDestino)
+    FileMgr-->>OppProv: True
+    OppProv-->>OppMgr: True
+
+    Note over OppMgr,FileMgr: === PARTE 2: DETECCION AUTOMATICA DEL WATCHER ===
+
+    Note over FSWatch: (milisegundos despues, asincrono)
+    FileMgr-->>FSWatch: [carpeta creada en disco]
+    FSWatch-->>FSCoord: RaiseEvent SubfolderCreated(parent, "SAM2602001 - ...")
+    Note right of FSCoord: mFolderWatcher_SubfolderCreated<br/>clasifica la ruta: EsRutaOportunidades?
+    FSCoord-->>EvDomain: RaiseEvent OpportunityCreated(parent, name)
+    Note right of EvDomain: mFSMonitoringCoord_OpportunityCreated<br/>llama a OppMgr.ProcesarCambiosEnOportunidades
+
+    Note over EvDomain,OppMgr: === PARTE 3: REFRESCO DE LA COLECCION ===
+
+    EvDomain->>OppMgr: ProcesarCambiosEnOportunidades("SAM2602001 - ...")
+    Note right of OppMgr: Verifica regex FILEORFOLDERNAME_QUOTE...<br/>Si coincide -> RefreshOpportunities()
+    OppMgr->>OppProv: GetOpportunities()
+
+    Note right of OppProv: [ACTUAL] Devuelve Collection<String><br/>[OBJETIVO] Devuelve Collection<clsOpportunity><br/>con path sellado en cada objeto
+
+    OppProv-->>OppMgr: Collection con oportunidades actualizadas
+
+    OppMgr-->>Ribbon: RaiseEvent OpportunityCollectionUpdated("refresh")
+    Note right of Ribbon: mOpportunities_OpportunityCollectionUpdated<br/>llama InvalidarControl("ddlOportunidades")
+    Ribbon->>Ribbon: mribbonUI.InvalidateControl("ddlOportunidades")
+    Note over Ribbon,Usuario: Excel recarga el dropdown de oportunidades
+
+    Note over Usuario,FSWatch: === TAMBIÉN: OppMgr hace RefreshOpportunities internamente ===
+    Note over OppMgr: Tras CreateOpportunity exitoso, tambien<br/>llama RefreshOpportunities() directamente
