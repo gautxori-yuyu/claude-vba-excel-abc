@@ -45,3 +45,9 @@ End Function
 '@Returns: Codigo de oportunidad (ej: "412602001")
 Public Function GetNextOpportunityCode() As String
 End Function
+
+'@Description: Obtiene la ubicacion completa de una oportunidad a partir de su nombre
+'@Param opportunityName: Nombre de la oportunidad
+'@Returns: Ubicacion completa (implementacion concreta decide el formato)
+Public Function GetOpportunityPath(ByVal opportunityName As String) As String
+End Function

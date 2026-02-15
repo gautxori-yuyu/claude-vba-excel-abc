@@ -73,12 +73,6 @@ Public Property Get State() As clsOpportunityState
     Set State = mOpportunityState
 End Property
 
-'@Description: Obtiene la ruta base de oportunidades
-Public Property Get BaseFolder() As String
-    If mOpportunityProvider Is Nothing Then Exit Property
-    BaseFolder = mOpportunityProvider.BasePath
-End Property
-
 '@Description: Obtiene el numero de oportunidades disponibles
 Public Property Get Count() As Long
     Count = mOpportunities.Count
@@ -103,7 +97,7 @@ Public Sub RefreshOpportunities()
     End If
 
     ' Obtener oportunidades del Provider (ya ordenadas)
-    Set mOpportunities = mOpportunityProvider.GetOpportunityFolders()
+    Set mOpportunities = mOpportunityProvider.GetOpportunities()
 
     LogInfo MODULE_NAME, "[RefreshOpportunities] " & mOpportunities.Count & " oportunidades cargadas"
 
@@ -220,10 +214,10 @@ Public Sub CreateNewOpportunity()
         Exit Sub
     End If
 
-    ' Verificar que la carpeta base existe
-    If Not mOpportunityProvider.FolderExists("") Then
+    ' Verificar que la carpeta base existe (nombre vacio -> verifica la raiz)
+    If Not mOpportunityProvider.OpportunityExists("") Then
         ShowTaskDialogError "Ruta no encontrada", "No se pudo abrir la ruta de oportunidades.", _
-                            "La carpeta configurada no está accesible: " & vbCrLf & BaseFolder
+                            "La carpeta configurada no está accesible: " & vbCrLf & mOpportunityProvider.GetOpportunityPath("")
         Exit Sub
     End If
 
@@ -242,7 +236,7 @@ Public Sub CreateNewOpportunity()
     opportunityName = strOpCode & " - " & strCustomer & " - XXX"
 
     ' Crear carpeta
-    If mOpportunityProvider.CreateOpportunityFolder(opportunityName) Then
+    If mOpportunityProvider.CreateOpportunity(opportunityName) Then
         LogInfo MODULE_NAME, "[CreateNewOpportunity] Oportunidad creada: " & opportunityName
         RefreshOpportunities
     Else
@@ -276,7 +270,7 @@ End Function
 '@Description: Obtiene la ruta de una oportunidad por indice (para UI)
 Public Function GetOpportunityPathByIndex(ByVal idx As Long) As String
     If idx >= 0 And idx < mOpportunities.Count Then
-        GetOpportunityPathByIndex = mOpportunityProvider.GetFullPath(mOpportunities(idx + 1))
+        GetOpportunityPathByIndex = mOpportunityProvider.GetOpportunityPath(mOpportunities(idx + 1))
     End If
 End Function
 
@@ -302,7 +296,7 @@ Private Function CreateOpportunityFromName(ByVal opportunityName As String) As c
     Set op = New clsOpportunity
 
     op.Label = opportunityName
-    op.path = mOpportunityProvider.GetFullPath(opportunityName)
+    op.path = mOpportunityProvider.GetOpportunityPath(opportunityName)
 
     ' Extraer informacion del nombre
     ' Formato tipico: "412601015 - Cliente - Proyecto - Modelo"

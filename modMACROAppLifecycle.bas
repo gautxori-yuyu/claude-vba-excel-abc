@@ -269,22 +269,17 @@ Attribute RecuperarRibbon.VB_ProcData.VB_Invoke_Func = " \n0"
         Exit Sub
     End If
 
-    ' PASO 2: Toggle del add-in (disruptivo: Excel recarga el ribbon y llama a onLoad)
-    Dim result As TDRESULT
-    result = ShowTaskDialogYesNo("Recuperar Ribbon", _
-                                 "Recuperacion rapida fallida", _
-                                 "Se desactivara y reactivara el complemento." & vbCrLf & _
-                                 "Excel recargara la cinta de opciones. Continuar?")
-    If result <> vbYes Then Exit Sub
-
-    If RecoverByAddinToggle() Then
-        ShowTaskDialogError "Recuperacion Exitosa", "Ribbon recargado", GetRibbonDiagnostics()
-    Else
-        ShowTaskDialogError "Recuperacion Fallida", "Sin solucion automatica", _
-                            "Recomendaciones:" & vbCrLf & _
-                            "1. Cierre Excel completamente" & vbCrLf & _
-                            "2. Vuelva a abrir Excel"
-    End If
+    ' PASO 2 (DESHABILITADO): Toggle del add-in
+    ' Al deshabilitar el XLAM se pierde el control del programa y se produce un reinicio
+    ' de la aplicacion. Este mecanismo es mas destructivo que util.
+    ' Mantener como referencia pero NO ejecutar automaticamente.
+    '
+    ' Para recuperacion manual si el PASO 1 falla: cerrar y reabrir Excel.
+    ShowTaskDialogError "Recuperacion Fallida", "Ribbon no recuperado", _
+                        "La recuperacion automatica no tuvo exito." & vbCrLf & _
+                        "Recomendaciones:" & vbCrLf & _
+                        "1. Cierre Excel completamente" & vbCrLf & _
+                        "2. Vuelva a abrir Excel"
 End Sub
 
 '@Description: Muestra el diagnostico del Ribbon en un cuadro de dialogo

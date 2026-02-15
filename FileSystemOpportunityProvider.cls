@@ -79,6 +79,10 @@ Private Function IOpportunityProvider_GetNextOpportunityCode() As String
     IOpportunityProvider_GetNextOpportunityCode = GetNextOpportunityCode()
 End Function
 
+Private Function IOpportunityProvider_GetOpportunityPath(ByVal opportunityName As String) As String
+    IOpportunityProvider_GetOpportunityPath = GetFullPath(opportunityName)
+End Function
+
 ' ==================================================================
 ' METODOS PUBLICOS (implementacion concreta)
 ' ==================================================================

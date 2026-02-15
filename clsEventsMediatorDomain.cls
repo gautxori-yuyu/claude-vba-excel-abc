@@ -110,17 +110,21 @@ End Sub
 '      1. Delegarse a un servicio de infraestructura (FileLocationService?), o
 '      2. El mediador de infraestructura deberia exponer un evento/metodo semantico
 '      Pendiente de decision cuando se tenga la especificacion de dominio.
+'      El bloque de MoverAOp esta comentado hasta que se defina el servicio correcto.
 Private Sub mOpportunities_CurrentOpportunityChanged(ByVal opportunityName As String, ByVal opportunityPath As String)
     LogInfo MODULE_NAME, "[callback: clsOpportunitiesMgr CurrentOpportunityChanged] Oportunidad seleccionada: " & opportunityPath
 
-    ' TEMPORAL: Uso directo de clsFileXLS (ver TODO arriba)
-    Dim f As clsFileXLS
-    Set f = mFileMgr.GetOrTrackWorkbook(mCtxState.Workbook)
-    If Not f Is Nothing Then
-        If f.DebeMoverseAOp(opportunityPath, mOpportunities.BaseFolder) Then
-            f.MoverAOp opportunityPath, mOpportunities.BaseFolder
-        End If
-    End If
+    ' TEMPORAL (DESHABILITADO): Logica de "mover archivo a carpeta de oportunidad"
+    ' Requiere acceso a mOpportunities.BaseFolder que viola Demeter + la logica
+    ' de movimiento de archivos debe estar en un servicio de infraestructura.
+    ' Ver TODO arriba para la decision arquitectonica pendiente.
+'    Dim f As clsFileXLS
+'    Set f = mFileMgr.GetOrTrackWorkbook(mCtxState.Workbook)
+'    If Not f Is Nothing Then
+'        If f.DebeMoverseAOp(opportunityPath, baseFolder) Then
+'            f.MoverAOp opportunityPath, baseFolder
+'        End If
+'    End If
 End Sub
 
 
