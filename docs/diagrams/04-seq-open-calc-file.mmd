@@ -38,7 +38,14 @@ sequenceDiagram
     Note right of CtxMgr: m_xlApp_WorkbookOpen(wb)<br/>RaiseEvent WorkbookOpened(wb)
 
     CtxMgr-->>InfraMed: WorkbookOpened(wb)
+    Note right of InfraMed: mCtx_WorkbookOpened:<br/>SOLO notificacion, no hace tracking.<br/>El tracking ocurre en WorkbookActivated.
+
+    XL-->>CtxMgr: WorkbookActivate(wb)
+    Note right of CtxMgr: m_xlApp_WorkbookActivate(wb)<br/>RaiseEvent WorkbookActivated(wb)
+
+    CtxMgr-->>InfraMed: WorkbookActivated(wb)
     InfraMed->>FileMgr: GetOrTrackWorkbook(wb)
+    Note right of FileMgr: Puede tardar segundos:<br/>AnalizarWorkBook espera a que<br/>Excel termine de cargar el fichero.
     FileMgr->>FileXLS: New clsFileXLS
     FileMgr->>FileXLS: BindTo(wb)
     FileXLS->>FileXLS: AnalizarWorkBook()
@@ -46,14 +53,15 @@ sequenceDiagram
     Note over FileXLS: [PROBLEMA ACTUAL]<br/>IsOpportunityFile = usa regex en filename<br/>NO verifica membership en OppMgr!<br/>Puede dar falsos positivos/negativos.
 
     FileXLS-->>FileMgr: clsFileXLS (con IsOpportunityFile por regex)
-    FileMgr->>FileMgr: Actualiza mState.CurrentFile
+    FileMgr->>FileMgr: SetActiveFile(f)
+    Note right of FileMgr: RaiseEvent ActiveFileChanged(f)<br/>Actualiza mState.CurrentFile
 
     InfraMed-->>EvDomain: RaiseEvent ActiveFileSessionChanged(path, isOpportunity)
-    Note right of EvDomain: mInfraMediador_ActiveFileSessionChanged<br/>Solo loguea - NO hace SetCurrentOpportunity!
+    Note right of EvDomain: mInfraMediador_ActiveFileSessionChanged<br/>Llama FindOpportunityForFile(path)<br/>pero el fichero NO esta en carpeta de oportunidad<br/>-> matchedOp = Nothing -> NO SetCurrentOpportunity
 
     Note over EvDomain,OppMgr: [BRECHA ACTUAL]: El archivo abierto NO<br/>activa automaticamente la oportunidad<br/>correspondiente en OppMgr.
 
-    CtxMgr-->>Ribbon: [via AppState] Invalida controles
+    CtxMgr-->>Ribbon: [via clsRibbon.mFileMgr_ActiveFileChanged] Invalida controles
 
     Note over Ribbon: GetRibbonControlEnabled()<br/>lee IsOpportunityFile desde AppState<br/>(que viene de clsFileXLS.IsOpportunityFile)<br/>= valor basado en regex, no en dominio
 

@@ -87,10 +87,11 @@ End Sub
 '@ArgumentDescriptions: wb As Workbook
 
 Private Sub mCtxMgr_WorkbookActivated(ByVal Wb As Workbook)
-    LogDebug MODULE_NAME, "[mCtx_WorkbookActivated] " & Wb.Name
+    LogDebug MODULE_NAME, "[mCtx_WorkbookActivated] " & Wb.Name & " -> GetOrTrackWorkbook + SetActiveFile"
 
-    ' Actualizar el archivo activo en FileManager
-    ' Esto dispara ActiveFileChanged -> sincroniza estado del ribbon
+    ' AQUI ocurre el tracking real: GetOrTrackWorkbook puede tardar varios segundos
+    ' si AnalizarWorkBook necesita leer el contenido del workbook (Excel aun cargando).
+    ' Esto dispara ActiveFileChanged -> sincroniza estado del ribbon.
     If Not mFileMgr Is Nothing Then
         Dim f As clsFileXLS
         Set f = mFileMgr.GetOrTrackWorkbook(Wb)
@@ -132,7 +133,10 @@ End Sub
 
 '@Description: Callback cuando se abre un workbook
 Private Sub mCtxMgr_WorkbookOpened(ByVal Wb As Workbook)
-    LogDebug MODULE_NAME, "[mCtx_WorkbookOpened] " & Wb.Name
+    ' NOTA: WorkbookOpened solo notifica la apertura. El tracking real se hace en
+    ' mCtxMgr_WorkbookActivated (WorkbookActivate), que es cuando Excel tiene el
+    ' workbook completamente disponible para operaciones COM.
+    LogDebug MODULE_NAME, "[mCtx_WorkbookOpened] " & Wb.Name & " (solo notificacion; tracking en WorkbookActivated)"
 End Sub
 
 '@Description: Callback cuando se cierra un workbook
