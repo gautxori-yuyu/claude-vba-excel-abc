@@ -10,42 +10,35 @@ Attribute VB_Exposed = False
 ' ==================================================================
 ' INTERFAZ DE DOMINIO: IOpportunityProvider
 ' ==================================================================
-' Define el contrato para obtener oportunidades.
+' Define el contrato para obtener y gestionar oportunidades.
 ' El dominio usa esta interfaz sin conocer la implementacion concreta
 ' (sistema de archivos, base de datos, API, etc.)
 '
-' Implementada por: FileSystemOpportunityProvider (infraestructura)
+' PRINCIPIO: Las firmas son agnosticas de infraestructura.
+' No hay referencias a carpetas, rutas ni filesystem.
+'
+' Implementada por: FileSystemOpportunityProvider (capa 2 - Infraestructura)
+' Consumida por:    clsOpportunitiesMgr (capa 3 - Dominio)
 ' ==================================================================
 
 '@Folder "3-Dominio"
 Option Explicit
 
-'@Description: Obtiene los nombres de las carpetas de oportunidad validas, ordenados para presentacion
+'@Description: Obtiene los nombres de oportunidades disponibles, ordenados para presentacion
 '@Returns: Collection de String con nombres de oportunidades
-Public Function GetOpportunityFolders() As Collection
+Public Function GetOpportunities() As Collection
 End Function
 
-'@Description: Verifica si una carpeta de oportunidad existe
-'@Param folderName: Nombre de la carpeta (sin ruta base)
+'@Description: Verifica si una oportunidad con ese nombre existe
+'@Param opportunityName: Nombre de la oportunidad (sin detalles de ruta)
 '@Returns: True si existe
-Public Function FolderExists(ByVal folderName As String) As Boolean
+Public Function OpportunityExists(ByVal opportunityName As String) As Boolean
 End Function
 
-'@Description: Crea una nueva carpeta de oportunidad desde plantilla
+'@Description: Crea una nueva oportunidad con el nombre indicado
 '@Param opportunityName: Nombre completo de la nueva oportunidad
 '@Returns: True si se creo exitosamente
-Public Function CreateOpportunityFolder(ByVal opportunityName As String) As Boolean
-End Function
-
-'@Description: Obtiene la ruta base donde se almacenan las oportunidades
-'@Returns: Ruta completa del directorio base
-Public Property Get BasePath() As String
-End Property
-
-'@Description: Construye la ruta completa de una oportunidad
-'@Param folderName: Nombre de la carpeta de oportunidad
-'@Returns: Ruta completa (BasePath + folderName)
-Public Function GetFullPath(ByVal folderName As String) As String
+Public Function CreateOpportunity(ByVal opportunityName As String) As Boolean
 End Function
 
 '@Description: Genera el siguiente codigo de oportunidad disponible

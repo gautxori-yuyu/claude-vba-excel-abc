@@ -57,24 +57,22 @@ End Sub
 ' IMPLEMENTACION DE IOpportunityProvider
 ' ==================================================================
 
-Private Function IOpportunityProvider_GetOpportunityFolders() As Collection
-    Set IOpportunityProvider_GetOpportunityFolders = GetOpportunityFolders()
+' ==================================================================
+' IMPLEMENTACION DE IOpportunityProvider
+' Stubs privados que delegan en los metodos publicos concretos.
+' Los nombres siguen la convencion VBA: IInterfaz_Metodo
+' ==================================================================
+
+Private Function IOpportunityProvider_GetOpportunities() As Collection
+    Set IOpportunityProvider_GetOpportunities = GetOpportunityFolders()
 End Function
 
-Private Function IOpportunityProvider_FolderExists(ByVal folderName As String) As Boolean
-    IOpportunityProvider_FolderExists = FolderExists(folderName)
+Private Function IOpportunityProvider_OpportunityExists(ByVal opportunityName As String) As Boolean
+    IOpportunityProvider_OpportunityExists = FolderExists(opportunityName)
 End Function
 
-Private Function IOpportunityProvider_CreateOpportunityFolder(ByVal opportunityName As String) As Boolean
-    IOpportunityProvider_CreateOpportunityFolder = CreateOpportunityFolder(opportunityName)
-End Function
-
-Private Property Get IOpportunityProvider_BasePath() As String
-    IOpportunityProvider_BasePath = BasePath
-End Property
-
-Private Function IOpportunityProvider_GetFullPath(ByVal folderName As String) As String
-    IOpportunityProvider_GetFullPath = GetFullPath(folderName)
+Private Function IOpportunityProvider_CreateOpportunity(ByVal opportunityName As String) As Boolean
+    IOpportunityProvider_CreateOpportunity = CreateOpportunityFolder(opportunityName)
 End Function
 
 Private Function IOpportunityProvider_GetNextOpportunityCode() As String
@@ -153,7 +151,7 @@ Public Function FolderExists(ByVal folderName As String) As Boolean
 End Function
 
 '@Description: Crea una nueva carpeta de oportunidad desde plantilla
-Private Function CreateOpportunityFolder(ByVal opportunityName As String) As Boolean
+Public Function CreateOpportunityFolder(ByVal opportunityName As String) As Boolean
     On Error GoTo ErrHandler
 
     If mFileManager Is Nothing Then
