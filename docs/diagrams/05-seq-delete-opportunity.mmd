@@ -5,38 +5,38 @@ sequenceDiagram
     %% ============================================================
     title Eliminar Oportunidad (deteccion por FileSystemWatcher)
 
-    actor Usuario as Usuario\n(Explorador Windows)
+    actor Usuario as "Usuario (Explorador Windows)"
 
     box "Sistema Operativo"
-        participant OS as FileSystem\n(Windows)
-    end box
+        participant OS as "FileSystem (Windows)"
+    end
 
     box "2-Infraestructura (bajo nivel)"
-        participant FSWatch as clsFSWatcher\n(COM Wrapper)
+        participant FSWatch as "clsFSWatcher (COM Wrapper)"
         participant FSCoord as clsFSMonitoringCoord
-    end box
+    end
 
     box "1-Aplicacion"
         participant EvDomain as clsEventsMediatorDomain
-    end box
+    end
 
     box "3-Dominio"
         participant OppMgr as clsOpportunitiesMgr
         participant OppState as clsOpportunityState
-    end box
+    end
 
     box "2-Infraestructura (providers)"
         participant OppProv as FileSystemOpportunityProvider
         participant FileMgr as clsFileManager
-    end box
+    end
 
     box "4-UI"
         participant Ribbon as clsRibbon
-    end box
+    end
 
     Note over Usuario,Ribbon: === PARTE 1: ELIMINACION FISICA ===
 
-    Usuario->>OS: Elimina carpeta\n"SAM2602001 - ClienteABC - ProyectoXYZ - XXX"
+    Usuario->>OS: Elimina carpeta "SAM2602001 - ClienteABC - ProyectoXYZ - XXX"
     OS-->>FSWatch: [evento COM: FolderDeleted]
     Note right of FSWatch: fw_FolderDeleted(parentPath, folderName)<br/>RaiseEvent SubfolderDeleted(parentPath, folderName)
 
@@ -52,7 +52,8 @@ sequenceDiagram
     OppMgr->>OppProv: GetOpportunities()
     OppProv->>FileMgr: ListarSubcarpetas(BasePath)
     FileMgr-->>OppProv: Lista sin la carpeta eliminada
-    OppProv-->>OppMgr: Collection<String> [ACTUAL] /\nCollection<clsOpportunity> [OBJETIVO]\nsin "SAM2602001 - ..."
+    Note right of OppProv: [ACTUAL] Devuelve Collection(String)<br/>[OBJETIVO] Devuelve Collection(clsOpportunity)<br/>sin "SAM2602001 - ..."
+    OppProv-->>OppMgr: Collection actualizada (sin oportunidad eliminada)
 
     Note over OppMgr: === CASO CRITICO: La oportunidad eliminada ERA la actual ===
 
@@ -70,21 +71,21 @@ sequenceDiagram
 
         OppMgr-->>Ribbon: RaiseEvent OpportunityCollectionUpdated("delete")
         Ribbon->>Ribbon: InvalidarControl("ddlOportunidades")
-        Note right of Ribbon: Dropdown se actualiza:\nYa no muestra la oportunidad eliminada.\nbtnGenerarGraficos deshabilitado\n(no hay oportunidad activa)
+        Note right of Ribbon: Dropdown se actualiza:<br/>Ya no muestra la oportunidad eliminada.<br/>btnGenerarGraficos deshabilitado<br/>(no hay oportunidad activa)
         Ribbon-->>Usuario: UI actualizada (sin la oportunidad eliminada)
 
     else La oportunidad eliminada NO era la actual
         OppMgr-->>Ribbon: RaiseEvent OpportunityCollectionUpdated("delete")
         Ribbon->>Ribbon: InvalidarControl("ddlOportunidades")
-        Note right of Ribbon: Solo se actualiza la lista del dropdown.\nLa oportunidad activa se mantiene.
+        Note right of Ribbon: Solo se actualiza la lista del dropdown.<br/>La oportunidad activa se mantiene.
         Ribbon-->>Usuario: Dropdown actualizado (sin la eliminada)
     end
 
-    Note over Usuario,Ribbon: === CASO: SE RENOMDRA UNA OPORTUNIDAD ===
+    Note over Usuario,Ribbon: === CASO: SE RENOMBRA UNA OPORTUNIDAD ===
 
     Note over FSWatch,FSCoord: Si el usuario renombra (Ctrl+Z o rename):
     FSWatch-->>FSCoord: SubfolderRenamed(parent, oldName, newName)
     FSCoord-->>EvDomain: RaiseEvent OpportunityRenamed(parent, old, new)
     EvDomain->>OppMgr: ProcesarCambiosEnOportunidades(oldName)
     EvDomain->>OppMgr: ProcesarCambiosEnOportunidades(newName)
-    Note over OppMgr: Dos llamadas a RefreshOpportunities()<br/>La segunda trae el nuevo nombre ya disponible.\n[OBJETIVO]: Una sola llamada a<br/>RefreshOpportunities() con ambos nombres.
+    Note over OppMgr: Dos llamadas a RefreshOpportunities()<br/>La segunda trae el nuevo nombre ya disponible.<br/>[OBJETIVO]: Una sola llamada a<br/>RefreshOpportunities() con ambos nombres.

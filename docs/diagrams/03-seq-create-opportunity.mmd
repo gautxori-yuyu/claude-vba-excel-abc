@@ -9,23 +9,23 @@ sequenceDiagram
 
     box "4-UI"
         participant Ribbon as clsRibbon
-    end box
+    end
 
     box "1-Aplicacion"
         participant App as clsApplication
         participant EvDomain as clsEventsMediatorDomain
-    end box
+    end
 
     box "3-Dominio"
         participant OppMgr as clsOpportunitiesMgr
-    end box
+    end
 
     box "2-Infraestructura"
         participant OppProv as FileSystemOpportunityProvider
         participant FileMgr as clsFileManager
         participant FSCoord as clsFSMonitoringCoord
         participant FSWatch as clsFSWatcher
-    end box
+    end
 
     Note over Usuario,FSWatch: === PARTE 1: USUARIO CREA LA OPORTUNIDAD ===
 
@@ -70,7 +70,7 @@ sequenceDiagram
     Note right of OppMgr: Verifica regex FILEORFOLDERNAME_QUOTE...<br/>Si coincide -> RefreshOpportunities()
     OppMgr->>OppProv: GetOpportunities()
 
-    Note right of OppProv: [ACTUAL] Devuelve Collection<String><br/>[OBJETIVO] Devuelve Collection<clsOpportunity><br/>con path sellado en cada objeto
+    Note right of OppProv: [ACTUAL] Devuelve Collection(String)<br/>[OBJETIVO] Devuelve Collection(clsOpportunity)<br/>con path sellado en cada objeto
 
     OppProv-->>OppMgr: Collection con oportunidades actualizadas
 
@@ -79,5 +79,5 @@ sequenceDiagram
     Ribbon->>Ribbon: mribbonUI.InvalidateControl("ddlOportunidades")
     Note over Ribbon,Usuario: Excel recarga el dropdown de oportunidades
 
-    Note over Usuario,FSWatch: === TAMBIÉN: OppMgr hace RefreshOpportunities internamente ===
+    Note over Usuario,FSWatch: === TAMBIEN: OppMgr hace RefreshOpportunities internamente ===
     Note over OppMgr: Tras CreateOpportunity exitoso, tambien<br/>llama RefreshOpportunities() directamente

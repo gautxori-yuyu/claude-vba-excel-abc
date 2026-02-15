@@ -9,27 +9,27 @@ sequenceDiagram
 
     box "Excel COM"
         participant XL as Excel.Application
-    end box
+    end
 
     box "2-Infraestructura"
         participant CtxMgr as clsExecutionContextMgr
         participant InfraMed as clsEventsMediatorInfrastructure
         participant FileMgr as clsFileManager
         participant FileXLS as clsFileXLS
-    end box
+    end
 
     box "1-Aplicacion"
         participant EvDomain as clsEventsMediatorDomain
-    end box
+    end
 
     box "3-Dominio"
         participant OppMgr as clsOpportunitiesMgr
-    end box
+    end
 
     box "4-UI"
         participant Ribbon as clsRibbon
         participant AppState as clsApplicationState
-    end box
+    end
 
     Note over Usuario,AppState: === ESTADO ACTUAL (PROBLEMAS MARCADOS) ===
 
