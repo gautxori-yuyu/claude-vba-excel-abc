@@ -15,24 +15,16 @@ Private Enum FNTag
     tStages
 End Enum
 
-' Regex reutilizable a nivel de modulo (inicializada una sola vez, Late Binding)
-Private mRegEx As Object
-
-Private Function GetRegEx() As Object
-    If mRegEx Is Nothing Then Set mRegEx = CreateObject("VBScript.RegExp")
-    Set GetRegEx = mRegEx
-End Function
-
 '@Description: Devuelve el nombre del archivo actual (con extensión)
 '@Category: Información de Archivo
 '@ArgumentDescriptions: (sin argumentos)
 Private Function getFileNameTag(tag As FNTag, fileName As String) As String
     Dim regEx As Object
     Dim matches As Object, sm As Integer
-
+    
     On Error GoTo ErrorHandler
-
-    Set regEx = GetRegEx()
+    
+    Set regEx = CreateObject("VBScript.RegExp")
     regEx.IgnoreCase = True
     
     Select Case tag
@@ -219,7 +211,7 @@ Attribute GetContextFileName.VB_ProcData.VB_Invoke_Func = " \n21"
     On Error GoTo ErrorHandler
     Select Case True
         Case TypeName(Item) = "File"                 ' Se procesa un Path
-            If EsLibroExcel(Item.Path) Then
+            If EsLibroExcel(Item.path) Then
                 GetContextFileName = Item.Name
             End If
         Case TypeOf Item Is Workbook                   ' se procesa un Workbook

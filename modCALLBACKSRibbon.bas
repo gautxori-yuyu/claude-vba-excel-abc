@@ -569,6 +569,7 @@ Public Sub GetOpGrpEnabled(control As IRibbonControl, ByRef Visible)
 Attribute GetOpGrpEnabled.VB_ProcData.VB_Invoke_Func = " \n0"
     On Error GoTo ErrHandler
     Visible = App.State.IsOpportunityMgrEnabled
+    LogDebug MODULE_NAME, "[GetOpGrpEnabled] IsOpportunityMgrEnabled=" & CStr(Visible)
     Exit Sub
 
 ErrHandler:

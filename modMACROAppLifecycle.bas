@@ -56,9 +56,9 @@ Public Sub ReiniciarAplicacion()
 Attribute ReiniciarAplicacion.VB_ProcData.VB_Invoke_Func = " \n0"
     Dim result As TDRESULT
 
-    result = ShowTaskDialogYesNo("Reiniciar Aplicacion", _
-                                 "Reiniciar el complemento ABC?", _
-                                 "Se cerrara y volvera a inicializar la aplicacion.")
+    result = ShowTaskDialogYesNo("Reiniciar Aplicación", _
+                                 "¿Reiniciar el complemento ABC?", _
+                                 "Se cerrará y volverá a inicializar la aplicación.")
 
     If result <> vbYes Then Exit Sub
 
@@ -83,12 +83,12 @@ Attribute ReiniciarAplicacion.VB_ProcData.VB_Invoke_Func = " \n0"
     ' Verificar estado
     If IsRibbonAvailable() Then
         ShowTaskDialogError "Reinicio Exitoso", _
-                            "Aplicacion reiniciada correctamente", _
+                            "Aplicación reiniciada correctamente", _
                             GetRibbonDiagnostics()
     Else
         ShowTaskDialogError "Reinicio Parcial", _
-                            "Aplicacion reiniciada con advertencias", _
-                            "El Ribbon puede requerir atencion. Ejecute 'RecuperarRibbon' si es necesario."
+                            "Aplicación reiniciada con advertencias", _
+                            "El Ribbon puede requerir atención adicional. Ejecute 'RecuperarRibbon' si es necesario."
     End If
 End Sub
 
@@ -138,7 +138,10 @@ End Property
 ' ==========================================
 
 '@Description: Activa temporalmente la visibilidad del XLAM para operaciones de copia
+'              Muestra el libro que contiene este XLAM, haciéndolo visible en la interfaz de Excel.
 '@Scope: Manipula el libro host del complemento XLAM cargado.
+'@ArgumentDescriptions: (no tiene argumentos)
+'@Returns: (ninguno)
 '@Category: ComplementosExcel
 Sub DesactivarModoAddin()
 Attribute DesactivarModoAddin.VB_ProcData.VB_Invoke_Func = " \n0"
@@ -154,6 +157,10 @@ ErrHandler:
 End Sub
 
 '@Description: Restaura el estado de IsAddin del XLAM
+'              Oculta el libro que contiene este XLAM, dejando el complemento operativo pero sin mostrar su ventana.
+'@Scope: Manipula el libro host del complemento XLAM cargado.
+'@ArgumentDescriptions: (no tiene argumentos)
+'@Returns: (ninguno)
 '@Category: ComplementosExcel
 Sub RestaurarModoAddin()
 Attribute RestaurarModoAddin.VB_ProcData.VB_Invoke_Func = " \n0"
@@ -168,6 +175,7 @@ End Sub
 
 ' ==========================================
 ' GESTION DEL RIBBON
+' MACROS PUBLICAS (Accesibles por el usuario)
 ' ==========================================
 
 '@Description: Procedimiento puente para el atajo de teclado
@@ -259,7 +267,7 @@ Attribute RecuperarRibbon.VB_ProcData.VB_Invoke_Func = " \n0"
 
     ' Si ya esta disponible, no hacer nada
     If IsRibbonAvailable() Then
-        ShowTaskDialogError "Ribbon OK", "Estado correcto", "El Ribbon ya esta funcionando correctamente."
+        ShowTaskDialogError "Ribbon OK", "Estado correcto", "El Ribbon ya está funcionando correctamente."
         Exit Sub
     End If
 
@@ -273,20 +281,37 @@ Attribute RecuperarRibbon.VB_ProcData.VB_Invoke_Func = " \n0"
     ' Al deshabilitar el XLAM se pierde el control del programa y se produce un reinicio
     ' de la aplicacion. Este mecanismo es mas destructivo que util.
     ' Mantener como referencia pero NO ejecutar automaticamente.
-    '
+#If False Then
+    Dim result As TDRESULT
+    result = ShowTaskDialogYesNo("Recuperar Ribbon", _
+                                 "Recuperacion rapida fallida", _
+                                 "Se desactivara y reactivara el complemento." & vbCrLf & _
+                                 "Excel recargara la cinta de opciones. Continuar?")
+    If result <> vbYes Then Exit Sub
+
+    If RecoverByAddinToggle() Then
+        ShowTaskDialogError "Recuperacion Exitosa", "Ribbon recargado", GetRibbonDiagnostics()
+    Else
+        ShowTaskDialogError "Recuperacion Fallida", "Sin solucion automatica", _
+                            "Recomendaciones:" & vbCrLf & _
+                            "1. Cierre Excel completamente" & vbCrLf & _
+                            "2. Vuelva a abrir Excel"
+    End If
+#Else
     ' Para recuperacion manual si el PASO 1 falla: cerrar y reabrir Excel.
     ShowTaskDialogError "Recuperacion Fallida", "Ribbon no recuperado", _
                         "La recuperacion automatica no tuvo exito." & vbCrLf & _
                         "Recomendaciones:" & vbCrLf & _
                         "1. Cierre Excel completamente" & vbCrLf & _
                         "2. Vuelva a abrir Excel"
+#End If
 End Sub
 
 '@Description: Muestra el diagnostico del Ribbon en un cuadro de dialogo
 Public Sub MostrarDiagnosticoRibbon()
 Attribute MostrarDiagnosticoRibbon.VB_ProcData.VB_Invoke_Func = " \n0"
     LogInfo MODULE_NAME, "[MostrarDiagnosticoRibbon] Solicitado"
-    ShowTaskDialogError "Diagnostico del Ribbon", "Estado actual del ribbon", GetRibbonDiagnostics()
+    ShowTaskDialogError "Diagnóstico del Ribbon", "Estado actual del  ribbon", GetRibbonDiagnostics()
 End Sub
 
 ' ------------------------------------------
@@ -353,13 +378,32 @@ Attribute IsRibbonAvailable.VB_ProcData.VB_Invoke_Func = " \n0"
     On Error Resume Next
 
     Dim mApp As clsApplication
+    ' Verificar que App existe
     Set mApp = App
-    If mApp Is Nothing Then IsRibbonAvailable = False: Exit Function
-    If mApp.ribbon Is Nothing Then IsRibbonAvailable = False: Exit Function
-    If mApp.ribbon.ribbonUI Is Nothing Then IsRibbonAvailable = False: Exit Function
+    If mApp Is Nothing Then
+        LogDebug MODULE_NAME, "IsRibbonAvailable: App Is Nothing"
+        IsRibbonAvailable = False
+        Exit Function
+    End If
 
+    ' Verificar que Ribbon existe
+    If mApp.ribbon Is Nothing Then
+        LogDebug MODULE_NAME, "IsRibbonAvailable: App.Ribbon Is Nothing"
+        IsRibbonAvailable = False
+        Exit Function
+    End If
+
+    ' Verificar que ribbonUI existe
+    If mApp.ribbon.ribbonUI Is Nothing Then
+        LogDebug MODULE_NAME, "IsRibbonAvailable: ribbonUI Is Nothing"
+        IsRibbonAvailable = False
+        Exit Function
+    End If
+
+    ' Intentar una operacion simple para verificar que funciona
     IsRibbonAvailable = (TypeName(mApp.ribbon.ribbonUI) <> "Nothing")
     If Err.Number <> 0 Then
+        LogWarning MODULE_NAME, "IsRibbonAvailable: Error al verificar - " & Err.Description
         IsRibbonAvailable = False
         Err.Clear
     End If
@@ -431,6 +475,7 @@ Private Function RecoverByAddinToggle() As Boolean
     Dim ai As AddIn
     Dim targetAddin As AddIn
 
+    ' Buscar nuestro add-in
     For Each ai In Application.AddIns
         If ai.Name = APP_NAME & ".xlam" Then
             Set targetAddin = ai
@@ -444,6 +489,7 @@ Private Function RecoverByAddinToggle() As Boolean
         Exit Function
     End If
 
+    ' Solo proceder si esta instalado
     If Not targetAddin.Installed Then
         LogError MODULE_NAME, "[RecoverByAddinToggle] Add-in no esta instalado"
         RecoverByAddinToggle = False
@@ -454,6 +500,7 @@ Private Function RecoverByAddinToggle() As Boolean
     LogDebug MODULE_NAME, "[RecoverByAddinToggle] Desactivando add-in..."
     targetAddin.Installed = False
 
+    ' Pequeña pausa
     DoEvents
     Application.Wait Now + TimeSerial(0, 0, 1)
     DoEvents
@@ -461,10 +508,12 @@ Private Function RecoverByAddinToggle() As Boolean
     LogDebug MODULE_NAME, "[RecoverByAddinToggle] Reactivando add-in..."
     targetAddin.Installed = True
 
+    ' Pausa para que se recargue
     DoEvents
     Application.Wait Now + TimeSerial(0, 0, 2)
     DoEvents
 
+    ' Verificar si se recupero
     RecoverByAddinToggle = IsRibbonAvailable()
 
     If RecoverByAddinToggle Then

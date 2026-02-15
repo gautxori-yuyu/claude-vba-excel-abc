@@ -39,7 +39,8 @@ sequenceDiagram
 
     CtxMgr-->>InfraMed: WorkbookOpened(wb)
     InfraMed->>FileMgr: GetOrTrackWorkbook(wb)
-    FileMgr->>FileXLS: New clsFileXLS; BindTo(wb)
+    FileMgr->>FileXLS: New clsFileXLS
+    FileMgr->>FileXLS: BindTo(wb)
     FileXLS->>FileXLS: AnalizarWorkBook()
 
     Note over FileXLS: [PROBLEMA ACTUAL]<br/>IsOpportunityFile = usa regex en filename<br/>NO verifica membership en OppMgr!<br/>Puede dar falsos positivos/negativos.
