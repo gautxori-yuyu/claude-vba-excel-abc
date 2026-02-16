@@ -244,7 +244,9 @@ Public Sub CreateNewOpportunity()
     Dim opportunityName As String
     opportunityName = strOpCode & " - " & strCustomer & " - XXX"
 
-    ' Crear carpeta
+    ' Crear carpeta y refrescar la lista inmediatamente.
+    ' Nota: el FSWatcher tambien disparara ProcesarCambiosEnOportunidades cuando detecte
+    ' la nueva carpeta, lo que causara un segundo RefreshOpportunities (idempotente, aceptable).
     If mOpportunityProvider.CreateOpportunity(opportunityName) Then
         LogInfo MODULE_NAME, "[CreateNewOpportunity] Oportunidad creada: " & opportunityName
         RefreshOpportunities

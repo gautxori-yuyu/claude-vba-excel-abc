@@ -27,6 +27,7 @@ Private mSAM As Integer
 
 Public Sub ShowUI()
     Dim frm As frmConfiguracion
+    LogDebug MODULE_NAME, "[ShowUI] Abriendo formulario de configuracion"
     Set frm = New frmConfiguracion
     frm.Cargar Me
     frm.Show vbModal

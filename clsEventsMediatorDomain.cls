@@ -170,6 +170,9 @@ Private Function FindOpportunityForFile(ByVal filePath As String) As clsOpportun
     If mOpportunities Is Nothing Then Exit Function
     If Len(filePath) = 0 Then Exit Function
 
+    LogDebug MODULE_NAME, "[FindOpportunityForFile] Buscando oportunidad para: " & filePath & _
+                          " (" & mOpportunities.Count & " oportunidades en coleccion)"
+
     Dim opNames As Collection
     Set opNames = mOpportunities.OpportunityNames
 
@@ -178,12 +181,15 @@ Private Function FindOpportunityForFile(ByVal filePath As String) As clsOpportun
         If Len(Item.path) > 0 Then
             ' Verificar si el archivo esta dentro de la carpeta de la oportunidad
             If InStr(1, filePath, Item.path, vbTextCompare) = 1 Then
+                LogDebug MODULE_NAME, "[FindOpportunityForFile] Coincidencia: " & Item.Label
                 Set FindOpportunityForFile = Item
                 Exit Function
             End If
         End If
     Next Item
+
     ' Devuelve Nothing si no hay coincidencia
+    LogDebug MODULE_NAME, "[FindOpportunityForFile] Sin coincidencia -> SetCurrentOpportunity NO se llamara"
 End Function
 
 ' -------------------------------------------------------------
