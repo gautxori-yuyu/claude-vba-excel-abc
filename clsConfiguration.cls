@@ -16,6 +16,9 @@ Option Explicit
 
 Private Const MODULE_NAME As String = "clsConfiguration"
 
+'@Description: Se dispara cuando cambia la ruta de oportunidades
+Public Event OpportunitiesPathChanged(ByVal newPath As String)
+
 Private mRutaOportunidades As String
 Private mRutaPlantillas As String
 Private mRutaOfergas As String
@@ -41,6 +44,8 @@ End Property
 Public Property Let RutaOportunidades(newRuta As String)
     mRutaOportunidades = newRuta
     GuardarRuta CFG_RUTA_OPORTUNIDADES, newRuta
+    LogDebug MODULE_NAME, "[RutaOportunidades] Ruta cambiada a: " & newRuta
+    RaiseEvent OpportunitiesPathChanged(newRuta)
 End Property
 
 Public Property Get RutaPlantillas() As String

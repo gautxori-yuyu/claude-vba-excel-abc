@@ -243,9 +243,11 @@ Public Sub CreateNewOpportunity()
     opportunityName = strOpCode & " - " & strCustomer & " - XXX"
 
     ' Crear carpeta
+    ' NOTA: NO se llama RefreshOpportunities aqui. El FSWatcher detectara la nueva
+    ' carpeta y llamara ProcesarCambiosEnOportunidades -> RefreshOpportunities.
+    ' Llamarlo aqui tambien causaria una actualizacion doble redundante.
     If mOpportunityProvider.CreateOpportunity(opportunityName) Then
-        LogInfo MODULE_NAME, "[CreateNewOpportunity] Oportunidad creada: " & opportunityName
-        RefreshOpportunities
+        LogInfo MODULE_NAME, "[CreateNewOpportunity] Oportunidad creada: " & opportunityName & " (FSWatcher actualizara lista)"
     Else
         ShowTaskDialogError "Error de Creación", "Error al crear la carpeta de la oportunidad.", _
                             "VBA no pudo crear la carpeta en el sistema de archivos. Revise los permisos o el log para más detalles."
