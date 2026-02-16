@@ -212,6 +212,8 @@ End Sub
 Public Sub CreateNewOpportunity()
     On Error GoTo ErrHandler
 
+    LogDebug MODULE_NAME, "[CreateNewOpportunity] Iniciando creacion de nueva oportunidad"
+
     If mOpportunityProvider Is Nothing Then
         LogError MODULE_NAME, "[CreateNewOpportunity] Provider no ha sido inyectado"
         ShowTaskDialogError "Error Crítico", "Error interno: Provider no disponible", _
@@ -219,11 +221,13 @@ Public Sub CreateNewOpportunity()
         Exit Sub
     End If
 
-    ' Verificar que la carpeta base existe (nombre vacio -> verifica la raiz)
-    If Not mOpportunityProvider.OpportunityExists("") Then
+    ' Verificar que el almacenamiento esta disponible (usa flag, no re-consulta el FS)
+    If Not mOpportunityProvider.StorageAvailable() Then
         ShowTaskDialogError "Ruta no encontrada", "No se pudo abrir la ruta de oportunidades.", _
-                            "La carpeta configurada no está accesible: " & vbCrLf & mOpportunityProvider.GetOpportunityPath("")
+                            "La carpeta de oportunidades no esta accesible. Verifique la configuracion de rutas."
         Exit Sub
+    Else
+        LogDebug MODULE_NAME, "[CreateNewOpportunity] Almacen de oportunidades disponible."
     End If
 
     ' Obtener siguiente codigo
@@ -338,6 +342,8 @@ Private Function GetCustomerNameFromUser(ByVal opCode As String) As String
     Dim regEx As Object
     Set regEx = CreateObject("VBScript.RegExp")
     regEx.Pattern = FILEORFOLDERNAME_QUOTE_CUSTOMER_OTHER_MODEL_PATTERN
+    
+    On Error GoTo ErrHandler
 
     Dim TaskDlg As cTaskDialog
     Set TaskDlg = New cTaskDialog
@@ -375,4 +381,12 @@ Private Function GetCustomerNameFromUser(ByVal opCode As String) As String
         Loop While Not IsValid
     End With
     GetCustomerNameFromUser = strCustomer
+    
+    LogDebug MODULE_NAME, "[GetCustomerNameFromUser] Cliente (+ proyecto): " & strCustomer
+
+    Exit Function
+ErrHandler:
+    LogCurrentError MODULE_NAME, "[GetCustomerNameFromUser]"
+    ShowTaskDialogError "Error Inesperado", "Ocurrió un error inesperado al solicitar el nombre de cliente.", _
+                        "Error: " & Err.Description & " (Nº " & Err.Number & ")"
 End Function

@@ -1,0 +1,149 @@
+<customUI xmlns="http://schemas.microsoft.com/office/2009/07/customui"
+          onLoad="RibbonOnLoad">
+	<ribbon>
+		<tabs>
+			<tab id="tabOfertasEspecial"
+			     label="Ofertas máquina especial"  keytip="E" getVisible="GetTabABCVisible">
+				<group id="grpOportunidadActual"
+				       label="Oportunidad actual"
+					   getVisible="GetOpGrpVisible"
+				       screentip="Configura la oportunidad y compresor que se están procesando">
+                    <dropDown id="ddlOportunidades"
+							sizeString="412507053 - PT. Tripatra Engineering - 2EHG-4-LGT"
+                            getItemCount="GetOportunidadesCount"
+                            getItemLabel="GetOportunidadesLabel"
+                            onAction="OnOportunidadesSeleccionada"
+                            getSelectedItemIndex="GetSelectedOportunidadIndex">
+                        <button id="btnOpRefresh" label="Refrescar" onAction="CallbackRefrescarOportunidades" /> 
+                    </dropDown> 
+					<button id="btnNuevaOp"
+							label="Nueva Oportunidad"
+							onAction="OnNuevaOportunidad"
+							getEnabled="GetNuevaOportunidadEnabled"
+							screentip="Crear nueva carpeta de oportunidad"
+							supertip="Crea en la ruta configurada de oportunidades una carpeta con el patrón 'SAM-año-mes-numero oportunidad'."/>
+                </group>
+				<group id="grpLibroActual"
+				       label="Libro actual"
+				       screentip="Permite procesar el contenido del libro activo, si cumple ciertos requisitos">
+					<menu id="mnuCurvasRendimiento"
+					      label="Curvas de rendimiento"
+					      imageMso="PercentStyle"
+					      size="large"
+					      supertip="Procesa ficheros de curvas de rendimiento.">
+						<button id="btnGenerarGraficos"
+						        label="Generar gráficos"
+						        onAction="OnGenerarGraficosDesdeCurvasRto"
+						        getEnabled="GetGraficoEnabled"
+						        screentip="Generar gráficos"
+						        supertip="Genera gráficos de sensibilidad para las tablas de datos."/>
+						<button id="btnInvertirSeries"
+						        label="Invertir series"
+						        onAction="OnInvertirEjes"
+						        getEnabled="GetInvertirEjesEnabled"
+						        screentip="Invertir series"
+						        supertip="Invierte los ejes primario y secundario del gráfico actual."/>
+					</menu>
+					<menu id="mnuCGASING"
+					      label="Cálculos compresor"
+					      imageMso="CalculateFull"
+					      size="large"
+					      supertip="Procesa fichero de cálculos, C-GAS-ING.">
+						<button id="btnCGASING"
+						        label="C-GAS-ING"
+						        onAction="OnFormatearCGASING"
+						        getEnabled="GetCGASINGEnabled"
+						        screentip="Reordenar C-GAS-ING"
+						        supertip="Reestructura y formatea el contenido de la hoja C-GAS-ING que se adjunta a la oferta."/>
+					</menu>
+					<button id="btnEditableBook"
+					        label="Convertir en 'Editable'"
+					        onAction="OnMakeEditableBook"
+					        imageMso="BroadcastEdit"
+					        size="normal"
+					        supertip="Elimina fórmulas, filas y columnas ocultas, datos sensibles, resetea zoom. Con confirmación del usuario, elimina las hojas NO seleccionadas, si hay una selección de hojas."/>
+					<button id="btnFitForPrint"
+					        label="Ajustar para impresión"
+					        onAction="OnFitForPrint"
+					        size="normal"
+					        supertip="Ajusta el formato *de las hojas seleccionadas*, para su correcta impresión. Configura saltos de página, respetando areas de impresión y filas / columnas ocultas. Ofrece exportar a PDF."/>
+				</group>
+				<group id="grpUtilids"
+				       label="Utilidades">
+					<button id="btnCompSheets"
+					        label="Comparar hojas"
+					        onAction="OnCompararHojas"
+					        imageMso="ReviewCompareSpecificVersion"
+					        size="normal"
+					        supertip="Compara dos hojas de Excel lado a lado, rellenando opcionalmente el fondo de las celdas con diferencias."/>
+					<button id="btnRowsHeight"
+					        label="Ampliar altura filas"
+					        onAction="OnChangeAlturaFilas"
+					        imageMso="RowHeight"
+					        size="normal"
+					        supertip="Añade altura a las filas; util tras el autoajuste de altura para dejar algo de margen (util para plantilla de budget y quotation, o similares)."/>
+					<button id="btnEvalUDFs"
+					        label="Evaluar UDFs"
+					        onAction="OnEvalUDFs"
+					        size="normal"
+					        supertip="Evalúa en fórmulas las referencias a UDFs definidas en cualquier complemento instalado o libro abierto."/>
+					<button id="btnDirtyRecalc"
+					        label="Forzar recalc."
+					        onAction="OnDirtyRecalc"
+					        size="normal"
+					        supertip="Forzar recálculo de todas las hojas del libro (método 'Dirty')."/>
+                </group>
+				<group id="grpDeveloperAdmin"
+				       label="Desarrollador/Admin." getVisible="GetGrpDeveloperAdminVisible">
+					<button id="btnExportVBAProject"
+					        label="Exportar VBA"
+					        onAction="OnVBAExport"
+					        imageMso="ExportFile"
+					        size="normal"
+					        supertip="Exporta todos los ficheros de proyecto VBA asociados a un libro, en la carpeta del libro."/>
+					<button id="btnBkpVBASrc"
+					        label="Copia Seg. VBA"
+					        onAction="OnVBABackup"
+					        imageMso="ExportFile"
+					        size="normal"
+					        supertip="Crea una copia de seguridad en .ZIP de todos los ficheros de proyecto VBA asociados a un libro."/>
+					<button id="btnImportVBAProject"
+					        label="Importar VBA"
+					        onAction="OnVBAImport"
+					        imageMso="FileImport"
+					        size="normal"
+					        supertip="Importa los ficheros de proyecto VBA a un libro, desde la carpeta en la que se encuentre el libro."/>
+					<button id="btnOpenLog"
+					        label="Abrir Log"
+							onAction="OnOpenLog"
+							getEnabled="GetOpenLogEnabled"
+					        size="normal"
+							supertip="Muestra el foichero de registro del complemento"/>
+					<button id="btnSyncProcsWithXLAMSheet"
+					        label="Sinc. Metadata Procs."
+					        onAction="OnProcMetadataSync"
+					        size="normal"
+					        supertip="Sincroniza procedimientos del proyecto con hoja Excel 'PROCEDIMIENTOS'. Crea la hoja si no existe, o sincroniza cambios bidireccionales si existe.En función de la dirección de sincronización crea copia de seguridad del código VBA a ZIP, o crea copia de seguridad de la hoja 'PROCEDIMIENTOS'."/>
+					<button id="btnToggleXLAM"
+							screentip="Muestra u oculta el libro del complemento"
+							onAction="OnToggleXLAMVisibility"
+							getLabel="GetLabelToggleXLAM"/>
+ 					<button id="btnValidationsToNames"
+					        label="Rangos a nombres"
+					        onAction="OnReplaceWithNamesInValidations"
+					        imageMso="PivotTableCalculateChanges"
+					        size="normal"
+					        supertip="Reemplaza referencias a rangos en celdas con validación de datos, por los nombres definidos que les hagan referencia (util para plantilla de budget y quotation)."/>
+                </group>
+				<!-- Grupo de configuración a la derecha -->
+				<group id="grpConfiguracion" getLabel="GetLabelGrpConfiguracion">
+					<button id="btnConfig"
+					        label="Configuración"
+					        onAction="OnConfigurador"
+					        imageMso="AddInManager"
+					        size="large"/>
+				</group>
+			</tab>
+		</tabs>
+	</ribbon>
+</customUI>

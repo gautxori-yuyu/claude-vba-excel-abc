@@ -565,16 +565,17 @@ ErrHandler:
     Err.Raise Err.Number, MODULE_NAME & "[GetTabABCVisible]", _
               "Error determinando la visibilidad del ribbon: " & Err.Description
 End Sub
-Public Sub GetOpGrpEnabled(control As IRibbonControl, ByRef Visible)
-Attribute GetOpGrpEnabled.VB_ProcData.VB_Invoke_Func = " \n0"
+Public Sub GetOpGrpVisible(control As IRibbonControl, ByRef Visible)
+Attribute GetOpGrpVisible.VB_ProcData.VB_Invoke_Func = " \n0"
     On Error GoTo ErrHandler
     Visible = App.State.IsOpportunityMgrEnabled
+    LogDebug MODULE_NAME, "[GetOpGrpVisible] IsOpportunityMgrEnabled=" & CStr(Visible)
     Exit Sub
 
 ErrHandler:
     Visible = False
-    LogCurrentError MODULE_NAME, "[GetOpGrpEnabled]"
-    Err.Raise Err.Number, MODULE_NAME & "[GetOpGrpEnabled]", _
+    LogCurrentError MODULE_NAME, "[GetOpGrpVisible]"
+    Err.Raise Err.Number, MODULE_NAME & "[GetOpGrpVisible]", _
               "Error determinando la visibilidad del grupo de gestion de oportunidad actual: " & Err.Description
 End Sub
 
