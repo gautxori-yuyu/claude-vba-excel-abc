@@ -226,3 +226,216 @@ Identificados durante el analisis, pendientes de sesiones futuras:
 4. **Patron a extender**: `FileSystemTechnicalCalcProvider` y otros providers deben aplicar
    el mismo patron (asumir responsabilidades de eventos FS) cuando se necesite reaccion
    a cambios en sus carpetas.
+
+---
+---
+
+# Round 2: Limpieza de dominio y reorganizacion de capas
+
+> Rama: `claude/access-previous-session-xIIAn`
+> Fecha: 2026-02-16
+> Continua el trabajo del Round 1
+
+---
+
+## Problemas Adicionales Identificados
+
+Tras el Round 1, quedaban estas inconsistencias:
+
+1. **`clsOpportunitiesMgr.CreateNewOpportunity`** todavia contenia logica de UI
+   (`ShowTaskDialogError`, `cTaskDialog`) y logica de infraestructura (construir
+   nombre de carpeta `code & " - " & customer & " - XXX"`).
+
+2. **`clsOpportunitiesMgr.GetCustomerNameFromUser`** usaba regex directamente
+   (`FILEORFOLDERNAME_QUOTE_CUSTOMER_OTHER_MODEL_PATTERN`) y cTaskDialog.
+
+3. **`clsEventsMediatorDomain`** actuaba como intermediario innecesario para eventos
+   de oportunidades: recibia `OpportunityDetected/Removed` del provider y los
+   reenviaba a `clsOpportunitiesMgr`. Paso extra sin valor.
+
+4. **`clsApplication.InitializeDomain`** instanciaba providers (infraestructura)
+   junto con managers de dominio. Los providers son infraestructura pura.
+
+5. **`FileSystemEconomicQuoteProvider`** existia pero no era instanciado.
+
+---
+
+## Arquitectura Resultante
+
+```
+clsFSMonitoringCoord                    [INFRA: strings crudos del SO]
+    |
+    | OpportunityCreated(parentFolder, subfolderName)
+    v
+FileSystemOpportunityProvider           [INFRA: valida + construye + flujo completo de creacion]
+    - WithEvents mFSMonitoringCoord
+    - IsValidOpportunityName()          <-- regex AQUI
+    - BuildSingleOpportunity()          <-- sella path dentro de clsOpportunity
+    - CreateNewOpportunity()            <-- flujo interactivo completo (codigo, UI, validacion, FS)
+    - GetCustomerNameFromUser()         <-- private, usa cTaskDialog directamente
+    - ValidateOpportunityName()         <-- public, para validacion externa
+    |
+    | RaiseEvent OpportunityDetected(op As clsOpportunity)
+    | RaiseEvent OpportunityRemoved(opportunityCode As String)
+    v
+clsOpportunitiesMgr                     [DOMINIO: puro, sin regex, sin FS, sin UI]
+    - WithEvents mConcreteProvider As FileSystemOpportunityProvider
+    + AddOpportunity(op)                <-- idempotente por Number
+    + RemoveOpportunity(code)
+    + CreateNewOpportunity()            <-- delega 100% al provider
+    - mConcreteProvider_OpportunityDetected   <-- NUEVO: handler directo
+    - mConcreteProvider_OpportunityRemoved    <-- NUEVO: handler directo
+
+clsEventsMediatorDomain                 [APLICACION: solo template/gas/monitoring/context]
+    - SIN WithEvents mOpportunityProvider   <-- ELIMINADO
+    - SIN mFileMgr                          <-- ELIMINADO
+    - Mantiene: mInfraMediador, mFSMonitoringCoord, mOpportunities
+```
+
+**Cambio clave:** Los eventos de oportunidades fluyen directamente del provider al
+manager de dominio, sin pasar por el mediador. El mediador se queda solo con los
+eventos no relacionados con oportunidades.
+
+---
+
+## Diagrama de Flujo: Creacion de Oportunidad (Nueva Oportunidad)
+
+```mermaid
+sequenceDiagram
+    participant User as Usuario
+    participant Ribbon as Ribbon Callback
+    participant Mgr as clsOpportunitiesMgr
+    participant Provider as FileSystemOpportunityProvider
+    participant TD as cTaskDialog
+    participant FS as FileSystem
+
+    User->>Ribbon: Click "Nueva Oportunidad"
+    Ribbon->>Mgr: CreateNewOpportunity()
+    Mgr->>Provider: CreateNewOpportunity()
+
+    Provider->>Provider: StorageAvailable()?
+    Provider->>Provider: GetNextOpportunityCode()
+    Provider->>TD: ShowDialog (pedir cliente)
+    TD-->>User: Input dialog
+    User-->>TD: "Cliente - Proyecto"
+    TD-->>Provider: strCustomer
+
+    Provider->>Provider: ValidateOpportunityName (regex)
+    Provider->>Provider: BuildOpportunityFolderName()
+    Provider->>FS: CopiarCarpeta (plantilla -> destino)
+    Provider->>Provider: BuildSingleOpportunity()
+    Provider-->>Mgr: op (clsOpportunity)
+
+    Mgr->>Mgr: AddOpportunity(op)
+    Mgr->>Mgr: RaiseEvent OpportunityCollectionUpdated
+
+    Note over FS: FSWatcher detecta carpeta nueva
+    FS-->>Provider: mFSMonitoringCoord_OpportunityCreated
+    Provider->>Provider: IsValidOpportunityName (regex)
+    Provider->>Provider: BuildSingleOpportunity()
+    Provider->>Mgr: RaiseEvent OpportunityDetected(op)
+    Mgr->>Mgr: AddOpportunity(op) -> idempotente, ignorada
+```
+
+---
+
+## Diagrama de Flujo: Deteccion Automatica (FSWatcher)
+
+```mermaid
+sequenceDiagram
+    participant OS as Sistema Archivos
+    participant FSW as clsFSWatcher
+    participant FSM as clsFSMonitoringCoord
+    participant Provider as FileSystemOpportunityProvider
+    participant Mgr as clsOpportunitiesMgr
+    participant Mediator as clsEventsMediatorDomain
+
+    OS->>FSW: Carpeta creada
+    FSW->>FSM: SubfolderCreated(parent, name)
+
+    Note over FSM: Clasifica por ruta
+
+    FSM->>Provider: OpportunityCreated(parent, name)
+    Provider->>Provider: IsValidOpportunityName?
+
+    alt Cumple patron
+        Provider->>Provider: BuildSingleOpportunity(name)
+        Provider->>Mgr: RaiseEvent OpportunityDetected(op)
+        Mgr->>Mgr: AddOpportunity(op)
+        Mgr->>Mgr: RaiseEvent OpportunityCollectionUpdated
+    else No cumple patron
+        Provider->>Provider: Log "Ignorado"
+    end
+
+    Note over FSM: Template/Gas events van al mediador
+    FSM->>Mediator: TemplateCreated/GasFileChanged/etc.
+    Mediator->>Mediator: Log + TODO
+```
+
+---
+
+## Diagrama de Capas: clsApplication (Composition Root)
+
+```
+clsApplication.Class_Initialize
+    |
+    |-- InitializeInfrastructure
+    |       |-- clsExecutionContextMgr
+    |       |-- clsFileManager
+    |       |-- clsEventsMediatorInfrastructure (adapter)
+    |       |-- clsConfiguration
+    |       |-- clsFSMonitoringCoord
+    |       |-- FileSystemOpportunityProvider    <-- MOVIDO aqui
+    |       |-- FileSystemTechnicalCalcProvider  <-- MOVIDO aqui
+    |       '-- FileSystemEconomicQuoteProvider  <-- NUEVO
+    |
+    |-- InitializeDomain
+    |       |-- clsOpportunitiesMgr
+    |       |       '-- Initialize(provider, concreteProvider)
+    |       '-- clsEventsMediatorDomain
+    |               '-- Initialize(ctxState, infraMediador, fsCoord, opportunities)
+    |                   // SIN mFileMgr, SIN mOpportunityProvider
+    |
+    '-- InitializeUI
+            |-- clsEventDispatcher
+            '-- clsRibbon
+```
+
+---
+
+## Archivos Modificados (Round 2)
+
+| Archivo | Cambios |
+|---------|---------|
+| `IOpportunityProvider.cls` | Nuevos: `CreateNewOpportunity`, `ValidateOpportunityName`. `CreateOpportunity` devuelve `clsOpportunity` |
+| `FileSystemOpportunityProvider.cls` | Absorbe `GetCustomerNameFromUser`, `CreateNewOpportunity` completo, `ValidateOpportunityName`, `BuildOpportunityFolderName` |
+| `clsOpportunitiesMgr.cls` | Simplifica `CreateNewOpportunity` (delega a provider). Elimina `GetCustomerNameFromUser`. Agrega `WithEvents mConcreteProvider` + handlers |
+| `clsEventsMediatorDomain.cls` | Elimina `WithEvents mOpportunityProvider`, `mFileMgr`, handlers de provider. Initialize de 6 a 4 parametros |
+| `clsApplication.cls` | Providers/Config/Monitoring a `InitializeInfrastructure`. Nuevo `mQuoteProvider`. DisposeDomain simplificado |
+| `mTDHelper.bas` | Nuevo `ShowTaskDialogInputBox` generico |
+
+---
+
+## Verificacion (Round 2)
+
+### Consistencia de firmas
+- `clsOpportunitiesMgr.Initialize(provider, concreteProvider)` — llamado en `clsApplication` con `(mOpportunityProvider, mOpportunityProvider)`
+- `clsEventsMediatorDomain.Initialize(ctxState, infraMediador, fsCoord, opportunities)` — 4 params, sin mFileMgr ni mOpportunityProvider
+- `IOpportunityProvider.CreateOpportunity` devuelve `clsOpportunity` (no `Boolean`)
+- `IOpportunityProvider.CreateNewOpportunity` devuelve `clsOpportunity`
+
+### Tests funcionales (manuales)
+1. Carga del XLAM — todos los providers se instancian en `InitializeInfrastructure`
+2. Boton "Nueva Oportunidad" — provider gestiona todo el flujo (codigo, dialog, validacion, FS, entidad)
+3. Dominio recibe entidad limpia via `AddOpportunity`
+4. FSWatcher dispara duplicado → idempotencia via `Number`
+5. Mediador NO recibe eventos de oportunidades (solo template/gas/monitoring)
+
+---
+
+## Issues Conocidos (actualizados)
+
+1. **FIXME en clsEventsMediatorInfrastructure**: `ActiveFileChanged` capturado 2 veces.
+2. **TODO en clsEventsMediatorDomain**: logica de "mover archivo a oportunidad" comentada.
+3. **mOpportunities_CurrentOpportunityChanged**: codigo comentado referencia `mFileMgr` que ya no existe en el mediador. El TODO sigue vigente: la logica debe migrar a un servicio de infraestructura futuro.
+4. **ActiveFileSessionChanged, ContextInvalidated/Reinitialized**: eventos del mediador de infraestructura que se mantienen en el mediador de dominio. Pendiente analisis de si deben desaparecer.
