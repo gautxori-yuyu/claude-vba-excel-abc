@@ -29,7 +29,7 @@ Private mEvMediatorDomain As clsEventsMediatorDomain
 
 Private mRibbon As clsRibbon
 
-' Estado centralizado de la aplicación
+' Estado centralizado de la aplicaciï¿½n
 Private mApplicationState As clsApplicationState
 
 Public Property Get ChartManager() As clsChartMgr
@@ -69,21 +69,21 @@ Public Property Get Configuration() As clsConfiguration
     Set Configuration = mConfiguration
 End Property
 
-'@Description: Obtiene el gestor de estado centralizado de la aplicación
+'@Description: Obtiene el gestor de estado centralizado de la aplicaciï¿½n
 Public Property Get State() As clsApplicationState
     Set State = mApplicationState
 End Property
 
 ' -------------------------------------------------------------
-' Class_Initialize: SOLO inicialización mínima (ligera y segura)
+' Class_Initialize: SOLO inicializaciï¿½n mï¿½nima (ligera y segura)
 ' NO debe hacer trabajo pesado ni depender de App
 ' -------------------------------------------------------------
 Private Sub Class_Initialize()
     On Error GoTo ErrHandler
 
     LogInfo MODULE_NAME, "[Class_Initialize] Iniciando aplicacion"
-    ' fixme: revisar que el orden de instanciación de cada componente es EL CORRECTO!!
-    ' (se ha intentado respetar el orden Infraestructura -> dominio -> UI -> Aplicación;
+    ' fixme: revisar que el orden de instanciaciï¿½n de cada componente es EL CORRECTO!!
+    ' (se ha intentado respetar el orden Infraestructura -> dominio -> UI -> Aplicaciï¿½n;
     ' y dentro de cada capa, primero los managers (que crean ellos mismos los State), luego
     ' los servicios y la configuracion de la capa; y finalmente mediadores de eventos, y coordinadores
 
@@ -95,13 +95,13 @@ Private Sub Class_Initialize()
 
     InitializeUI
 
-    LogInfo MODULE_NAME, "[Class_Initialize] inicialización completada"
+    LogInfo MODULE_NAME, "[Class_Initialize] inicializaciï¿½n completada"
     
     Exit Sub
 ErrHandler:
     LogCurrentError MODULE_NAME, "[Class_Initialize]"
     Err.Raise Err.Number, MODULE_NAME & "[Class_Initialize]", _
-              "Error inicializando aplicación: " & Err.Description
+              "Error inicializando aplicaciï¿½n: " & Err.Description
 End Sub
 Private Sub InitializeInfrastructure()
     On Error GoTo ErrHandler
@@ -136,7 +136,7 @@ Private Sub InitializeDomain()
 
     ' PROVIDER DE OPORTUNIDADES (infraestructura)
     Set mOpportunityProvider = New FileSystemOpportunityProvider
-    mOpportunityProvider.Initialize mFileMgr, mConfiguration
+    mOpportunityProvider.Initialize mFileMgr, mConfiguration, mFSMonitoringCoord
 
     ' PROVIDER DE CALCULOS TECNICOS (infraestructura)
     Set mCalcProvider = New FileSystemTechnicalCalcProvider
@@ -150,12 +150,14 @@ Private Sub InitializeDomain()
 
     ' MEDIADOR DE EVENTOS DE DOMINIO
     ' Escucha eventos SEMANTICOS del mediador de infraestructura (no directamente de mCtxMgr)
+    ' y del provider de oportunidades (objetos de dominio ya construidos)
     Set mEvMediatorDomain = New clsEventsMediatorDomain
     Call mEvMediatorDomain.Initialize(mCtxMgr.State, _
                                     mEvMediatorInfrastructure, _
                                     mFSMonitoringCoord, _
                                     mOpportunities, _
-                                    mFileMgr)
+                                    mFileMgr, _
+                                    mOpportunityProvider)
     Exit Sub
 ErrHandler:
     LogCurrentError MODULE_NAME, "[InitializeDomain]"
@@ -194,7 +196,7 @@ End Sub
 Private Sub Class_Terminate()
     LogInfo MODULE_NAME, "[Terminate] Iniciando limpieza de la aplicacion"
 
-    On Error Resume Next  ' Asegurar que la limpieza continúa aunque haya errores
+    On Error Resume Next  ' Asegurar que la limpieza continï¿½a aunque haya errores
 
     ' ORDEN INVERSO A LA INSTANCIACION:
     ' Instanciacion: CtxMgr -> ChartMgr -> EventDispatcher -> FileMgr -> Configuration
@@ -237,7 +239,7 @@ Private Sub DisposeDomain()
     Set mOpportunityProvider = Nothing
     Set mCalcProvider = Nothing
 
-    ' 5. Apagado explícito del monitor de archivos
+    ' 5. Apagado explï¿½cito del monitor de archivos
     If Not mFSMonitoringCoord Is Nothing Then
         mFSMonitoringCoord.Shutdown
         Set mFSMonitoringCoord = Nothing

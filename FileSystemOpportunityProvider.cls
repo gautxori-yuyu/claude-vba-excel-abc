@@ -32,6 +32,13 @@ Private Const MODULE_NAME As String = "FileSystemOpportunityProvider"
 Private mFileManager As clsFileManager
 Private mConfiguration As clsConfiguration
 Private mIsReady As Boolean   ' Flag: BasePath era accesible al inicializar
+Private WithEvents mFSMonitoringCoord As clsFSMonitoringCoord
+
+' ==================================================================
+' EVENTOS DE DOMINIO (emitidos hacia el mediador)
+' ==================================================================
+Public Event OpportunityDetected(ByVal op As clsOpportunity)
+Public Event OpportunityRemoved(ByVal opportunityCode As String)
 
 ' ==================================================================
 ' INICIALIZACION
@@ -44,6 +51,7 @@ End Sub
 
 Private Sub Class_Terminate()
     LogInfo MODULE_NAME, "[Class_Terminate]"
+    Set mFSMonitoringCoord = Nothing
     Set mFileManager = Nothing
     Set mConfiguration = Nothing
 End Sub
@@ -52,7 +60,9 @@ End Sub
 '@Param fm: Gestor de sistema de archivos
 '@Param oConfiguration: Configuracion de la aplicacion
 '@Category: Inicializacion
-Public Sub Initialize(fm As clsFileManager, oConfiguration As clsConfiguration)
+Public Sub Initialize(fm As clsFileManager, _
+                      oConfiguration As clsConfiguration, _
+                      Optional oFSMonitoringCoord As clsFSMonitoringCoord = Nothing)
     On Error GoTo ErrHandler
 
     Set mFileManager = fm
@@ -62,6 +72,12 @@ Public Sub Initialize(fm As clsFileManager, oConfiguration As clsConfiguration)
     Dim BasePath As String
     BasePath = mConfiguration.RutaOportunidades
     mIsReady = Len(BasePath) > 0 And mFileManager.ExisteCarpeta(BasePath)
+
+    ' Suscribirse al coordinador de monitoreo para detectar cambios en tiempo real
+    If Not oFSMonitoringCoord Is Nothing Then
+        Set mFSMonitoringCoord = oFSMonitoringCoord
+        LogDebug MODULE_NAME, "[Initialize] FSMonitoringCoord inyectado"
+    End If
 
     LogDebug MODULE_NAME, "[Initialize] FileManager y Configuration inyectados. StorageAvailable=" & mIsReady
     Exit Sub
@@ -263,7 +279,7 @@ Public Function GetNextOpportunityCode() As String
     Loop While UBound(Filter(arrOps, strOpName)) >= 0
 
     GetNextOpportunityCode = strOpName
-    LogDebug MODULE_NAME, "[GetNextOpportunityCode] Creado código de oportunidad: " & strOpName
+    LogDebug MODULE_NAME, "[GetNextOpportunityCode] Creado cï¿½digo de oportunidad: " & strOpName
     
     Exit Function
 
@@ -371,4 +387,100 @@ Private Function ExtractNumericKey(ByVal folderName As String) As Double
 
 ErrHandler:
     ExtractNumericKey = -1E+99
+End Function
+
+' ==================================================================
+' MANEJADORES DE EVENTOS clsFSMonitoringCoord
+' La validacion regex permanece aqui en infraestructura.
+' El dominio recibe objetos clsOpportunity ya construidos.
+' ==================================================================
+
+'@Description: Detecta creacion de subcarpeta en ruta de oportunidades.
+'              Valida patron, construye objeto de dominio y emite OpportunityDetected.
+Private Sub mFSMonitoringCoord_OpportunityCreated(ByVal parentFolder As String, ByVal subfolderName As String)
+    On Error GoTo ErrHandler
+    LogDebug MODULE_NAME, "[OpportunityCreated] Evaluando: " & subfolderName
+
+    Dim regEx As Object
+    Set regEx = CreateObject("VBScript.RegExp")
+    If Not IsValidOpportunityName(subfolderName, regEx) Then
+        LogDebug MODULE_NAME, "[OpportunityCreated] Ignorado (no cumple patron): " & subfolderName
+        Exit Sub
+    End If
+
+    Dim op As clsOpportunity
+    Set op = BuildSingleOpportunity(subfolderName)
+    LogInfo MODULE_NAME, "[OpportunityCreated] Emitiendo OpportunityDetected: " & subfolderName
+    RaiseEvent OpportunityDetected(op)
+    Exit Sub
+ErrHandler:
+    LogCurrentError MODULE_NAME, "[mFSMonitoringCoord_OpportunityCreated]"
+End Sub
+
+'@Description: Detecta eliminacion de subcarpeta en ruta de oportunidades.
+'              Extrae codigo y emite OpportunityRemoved.
+Private Sub mFSMonitoringCoord_OpportunityDeleted(ByVal parentFolder As String, ByVal subfolderName As String)
+    On Error GoTo ErrHandler
+    LogDebug MODULE_NAME, "[OpportunityDeleted] Carpeta eliminada: " & subfolderName
+    RaiseEvent OpportunityRemoved(ExtractOpportunityCode(subfolderName))
+    Exit Sub
+ErrHandler:
+    LogCurrentError MODULE_NAME, "[mFSMonitoringCoord_OpportunityDeleted]"
+End Sub
+
+'@Description: Detecta renombrado de subcarpeta en ruta de oportunidades.
+'              Emite OpportunityRemoved(oldCode) y, si el nuevo nombre es valido,
+'              OpportunityDetected(newOp).
+Private Sub mFSMonitoringCoord_OpportunityRenamed(ByVal parentFolder As String, ByVal oldName As String, ByVal newName As String)
+    On Error GoTo ErrHandler
+    LogDebug MODULE_NAME, "[OpportunityRenamed] " & oldName & " -> " & newName
+
+    ' Emitir remocion del nombre antiguo (sin validar: cualquier renombrado implica remocion)
+    RaiseEvent OpportunityRemoved(ExtractOpportunityCode(oldName))
+
+    ' Solo emitir deteccion del nuevo nombre si cumple el patron
+    Dim regEx As Object
+    Set regEx = CreateObject("VBScript.RegExp")
+    If IsValidOpportunityName(newName, regEx) Then
+        RaiseEvent OpportunityDetected(BuildSingleOpportunity(newName))
+    Else
+        LogDebug MODULE_NAME, "[OpportunityRenamed] Nuevo nombre no cumple patron: " & newName
+    End If
+    Exit Sub
+ErrHandler:
+    LogCurrentError MODULE_NAME, "[mFSMonitoringCoord_OpportunityRenamed]"
+End Sub
+
+'@Description: Construye un clsOpportunity desde un nombre de carpeta ya validado.
+'              El path queda sellado dentro del objeto (patron Sealed Path).
+Private Function BuildSingleOpportunity(ByVal folderName As String) As clsOpportunity
+    Dim op As clsOpportunity
+    Set op = New clsOpportunity
+    op.Label = folderName
+    op.path = GetFullPath(folderName)
+
+    On Error Resume Next
+    Dim parts() As String
+    parts = Split(folderName, " - ")
+    If UBound(parts) >= 0 Then op.Number = CLng(Trim(parts(0)))
+    If UBound(parts) >= 1 Then op.Customer = Trim(parts(1))
+    If UBound(parts) >= 2 Then op.Project = Trim(parts(2))
+    On Error GoTo 0
+
+    Set BuildSingleOpportunity = op
+End Function
+
+'@Description: Extrae los primeros 9 digitos del nombre de carpeta como codigo.
+'              Fallback: devuelve el nombre completo si no hay segmento numerico inicial.
+Private Function ExtractOpportunityCode(ByVal folderName As String) As String
+    On Error GoTo Fallback
+    Dim re As Object
+    Set re = CreateObject("VBScript.RegExp")
+    re.Pattern = "^\d{9}"
+    If re.Test(folderName) Then
+        ExtractOpportunityCode = re.Execute(folderName)(0).Value
+        Exit Function
+    End If
+Fallback:
+    ExtractOpportunityCode = folderName
 End Function

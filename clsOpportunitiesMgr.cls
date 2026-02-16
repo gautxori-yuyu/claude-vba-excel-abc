@@ -116,6 +116,86 @@ Public Function actualizarColeccionOportunidades()
     RefreshOpportunities
 End Function
 
+'@Description: Agrega una oportunidad a la coleccion si no existe ya (idempotente por Number).
+'              Llamado por el provider de infraestructura al detectar carpeta valida.
+'              Mantiene el orden descendente por Number.
+Public Sub AddOpportunity(ByVal op As clsOpportunity)
+    Const PROC_NAME As String = "AddOpportunity"
+    On Error GoTo ErrHandler
+    If op Is Nothing Then Exit Sub
+
+    ' Idempotencia: verificar si ya existe por Number
+    If op.Number <> 0 Then
+        Dim existing As clsOpportunity
+        For Each existing In mOpportunities
+            If existing.Number = op.Number Then
+                LogDebug MODULE_NAME, "[" & PROC_NAME & "] Ya existe Number=" & op.Number & ", ignorada"
+                Exit Sub
+            End If
+        Next existing
+    End If
+
+    ' Insercion ordenada: buscar posicion (coleccion es descendente por Number)
+    Dim insertBefore As Long
+    insertBefore = 0
+    Dim i As Long
+    For i = 1 To mOpportunities.Count
+        Dim candidate As clsOpportunity
+        Set candidate = mOpportunities(i)
+        If candidate.Number < op.Number Then
+            insertBefore = i
+            Exit For
+        End If
+    Next i
+
+    If insertBefore = 0 Then
+        mOpportunities.Add op               ' Agregar al final (numero menor o igual a todos)
+    Else
+        mOpportunities.Add op, , insertBefore   ' Insertar antes de la primera de menor numero
+    End If
+
+    LogInfo MODULE_NAME, "[" & PROC_NAME & "] Anadida: " & op.Label
+    RaiseEvent OpportunityCollectionUpdated("added:" & op.Label)
+    Exit Sub
+ErrHandler:
+    LogCurrentError MODULE_NAME, "[" & PROC_NAME & "]"
+End Sub
+
+'@Description: Elimina una oportunidad de la coleccion por su codigo de 9 digitos.
+'              Si era la oportunidad actual, limpia el estado de seleccion.
+Public Sub RemoveOpportunity(ByVal opportunityCode As String)
+    Const PROC_NAME As String = "RemoveOpportunity"
+    On Error GoTo ErrHandler
+    If Len(opportunityCode) = 0 Then Exit Sub
+
+    Dim i As Long
+    For i = 1 To mOpportunities.Count
+        Dim op As clsOpportunity
+        Set op = mOpportunities(i)
+        If CStr(op.Number) = opportunityCode Then
+            Dim removedLabel As String
+            removedLabel = op.Label
+            ' Si era la oportunidad actual, limpiar estado
+            If Not mOpportunityState.CurrentOpportunity Is Nothing Then
+                If mOpportunityState.CurrentOpportunity.Label = op.Label Then
+                    Set mOpportunityState.CurrentOpportunity = Nothing
+                    mOpportunityState.CurrentIndex = -1
+                    LogInfo MODULE_NAME, "[" & PROC_NAME & "] Estado de oportunidad actual limpiado"
+                End If
+            End If
+            mOpportunities.Remove i
+            LogInfo MODULE_NAME, "[" & PROC_NAME & "] Eliminada: " & removedLabel
+            RaiseEvent OpportunityCollectionUpdated("removed:" & removedLabel)
+            Exit Sub
+        End If
+    Next i
+
+    LogWarning MODULE_NAME, "[" & PROC_NAME & "] Codigo no encontrado en coleccion: " & opportunityCode
+    Exit Sub
+ErrHandler:
+    LogCurrentError MODULE_NAME, "[" & PROC_NAME & "]"
+End Sub
+
 '@Description: Establece la oportunidad actual por nombre
 Public Sub SetCurrentOpportunity(ByVal opportunityName As String)
     On Error GoTo ErrHandler
@@ -188,26 +268,6 @@ Public Function OpportunityExists(ByVal opportunityName As String) As Boolean
     Next Item
 End Function
 
-'@Description: Procesa cambios detectados por el watcher en carpetas de oportunidad
-Public Sub ProcesarCambiosEnOportunidades(ByVal subfolderName As String)
-    Dim regEx As Object
-    Set regEx = CreateObject("VBScript.RegExp")
-
-    LogInfo MODULE_NAME, "[ProcesarCambiosEnOportunidades] Verificando: " & subfolderName
-
-    ' Verificar si el cambio corresponde a una oportunidad valida
-    regEx.Pattern = FILEORFOLDERNAME_QUOTE_CUSTOMER_OTHER_MODEL_PATTERN
-    If regEx.Test(subfolderName) Then
-        LogInfo MODULE_NAME, "[ProcesarCambiosEnOportunidades] Cambio en oportunidad detectado"
-        RefreshOpportunities
-    End If
-End Sub
-
-'@Description: Procesa cambios en items dentro de una oportunidad
-Public Sub ProcesarCambiosEnItemsOportunidad(ByVal cambios As String)
-    ' TODO: Implementar cuando se necesite
-End Sub
-
 '@Description: Crea una nueva oportunidad
 Public Sub CreateNewOpportunity()
     On Error GoTo ErrHandler
@@ -216,8 +276,8 @@ Public Sub CreateNewOpportunity()
 
     If mOpportunityProvider Is Nothing Then
         LogError MODULE_NAME, "[CreateNewOpportunity] Provider no ha sido inyectado"
-        ShowTaskDialogError "Error Crítico", "Error interno: Provider no disponible", _
-                            "La aplicación no puede continuar porque un componente esencial (IOpportunityProvider) no se ha iniciado."
+        ShowTaskDialogError "Error Crï¿½tico", "Error interno: Provider no disponible", _
+                            "La aplicaciï¿½n no puede continuar porque un componente esencial (IOpportunityProvider) no se ha iniciado."
         Exit Sub
     End If
 
@@ -245,22 +305,22 @@ Public Sub CreateNewOpportunity()
     opportunityName = strOpCode & " - " & strCustomer & " - XXX"
 
     ' Crear carpeta y refrescar la lista inmediatamente.
-    ' Nota: el FSWatcher tambien disparara ProcesarCambiosEnOportunidades cuando detecte
-    ' la nueva carpeta, lo que causara un segundo RefreshOpportunities (idempotente, aceptable).
+    ' Nota: el FSWatcher tambien disparara OpportunityDetected via FileSystemOpportunityProvider
+    ' cuando detecte la nueva carpeta -> AddOpportunity (idempotente por Number, ignorada).
     If mOpportunityProvider.CreateOpportunity(opportunityName) Then
         LogInfo MODULE_NAME, "[CreateNewOpportunity] Oportunidad creada: " & opportunityName
         RefreshOpportunities
     Else
-        ShowTaskDialogError "Error de Creación", "Error al crear la carpeta de la oportunidad.", _
-                            "VBA no pudo crear la carpeta en el sistema de archivos. Revise los permisos o el log para más detalles."
+        ShowTaskDialogError "Error de Creaciï¿½n", "Error al crear la carpeta de la oportunidad.", _
+                            "VBA no pudo crear la carpeta en el sistema de archivos. Revise los permisos o el log para mï¿½s detalles."
     End If
 
     Exit Sub
 
 ErrHandler:
     LogCurrentError MODULE_NAME, "[CreateNewOpportunity]"
-    ShowTaskDialogError "Error Inesperado", "Ocurrió un error inesperado al crear la oportunidad.", _
-                        "Error: " & Err.Description & " (Nº " & Err.Number & ")"
+    ShowTaskDialogError "Error Inesperado", "Ocurriï¿½ un error inesperado al crear la oportunidad.", _
+                        "Error: " & Err.Description & " (Nï¿½ " & Err.Number & ")"
 End Sub
 
 ' ==================================================================
@@ -353,7 +413,7 @@ Private Function GetCustomerNameFromUser(ByVal opCode As String) As String
         .Init
         .Title = "Crear Nueva Oportunidad"
         .MainInstruction = "Nombre del cliente y proyecto"
-        .Content = "Introduce el nombre del cliente, o cliente - proyecto, separados por un guión. No utilizar caracteres especiales!"
+        .Content = "Introduce el nombre del cliente, o cliente - proyecto, separados por un guiï¿½n. No utilizar caracteres especiales!"
         .Flags = TDF_INPUT_BOX
         .CommonButtons = TDCBF_OK_BUTTON Or TDCBF_CANCEL_BUTTON
         .IconMain = TD_INFORMATION_ICON
@@ -389,6 +449,6 @@ Private Function GetCustomerNameFromUser(ByVal opCode As String) As String
     Exit Function
 ErrHandler:
     LogCurrentError MODULE_NAME, "[GetCustomerNameFromUser]"
-    ShowTaskDialogError "Error Inesperado", "Ocurrió un error inesperado al solicitar el nombre de cliente.", _
-                        "Error: " & Err.Description & " (Nº " & Err.Number & ")"
+    ShowTaskDialogError "Error Inesperado", "Ocurriï¿½ un error inesperado al solicitar el nombre de cliente.", _
+                        "Error: " & Err.Description & " (Nï¿½ " & Err.Number & ")"
 End Function
