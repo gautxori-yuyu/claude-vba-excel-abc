@@ -1,0 +1,115 @@
+sequenceDiagram
+    %% ============================================================
+    %% FLUJO: Cambiar la ruta de oportunidades en configuracion
+    %% Actor: Usuario abre el configurador y selecciona nueva ruta
+    %% ============================================================
+    title Cambiar Configuracion (RutaOportunidades)
+
+    actor Usuario
+
+    box "4-UI"
+        participant Ribbon as clsRibbon
+        participant FrmCfg as frmConfiguracion
+    end
+
+    box "1-Aplicacion"
+        participant App as clsApplication
+    end
+
+    box "2-Infraestructura"
+        participant Cfg as clsConfiguration
+        participant OppProv as FileSystemOpportunityProvider
+        participant FSCoord as clsFSMonitoringCoord
+    end
+
+    box "3-Dominio"
+        participant OppMgr as clsOpportunitiesMgr
+    end
+
+    %% ----------------------------------------------------------
+    %% PARTE 1: ABRIR EL FORMULARIO
+    %% ----------------------------------------------------------
+
+    Note over Usuario,OppMgr: === PARTE 1: USUARIO ABRE LA CONFIGURACION ===
+
+    Usuario->>Ribbon: Clic en boton "Configurador"
+    Note right of Ribbon: OnConfigurador -> App.Configuration.ShowUI()
+
+    Ribbon->>Cfg: ShowUI()
+    Note right of Cfg: [ShowUI] Crea frmConfiguracion,<br/>llama frm.Cargar(Me), frm.Show vbModal
+
+    Cfg->>FrmCfg: New frmConfiguracion
+    Cfg->>FrmCfg: Cargar(oConf)
+    Note right of FrmCfg: [Cargar] Carga valores actuales<br/>en los TextBox del formulario
+
+    FrmCfg-->>Usuario: Formulario visible con rutas actuales
+
+    %% ----------------------------------------------------------
+    %% PARTE 2: USUARIO SELECCIONA NUEVA CARPETA
+    %% ----------------------------------------------------------
+
+    Note over Usuario,OppMgr: === PARTE 2: USUARIO CAMBIA LA RUTA ===
+
+    Usuario->>FrmCfg: Clic en boton "Seleccionar" junto a Oportunidades
+    Note right of FrmCfg: CommandButtonSelFldOportunidades_Click:<br/>SeleccionarCarpetaATextBox abre BrowseForFolder
+
+    FrmCfg-->>Usuario: Dialogo de seleccion de carpeta
+    Usuario->>FrmCfg: Selecciona nueva carpeta
+    Note right of FrmCfg: [CommandButtonSelFldOportunidades_Click]<br/>mConf.RutaOportunidades = nuevaRuta
+
+    FrmCfg->>Cfg: RutaOportunidades = nuevaRuta (Property Let)
+    Note right of Cfg: [RutaOportunidades] Guarda en registro,<br/>LogDebug "Ruta cambiada",<br/>RaiseEvent OpportunitiesPathChanged(nuevaRuta)
+
+    %% ----------------------------------------------------------
+    %% PARTE 3: REACCION AUTOMATICA AL CAMBIO
+    %% ----------------------------------------------------------
+
+    Note over Usuario,OppMgr: === PARTE 3: AUTO-REFRESH (NUEVO COMPORTAMIENTO) ===
+
+    Cfg-->>App: mConfiguration_OpportunitiesPathChanged(nuevaRuta)
+    Note right of App: [mConfiguration_OpportunitiesPathChanged]<br/>Recibe la nueva ruta de oportunidades
+
+    App->>OppProv: RefreshStorageAvailability()
+    Note right of OppProv: [RefreshStorageAvailability]<br/>ExisteCarpeta(nuevaRuta)<br/>Actualiza mIsReady True/False
+
+    alt Nueva ruta accesible (mIsReady = True)
+        OppProv-->>App: StorageAvailable = True
+        App->>OppMgr: RefreshOpportunities()
+        Note right of OppMgr: [RefreshOpportunities]<br/>mOpportunityProvider.GetOpportunities()<br/>-> BuildOpportunityObjects() con nueva ruta
+        OppMgr-->>App: RaiseEvent OpportunityCollectionUpdated("refresh")
+        Note right of App: El Ribbon invalida el dropdown<br/>ddlOportunidades muestra lista nueva
+    else Nueva ruta NO accesible (mIsReady = False)
+        OppProv-->>App: StorageAvailable = False
+        Note over App: LogInfo "StorageAvailable cambio a False"<br/>mOpportunities NO se refresca<br/>(no hay oportunidades que mostrar)
+    end
+
+    %% ----------------------------------------------------------
+    %% PARTE 4: FLUJO DE ERROR (red caida mientras se usa la app)
+    %% ----------------------------------------------------------
+
+    Note over Usuario,OppMgr: === PARTE 4: RED SE CAE (FSWatcher detecta error) ===
+
+    FSCoord-->>App: mFSMonitoringCoord_MonitoringError(folder, msg)
+    Note right of App: [mFSMonitoringCoord_MonitoringError]<br/>Llama RefreshStorageAvailability
+
+    App->>OppProv: RefreshStorageAvailability()
+    Note right of OppProv: ExisteCarpeta(BasePath) -> False<br/>mIsReady = False<br/>LogInfo "StorageAvailable cambio a False"
+
+    Note over OppProv: Si usuario intenta crear oportunidad:<br/>StorageAvailable() = False<br/>-> ShowTaskDialogError
+
+    %% ----------------------------------------------------------
+    %% PARTE 5: RED VUELVE (FSWatcher detecta reconexion)
+    %% ----------------------------------------------------------
+
+    Note over Usuario,OppMgr: === PARTE 5: RED VUELVE (FSWatcher reconectado) ===
+
+    FSCoord-->>App: mFSMonitoringCoord_MonitoringReconnected(folder, attempts)
+    Note right of App: [mFSMonitoringCoord_MonitoringReconnected]<br/>RefreshStorageAvailability + RefreshOpportunities
+
+    App->>OppProv: RefreshStorageAvailability()
+    Note right of OppProv: ExisteCarpeta(BasePath) -> True<br/>mIsReady = True<br/>LogInfo "StorageAvailable cambio a True"
+
+    App->>OppMgr: RefreshOpportunities()
+    Note right of OppMgr: Recarga lista desde carpeta base<br/>RaiseEvent OpportunityCollectionUpdated
+    OppMgr-->>App: OpportunityCollectionUpdated("refresh")
+    Note right of App: Ribbon invalida dropdown<br/>ddlOportunidades actualizado

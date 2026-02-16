@@ -55,10 +55,11 @@ End Sub
 '@Dependencies: mConf (objeto de configuración)
 '@Note: Sincroniza todos los TextBox y ListBox con los valores almacenados en la configuración
 Public Sub Cargar(oConf As clsConfiguration)
-    
+
     On Error GoTo ErrHandler
+    LogDebug MODULE_NAME, "[Cargar] Cargando configuracion en formulario"
     Set mConf = oConf
-    
+
     ' Cargar cada ruta desde el registro y mostrarla
     TextBoxRutaOportunidades.Text = mConf.RutaOportunidades
     TextBoxRutaPlantillas.Text = mConf.RutaPlantillas
@@ -111,6 +112,7 @@ End Sub
 '@Dependencies: SeleccionarCarpetaATextBox, mConf.RutaOportunidades
 '@Note: Abre un diálogo de selección de carpeta y actualiza el TextBox y la configuración
 Private Sub CommandButtonSelFldOportunidades_Click()
+    LogDebug MODULE_NAME, "[CommandButtonSelFldOportunidades_Click] Seleccionando carpeta de oportunidades"
     SeleccionarCarpetaATextBox TextBoxRutaOportunidades, "Seleccionar carpeta para Oportunidades"
     mConf.RutaOportunidades = TextBoxRutaOportunidades.Text
 End Sub

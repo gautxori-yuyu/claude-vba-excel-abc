@@ -29,6 +29,7 @@ Private mArrComprDrawPIDs As Variant
 Private mSAM As Integer
 
 Public Sub ShowUI()
+    LogDebug MODULE_NAME, "[ShowUI] Abriendo formulario de configuracion"
     Dim frm As frmConfiguracion
     Set frm = New frmConfiguracion
     frm.Cargar Me
