@@ -30,7 +30,7 @@ Private mEvMediatorDomain As clsEventsMediatorDomain
 
 Private mRibbon As clsRibbon
 
-' Estado centralizado de la aplicaciï¿½n
+' Estado centralizado de la aplicación
 Private mApplicationState As clsApplicationState
 
 Public Property Get ChartManager() As clsChartMgr
@@ -65,7 +65,7 @@ Public Property Get CalcProvider() As ITechnicalCalcProvider
     Set CalcProvider = mCalcProvider
 End Property
 
-'@Description: Obtiene el proveedor de valoraciones economicas
+'@Description: Obtiene el proveedor de valoraciones económicas
 Public Property Get QuoteProvider() As IEconomicQuoteProvider
     Set QuoteProvider = mQuoteProvider
 End Property
@@ -75,21 +75,21 @@ Public Property Get Configuration() As clsConfiguration
     Set Configuration = mConfiguration
 End Property
 
-'@Description: Obtiene el gestor de estado centralizado de la aplicaciï¿½n
+'@Description: Obtiene el gestor de estado centralizado de la aplicación
 Public Property Get State() As clsApplicationState
     Set State = mApplicationState
 End Property
 
 ' -------------------------------------------------------------
-' Class_Initialize: SOLO inicializaciï¿½n mï¿½nima (ligera y segura)
+' Class_Initialize: SOLO inicialización mínima (ligera y segura)
 ' NO debe hacer trabajo pesado ni depender de App
 ' -------------------------------------------------------------
 Private Sub Class_Initialize()
     On Error GoTo ErrHandler
 
     LogInfo MODULE_NAME, "[Class_Initialize] Iniciando aplicacion"
-    ' fixme: revisar que el orden de instanciaciï¿½n de cada componente es EL CORRECTO!!
-    ' (se ha intentado respetar el orden Infraestructura -> dominio -> UI -> Aplicaciï¿½n;
+    ' fixme: revisar que el orden de instanciación de cada componente es EL CORRECTO!!
+    ' (se ha intentado respetar el orden Infraestructura -> dominio -> UI -> Aplicación;
     ' y dentro de cada capa, primero los managers (que crean ellos mismos los State), luego
     ' los servicios y la configuracion de la capa; y finalmente mediadores de eventos, y coordinadores
 
@@ -101,13 +101,13 @@ Private Sub Class_Initialize()
 
     InitializeUI
 
-    LogInfo MODULE_NAME, "[Class_Initialize] inicializaciï¿½n completada"
+    LogInfo MODULE_NAME, "[Class_Initialize] inicialización completada"
     
     Exit Sub
 ErrHandler:
     LogCurrentError MODULE_NAME, "[Class_Initialize]"
     Err.Raise Err.Number, MODULE_NAME & "[Class_Initialize]", _
-              "Error inicializando aplicaciï¿½n: " & Err.Description
+              "Error inicializando aplicación: " & Err.Description
 End Sub
 Private Sub InitializeInfrastructure()
     On Error GoTo ErrHandler
@@ -125,7 +125,7 @@ Private Sub InitializeInfrastructure()
     Set mEvMediatorInfrastructure = New clsEventsMediatorInfrastructure
     Call mEvMediatorInfrastructure.Initialize(mFileMgr, mCtxMgr)
 
-    ' --- CONFIGURACION ---
+    ' --- CONFIGURACIÓN ---
     Set mConfiguration = New clsConfiguration
 
     ' --- MONITOREO ---
@@ -152,14 +152,14 @@ Private Sub InitializeDomain()
     On Error GoTo ErrHandler
     ' DOMINIO - Crear manager de oportunidades (crea su estado internamente)
     ' Se pasa tanto la interfaz (para llamadas de dominio) como la clase concreta
-    ' (para WithEvents - limitacion VBA: WithEvents no funciona con interfaces)
+    ' (para WithEvents - limitación VBA: WithEvents no funciona con interfaces)
     Set mOpportunities = New clsOpportunitiesMgr
     mOpportunities.Initialize mOpportunityProvider, mOpportunityProvider
     ' ESTADO CENTRALIZADO - Inyectar referencias a subestados (Dependency Injection)
     mApplicationState.Initialize OpportunityState:=mOpportunities.State
 
     ' MEDIADOR DE EVENTOS DE DOMINIO
-    ' Escucha eventos SEMANTICOS del mediador de infraestructura y de FSMonitoringCoord
+    ' Escucha eventos SEMÁNTICOS del mediador de infraestructura y de FSMonitoringCoord
     Set mEvMediatorDomain = New clsEventsMediatorDomain
     Call mEvMediatorDomain.Initialize(mCtxMgr.State, _
                                     mEvMediatorInfrastructure, _
@@ -203,10 +203,10 @@ End Sub
 Private Sub Class_Terminate()
     LogInfo MODULE_NAME, "[Terminate] Iniciando limpieza de la aplicacion"
 
-    On Error Resume Next  ' Asegurar que la limpieza continï¿½a aunque haya errores
+    On Error Resume Next  ' Asegurar que la limpieza continúa aunque haya errores
 
-    ' ORDEN INVERSO A LA INSTANCIACION:
-    ' Infraestructura: CtxMgr -> FileMgr -> EvMediatorInfra -> Configuration -> FSMonitoringCoord
+    ' ORDEN INVERSO A LA INSTANCIACIÓN:
+    ' Infraestructura: CtxMgr -> FileMgr -> EvMediatorInfra -> Configuración -> FSMonitoringCoord
     '                  -> OpportunityProvider -> CalcProvider -> QuoteProvider
     ' Dominio: Opportunities -> EvMediatorDomain
     ' UI: Ribbon -> EventDispatcher
@@ -223,18 +223,18 @@ Private Sub Class_Terminate()
     LogInfo MODULE_NAME, "[Terminate] Limpieza completada"
 End Sub
 Private Sub DisposeInfrastructure()
-    ' Liberar proveedores (orden inverso a instanciacion)
+    ' Liberar proveedores (orden inverso a instanciación)
     Set mQuoteProvider = Nothing
     Set mCalcProvider = Nothing
     Set mOpportunityProvider = Nothing
 
-    ' Apagado explicito del monitor de archivos
+    ' Apagado explícito del monitor de archivos
     If Not mFSMonitoringCoord Is Nothing Then
         mFSMonitoringCoord.Shutdown
         Set mFSMonitoringCoord = Nothing
     End If
 
-    ' Liberar configuracion
+    ' Liberar configuración
     Set mConfiguration = Nothing
 
     ' Liberar mediador de eventos de infraestructura
@@ -243,12 +243,12 @@ Private Sub DisposeInfrastructure()
     ' Liberar gestor de archivos
     Set mFileMgr = Nothing
 
-    ' clsChartMgr liberado internamente por clsExecutionContextMgr (composicion)
-    ' Liberar contexto de ejecucion (primero en instanciarse, ultimo en liberarse)
+    ' clsChartMgr liberado internamente por clsExecutionContextMgr (composición)
+    ' Liberar contexto de ejecución (primero en instanciarse, último en liberarse)
     Set mCtxMgr = Nothing
 End Sub
 Private Sub DisposeDomain()
-    ' Liberar mediador de eventos de dominio (ultimo en instanciarse)
+    ' Liberar mediador de eventos de dominio (último en instanciarse)
     Set mEvMediatorDomain = Nothing
 
     ' Liberar gestor de oportunidades
