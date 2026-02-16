@@ -48,6 +48,9 @@ Public Sub Dispatch(controlID As String)
                 ' que clsRibbon escucha con WithEvents mOpportunities
         Case "btnConfig"
                 App.Configuration.ShowUI
+                ' ShowUI es modal: cuando retorna el usuario ya cambio (o no) la configuracion.
+                ' La UI (Dispatcher) controla el flujo: llama RefreshAfterConfigChange directamente.
+                App.RefreshAfterConfigChange
         Case "btnValidationsToNames"
                 Call modAPPBudgetQuotesUtilids.AplicarNombresAValidacionesCeldasActWBConReporte
 

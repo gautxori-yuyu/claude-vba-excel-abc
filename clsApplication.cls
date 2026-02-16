@@ -22,10 +22,8 @@ Private mFileMgr As clsFileManager
 Private mOpportunityProvider As FileSystemOpportunityProvider
 Private mCalcProvider As FileSystemTechnicalCalcProvider
 Private mOpportunities As clsOpportunitiesMgr
-Private WithEvents mFSMonitoringCoord As clsFSMonitoringCoord
-Attribute mFSMonitoringCoord.VB_VarHelpID = -1
-Private WithEvents mConfiguration As clsConfiguration
-Attribute mConfiguration.VB_VarHelpID = -1
+Private mFSMonitoringCoord As clsFSMonitoringCoord
+Private mConfiguration As clsConfiguration
                 '
 Private mEvMediatorDomain As clsEventsMediatorDomain
 
@@ -260,71 +258,30 @@ Private Sub DisposeUI()
 End Sub
 
 ' ==================================================================
-' EVENTOS DE CONFIGURACION
+' METODOS FACADE - La UI los llama directamente cuando necesita
+' que la aplicacion coordine una actualizacion de estado.
+' clsApplication NO escucha eventos: es la UI quien controla el flujo.
 ' ==================================================================
 
-' ==================================================================
-' EVENTOS DE MONITORIZACION DE ARCHIVOS (actualizacion de mIsReady)
-' ==================================================================
-
-'@Description: Error de monitorizacion: puede indicar que la carpeta no esta accesible.
-'              Actualiza el flag de disponibilidad del provider.
-Private Sub mFSMonitoringCoord_MonitoringError(ByVal folder As String, ByVal errorMessage As String)
-    On Error Resume Next
-    LogWarning MODULE_NAME, "[mFSMonitoringCoord_MonitoringError] Error en: " & folder & " -> RefreshStorageAvailability"
-    If Not mOpportunityProvider Is Nothing Then
-        mOpportunityProvider.RefreshStorageAvailability
-    End If
-    On Error GoTo 0
-End Sub
-
-'@Description: Monitorizacion fallida definitivamente.
-'              Marca el almacenamiento como no disponible.
-Private Sub mFSMonitoringCoord_MonitoringFailed(ByVal folder As String, ByVal reason As String)
-    On Error Resume Next
-    LogError MODULE_NAME, "[mFSMonitoringCoord_MonitoringFailed] Fallo en: " & folder & " -> RefreshStorageAvailability"
-    If Not mOpportunityProvider Is Nothing Then
-        mOpportunityProvider.RefreshStorageAvailability
-    End If
-    On Error GoTo 0
-End Sub
-
-'@Description: Monitorizacion reconectada. Actualiza disponibilidad y recarga oportunidades.
-Private Sub mFSMonitoringCoord_MonitoringReconnected(ByVal folder As String, ByVal attempts As Long)
-    On Error Resume Next
-    LogInfo MODULE_NAME, "[mFSMonitoringCoord_MonitoringReconnected] Reconectado: " & folder & " tras " & attempts & " intentos"
-    If Not mOpportunityProvider Is Nothing Then
-        mOpportunityProvider.RefreshStorageAvailability
-    End If
-    If Not mOpportunities Is Nothing Then
-        mOpportunities.RefreshOpportunities
-    End If
-    On Error GoTo 0
-End Sub
-
-' ==================================================================
-' EVENTOS DE CONFIGURACION
-' ==================================================================
-
-'@Description: Se dispara cuando cambia la ruta de oportunidades en la configuracion.
-'              Actualiza el flag de disponibilidad y recarga la lista de oportunidades.
-Private Sub mConfiguration_OpportunitiesPathChanged(ByVal newPath As String)
+'@Description: Refresca disponibilidad del almacenamiento y recarga la lista de oportunidades.
+'              Llamar desde la UI (Ribbon/modCALLBACKSRibbon) despues de que el usuario
+'              cambie la configuracion de rutas (ShowUI devuelve).
+'@Category: Facade
+Public Sub RefreshAfterConfigChange()
     On Error GoTo ErrHandler
 
-    LogInfo MODULE_NAME, "[mConfiguration_OpportunitiesPathChanged] Nueva ruta: " & newPath
+    LogInfo MODULE_NAME, "[RefreshAfterConfigChange] Actualizando estado tras cambio de configuracion"
 
-    ' Actualizar flag de disponibilidad del provider (re-consulta el FS con la nueva ruta)
     If Not mOpportunityProvider Is Nothing Then
         mOpportunityProvider.RefreshStorageAvailability
     End If
 
-    ' Recargar la lista de oportunidades desde la nueva ruta
     If Not mOpportunities Is Nothing Then
         mOpportunities.RefreshOpportunities
     End If
 
     Exit Sub
 ErrHandler:
-    LogCurrentError MODULE_NAME, "[mConfiguration_OpportunitiesPathChanged]"
+    LogCurrentError MODULE_NAME, "[RefreshAfterConfigChange]"
 End Sub
 
