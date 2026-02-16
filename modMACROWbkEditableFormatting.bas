@@ -242,7 +242,7 @@ Attribute AjustarSelWSheetsParaImpresionPDF.VB_ProcData.VB_Invoke_Func = " \n0"
         ' Exportar la hoja "Graficos" a PDF
         On Error Resume Next
         Wb.ExportAsFixedFormat Type:=xlTypePDF, _
-                fileName:=Wb.Path & "\" & Left(Wb.Name, InStrRev(Wb.Name, ".") - 1) & ".pdf", _
+                fileName:=Wb.path & "\" & Left(Wb.Name, InStrRev(Wb.Name, ".") - 1) & ".pdf", _
                 Quality:=xlQualityStandard, _
                 OpenAfterPublish:=True
         On Error GoTo 0
@@ -636,7 +636,7 @@ End Function
 
 Sub ConfigurarSaltosDePagina(ws As Worksheet, ultimaFila As Long)
 Attribute ConfigurarSaltosDePagina.VB_ProcData.VB_Invoke_Func = " \n0"
-    Dim i As Long, J As Long
+    Dim i As Long, j As Long
     Dim npb As Long
     Dim prevScreenUpdating As Boolean
     
@@ -718,11 +718,11 @@ Attribute ConfigurarSaltosDePagina.VB_ProcData.VB_Invoke_Func = " \n0"
         ' --- 4. Aplicar ajuste si se encontró un marcador ---
         If mejorFilaMarcador > 0 And mejorDistancia < 15 Then  ' umbral: <15 pts - 0.2 cm
             ' Ajustar filas vacías *solo en esta página*
-            For J = filaInicio To mejorFilaMarcador - 1
-                If IsEmptyRow(ws.Rows(J)) Then
-                    ws.Rows(J).RowHeight = ws.Rows(J).RowHeight * mejorFactorF
+            For j = filaInicio To mejorFilaMarcador - 1
+                If IsEmptyRow(ws.Rows(j)) Then
+                    ws.Rows(j).RowHeight = ws.Rows(j).RowHeight * mejorFactorF
                 End If
-            Next J
+            Next j
             
             ' Insertar salto *justo antes* del marcador (reemplazando el automático)
             If pagina <= npb Then
@@ -750,7 +750,7 @@ End Sub
 Sub ConfigurarSaltosDePagina_v2(ws As Worksheet, ultimaFila As Long)
 Attribute ConfigurarSaltosDePagina_v2.VB_ProcData.VB_Invoke_Func = " \n0"
     Dim altoPaginaReal As Double
-    Dim i As Long, J As Long, filaInicioPagina As Long
+    Dim i As Long, j As Long, filaInicioPagina As Long
     Dim altoAcumulado As Double
     Dim factorF As Double
     Dim mejorF As Double, minimaDistancia As Double
@@ -811,17 +811,17 @@ Attribute ConfigurarSaltosDePagina_v2.VB_ProcData.VB_Invoke_Func = " \n0"
         ' --- 2. APLICACIÓN DE LOS RESULTADOS ---
         If filaMarcador > 0 Then
             ' Retroceder hasta la primera fila no vacía/marcador
-            Do While J > filaInicioPagina And (EsMarcador(ws.Cells(filaMarcador - 1, 1)) Or IsEmptyRow(ws.Rows(filaMarcador - 1)))
+            Do While j > filaInicioPagina And (EsMarcador(ws.Cells(filaMarcador - 1, 1)) Or IsEmptyRow(ws.Rows(filaMarcador - 1)))
                 filaMarcador = filaMarcador - 1
             Loop
             ' Aplicamos el factor 'mejorF' a las filas en blanco de esta página
             altoAcumulado = 0
-            For J = filaInicioPagina To filaMarcador - 1
-                If IsEmptyRow(ws.Rows(J)) Then
-                    ws.Rows(J).RowHeight = ws.Rows(J).RowHeight * mejorF
-                    LogInfo MODULE_NAME, "[ConfigurarSaltosDePagina_v2] Fila " & J & ": RowHeight ajustado a " & Round(ws.Rows(J).RowHeight, 1) & " (f=" & Round(mejorF, 2) & ")"
+            For j = filaInicioPagina To filaMarcador - 1
+                If IsEmptyRow(ws.Rows(j)) Then
+                    ws.Rows(j).RowHeight = ws.Rows(j).RowHeight * mejorF
+                    LogInfo MODULE_NAME, "[ConfigurarSaltosDePagina_v2] Fila " & j & ": RowHeight ajustado a " & Round(ws.Rows(j).RowHeight, 1) & " (f=" & Round(mejorF, 2) & ")"
                 End If
-            Next J
+            Next j
             
             ' Insertar salto manual justo antes del marcador óptimo
             ws.HPageBreaks.Add before:=ws.Rows(filaMarcador)
@@ -845,11 +845,11 @@ Attribute ConfigurarSaltosDePagina_v2.VB_ProcData.VB_Invoke_Func = " \n0"
                 ' Tomar el primer salto automático válido
                 For k = 1 To ws.HPageBreaks.Count
                     If ws.HPageBreaks(k).Location.Row > filaInicioPagina Then
-                        J = ws.HPageBreaks(k).Location.Row
-                        ws.HPageBreaks.Add before:=ws.Rows(J)
+                        j = ws.HPageBreaks(k).Location.Row
+                        ws.HPageBreaks.Add before:=ws.Rows(j)
                         npb = npb + 1
-                        filaInicioPagina = J
-                        LogInfo MODULE_NAME, "[ConfigurarSaltosDePagina_v2] Salto automático adoptado en fila " & J
+                        filaInicioPagina = j
+                        LogInfo MODULE_NAME, "[ConfigurarSaltosDePagina_v2] Salto automático adoptado en fila " & j
                         Exit For
                     End If
                 Next k
@@ -878,7 +878,7 @@ End Sub
 Sub ConfigurarSaltosDePagina_old(ws As Worksheet, ultimaFila As Long)
 Attribute ConfigurarSaltosDePagina_old.VB_ProcData.VB_Invoke_Func = " \n0"
     Dim altoPaginaReal As Double
-    Dim i As Long, J As Long, filaInicioPagina As Long
+    Dim i As Long, j As Long, filaInicioPagina As Long
     Dim altoAcumulado As Double
     Dim factorF As Double
     Dim mejorF As Double, minimaDistancia As Double
@@ -936,11 +936,11 @@ Attribute ConfigurarSaltosDePagina_old.VB_ProcData.VB_Invoke_Func = " \n0"
             Loop
             ' Aplicamos el factor 'mejorF' a las filas en blanco de esta página
             altoAcumulado = 0
-            For J = filaInicioPagina To filaMarcador - 1
-                If IsEmptyRow(ws.Rows(J)) Then
-                    ws.Rows(J).RowHeight = ws.Rows(J).RowHeight * mejorF
+            For j = filaInicioPagina To filaMarcador - 1
+                If IsEmptyRow(ws.Rows(j)) Then
+                    ws.Rows(j).RowHeight = ws.Rows(j).RowHeight * mejorF
                 End If
-            Next J
+            Next j
             
             ' Insertar salto manual justo antes del marcador óptimo
             ws.HPageBreaks.Add before:=ws.Rows(filaMarcador)
@@ -1004,7 +1004,7 @@ End Function
 Sub CompactarAreaDeImpresion(ws As Worksheet, ByRef estado As CompactacionEstado)
 Attribute CompactarAreaDeImpresion.VB_ProcData.VB_Invoke_Func = " \n0"
     Dim printAreas As Variant
-    Dim i As Long, J As Long
+    Dim i As Long, j As Long
     Dim totalRange As Range
     Dim addr As String
     Dim minRow As Long, maxRow As Long, minCol As Long, maxCol As Long
@@ -1072,9 +1072,9 @@ Attribute CompactarAreaDeImpresion.VB_ProcData.VB_Invoke_Func = " \n0"
         estado.FilasEstado(i) = Not ws.Rows(i).Hidden  ' True = visible originalmente
     Next i
     
-    For J = minCol To maxCol
-        estado.ColumnasEstado(J) = Not ws.Columns(J).Hidden
-    Next J
+    For j = minCol To maxCol
+        estado.ColumnasEstado(j) = Not ws.Columns(j).Hidden
+    Next j
     
     ' --- 5. Ocultar huecos internos (solo dentro del rango global) ---
     Dim filasOcultas As Long, colsOcultas As Long
@@ -1095,21 +1095,21 @@ Attribute CompactarAreaDeImpresion.VB_ProcData.VB_Invoke_Func = " \n0"
         End If
     Next i
     
-    For J = minCol To maxCol
+    For j = minCol To maxCol
         Dim debeOcultarCol As Boolean
         debeOcultarCol = True
         For Each rng In totalRange.Areas
-            If J >= rng.Column And J <= (rng.Column + rng.Columns.Count - 1) Then
+            If j >= rng.Column And j <= (rng.Column + rng.Columns.Count - 1) Then
                 debeOcultarCol = False
                 Exit For
             End If
         Next rng
         
-        If debeOcultarCol And Not ws.Columns(J).Hidden Then
-            ws.Columns(J).Hidden = True
+        If debeOcultarCol And Not ws.Columns(j).Hidden Then
+            ws.Columns(j).Hidden = True
             colsOcultas = colsOcultas + 1
         End If
-    Next J
+    Next j
     
     ' --- 6. Unificar área de impresión ---
     Dim unifiedRange As Range
@@ -1148,7 +1148,7 @@ Attribute RestaurarAreaDeImpresion.VB_ProcData.VB_Invoke_Func = " \n0"
     End If
     
     ' --- 2. Restaurar visibilidad de filas (solo en rango guardado) ---
-    Dim i As Long, J As Long
+    Dim i As Long, j As Long
     Dim filasRestauradas As Long, colsRestauradas As Long
     
     For i = estado.MinFila To estado.MaxFila
@@ -1158,12 +1158,12 @@ Attribute RestaurarAreaDeImpresion.VB_ProcData.VB_Invoke_Func = " \n0"
         End If
     Next i
     
-    For J = estado.minCol To estado.maxCol
-        If J >= LBound(estado.ColumnasEstado) And J <= UBound(estado.ColumnasEstado) Then
-            ws.Columns(J).Hidden = Not estado.ColumnasEstado(J)
-            If Not ws.Columns(J).Hidden Then colsRestauradas = colsRestauradas + 1
+    For j = estado.minCol To estado.maxCol
+        If j >= LBound(estado.ColumnasEstado) And j <= UBound(estado.ColumnasEstado) Then
+            ws.Columns(j).Hidden = Not estado.ColumnasEstado(j)
+            If Not ws.Columns(j).Hidden Then colsRestauradas = colsRestauradas + 1
         End If
-    Next J
+    Next j
     
     LogInfo MODULE_NAME, "[RestaurarAreaDeImpresion] área original = '" & estado.PrintAreaOriginal & "'"
     LogInfo MODULE_NAME, "[CompactarAreaDeImpresion] Filas restauradas a visible: " & filasRestauradas

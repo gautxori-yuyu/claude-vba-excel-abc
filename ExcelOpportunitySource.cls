@@ -41,7 +41,7 @@ Public Sub Initialize(f As clsFileXLS)
     Set mFileXLS = f
     ' Extraer y cachear el ID de oportunidad
     mOpportunityId = ExtractOpportunityId()
-    LogDebug MODULE_NAME, "[Initialize] Adaptador creado para: " & f.Path
+    LogDebug MODULE_NAME, "[Initialize] Adaptador creado para: " & f.path
 End Sub
 
 Private Sub Class_Terminate()
@@ -60,7 +60,7 @@ Private Property Get IOpportunity_BasePath() As String
     If mFileXLS Is Nothing Then
         IOpportunity_BasePath = ""
     Else
-        IOpportunity_BasePath = mFileXLS.Path
+        IOpportunity_BasePath = mFileXLS.path
     End If
 End Property
 

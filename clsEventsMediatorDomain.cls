@@ -134,18 +134,18 @@ End Sub
 ' -------------------------------------------------------------
 
 '@Description: Evento semantico: el archivo activo ha cambiado
-Private Sub mInfraMediador_ActiveFileSessionChanged(ByVal FilePath As String, ByVal IsOpportunityFile As Boolean)
+Private Sub mInfraMediador_ActiveFileSessionChanged(ByVal filePath As String, ByVal IsOpportunityFile As Boolean)
     Dim fileName As String
-    If Len(FilePath) = 0 Then
+    If Len(filePath) = 0 Then
         fileName = "(ninguno)"
     Else
         ' Extraer solo el nombre del archivo del path
         Dim pos As Long
-        pos = InStrRev(FilePath, "\")
+        pos = InStrRev(filePath, "\")
         If pos > 0 Then
-            fileName = Mid$(FilePath, pos + 1)
+            fileName = Mid$(filePath, pos + 1)
         Else
-            fileName = FilePath
+            fileName = filePath
         End If
     End If
 
@@ -153,9 +153,9 @@ Private Sub mInfraMediador_ActiveFileSessionChanged(ByVal FilePath As String, By
                          ", IsOpportunity=" & IsOpportunityFile
 
     ' Si hay oportunidades cargadas, intentar asociar el archivo con alguna
-    If Not mOpportunities Is Nothing And Len(FilePath) > 0 Then
+    If Not mOpportunities Is Nothing And Len(filePath) > 0 Then
         Dim matchedOp As clsOpportunity
-        Set matchedOp = FindOpportunityForFile(FilePath)
+        Set matchedOp = FindOpportunityForFile(filePath)
         If Not matchedOp Is Nothing Then
             LogInfo MODULE_NAME, "[InfraMediador_ActiveFileSessionChanged] Oportunidad detectada: " & matchedOp.Label
             mOpportunities.SetCurrentOpportunity matchedOp.Label

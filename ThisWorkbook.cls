@@ -33,7 +33,7 @@ Private Sub Workbook_Open()
     On Error GoTo ErrHandler
 
     ' 0. Inicializar logger con salida a fichero
-    InitLogger LOG_DEBUG, True, ThisWorkbook.Path & "\ABC_Log_" & Format(Now, "yyyy-mm-dd_hh-nn") & ".txt"
+    InitLogger LOG_DEBUG, True, ThisWorkbook.path & "\ABC_Log_" & Format(Now, "yyyy-mm-dd_hh-nn") & ".txt"
     removeOldLogs
 
     LogInfo MODULE_NAME, "[Open] Abriendo Workbook " & ThisWorkbook.Name
@@ -154,13 +154,13 @@ Private Sub removeOldLogs()
     Dim logFile As Object
     Dim logFiles() As Object ' Array dinámico de ficheros
     Dim fileCount As Long
-    Dim i As Long, J As Long
+    Dim i As Long, j As Long
 
     On Error GoTo ErrHandler
     
     ' --- 1. Recolectar ficheros de log en un array ---
     Set fso = CreateObject("Scripting.FileSystemObject")
-    folderPath = ThisWorkbook.Path
+    folderPath = ThisWorkbook.path
     
     If Not fso.FolderExists(folderPath) Then Exit Sub
 
@@ -191,13 +191,13 @@ Private Sub removeOldLogs()
     ' --- 3. Ordenar el array por fecha de modificación (del más antiguo al más nuevo) ---
     Dim temp As Object
     For i = 1 To fileCount - 1
-        For J = i + 1 To fileCount
-            If logFiles(i).DateLastModified > logFiles(J).DateLastModified Then
-                Set temp = logFiles(J)
-                Set logFiles(J) = logFiles(i)
+        For j = i + 1 To fileCount
+            If logFiles(i).DateLastModified > logFiles(j).DateLastModified Then
+                Set temp = logFiles(j)
+                Set logFiles(j) = logFiles(i)
                 Set logFiles(i) = temp
             End If
-        Next J
+        Next j
     Next i
 
     ' --- 4. Borrar los ficheros más antiguos ---

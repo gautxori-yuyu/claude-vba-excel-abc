@@ -223,7 +223,7 @@ Public Sub OnVBABackup(control As IRibbonControl)
 Attribute OnVBABackup.VB_ProcData.VB_Invoke_Func = " \n0"
     On Error GoTo ErrHandler
     App.Dispatcher.Dispatch (control.id)
-    LogInfo MODULE_NAME, "[callback: OnVBABackup] Creada copia de seguridad del código en " & ThisWorkbook.Path & "\Backups"
+    LogInfo MODULE_NAME, "[callback: OnVBABackup] Creada copia de seguridad del código en " & ThisWorkbook.path & "\Backups"
     ' Mensaje al usuario sin revelar la ruta completa (seguridad)
     ShowTaskDialogError "Copia de seguridad", _
                         "Backup completado", _

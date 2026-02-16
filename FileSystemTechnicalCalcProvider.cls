@@ -128,16 +128,16 @@ Public Function GetCalculations(ByVal opportunityPath As String) As Collection
     Dim fileName As Variant
     Dim parsed As Object
     Dim calcSource As ExcelTechnicalCalcSource
-    Dim FilePath As String
+    Dim filePath As String
 
     For Each fileName In files
         Set parsed = ParseCalculationFileName(CStr(fileName))
         If Not parsed Is Nothing Then
             If parsed("IsMainCalc") Then
                 ' Crear ExcelTechnicalCalcSource
-                FilePath = calcFolder & "\" & CStr(fileName)
+                filePath = calcFolder & "\" & CStr(fileName)
                 Set calcSource = New ExcelTechnicalCalcSource
-                calcSource.Initialize FilePath, parsed
+                calcSource.Initialize filePath, parsed
 
                 ' Agregar a la coleccion usando CalcOption como key
                 On Error Resume Next

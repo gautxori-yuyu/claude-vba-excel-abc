@@ -30,7 +30,7 @@ End Property
 
 '@Description: Ruta completa del archivo
 '@Returns: String - Path completo o "(cerrado)" si no disponible
-Public Property Get Path() As String
+Public Property Get path() As String
     Err.Raise 5, MODULE_NAME, "Path debe implementarse en clase concreta"
 End Property
 

@@ -135,18 +135,18 @@ Public Function GetQuotes(ByVal opportunityPath As String) As Collection
     Set files = IdentifyQuoteFiles(opportunityPath)
 
     ' Crear objetos IEconomicQuote para cada fichero
-    Dim FilePath As Variant
+    Dim filePath As Variant
     Dim parsed As Object
     Dim quoteSource As ExcelEconomicQuoteSource
     Dim fso As Object
     Set fso = CreateObject("Scripting.FileSystemObject")
 
-    For Each FilePath In files
-        Set parsed = ParseQuoteFileName(fso.GetFileName(CStr(FilePath)))
+    For Each filePath In files
+        Set parsed = ParseQuoteFileName(fso.GetFileName(CStr(filePath)))
         If Not parsed Is Nothing Then
             ' Crear ExcelEconomicQuoteSource
             Set quoteSource = New ExcelEconomicQuoteSource
-            quoteSource.Initialize CStr(FilePath), parsed
+            quoteSource.Initialize CStr(filePath), parsed
 
             ' Agregar a la coleccion usando QuoteId + revision como key
             Dim key As String
@@ -161,7 +161,7 @@ Public Function GetQuotes(ByVal opportunityPath As String) As Collection
             End If
             On Error GoTo ErrHandler
         End If
-    Next FilePath
+    Next filePath
 
     LogDebug MODULE_NAME, "[GetQuotes] Encontradas " & result.Count & " valoraciones"
     Set GetQuotes = result
@@ -308,7 +308,7 @@ Public Function IdentifyQuoteFiles(ByVal opportunityPath As String) As Collectio
     Dim file As Object
     For Each file In folder.files
         If IsValidQuoteFile(file.Name) Then
-            result.Add file.Path
+            result.Add file.path
         End If
     Next file
 
@@ -318,7 +318,7 @@ Public Function IdentifyQuoteFiles(ByVal opportunityPath As String) As Collectio
         If IsRevisionFolder(subfolder.Name) Then
             For Each file In subfolder.files
                 If IsValidQuoteFile(file.Name) Then
-                    result.Add file.Path
+                    result.Add file.path
                 End If
             Next file
         End If

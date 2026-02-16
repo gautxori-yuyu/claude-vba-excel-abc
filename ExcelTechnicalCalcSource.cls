@@ -72,15 +72,15 @@ End Sub
 '@Description: Inicializa el source con la informacion parseada del nombre de fichero
 '@Param filePath: Ruta completa del fichero de calculo
 '@Param parsedInfo: Dictionary con CalcOption, CalcNumber, Revision, etc.
-Public Sub Initialize(ByVal FilePath As String, parsedInfo As Object)
+Public Sub Initialize(ByVal filePath As String, parsedInfo As Object)
     On Error GoTo ErrHandler
 
-    mFilePath = FilePath
+    mFilePath = filePath
 
     ' Extraer nombre de fichero
     Dim fso As Object
     Set fso = CreateObject("Scripting.FileSystemObject")
-    mFileName = fso.GetFileName(FilePath)
+    mFileName = fso.GetFileName(filePath)
 
     ' Establecer datos parseados
     If Not parsedInfo Is Nothing Then
@@ -180,8 +180,8 @@ Public Property Get Revision() As Long
     Revision = mRevision
 End Property
 
-Public Property Get FilePath() As String
-    FilePath = mFilePath
+Public Property Get filePath() As String
+    filePath = mFilePath
 End Property
 
 Public Property Get fileName() As String
@@ -327,7 +327,7 @@ Private Sub FindAssociatedFiles()
 
         ' Verificar si contiene la opcion de calculo
         If InStr(1, file.Name, mCalcOption, vbTextCompare) > 0 Then
-            mAssociatedFiles.Add file.Path
+            mAssociatedFiles.Add file.path
 
             ' Detectar tipos especiales
             If InStr(1, file.Name, "Antipul", vbTextCompare) > 0 Then

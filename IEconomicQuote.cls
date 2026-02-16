@@ -47,7 +47,7 @@ Public Property Get Revision() As Long
 End Property
 
 '@Description: Ruta completa del fichero de valoracion
-Public Property Get FilePath() As String
+Public Property Get filePath() As String
 End Property
 
 '@Description: Nombre del fichero (sin ruta)

@@ -52,13 +52,13 @@ End Sub
 '@Param fm: Gestor de sistema de archivos
 '@Param oConfiguration: Configuracion de la aplicacion
 '@Category: Inicializacion
-Public Sub Initialize(ByVal fm As clsFileManager, ByVal oConfiguration As clsConfiguration)
+Public Sub Initialize(fm As clsFileManager, oConfiguration As clsConfiguration)
     On Error GoTo ErrHandler
 
     Set mFileManager = fm
     Set mConfiguration = oConfiguration
 
-    ' Comprobar disponibilidad UNA SOLA VEZ: evita re-consultas redundantes al FS
+    ' Comprobar disponibilidad al inicializar
     Dim basePath As String
     basePath = mConfiguration.RutaOportunidades
     mIsReady = Len(basePath) > 0 And mFileManager.ExisteCarpeta(basePath)
@@ -70,10 +70,6 @@ ErrHandler:
     LogCurrentError MODULE_NAME, "[Initialize]"
     mIsReady = False
 End Sub
-
-' ==================================================================
-' IMPLEMENTACION DE IOpportunityProvider
-' ==================================================================
 
 ' ==================================================================
 ' IMPLEMENTACION DE IOpportunityProvider
@@ -112,6 +108,27 @@ End Function
 Public Function StorageAvailable() As Boolean
     StorageAvailable = mIsReady
 End Function
+
+'@Description: Actualiza el flag mIsReady consultando el filesystem.
+'              Llamar cuando el FSWatcher notifique error o reconexion en BasePath.
+'@Category: Estado
+Public Sub RefreshStorageAvailability()
+    On Error GoTo ErrHandler
+    Dim basePath As String
+    basePath = mConfiguration.RutaOportunidades
+    Dim wasReady As Boolean
+    wasReady = mIsReady
+    mIsReady = Len(basePath) > 0 And mFileManager.ExisteCarpeta(basePath)
+    If mIsReady <> wasReady Then
+        LogInfo MODULE_NAME, "[RefreshStorageAvailability] StorageAvailable cambio a " & mIsReady
+    Else
+        LogDebug MODULE_NAME, "[RefreshStorageAvailability] StorageAvailable=" & mIsReady
+    End If
+    Exit Sub
+ErrHandler:
+    LogCurrentError MODULE_NAME, "[RefreshStorageAvailability]"
+    mIsReady = False
+End Sub
 
 '@Description: Obtiene los nombres de carpetas de oportunidad validas, ordenados
 Public Function GetOpportunityFolders() As Collection
@@ -158,10 +175,10 @@ Public Function GetOpportunityFolders() As Collection
         ReDim Preserve arr(i - 1)
         arr = SortFoldersDescending(arr)
 
-        Dim J As Long
-        For J = LBound(arr) To UBound(arr)
-            result.Add arr(J)
-        Next J
+        Dim j As Long
+        For j = LBound(arr) To UBound(arr)
+            result.Add arr(j)
+        Next j
     End If
 
     LogDebug MODULE_NAME, "[GetOpportunityFolders] Encontradas " & result.Count & " oportunidades validas"
@@ -191,7 +208,8 @@ Public Function CreateOpportunityFolder(ByVal opportunityName As String) As Bool
         Exit Function
     End If
 
-    ' Usar flag mIsReady (evita re-consulta al FS - ya verificado en Initialize)
+    ' Verificar disponibilidad (re-consulta fresca antes de escribir en FS)
+    RefreshStorageAvailability
     If Not mIsReady Then
         LogError MODULE_NAME, "[CreateOpportunityFolder] BasePath no disponible: " & BasePath
         Exit Function
@@ -332,23 +350,23 @@ End Function
 '@Description: Ordena array de carpetas en orden numerico descendente
 '@Note: Detecta el ultimo numero en el nombre de cada carpeta
 Private Function SortFoldersDescending(arr() As String) As String()
-    Dim i As Long, J As Long, tmp As String
+    Dim i As Long, j As Long, tmp As String
     Dim keyI As Double, keyJ As Double
 
     For i = LBound(arr) To UBound(arr) - 1
-        For J = i + 1 To UBound(arr)
+        For j = i + 1 To UBound(arr)
             keyI = ExtractNumericKey(arr(i))
-            keyJ = ExtractNumericKey(arr(J))
+            keyJ = ExtractNumericKey(arr(j))
 
             If keyI < keyJ Then
-                tmp = arr(i): arr(i) = arr(J): arr(J) = tmp
+                tmp = arr(i): arr(i) = arr(j): arr(j) = tmp
             ElseIf keyI = keyJ Then
                 ' Si tienen la misma clave numerica, ordenar alfabeticamente descendente
-                If StrComp(arr(i), arr(J), vbTextCompare) < 0 Then
-                    tmp = arr(i): arr(i) = arr(J): arr(J) = tmp
+                If StrComp(arr(i), arr(j), vbTextCompare) < 0 Then
+                    tmp = arr(i): arr(i) = arr(j): arr(j) = tmp
                 End If
             End If
-        Next J
+        Next j
     Next i
 
     SortFoldersDescending = arr
