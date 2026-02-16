@@ -32,11 +32,14 @@ Attribute mFSMonitoringCoord.VB_VarHelpID = -1
 Private WithEvents mOpportunities As clsOpportunitiesMgr
 Attribute mOpportunities.VB_VarHelpID = -1
 
+Private WithEvents mOpportunityProvider As FileSystemOpportunityProvider
+Attribute mOpportunityProvider.VB_VarHelpID = -1
+
 Private mCtxState As clsExecutionContextState
 Private mFileMgr As clsFileManager   ' Referencia sin WithEvents (solo para consultas)
 
 '--------------------------------------------------------------
-' Inicialización
+' Inicializaciï¿½n
 '--------------------------------------------------------------
 Private Sub Class_Initialize()
     LogInfo MODULE_NAME, "[Class_Initialize]"
@@ -52,7 +55,8 @@ Public Sub Initialize(oCtxState As clsExecutionContextState, _
                 oInfraMediador As clsEventsMediatorInfrastructure, _
                 oFSMonitoringCoord As clsFSMonitoringCoord, _
                 oOpportunities As clsOpportunitiesMgr, _
-                oFileMgr As clsFileManager)
+                oFileMgr As clsFileManager, _
+                oOpportunityProvider As FileSystemOpportunityProvider)
     On Error GoTo ErrHandler
 
     Set mCtxState = oCtxState
@@ -67,7 +71,11 @@ Public Sub Initialize(oCtxState As clsExecutionContextState, _
 
     Set mOpportunities = oOpportunities
 
-    LogInfo MODULE_NAME, "[Initialize] Mediador configurado (escucha via InfraMediador)"
+    ' Suscribirse al provider para recibir objetos de dominio ya construidos
+    ' (en lugar de strings crudos del sistema de archivos)
+    Set mOpportunityProvider = oOpportunityProvider
+
+    LogInfo MODULE_NAME, "[Initialize] Mediador configurado (escucha via InfraMediador + OpportunityProvider)"
 
     Exit Sub
 ErrHandler:
@@ -79,6 +87,7 @@ Public Sub Terminate()
     On Error GoTo ErrHandler
 
     ' Liberar referencias WithEvents primero
+    Set mOpportunityProvider = Nothing
     Set mOpportunities = Nothing
     Set mFSMonitoringCoord = Nothing
     Set mInfraMediador = Nothing
@@ -193,35 +202,27 @@ Private Function FindOpportunityForFile(ByVal filePath As String) As clsOpportun
 End Function
 
 ' -------------------------------------------------------------
-' Eventos de mFSMonitoringCoord (cambios en sistema de archivos)
-' clsApplication recibe estos eventos y delega a OpportunitiesMgr
+' Eventos del provider FileSystemOpportunityProvider
+' Recibe objetos de dominio ya validados y construidos por infraestructura.
+' El dominio no recibe strings crudos ni aplica regex.
 ' -------------------------------------------------------------
 
-Private Sub mFSMonitoringCoord_OpportunityCreated(ByVal parentFolder As String, ByVal subfolderName As String)
-    LogDebug MODULE_NAME, "[mFSMonitoringCoord_OpportunityCreated] " & subfolderName
-    mOpportunities.ProcesarCambiosEnOportunidades subfolderName
+Private Sub mOpportunityProvider_OpportunityDetected(ByVal op As clsOpportunity)
+    LogInfo MODULE_NAME, "[mOpportunityProvider_OpportunityDetected] " & op.Label
+    If Not mOpportunities Is Nothing Then mOpportunities.AddOpportunity op
 End Sub
 
-Private Sub mFSMonitoringCoord_OpportunityDeleted(ByVal parentFolder As String, ByVal subfolderName As String)
-    LogDebug MODULE_NAME, "[mFSMonitoringCoord_OpportunityDeleted] " & subfolderName
-    mOpportunities.ProcesarCambiosEnOportunidades subfolderName
+Private Sub mOpportunityProvider_OpportunityRemoved(ByVal opportunityCode As String)
+    LogInfo MODULE_NAME, "[mOpportunityProvider_OpportunityRemoved] Codigo: " & opportunityCode
+    If Not mOpportunities Is Nothing Then mOpportunities.RemoveOpportunity opportunityCode
 End Sub
 
-Private Sub mFSMonitoringCoord_OpportunityRenamed(ByVal parentFolder As String, ByVal oldName As String, ByVal newName As String)
-    LogDebug MODULE_NAME, "[mFSMonitoringCoord_OpportunityRenamed] " & oldName & " -> " & newName
-    mOpportunities.ProcesarCambiosEnOportunidades oldName
-    mOpportunities.ProcesarCambiosEnOportunidades newName
-End Sub
-
-Private Sub mFSMonitoringCoord_OpportunityItemDeleted(ByVal folder As String, ByVal fileName As String)
-    LogDebug MODULE_NAME, "[mFSMonitoringCoord_OpportunityItemDeleted] " & fileName
-    mOpportunities.ProcesarCambiosEnItemsOportunidad fileName
-End Sub
-
-Private Sub mFSMonitoringCoord_OpportunityItemRenamed(ByVal folder As String, ByVal oldName As String, ByVal newName As String)
-    LogDebug MODULE_NAME, "[mFSMonitoringCoord_OpportunityItemRenamed] " & oldName & " -> " & newName
-    mOpportunities.ProcesarCambiosEnItemsOportunidad newName
-End Sub
+' -------------------------------------------------------------
+' Eventos de mFSMonitoringCoord (cambios en sistema de archivos)
+' Solo se mantienen los eventos NO relacionados con carpetas de oportunidad
+' (template, gas, monitoring). Los eventos de oportunidad los gestiona
+' FileSystemOpportunityProvider via WithEvents.
+' -------------------------------------------------------------
 
 Private Sub mFSMonitoringCoord_TemplateCreated(ByVal folder As String, ByVal fileName As String)
     LogDebug MODULE_NAME, "[mFSMonitoringCoord_TemplateCreated] " & fileName
