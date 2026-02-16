@@ -21,6 +21,7 @@ Private mEvMediatorInfrastructure As clsEventsMediatorInfrastructure
 Private mFileMgr As clsFileManager
 Private mOpportunityProvider As FileSystemOpportunityProvider
 Private mCalcProvider As FileSystemTechnicalCalcProvider
+Private mQuoteProvider As FileSystemEconomicQuoteProvider
 Private mOpportunities As clsOpportunitiesMgr
 Private mFSMonitoringCoord As clsFSMonitoringCoord
 Private mConfiguration As clsConfiguration
@@ -64,6 +65,11 @@ Public Property Get CalcProvider() As ITechnicalCalcProvider
     Set CalcProvider = mCalcProvider
 End Property
 
+'@Description: Obtiene el proveedor de valoraciones economicas
+Public Property Get QuoteProvider() As IEconomicQuoteProvider
+    Set QuoteProvider = mQuoteProvider
+End Property
+
 '@Description: Obtiene la configuracion de la aplicacion
 Public Property Get Configuration() As clsConfiguration
     Set Configuration = mConfiguration
@@ -105,7 +111,7 @@ ErrHandler:
 End Sub
 Private Sub InitializeInfrastructure()
     On Error GoTo ErrHandler
-    ' INFRAESTRUCTURA
+    ' --- CORE ---
     Set mCtxMgr = New clsExecutionContextMgr
     ' ESTADO CENTRALIZADO - Inyectar referencias a subestados (Dependency Injection)
     ' clsChartMgr nace como composicion interna de clsExecutionContextMgr
@@ -115,10 +121,27 @@ Private Sub InitializeInfrastructure()
     mFileMgr.Init mCtxMgr.Application.Workbooks
     mApplicationState.Initialize FileState:=mFileMgr.State
 
-    ' GESTOR DE EVENTOS DE INFRAESTRUCTURA
+    ' GESTOR DE EVENTOS DE INFRAESTRUCTURA (adapter pattern)
     Set mEvMediatorInfrastructure = New clsEventsMediatorInfrastructure
     Call mEvMediatorInfrastructure.Initialize(mFileMgr, mCtxMgr)
-    
+
+    ' --- CONFIGURACION ---
+    Set mConfiguration = New clsConfiguration
+
+    ' --- MONITOREO ---
+    Set mFSMonitoringCoord = New clsFSMonitoringCoord
+    mFSMonitoringCoord.IniciarMonitoreo mConfiguration.oDicFoldersToWatch
+
+    ' --- PROVIDERS (implementaciones de interfaces de dominio) ---
+    Set mOpportunityProvider = New FileSystemOpportunityProvider
+    mOpportunityProvider.Initialize mFileMgr, mConfiguration, mFSMonitoringCoord
+
+    Set mCalcProvider = New FileSystemTechnicalCalcProvider
+    mCalcProvider.Initialize mFileMgr
+
+    Set mQuoteProvider = New FileSystemEconomicQuoteProvider
+    mQuoteProvider.Initialize mFileMgr
+
     Exit Sub
 ErrHandler:
     LogCurrentError MODULE_NAME, "[InitializeInfrastructure]"
@@ -127,37 +150,21 @@ ErrHandler:
 End Sub
 Private Sub InitializeDomain()
     On Error GoTo ErrHandler
-    ' CONFIGURACION (servicio de infraestructura)
-    Set mConfiguration = New clsConfiguration
-
-    ' SERVICIOS DE MONITOREO
-    Set mFSMonitoringCoord = New clsFSMonitoringCoord
-    mFSMonitoringCoord.IniciarMonitoreo mConfiguration.oDicFoldersToWatch
-
-    ' PROVIDER DE OPORTUNIDADES (infraestructura)
-    Set mOpportunityProvider = New FileSystemOpportunityProvider
-    mOpportunityProvider.Initialize mFileMgr, mConfiguration, mFSMonitoringCoord
-
-    ' PROVIDER DE CALCULOS TECNICOS (infraestructura)
-    Set mCalcProvider = New FileSystemTechnicalCalcProvider
-    mCalcProvider.Initialize mFileMgr
-
     ' DOMINIO - Crear manager de oportunidades (crea su estado internamente)
+    ' Se pasa tanto la interfaz (para llamadas de dominio) como la clase concreta
+    ' (para WithEvents - limitacion VBA: WithEvents no funciona con interfaces)
     Set mOpportunities = New clsOpportunitiesMgr
-    mOpportunities.Initialize mOpportunityProvider
+    mOpportunities.Initialize mOpportunityProvider, mOpportunityProvider
     ' ESTADO CENTRALIZADO - Inyectar referencias a subestados (Dependency Injection)
     mApplicationState.Initialize OpportunityState:=mOpportunities.State
 
     ' MEDIADOR DE EVENTOS DE DOMINIO
-    ' Escucha eventos SEMANTICOS del mediador de infraestructura (no directamente de mCtxMgr)
-    ' y del provider de oportunidades (objetos de dominio ya construidos)
+    ' Escucha eventos SEMANTICOS del mediador de infraestructura y de FSMonitoringCoord
     Set mEvMediatorDomain = New clsEventsMediatorDomain
     Call mEvMediatorDomain.Initialize(mCtxMgr.State, _
                                     mEvMediatorInfrastructure, _
                                     mFSMonitoringCoord, _
-                                    mOpportunities, _
-                                    mFileMgr, _
-                                    mOpportunityProvider)
+                                    mOpportunities)
     Exit Sub
 ErrHandler:
     LogCurrentError MODULE_NAME, "[InitializeDomain]"
@@ -199,12 +206,10 @@ Private Sub Class_Terminate()
     On Error Resume Next  ' Asegurar que la limpieza continï¿½a aunque haya errores
 
     ' ORDEN INVERSO A LA INSTANCIACION:
-    ' Instanciacion: CtxMgr -> ChartMgr -> EventDispatcher -> FileMgr -> Configuration
-    '                -> FSMonitoringCoord -> EvMediatorInfrastructure -> OpportunityProvider
-    '                -> Opportunities -> Ribbon -> ApplicationState -> EvMediatorDomain
-    ' Liberacion (inverso): EvMediatorDomain -> ApplicationState -> Ribbon -> Opportunities
-    '                       -> OpportunityProvider -> EvMediatorInfrastructure -> FSMonitoringCoord
-    '                       -> Configuration -> FileMgr -> EventDispatcher -> ChartMgr -> CtxMgr
+    ' Infraestructura: CtxMgr -> FileMgr -> EvMediatorInfra -> Configuration -> FSMonitoringCoord
+    '                  -> OpportunityProvider -> CalcProvider -> QuoteProvider
+    ' Dominio: Opportunities -> EvMediatorDomain
+    ' UI: Ribbon -> EventDispatcher
 
     DisposeUI
     
@@ -218,6 +223,20 @@ Private Sub Class_Terminate()
     LogInfo MODULE_NAME, "[Terminate] Limpieza completada"
 End Sub
 Private Sub DisposeInfrastructure()
+    ' Liberar proveedores (orden inverso a instanciacion)
+    Set mQuoteProvider = Nothing
+    Set mCalcProvider = Nothing
+    Set mOpportunityProvider = Nothing
+
+    ' Apagado explicito del monitor de archivos
+    If Not mFSMonitoringCoord Is Nothing Then
+        mFSMonitoringCoord.Shutdown
+        Set mFSMonitoringCoord = Nothing
+    End If
+
+    ' Liberar configuracion
+    Set mConfiguration = Nothing
+
     ' Liberar mediador de eventos de infraestructura
     Set mEvMediatorInfrastructure = Nothing
 
@@ -229,24 +248,11 @@ Private Sub DisposeInfrastructure()
     Set mCtxMgr = Nothing
 End Sub
 Private Sub DisposeDomain()
-    ' 1. Liberar mediador de eventos de dominio (ultimo en instanciarse)
+    ' Liberar mediador de eventos de dominio (ultimo en instanciarse)
     Set mEvMediatorDomain = Nothing
 
-    ' 3. Liberar gestor de oportunidades
+    ' Liberar gestor de oportunidades
     Set mOpportunities = Nothing
-
-    ' 4. Liberar proveedores
-    Set mOpportunityProvider = Nothing
-    Set mCalcProvider = Nothing
-
-    ' 5. Apagado explï¿½cito del monitor de archivos
-    If Not mFSMonitoringCoord Is Nothing Then
-        mFSMonitoringCoord.Shutdown
-        Set mFSMonitoringCoord = Nothing
-    End If
-
-    ' 6. Liberar configuracion
-    Set mConfiguration = Nothing
 End Sub
 Private Sub DisposeUI()
     ' Liberar Ribbon (con apagado explicito de eventos)

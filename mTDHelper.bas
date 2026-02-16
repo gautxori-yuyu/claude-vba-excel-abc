@@ -25,9 +25,9 @@ Attribute TaskDialogSubclassProc.VB_ProcData.VB_Invoke_Func = " \n0"
 TaskDialogSubclassProc = dwRefData.zz_ProcessSubclass(hwnd, uMsg, wParam, lParam, uIdSubclass)
 End Function
 
-'@Description("Muestra un cuadro de diálogo de pregunta (Sí/No) usando TaskDialog.")
+'@Description("Muestra un cuadro de diï¿½logo de pregunta (Sï¿½/No) usando TaskDialog.")
 Public Function ShowTaskDialogYesNo(ByVal Title As String, ByVal instruction As String, ByVal Content As String) As TDRESULT
-Attribute ShowTaskDialogYesNo.VB_Description = "[mTDHelper] Muestra un cuadro de diálogo de pregunta (Sí/No) usando TaskDialog."
+Attribute ShowTaskDialogYesNo.VB_Description = "[mTDHelper] Muestra un cuadro de diï¿½logo de pregunta (Sï¿½/No) usando TaskDialog."
 Attribute ShowTaskDialogYesNo.VB_ProcData.VB_Invoke_Func = " \n21"
     On Error GoTo ErrHandler
 
@@ -44,19 +44,53 @@ ErrHandler:
 End Function
 
 
-'@Description("Muestra un cuadro de diálogo de error estándar usando TaskDialog.")
+'@Description("Muestra un cuadro de diï¿½logo de error estï¿½ndar usando TaskDialog.")
 Public Sub ShowTaskDialogError(ByVal Title As String, ByVal instruction As String, ByVal Content As String)
 Attribute ShowTaskDialogError.VB_ProcData.VB_Invoke_Func = " \n0"
     On Error GoTo ErrHandler
-    
+
     Dim TaskDlg As cTaskDialog, res As TDRESULT
     Set TaskDlg = New cTaskDialog
     res = TaskDlg.SimpleDialog(Content, TDCBF_OK_BUTTON, Title, instruction, IDI_ERROR, Application.hwnd)
-        
+
     Exit Sub
 ErrHandler:
     ' Fallback to MsgBox if TaskDialog fails for any reason
     LogError MODULE_NAME, "[ShowTaskDialogError] Fallback to MsgBox", Err.Number, Err.Description
     MsgBox instruction & vbCrLf & Content, vbCritical, Title
 End Sub
+
+'@Description("Muestra un cuadro de dialogo con campo de texto usando TaskDialog. Devuelve cadena vacia si el usuario cancela.")
+Public Function ShowTaskDialogInputBox(ByVal Title As String, _
+                                       ByVal instruction As String, _
+                                       ByVal Content As String, _
+                                       Optional ByVal icon As Long = TD_INFORMATION_ICON) As String
+Attribute ShowTaskDialogInputBox.VB_ProcData.VB_Invoke_Func = " \n21"
+    On Error GoTo ErrHandler
+
+    Dim TaskDlg As cTaskDialog
+    Set TaskDlg = New cTaskDialog
+    With TaskDlg
+        .Init
+        .Title = Title
+        .MainInstruction = instruction
+        .Content = Content
+        .Flags = TDF_INPUT_BOX
+        .CommonButtons = TDCBF_OK_BUTTON Or TDCBF_CANCEL_BUTTON
+        .IconMain = icon
+        .ParenthWnd = Application.hwnd
+        .ShowDialog
+
+        If .ResultMain = TD_OK Then
+            ShowTaskDialogInputBox = .ResultInput
+        Else
+            ShowTaskDialogInputBox = ""
+        End If
+    End With
+
+    Exit Function
+ErrHandler:
+    LogError MODULE_NAME, "[ShowTaskDialogInputBox] Fallback to InputBox", Err.Number, Err.Description
+    ShowTaskDialogInputBox = InputBox(instruction & vbCrLf & Content, Title)
+End Function
 

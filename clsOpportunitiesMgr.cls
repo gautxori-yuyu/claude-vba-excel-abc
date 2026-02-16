@@ -38,6 +38,8 @@ Public Event OpportunityCollectionUpdated(ByVal reason As String)
 ' ESTADO INTERNO
 ' ==================================================================
 Private mOpportunityProvider As IOpportunityProvider  ' Proveedor de oportunidades (inyectado)
+Private WithEvents mConcreteProvider As FileSystemOpportunityProvider  ' Suscripcion a eventos (VBA: WithEvents solo con clases concretas)
+Attribute mConcreteProvider.VB_VarHelpID = -1
 Private mOpportunityState As clsOpportunityState      ' Estado de oportunidad (composicion)
 Private mOpportunities As Collection                   ' Collection<clsOpportunity> - construidos por el provider
 
@@ -55,12 +57,19 @@ Private Sub Class_Terminate()
     LogInfo MODULE_NAME, "[Class_Terminate]"
     Set mOpportunityState = Nothing
     Set mOpportunities = Nothing
+    Set mConcreteProvider = Nothing
     Set mOpportunityProvider = Nothing
 End Sub
 
-'@Description: Inyecta el proveedor de oportunidades y carga datos iniciales
-Public Sub Initialize(provider As IOpportunityProvider)
+'@Description: Inyecta el proveedor de oportunidades y carga datos iniciales.
+'              concreteProvider permite suscribirse a eventos via WithEvents
+'              (limitacion VBA: WithEvents no funciona con interfaces).
+Public Sub Initialize(provider As IOpportunityProvider, _
+                      Optional concreteProvider As FileSystemOpportunityProvider = Nothing)
     Set mOpportunityProvider = provider
+    If Not concreteProvider Is Nothing Then
+        Set mConcreteProvider = concreteProvider
+    End If
     RefreshOpportunities
 End Sub
 
@@ -268,59 +277,36 @@ Public Function OpportunityExists(ByVal opportunityName As String) As Boolean
     Next Item
 End Function
 
-'@Description: Crea una nueva oportunidad
+'@Description: Crea una nueva oportunidad delegando al provider.
+'              El provider gestiona: codigo, input de usuario, validacion, creacion FS, entidad.
+'              El dominio solo recibe la entidad limpia y la agrega a la coleccion.
+'              Nota: el FSWatcher tambien disparara OpportunityDetected via mConcreteProvider
+'              -> AddOpportunity (idempotente por Number, se ignora el duplicado).
 Public Sub CreateNewOpportunity()
     On Error GoTo ErrHandler
 
-    LogDebug MODULE_NAME, "[CreateNewOpportunity] Iniciando creacion de nueva oportunidad"
+    LogDebug MODULE_NAME, "[CreateNewOpportunity] Delegando al provider"
 
     If mOpportunityProvider Is Nothing Then
         LogError MODULE_NAME, "[CreateNewOpportunity] Provider no ha sido inyectado"
-        ShowTaskDialogError "Error Crï¿½tico", "Error interno: Provider no disponible", _
-                            "La aplicaciï¿½n no puede continuar porque un componente esencial (IOpportunityProvider) no se ha iniciado."
         Exit Sub
     End If
 
-    ' Verificar que el almacenamiento esta disponible (usa flag, no re-consulta el FS)
-    If Not mOpportunityProvider.StorageAvailable() Then
-        ShowTaskDialogError "Ruta no encontrada", "No se pudo abrir la ruta de oportunidades.", _
-                            "La carpeta de oportunidades no esta accesible. Verifique la configuracion de rutas."
+    Dim op As clsOpportunity
+    Set op = mOpportunityProvider.CreateNewOpportunity()
+
+    If op Is Nothing Then
+        LogDebug MODULE_NAME, "[CreateNewOpportunity] Provider devolvio Nothing (cancelado o error)"
         Exit Sub
-    Else
-        LogDebug MODULE_NAME, "[CreateNewOpportunity] Almacen de oportunidades disponible."
     End If
 
-    ' Obtener siguiente codigo
-    Dim strOpCode As String
-    strOpCode = mOpportunityProvider.GetNextOpportunityCode()
-
-    ' Solicitar nombre de cliente
-    Dim strCustomer As String
-    strCustomer = GetCustomerNameFromUser(strOpCode)
-
-    If strCustomer = "" Then Exit Sub ' User cancelled
-
-    ' Construir nombre completo
-    Dim opportunityName As String
-    opportunityName = strOpCode & " - " & strCustomer & " - XXX"
-
-    ' Crear carpeta y refrescar la lista inmediatamente.
-    ' Nota: el FSWatcher tambien disparara OpportunityDetected via FileSystemOpportunityProvider
-    ' cuando detecte la nueva carpeta -> AddOpportunity (idempotente por Number, ignorada).
-    If mOpportunityProvider.CreateOpportunity(opportunityName) Then
-        LogInfo MODULE_NAME, "[CreateNewOpportunity] Oportunidad creada: " & opportunityName
-        RefreshOpportunities
-    Else
-        ShowTaskDialogError "Error de Creaciï¿½n", "Error al crear la carpeta de la oportunidad.", _
-                            "VBA no pudo crear la carpeta en el sistema de archivos. Revise los permisos o el log para mï¿½s detalles."
-    End If
+    AddOpportunity op
+    LogInfo MODULE_NAME, "[CreateNewOpportunity] Oportunidad creada: " & op.Label
 
     Exit Sub
 
 ErrHandler:
     LogCurrentError MODULE_NAME, "[CreateNewOpportunity]"
-    ShowTaskDialogError "Error Inesperado", "Ocurriï¿½ un error inesperado al crear la oportunidad.", _
-                        "Error: " & Err.Description & " (Nï¿½ " & Err.Number & ")"
 End Sub
 
 ' ==================================================================
@@ -395,60 +381,20 @@ Private Function GetIndexByName(ByVal opportunityName As String) As Long
     Next i
 End Function
 
-'@Description: Solicita al usuario el nombre del cliente/proyecto de forma interactiva y robusta.
-Private Function GetCustomerNameFromUser(ByVal opCode As String) As String
-    Dim strCustomer As String
-    Dim IsValid As Boolean
-    Dim userResponse As Long
-    
-    Dim regEx As Object
-    Set regEx = CreateObject("VBScript.RegExp")
-    regEx.Pattern = FILEORFOLDERNAME_QUOTE_CUSTOMER_OTHER_MODEL_PATTERN
-    
-    On Error GoTo ErrHandler
+' ==================================================================
+' MANEJADORES DE EVENTOS DEL PROVIDER (via WithEvents)
+' Recibe objetos de dominio ya validados y construidos por infraestructura.
+' ==================================================================
 
-    Dim TaskDlg As cTaskDialog
-    Set TaskDlg = New cTaskDialog
-    With TaskDlg
-        .Init
-        .Title = "Crear Nueva Oportunidad"
-        .MainInstruction = "Nombre del cliente y proyecto"
-        .Content = "Introduce el nombre del cliente, o cliente - proyecto, separados por un guiï¿½n. No utilizar caracteres especiales!"
-        .Flags = TDF_INPUT_BOX
-        .CommonButtons = TDCBF_OK_BUTTON Or TDCBF_CANCEL_BUTTON
-        .IconMain = TD_INFORMATION_ICON
-        .ParenthWnd = Application.hwnd
-                
-        Do
-            ' 1. Solicitar input al usuario
-            .ShowDialog
-        
-            strCustomer = .ResultInput
-            If .ResultMain <> TD_OK Then
-                ' 2. Si el usuario cancela (InputBox devuelve ""), salir
-                GetCustomerNameFromUser = ""
-                Exit Function
-            Else
-                ' 3. Validar el nombre introducido
-                IsValid = regEx.Test(opCode & " - " & strCustomer & " - XXX")
-                ' Evitamos caracteres especiales del sistema de archivos
-                IsValid = IsValid And Not (strCustomer Like "*[\/:*?""<>|]*")
-                If Not IsValid Then
-                    .MainInstruction = "Nombre NO VALIDO"
-                    .IconMain = TD_WARNING_ICON
-                Else
-                    Exit Do
-                End If
-            End If
-        Loop While Not IsValid
-    End With
-    GetCustomerNameFromUser = strCustomer
-    
-    LogDebug MODULE_NAME, "[GetCustomerNameFromUser] Cliente (+ proyecto): " & strCustomer
+'@Description: Nueva oportunidad detectada en el sistema de archivos.
+'              El provider ya valido el patron y construyo la entidad.
+Private Sub mConcreteProvider_OpportunityDetected(ByVal op As clsOpportunity)
+    LogInfo MODULE_NAME, "[mConcreteProvider_OpportunityDetected] " & op.Label
+    AddOpportunity op
+End Sub
 
-    Exit Function
-ErrHandler:
-    LogCurrentError MODULE_NAME, "[GetCustomerNameFromUser]"
-    ShowTaskDialogError "Error Inesperado", "Ocurriï¿½ un error inesperado al solicitar el nombre de cliente.", _
-                        "Error: " & Err.Description & " (Nï¿½ " & Err.Number & ")"
-End Function
+'@Description: Oportunidad eliminada del sistema de archivos.
+Private Sub mConcreteProvider_OpportunityRemoved(ByVal opportunityCode As String)
+    LogInfo MODULE_NAME, "[mConcreteProvider_OpportunityRemoved] Codigo: " & opportunityCode
+    RemoveOpportunity opportunityCode
+End Sub

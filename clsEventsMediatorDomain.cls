@@ -18,10 +18,11 @@ Private Const MODULE_NAME As String = "clsEventsMediatorDomain"
 ' ==================================================================
 ' El mediador de dominio escucha:
 ' - mInfraMediador: eventos SEMANTICOS traducidos de infraestructura
-' - mFSMonitoringCoord: eventos de sistema de archivos (ya son semanticos)
+' - mFSMonitoringCoord: eventos de sistema de archivos (template, gas, monitoring)
 ' - mOpportunities: eventos de dominio (Manager de oportunidades)
 '
-' NO escucha directamente a clases de infraestructura pura (mCtxMgr, mFileMgr)
+' Los eventos de oportunidades (OpportunityDetected/Removed) los gestiona
+' directamente clsOpportunitiesMgr via WithEvents sobre el provider concreto.
 
 Private WithEvents mInfraMediador As clsEventsMediatorInfrastructure
 Attribute mInfraMediador.VB_VarHelpID = -1
@@ -32,11 +33,7 @@ Attribute mFSMonitoringCoord.VB_VarHelpID = -1
 Private WithEvents mOpportunities As clsOpportunitiesMgr
 Attribute mOpportunities.VB_VarHelpID = -1
 
-Private WithEvents mOpportunityProvider As FileSystemOpportunityProvider
-Attribute mOpportunityProvider.VB_VarHelpID = -1
-
 Private mCtxState As clsExecutionContextState
-Private mFileMgr As clsFileManager   ' Referencia sin WithEvents (solo para consultas)
 
 '--------------------------------------------------------------
 ' Inicializaciï¿½n
@@ -54,9 +51,7 @@ End Sub
 Public Sub Initialize(oCtxState As clsExecutionContextState, _
                 oInfraMediador As clsEventsMediatorInfrastructure, _
                 oFSMonitoringCoord As clsFSMonitoringCoord, _
-                oOpportunities As clsOpportunitiesMgr, _
-                oFileMgr As clsFileManager, _
-                oOpportunityProvider As FileSystemOpportunityProvider)
+                oOpportunities As clsOpportunitiesMgr)
     On Error GoTo ErrHandler
 
     Set mCtxState = oCtxState
@@ -64,18 +59,11 @@ Public Sub Initialize(oCtxState As clsExecutionContextState, _
     ' Escuchar eventos SEMANTICOS del mediador de infraestructura
     Set mInfraMediador = oInfraMediador
 
-    ' Referencia a FileMgr solo para consultas (no WithEvents)
-    Set mFileMgr = oFileMgr
-
     Set mFSMonitoringCoord = oFSMonitoringCoord
 
     Set mOpportunities = oOpportunities
 
-    ' Suscribirse al provider para recibir objetos de dominio ya construidos
-    ' (en lugar de strings crudos del sistema de archivos)
-    Set mOpportunityProvider = oOpportunityProvider
-
-    LogInfo MODULE_NAME, "[Initialize] Mediador configurado (escucha via InfraMediador + OpportunityProvider)"
+    LogInfo MODULE_NAME, "[Initialize] Mediador configurado (escucha via InfraMediador + FSMonitoringCoord)"
 
     Exit Sub
 ErrHandler:
@@ -87,13 +75,11 @@ Public Sub Terminate()
     On Error GoTo ErrHandler
 
     ' Liberar referencias WithEvents primero
-    Set mOpportunityProvider = Nothing
     Set mOpportunities = Nothing
     Set mFSMonitoringCoord = Nothing
     Set mInfraMediador = Nothing
 
     ' Luego referencias normales
-    Set mFileMgr = Nothing
     Set mCtxState = Nothing
 
     Exit Sub
@@ -200,22 +186,6 @@ Private Function FindOpportunityForFile(ByVal filePath As String) As clsOpportun
     ' Devuelve Nothing si no hay coincidencia
     LogDebug MODULE_NAME, "[FindOpportunityForFile] Sin coincidencia -> SetCurrentOpportunity NO se llamara"
 End Function
-
-' -------------------------------------------------------------
-' Eventos del provider FileSystemOpportunityProvider
-' Recibe objetos de dominio ya validados y construidos por infraestructura.
-' El dominio no recibe strings crudos ni aplica regex.
-' -------------------------------------------------------------
-
-Private Sub mOpportunityProvider_OpportunityDetected(ByVal op As clsOpportunity)
-    LogInfo MODULE_NAME, "[mOpportunityProvider_OpportunityDetected] " & op.Label
-    If Not mOpportunities Is Nothing Then mOpportunities.AddOpportunity op
-End Sub
-
-Private Sub mOpportunityProvider_OpportunityRemoved(ByVal opportunityCode As String)
-    LogInfo MODULE_NAME, "[mOpportunityProvider_OpportunityRemoved] Codigo: " & opportunityCode
-    If Not mOpportunities Is Nothing Then mOpportunities.RemoveOpportunity opportunityCode
-End Sub
 
 ' -------------------------------------------------------------
 ' Eventos de mFSMonitoringCoord (cambios en sistema de archivos)

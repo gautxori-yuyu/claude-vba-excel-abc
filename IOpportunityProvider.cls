@@ -24,8 +24,8 @@ Attribute VB_Exposed = False
 '@Folder "3-Dominio"
 Option Explicit
 
-'@Description: Obtiene los nombres de oportunidades disponibles, ordenados para presentacion
-'@Returns: Collection de String con nombres de oportunidades
+'@Description: Obtiene las oportunidades disponibles, ordenadas para presentacion
+'@Returns: Collection de clsOpportunity con entidades ya construidas
 Public Function GetOpportunities() As Collection
 End Function
 
@@ -35,10 +35,16 @@ End Function
 Public Function OpportunityExists(ByVal opportunityName As String) As Boolean
 End Function
 
-'@Description: Crea una nueva oportunidad con el nombre indicado
+'@Description: Crea una nueva oportunidad interactivamente (solicita datos al usuario,
+'              valida, crea almacenamiento, construye entidad de dominio).
+'@Returns: clsOpportunity creada, o Nothing si el usuario cancela o hay error
+Public Function CreateNewOpportunity() As clsOpportunity
+End Function
+
+'@Description: Crea una oportunidad con el nombre indicado (sin interaccion de usuario)
 '@Param opportunityName: Nombre completo de la nueva oportunidad
-'@Returns: True si se creo exitosamente
-Public Function CreateOpportunity(ByVal opportunityName As String) As Boolean
+'@Returns: clsOpportunity creada, o Nothing si falla
+Public Function CreateOpportunity(ByVal opportunityName As String) As clsOpportunity
 End Function
 
 '@Description: Genera el siguiente codigo de oportunidad disponible
@@ -52,3 +58,8 @@ End Function
 Public Function StorageAvailable() As Boolean
 End Function
 
+'@Description: Valida si un nombre cumple el patron de oportunidad valida
+'@Param opportunityName: Nombre a validar
+'@Returns: True si cumple el patron
+Public Function ValidateOpportunityName(ByVal opportunityName As String) As Boolean
+End Function

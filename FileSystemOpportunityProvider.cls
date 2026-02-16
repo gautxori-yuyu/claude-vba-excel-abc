@@ -16,6 +16,8 @@ Attribute VB_Exposed = False
 ' - Filtrado por patrones regex (FILEORFOLDERNAME_QUOTE_CUSTOMER_OTHER_MODEL_PATTERN)
 ' - Ordenacion para presentacion
 ' - Creacion de carpetas desde plantilla
+' - Validacion de nombres de oportunidad
+' - Solicitud interactiva de datos al usuario (via mTDHelper)
 '
 ' El dominio no conoce estos detalles de implementacion.
 ' ==================================================================
@@ -35,7 +37,7 @@ Private mIsReady As Boolean   ' Flag: BasePath era accesible al inicializar
 Private WithEvents mFSMonitoringCoord As clsFSMonitoringCoord
 
 ' ==================================================================
-' EVENTOS DE DOMINIO (emitidos hacia el mediador)
+' EVENTOS DE DOMINIO (emitidos hacia suscriptores WithEvents)
 ' ==================================================================
 Public Event OpportunityDetected(ByVal op As clsOpportunity)
 Public Event OpportunityRemoved(ByVal opportunityCode As String)
@@ -59,7 +61,7 @@ End Sub
 '@Description: Inyecta las dependencias e inicializa el flag de disponibilidad
 '@Param fm: Gestor de sistema de archivos
 '@Param oConfiguration: Configuracion de la aplicacion
-'@Category: Inicializacion
+'@Param oFSMonitoringCoord: Coordinador de monitoreo FS (opcional, para eventos en tiempo real)
 Public Sub Initialize(fm As clsFileManager, _
                       oConfiguration As clsConfiguration, _
                       Optional oFSMonitoringCoord As clsFSMonitoringCoord = Nothing)
@@ -69,9 +71,9 @@ Public Sub Initialize(fm As clsFileManager, _
     Set mConfiguration = oConfiguration
 
     ' Comprobar disponibilidad UNA SOLA VEZ: evita re-consultas redundantes al FS
-    Dim BasePath As String
-    BasePath = mConfiguration.RutaOportunidades
-    mIsReady = Len(BasePath) > 0 And mFileManager.ExisteCarpeta(BasePath)
+    Dim strBasePath As String
+    strBasePath = mConfiguration.RutaOportunidades
+    mIsReady = Len(strBasePath) > 0 And mFileManager.ExisteCarpeta(strBasePath)
 
     ' Suscribirse al coordinador de monitoreo para detectar cambios en tiempo real
     If Not oFSMonitoringCoord Is Nothing Then
@@ -90,7 +92,6 @@ End Sub
 ' ==================================================================
 ' IMPLEMENTACION DE IOpportunityProvider
 ' Stubs privados que delegan en los metodos publicos concretos.
-' Los nombres siguen la convencion VBA: IInterfaz_Metodo
 ' ==================================================================
 
 Private Function IOpportunityProvider_GetOpportunities() As Collection
@@ -101,8 +102,12 @@ Private Function IOpportunityProvider_OpportunityExists(ByVal opportunityName As
     IOpportunityProvider_OpportunityExists = FolderExists(opportunityName)
 End Function
 
-Private Function IOpportunityProvider_CreateOpportunity(ByVal opportunityName As String) As Boolean
-    IOpportunityProvider_CreateOpportunity = CreateOpportunityFolder(opportunityName)
+Private Function IOpportunityProvider_CreateNewOpportunity() As clsOpportunity
+    Set IOpportunityProvider_CreateNewOpportunity = CreateNewOpportunity()
+End Function
+
+Private Function IOpportunityProvider_CreateOpportunity(ByVal opportunityName As String) As clsOpportunity
+    Set IOpportunityProvider_CreateOpportunity = CreateOpportunity(opportunityName)
 End Function
 
 Private Function IOpportunityProvider_GetNextOpportunityCode() As String
@@ -113,16 +118,107 @@ Private Function IOpportunityProvider_StorageAvailable() As Boolean
     IOpportunityProvider_StorageAvailable = StorageAvailable()
 End Function
 
+Private Function IOpportunityProvider_ValidateOpportunityName(ByVal opportunityName As String) As Boolean
+    IOpportunityProvider_ValidateOpportunityName = ValidateOpportunityName(opportunityName)
+End Function
+
 ' ==================================================================
 ' METODOS PUBLICOS (implementacion concreta)
 ' ==================================================================
 
 '@Description: Indica si el almacenamiento (BasePath) estaba disponible al inicializar.
-'              Devuelve el flag mIsReady sin re-consultar el filesystem.
-'@Returns: True si BasePath era accesible al llamar Initialize
-'@Category: Estado
 Public Function StorageAvailable() As Boolean
     StorageAvailable = mIsReady
+End Function
+
+'@Description: Valida si un nombre cumple el patron de oportunidad valida
+Public Function ValidateOpportunityName(ByVal opportunityName As String) As Boolean
+    Dim regEx As Object
+    Set regEx = CreateObject("VBScript.RegExp")
+    ValidateOpportunityName = IsValidOpportunityName(opportunityName, regEx)
+End Function
+
+'@Description: Crea una nueva oportunidad interactivamente.
+'              Gestiona: codigo, input de usuario, validacion regex, creacion FS, construccion de entidad.
+'@Returns: clsOpportunity creada, o Nothing si el usuario cancela o hay error
+Public Function CreateNewOpportunity() As clsOpportunity
+    Const PROC_NAME As String = "CreateNewOpportunity"
+    On Error GoTo ErrHandler
+
+    LogDebug MODULE_NAME, "[" & PROC_NAME & "] Iniciando creacion de nueva oportunidad"
+
+    ' 1. Verificar disponibilidad del almacenamiento
+    If Not mIsReady Then
+        ShowTaskDialogError "Ruta no encontrada", _
+                            "No se pudo abrir la ruta de oportunidades.", _
+                            "La carpeta de oportunidades no esta accesible. Verifique la configuracion de rutas."
+        Exit Function
+    End If
+
+    ' 2. Obtener siguiente codigo de oportunidad
+    Dim strOpCode As String
+    strOpCode = GetNextOpportunityCode()
+    If Len(strOpCode) = 0 Then
+        ShowTaskDialogError "Error", _
+                            "No se pudo generar un codigo de oportunidad.", _
+                            "Revise el log para mas detalles."
+        Exit Function
+    End If
+
+    ' 3. Solicitar nombre de cliente al usuario (con validacion)
+    Dim strCustomer As String
+    strCustomer = GetCustomerNameFromUser(strOpCode)
+    If Len(strCustomer) = 0 Then Exit Function  ' Usuario cancelo
+
+    ' 4. Construir nombre completo y crear
+    Dim opportunityName As String
+    opportunityName = BuildOpportunityFolderName(strOpCode, strCustomer)
+
+    Set CreateNewOpportunity = CreateOpportunity(opportunityName)
+
+    Exit Function
+ErrHandler:
+    LogCurrentError MODULE_NAME, "[" & PROC_NAME & "]"
+    ShowTaskDialogError "Error Inesperado", _
+                        "Ocurrio un error inesperado al crear la oportunidad.", _
+                        "Error: " & Err.Description & " (Nr " & Err.Number & ")"
+End Function
+
+'@Description: Crea una oportunidad con el nombre dado (sin interaccion de usuario).
+'              Copia plantilla al destino y devuelve la entidad construida.
+'@Returns: clsOpportunity creada, o Nothing si falla
+Public Function CreateOpportunity(ByVal opportunityName As String) As clsOpportunity
+    Const PROC_NAME As String = "CreateOpportunity"
+    On Error GoTo ErrHandler
+
+    LogDebug MODULE_NAME, "[" & PROC_NAME & "] Creando: " & opportunityName
+
+    If Not mIsReady Then
+        LogError MODULE_NAME, "[" & PROC_NAME & "] BasePath no disponible"
+        Exit Function
+    End If
+
+    ' Obtener ruta de plantilla
+    Dim rutaOrigen As String
+    rutaOrigen = mConfiguration.RutaPlantillas
+    If Right(rutaOrigen, 1) = "\" Then rutaOrigen = Left(rutaOrigen, Len(rutaOrigen) - 1)
+
+    ' Construir ruta destino
+    Dim rutaDestino As String
+    rutaDestino = mFileManager.ConstruirRuta(BasePath, opportunityName)
+
+    ' Copiar carpeta de plantilla
+    If mFileManager.CopiarCarpeta(rutaOrigen, rutaDestino) Then
+        LogInfo MODULE_NAME, "[" & PROC_NAME & "] Oportunidad creada: " & opportunityName
+        Set CreateOpportunity = BuildSingleOpportunity(opportunityName)
+    Else
+        LogError MODULE_NAME, "[" & PROC_NAME & "] Fallo al copiar plantilla"
+    End If
+
+    Exit Function
+
+ErrHandler:
+    LogCurrentError MODULE_NAME, "[" & PROC_NAME & "]"
 End Function
 
 '@Description: Obtiene los nombres de carpetas de oportunidad validas, ordenados
@@ -192,46 +288,6 @@ Public Function FolderExists(ByVal folderName As String) As Boolean
     FolderExists = mFileManager.ExisteCarpeta(GetFullPath(folderName))
 End Function
 
-'@Description: Crea una nueva carpeta de oportunidad desde plantilla
-Public Function CreateOpportunityFolder(ByVal opportunityName As String) As Boolean
-    On Error GoTo ErrHandler
-
-    LogDebug MODULE_NAME, "[CreateOpportunityFolder] Iniciando creacion: " & opportunityName
-
-    If mFileManager Is Nothing Then
-        LogError MODULE_NAME, "[CreateOpportunityFolder] FileManager no ha sido inyectado"
-        Exit Function
-    End If
-
-    ' Usar flag mIsReady (evita re-consulta al FS - ya verificado en Initialize)
-    If Not mIsReady Then
-        LogError MODULE_NAME, "[CreateOpportunityFolder] BasePath no disponible: " & BasePath
-        Exit Function
-    End If
-
-    ' Obtener ruta de plantilla
-    Dim rutaOrigen As String
-    rutaOrigen = mConfiguration.RutaPlantillas
-    If Right(rutaOrigen, 1) = "\" Then rutaOrigen = Left(rutaOrigen, Len(rutaOrigen) - 1)
-
-    ' Construir ruta destino
-    Dim rutaDestino As String
-    rutaDestino = mFileManager.ConstruirRuta(BasePath, opportunityName)
-
-    ' Copiar carpeta de plantilla
-    If mFileManager.CopiarCarpeta(rutaOrigen, rutaDestino) Then
-        LogInfo MODULE_NAME, "[CreateOpportunityFolder] Oportunidad creada: " & opportunityName
-        CreateOpportunityFolder = True
-    Else
-        LogError MODULE_NAME, "[CreateOpportunityFolder] Fallo al copiar plantilla"
-    End If
-
-    Exit Function
-
-ErrHandler:
-    LogCurrentError MODULE_NAME, "[CreateOpportunityFolder]"
-End Function
-
 '@Description: Obtiene la ruta base de oportunidades
 Public Property Get BasePath() As String
     BasePath = mConfiguration.RutaOportunidades
@@ -279,8 +335,8 @@ Public Function GetNextOpportunityCode() As String
     Loop While UBound(Filter(arrOps, strOpName)) >= 0
 
     GetNextOpportunityCode = strOpName
-    LogDebug MODULE_NAME, "[GetNextOpportunityCode] Creado cï¿½digo de oportunidad: " & strOpName
-    
+    LogDebug MODULE_NAME, "[GetNextOpportunityCode] Codigo generado: " & strOpName
+
     Exit Function
 
 ErrHandler:
@@ -302,19 +358,7 @@ Public Function BuildOpportunityObjects() As Collection
     Dim folderName As Variant
     For Each folderName In folders
         Dim op As clsOpportunity
-        Set op = New clsOpportunity
-
-        op.Label = CStr(folderName)
-        op.path = GetFullPath(CStr(folderName))
-
-        On Error Resume Next
-        Dim parts() As String
-        parts = Split(CStr(folderName), " - ")
-        If UBound(parts) >= 0 Then op.Number = Trim(parts(0))
-        If UBound(parts) >= 1 Then op.Customer = Trim(parts(1))
-        If UBound(parts) >= 2 Then op.Project = Trim(parts(2))
-        On Error GoTo 0
-
+        Set op = BuildSingleOpportunity(CStr(folderName))
         result.Add op
         Set op = Nothing
     Next folderName
@@ -338,13 +382,11 @@ Private Function IsValidOpportunityName(ByVal folderName As String, regEx As Obj
     ' Si no cumple, probar patron sin modelo
     regEx.Pattern = FILEORFOLDERNAME_QUOTE_CUSTOMER_OTHER_PATTERN
     If regEx.Test(folderName) Then
-        ' Valida aunque no tenga modelo asociado
         IsValidOpportunityName = True
     End If
 End Function
 
 '@Description: Ordena array de carpetas en orden numerico descendente
-'@Note: Detecta el ultimo numero en el nombre de cada carpeta
 Private Function SortFoldersDescending(arr() As String) As String()
     Dim i As Long, j As Long, tmp As String
     Dim keyI As Double, keyJ As Double
@@ -357,7 +399,6 @@ Private Function SortFoldersDescending(arr() As String) As String()
             If keyI < keyJ Then
                 tmp = arr(i): arr(i) = arr(j): arr(j) = tmp
             ElseIf keyI = keyJ Then
-                ' Si tienen la misma clave numerica, ordenar alfabeticamente descendente
                 If StrComp(arr(i), arr(j), vbTextCompare) < 0 Then
                     tmp = arr(i): arr(i) = arr(j): arr(j) = tmp
                 End If
@@ -369,7 +410,6 @@ Private Function SortFoldersDescending(arr() As String) As String()
 End Function
 
 '@Description: Extrae el ultimo numero del nombre de la carpeta
-'@Returns: Numero extraido o -1E+99 si no hay numero (para ordenar al final)
 Private Function ExtractNumericKey(ByVal folderName As String) As Double
     On Error GoTo ErrHandler
 
@@ -387,6 +427,106 @@ Private Function ExtractNumericKey(ByVal folderName As String) As Double
 
 ErrHandler:
     ExtractNumericKey = -1E+99
+End Function
+
+'@Description: Construye un clsOpportunity desde un nombre de carpeta (ya validado o no).
+'              El path queda sellado dentro del objeto (patron Sealed Path).
+Private Function BuildSingleOpportunity(ByVal folderName As String) As clsOpportunity
+    Dim op As clsOpportunity
+    Set op = New clsOpportunity
+    op.Label = folderName
+    op.path = GetFullPath(folderName)
+
+    On Error Resume Next
+    Dim parts() As String
+    parts = Split(folderName, " - ")
+    If UBound(parts) >= 0 Then op.Number = CLng(Trim(parts(0)))
+    If UBound(parts) >= 1 Then op.Customer = Trim(parts(1))
+    If UBound(parts) >= 2 Then op.Project = Trim(parts(2))
+    On Error GoTo 0
+
+    Set BuildSingleOpportunity = op
+End Function
+
+'@Description: Extrae los primeros 9 digitos del nombre de carpeta como codigo.
+'              Fallback: devuelve el nombre completo si no hay segmento numerico inicial.
+Private Function ExtractOpportunityCode(ByVal folderName As String) As String
+    On Error GoTo Fallback
+    Dim re As Object
+    Set re = CreateObject("VBScript.RegExp")
+    re.Pattern = "^\d{9}"
+    If re.Test(folderName) Then
+        ExtractOpportunityCode = re.Execute(folderName)(0).Value
+        Exit Function
+    End If
+Fallback:
+    ExtractOpportunityCode = folderName
+End Function
+
+'@Description: Construye el nombre de carpeta de oportunidad a partir de sus componentes.
+'              El formato del nombre es convencion de infraestructura, no de dominio.
+Private Function BuildOpportunityFolderName(ByVal opCode As String, ByVal customer As String) As String
+    BuildOpportunityFolderName = opCode & " - " & customer & " - XXX"
+End Function
+
+'@Description: Solicita al usuario el nombre de cliente/proyecto de forma interactiva con validacion.
+'              Usa cTaskDialog via mTDHelper. La validacion regex se aplica aqui en infraestructura.
+'@Returns: Nombre de cliente introducido, o cadena vacia si el usuario cancela
+Private Function GetCustomerNameFromUser(ByVal opCode As String) As String
+    Const PROC_NAME As String = "GetCustomerNameFromUser"
+    Dim strCustomer As String
+    Dim IsValid As Boolean
+
+    Dim regEx As Object
+    Set regEx = CreateObject("VBScript.RegExp")
+
+    On Error GoTo ErrHandler
+
+    Dim TaskDlg As cTaskDialog
+    Set TaskDlg = New cTaskDialog
+    With TaskDlg
+        .Init
+        .Title = "Crear Nueva Oportunidad"
+        .MainInstruction = "Nombre del cliente y proyecto"
+        .Content = "Introduce el nombre del cliente, o cliente - proyecto, separados por un guion. No utilizar caracteres especiales!"
+        .Flags = TDF_INPUT_BOX
+        .CommonButtons = TDCBF_OK_BUTTON Or TDCBF_CANCEL_BUTTON
+        .IconMain = TD_INFORMATION_ICON
+        .ParenthWnd = Application.hwnd
+
+        Do
+            .ShowDialog
+
+            strCustomer = .ResultInput
+            If .ResultMain <> TD_OK Then
+                GetCustomerNameFromUser = ""
+                Exit Function
+            Else
+                ' Validar con regex (logica de infraestructura, no de dominio)
+                Dim testName As String
+                testName = BuildOpportunityFolderName(opCode, strCustomer)
+                IsValid = IsValidOpportunityName(testName, regEx)
+                ' Evitar caracteres especiales del sistema de archivos
+                IsValid = IsValid And Not (strCustomer Like "*[\/:*?""<>|]*")
+                If Not IsValid Then
+                    .MainInstruction = "Nombre NO VALIDO"
+                    .IconMain = TD_WARNING_ICON
+                Else
+                    Exit Do
+                End If
+            End If
+        Loop While Not IsValid
+    End With
+    GetCustomerNameFromUser = strCustomer
+
+    LogDebug MODULE_NAME, "[" & PROC_NAME & "] Cliente (+ proyecto): " & strCustomer
+
+    Exit Function
+ErrHandler:
+    LogCurrentError MODULE_NAME, "[" & PROC_NAME & "]"
+    ShowTaskDialogError "Error Inesperado", _
+                        "Ocurrio un error al solicitar el nombre de cliente.", _
+                        "Error: " & Err.Description & " (Nr " & Err.Number & ")"
 End Function
 
 ' ==================================================================
@@ -435,7 +575,7 @@ Private Sub mFSMonitoringCoord_OpportunityRenamed(ByVal parentFolder As String, 
     On Error GoTo ErrHandler
     LogDebug MODULE_NAME, "[OpportunityRenamed] " & oldName & " -> " & newName
 
-    ' Emitir remocion del nombre antiguo (sin validar: cualquier renombrado implica remocion)
+    ' Emitir remocion del nombre antiguo
     RaiseEvent OpportunityRemoved(ExtractOpportunityCode(oldName))
 
     ' Solo emitir deteccion del nuevo nombre si cumple el patron
@@ -450,37 +590,3 @@ Private Sub mFSMonitoringCoord_OpportunityRenamed(ByVal parentFolder As String, 
 ErrHandler:
     LogCurrentError MODULE_NAME, "[mFSMonitoringCoord_OpportunityRenamed]"
 End Sub
-
-'@Description: Construye un clsOpportunity desde un nombre de carpeta ya validado.
-'              El path queda sellado dentro del objeto (patron Sealed Path).
-Private Function BuildSingleOpportunity(ByVal folderName As String) As clsOpportunity
-    Dim op As clsOpportunity
-    Set op = New clsOpportunity
-    op.Label = folderName
-    op.path = GetFullPath(folderName)
-
-    On Error Resume Next
-    Dim parts() As String
-    parts = Split(folderName, " - ")
-    If UBound(parts) >= 0 Then op.Number = CLng(Trim(parts(0)))
-    If UBound(parts) >= 1 Then op.Customer = Trim(parts(1))
-    If UBound(parts) >= 2 Then op.Project = Trim(parts(2))
-    On Error GoTo 0
-
-    Set BuildSingleOpportunity = op
-End Function
-
-'@Description: Extrae los primeros 9 digitos del nombre de carpeta como codigo.
-'              Fallback: devuelve el nombre completo si no hay segmento numerico inicial.
-Private Function ExtractOpportunityCode(ByVal folderName As String) As String
-    On Error GoTo Fallback
-    Dim re As Object
-    Set re = CreateObject("VBScript.RegExp")
-    re.Pattern = "^\d{9}"
-    If re.Test(folderName) Then
-        ExtractOpportunityCode = re.Execute(folderName)(0).Value
-        Exit Function
-    End If
-Fallback:
-    ExtractOpportunityCode = folderName
-End Function
