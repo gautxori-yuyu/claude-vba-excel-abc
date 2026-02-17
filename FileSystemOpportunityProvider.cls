@@ -33,8 +33,9 @@ Private Const MODULE_NAME As String = "FileSystemOpportunityProvider"
 ' ==================================================================
 Private mFileManager As clsFileManager
 Private mConfiguration As clsConfiguration
-Private mIsReady As Boolean   ' Flag: BasePath era accesible al inicializar
+Private mIsReady As Boolean                            ' Flag: BasePath era accesible al inicializar
 Private WithEvents mFSMonitoringCoord As clsFSMonitoringCoord
+Private mSuppressNextDetection As Boolean              ' Suprime evento duplicado tras CreateNewOpportunity
 
 ' ==================================================================
 ' EVENTOS DE DOMINIO (emitidos hacia suscriptores WithEvents)
@@ -49,6 +50,7 @@ Public Event OpportunityRemoved(ByVal opportunityCode As String)
 Private Sub Class_Initialize()
     LogInfo MODULE_NAME, "[Class_Initialize]"
     mIsReady = False
+    mSuppressNextDetection = False
 End Sub
 
 Private Sub Class_Terminate()
@@ -127,6 +129,11 @@ End Function
 ' ==================================================================
 
 '@Description: Indica si el almacenamiento (BasePath) estaba disponible al inicializar.
+Public Property Get IsReady() As Boolean
+    IsReady = mIsReady
+End Property
+
+'@Description: Indica si el almacenamiento (BasePath) estaba disponible al inicializar.
 Public Function StorageAvailable() As Boolean
     StorageAvailable = mIsReady
 End Function
@@ -170,10 +177,11 @@ Public Function CreateNewOpportunity() As clsOpportunity
     strCustomer = GetCustomerNameFromUser(strOpCode)
     If Len(strCustomer) = 0 Then Exit Function  ' Usuario cancelo
 
-    ' 4. Construir nombre completo y crear
+    ' 4. Construir nombre completo y crear (suprimiendo evento duplicado del FSWatcher)
     Dim opportunityName As String
     opportunityName = BuildOpportunityFolderName(strOpCode, strCustomer)
 
+    mSuppressNextDetection = True
     Set CreateNewOpportunity = CreateOpportunity(opportunityName)
 
     Exit Function
@@ -539,6 +547,14 @@ End Function
 '              Valida patron, construye objeto de dominio y emite OpportunityDetected.
 Private Sub mFSMonitoringCoord_OpportunityCreated(ByVal parentFolder As String, ByVal subfolderName As String)
     On Error GoTo ErrHandler
+
+    ' Suprimir evento duplicado tras CreateNewOpportunity (la oportunidad ya fue añadida)
+    If mSuppressNextDetection Then
+        mSuppressNextDetection = False
+        LogDebug MODULE_NAME, "[OpportunityCreated] Suprimido (creación propia): " & subfolderName
+        Exit Sub
+    End If
+
     LogDebug MODULE_NAME, "[OpportunityCreated] Evaluando: " & subfolderName
 
     Dim regEx As Object

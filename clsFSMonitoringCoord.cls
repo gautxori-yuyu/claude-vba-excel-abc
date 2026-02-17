@@ -18,8 +18,6 @@ Attribute mFolderWatcher.VB_VarHelpID = -1
 ' Clasificador de rutas (sabe a que tipo semantico pertenece cada carpeta)
 Private mFolderMgr As clsFolderMgr
 
-' Estado de pausa del monitoreo
-Private m_IsPaused As Boolean
 Private mDisposed As Boolean ' Flag para limpieza explícita
 
 ' -------------------------------------------------------------
@@ -43,11 +41,6 @@ Public Event TemplateChanged(ByVal folder As String, ByVal fileName As String)
 Public Event GasFileCreated(ByVal folder As String, ByVal fileName As String)
 Public Event GasFileChanged(ByVal folder As String, ByVal fileName As String)
 
-' Eventos de error/reconexion
-Public Event MonitoringError(ByVal folder As String, ByVal errorMessage As String)
-Public Event MonitoringReconnected(ByVal folder As String, ByVal attempts As Long)
-Public Event MonitoringFailed(ByVal folder As String, ByVal reason As String)
-
 ' -------------------------------------------------------------
 ' Properties
 ' -------------------------------------------------------------
@@ -55,39 +48,6 @@ Public Event MonitoringFailed(ByVal folder As String, ByVal reason As String)
 Public Property Get FolderWatcher() As clsFSWatcher
     Set FolderWatcher = mFolderWatcher
 End Property
-
-'@Description: Indica si el monitoreo esta pausado
-Public Property Get IsPaused() As Boolean
-    IsPaused = m_IsPaused
-End Property
-
-' -------------------------------------------------------------
-' PausarMonitoreo / ReanudarMonitoreo
-' Permiten pausar temporalmente el procesamiento de eventos
-' sin detener el watcher subyacente
-' -------------------------------------------------------------
-
-'@Description: Pausa el procesamiento de eventos del monitoreo
-Public Sub PausarMonitoreo()
-    If m_IsPaused Then
-        LogDebug MODULE_NAME, "[PausarMonitoreo] Ya estaba pausado"
-        Exit Sub
-    End If
-
-    m_IsPaused = True
-    LogInfo MODULE_NAME, "[PausarMonitoreo] Monitoreo pausado"
-End Sub
-
-'@Description: Reanuda el procesamiento de eventos del monitoreo
-Public Sub ReanudarMonitoreo()
-    If Not m_IsPaused Then
-        LogDebug MODULE_NAME, "[ReanudarMonitoreo] No estaba pausado"
-        Exit Sub
-    End If
-
-    m_IsPaused = False
-    LogInfo MODULE_NAME, "[ReanudarMonitoreo] Monitoreo reanudado"
-End Sub
 
 Private Sub Class_Initialize()
     Set mFolderWatcher = New clsFSWatcher
@@ -190,7 +150,6 @@ End Sub
 
 ' Eventos de subcarpetas (reemplazan los eventos de archivos para oportunidades)
 Private Sub mFolderWatcher_SubfolderCreated(ByVal parentFolder As String, ByVal subfolderName As String)
-    If m_IsPaused Then Exit Sub
 
     LogDebug MODULE_NAME, "[SubfolderCreated] " & subfolderName & " en " & parentFolder
 
@@ -202,7 +161,6 @@ Private Sub mFolderWatcher_SubfolderCreated(ByVal parentFolder As String, ByVal 
 End Sub
 
 Private Sub mFolderWatcher_SubfolderDeleted(ByVal parentFolder As String, ByVal subfolderName As String)
-    If m_IsPaused Then Exit Sub
 
     LogDebug MODULE_NAME, "[SubfolderDeleted] " & subfolderName & " en " & parentFolder
 
@@ -213,7 +171,6 @@ Private Sub mFolderWatcher_SubfolderDeleted(ByVal parentFolder As String, ByVal 
 End Sub
 
 Private Sub mFolderWatcher_SubfolderRenamed(ByVal parentFolder As String, ByVal oldName As String, ByVal newName As String)
-    If m_IsPaused Then Exit Sub
 
     LogDebug MODULE_NAME, "[SubfolderRenamed] " & oldName & " -> " & newName & " en " & parentFolder
 
@@ -225,7 +182,6 @@ End Sub
 
 ' Los eventos de archivos individuales se mantienen para plantillas y Gas
 Private Sub mFolderWatcher_FileCreated(ByVal folder As String, ByVal fileName As String)
-    If m_IsPaused Then Exit Sub
 
     LogDebug MODULE_NAME, "[FileCreated] " & fileName & " en " & folder
 
@@ -243,7 +199,6 @@ Private Sub mFolderWatcher_FileCreated(ByVal folder As String, ByVal fileName As
 End Sub
 
 Private Sub mFolderWatcher_FileDeleted(ByVal folder As String, ByVal fileName As String)
-    If m_IsPaused Then Exit Sub
 
     LogDebug MODULE_NAME, "[FileDeleted] " & fileName & " en " & folder
 
@@ -254,7 +209,6 @@ Private Sub mFolderWatcher_FileDeleted(ByVal folder As String, ByVal fileName As
 End Sub
 
 Private Sub mFolderWatcher_FileChanged(ByVal folder As String, ByVal fileName As String)
-    If m_IsPaused Then Exit Sub
 
     LogDebug MODULE_NAME, "[FileChanged] " & fileName & " en " & folder
 
@@ -272,7 +226,6 @@ Private Sub mFolderWatcher_FileChanged(ByVal folder As String, ByVal fileName As
 End Sub
 
 Private Sub mFolderWatcher_FileRenamed(ByVal folder As String, ByVal oldName As String, ByVal newName As String)
-    If m_IsPaused Then Exit Sub
 
     LogDebug MODULE_NAME, "[FileRenamed] " & oldName & " -> " & newName & " en " & folder
 
@@ -290,35 +243,16 @@ End Sub
 
 Private Sub mFolderWatcher_ErrorOccurred(ByVal folder As String, ByVal errorMessage As String)
     LogError MODULE_NAME, "[ErrorOccurred] ERROR en " & folder & ": " & errorMessage
-    RaiseEvent MonitoringError(folder, errorMessage)
-    ' Mostrar al usuario solo errores críticos (sin revelar rutas completas)
-    If InStr(1, errorMessage, "Límite", vbTextCompare) > 0 Or _
-       InStr(1, errorMessage, "no encontrada", vbTextCompare) > 0 Then
-        ShowTaskDialogError "Error de Monitoreo", _
-                            "Error en monitoreo de carpeta", _
-                            errorMessage
-    End If
 End Sub
 
-' Eventos de reconexion automatica del FolderWatcher
 Private Sub mFolderWatcher_WatcherReconnected(ByVal folder As String, ByVal attempts As Long)
-    'LogDebug MODULE_NAME, "[WatcherReconnected] " & folder & " reconectado tras " & attempts & " intento(s)"
-    ' Opcional: notificar al usuario solo si hubo multiples intentos
     If attempts > 1 Then
         LogWarning MODULE_NAME, "Monitoreo restaurado en " & folder & " tras " & attempts & " intentos"
     End If
-    RaiseEvent MonitoringReconnected(folder, attempts)
 End Sub
 
 Private Sub mFolderWatcher_WatcherReconnectionFailed(ByVal folder As String, ByVal reason As String)
     LogError MODULE_NAME, "[WatcherReconnectionFailed] " & folder & ": " & reason
-    RaiseEvent MonitoringFailed(folder, reason)
-
-    ' Notificar al usuario que el monitoreo fallo permanentemente (sin revelar rutas completas)
-    ShowTaskDialogError "Monitoreo Fallido", _
-                        "El monitoreo de carpetas ha fallado permanentemente", _
-                        "Razón: " & reason & vbCrLf & vbCrLf & _
-                        "Es posible que la carpeta no esté accesible o haya problemas de red."
 End Sub
 
 ' =====================================================

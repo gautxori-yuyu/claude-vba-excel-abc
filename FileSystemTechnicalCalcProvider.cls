@@ -38,9 +38,16 @@ Private Const GAS_VBNET_PATTERN As String = "(?:Antipul_|ABC_(Gas_Cooler|Aircool
 ' DEPENDENCIAS
 ' ==================================================================
 Private mFileManager As clsFileManager
+Private WithEvents mFSMonitoringCoord As clsFSMonitoringCoord
 
 ' ==================================================================
-' INICIALIZACION
+' EVENTOS (notificación de cambios en ficheros de cálculo)
+' ==================================================================
+Public Event GasFileDetected(ByVal folder As String, ByVal fileName As String)
+Public Event GasFileModified(ByVal folder As String, ByVal fileName As String)
+
+' ==================================================================
+' INICIALIZACIÓN
 ' ==================================================================
 
 Private Sub Class_Initialize()
@@ -48,13 +55,21 @@ Private Sub Class_Initialize()
 End Sub
 
 Private Sub Class_Terminate()
+    Set mFSMonitoringCoord = Nothing
     Set mFileManager = Nothing
     LogInfo MODULE_NAME, "[Class_Terminate]"
 End Sub
 
-'@Description: Inyecta la dependencia de FileManager
-Public Sub Initialize(fm As clsFileManager)
+'@Description: Inyecta dependencias
+'@Param fm: Gestor de sistema de archivos
+'@Param oFSMonitoringCoord: Coordinador de monitoreo FS (para eventos en tiempo real)
+Public Sub Initialize(fm As clsFileManager, _
+                      Optional oFSMonitoringCoord As clsFSMonitoringCoord = Nothing)
     Set mFileManager = fm
+    If Not oFSMonitoringCoord Is Nothing Then
+        Set mFSMonitoringCoord = oFSMonitoringCoord
+        LogDebug MODULE_NAME, "[Initialize] FSMonitoringCoord inyectado"
+    End If
     LogDebug MODULE_NAME, "[Initialize] FileManager inyectado"
 End Sub
 
@@ -396,3 +411,32 @@ Public Function CalculationsFolderExists(ByVal opportunityPath As String) As Boo
     If mFileManager Is Nothing Then Exit Function
     CalculationsFolderExists = mFileManager.ExisteCarpeta(GetCalculationsFolder(opportunityPath))
 End Function
+
+' ==================================================================
+' MANEJADORES DE EVENTOS clsFSMonitoringCoord
+' Detecta cambios en ficheros de cálculo técnico (Gas VBNet exports)
+' ==================================================================
+
+Private Sub mFSMonitoringCoord_GasFileCreated(ByVal folder As String, ByVal fileName As String)
+    On Error GoTo ErrHandler
+    If IsValidCalculationFile(fileName) Then
+        LogInfo MODULE_NAME, "[GasFileCreated] Fichero válido detectado: " & fileName
+        RaiseEvent GasFileDetected(folder, fileName)
+    Else
+        LogDebug MODULE_NAME, "[GasFileCreated] Fichero ignorado (no cumple patrón): " & fileName
+    End If
+    Exit Sub
+ErrHandler:
+    LogCurrentError MODULE_NAME, "[mFSMonitoringCoord_GasFileCreated]"
+End Sub
+
+Private Sub mFSMonitoringCoord_GasFileChanged(ByVal folder As String, ByVal fileName As String)
+    On Error GoTo ErrHandler
+    If IsValidCalculationFile(fileName) Then
+        LogInfo MODULE_NAME, "[GasFileChanged] Fichero modificado: " & fileName
+        RaiseEvent GasFileModified(folder, fileName)
+    End If
+    Exit Sub
+ErrHandler:
+    LogCurrentError MODULE_NAME, "[mFSMonitoringCoord_GasFileChanged]"
+End Sub

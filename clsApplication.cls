@@ -22,11 +22,10 @@ Private mFileMgr As clsFileManager
 Private mOpportunityProvider As FileSystemOpportunityProvider
 Private mCalcProvider As FileSystemTechnicalCalcProvider
 Private mQuoteProvider As FileSystemEconomicQuoteProvider
+Private mTemplateProvider As FileSystemTemplateProvider
 Private mOpportunities As clsOpportunitiesMgr
 Private mFSMonitoringCoord As clsFSMonitoringCoord
 Private mConfiguration As clsConfiguration
-                '
-Private mEvMediatorDomain As clsEventsMediatorDomain
 
 Private mRibbon As clsRibbon
 
@@ -137,10 +136,13 @@ Private Sub InitializeInfrastructure()
     mOpportunityProvider.Initialize mFileMgr, mConfiguration, mFSMonitoringCoord
 
     Set mCalcProvider = New FileSystemTechnicalCalcProvider
-    mCalcProvider.Initialize mFileMgr
+    mCalcProvider.Initialize mFileMgr, mFSMonitoringCoord
 
     Set mQuoteProvider = New FileSystemEconomicQuoteProvider
     mQuoteProvider.Initialize mFileMgr
+
+    Set mTemplateProvider = New FileSystemTemplateProvider
+    mTemplateProvider.Initialize mFileMgr, mConfiguration, mFSMonitoringCoord
 
     Exit Sub
 ErrHandler:
@@ -151,20 +153,12 @@ End Sub
 Private Sub InitializeDomain()
     On Error GoTo ErrHandler
     ' DOMINIO - Crear manager de oportunidades (crea su estado internamente)
-    ' Se pasa tanto la interfaz (para llamadas de dominio) como la clase concreta
-    ' (para WithEvents - limitación VBA: WithEvents no funciona con interfaces)
+    ' Recibe la clase concreta (WithEvents no funciona con interfaces en VBA)
     Set mOpportunities = New clsOpportunitiesMgr
-    mOpportunities.Initialize mOpportunityProvider, mOpportunityProvider
+    mOpportunities.Initialize mOpportunityProvider
     ' ESTADO CENTRALIZADO - Inyectar referencias a subestados (Dependency Injection)
     mApplicationState.Initialize OpportunityState:=mOpportunities.State
 
-    ' MEDIADOR DE EVENTOS DE DOMINIO
-    ' Escucha eventos SEMÁNTICOS del mediador de infraestructura y de FSMonitoringCoord
-    Set mEvMediatorDomain = New clsEventsMediatorDomain
-    Call mEvMediatorDomain.Initialize(mCtxMgr.State, _
-                                    mEvMediatorInfrastructure, _
-                                    mFSMonitoringCoord, _
-                                    mOpportunities)
     Exit Sub
 ErrHandler:
     LogCurrentError MODULE_NAME, "[InitializeDomain]"
@@ -207,8 +201,8 @@ Private Sub Class_Terminate()
 
     ' ORDEN INVERSO A LA INSTANCIACIÓN:
     ' Infraestructura: CtxMgr -> FileMgr -> EvMediatorInfra -> Configuración -> FSMonitoringCoord
-    '                  -> OpportunityProvider -> CalcProvider -> QuoteProvider
-    ' Dominio: Opportunities -> EvMediatorDomain
+    '                  -> OpportunityProvider -> CalcProvider -> QuoteProvider -> TemplateProvider
+    ' Dominio: Opportunities
     ' UI: Ribbon -> EventDispatcher
 
     DisposeUI
@@ -224,6 +218,7 @@ Private Sub Class_Terminate()
 End Sub
 Private Sub DisposeInfrastructure()
     ' Liberar proveedores (orden inverso a instanciación)
+    Set mTemplateProvider = Nothing
     Set mQuoteProvider = Nothing
     Set mCalcProvider = Nothing
     Set mOpportunityProvider = Nothing
@@ -248,9 +243,6 @@ Private Sub DisposeInfrastructure()
     Set mCtxMgr = Nothing
 End Sub
 Private Sub DisposeDomain()
-    ' Liberar mediador de eventos de dominio (último en instanciarse)
-    Set mEvMediatorDomain = Nothing
-
     ' Liberar gestor de oportunidades
     Set mOpportunities = Nothing
 End Sub

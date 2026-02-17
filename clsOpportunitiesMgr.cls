@@ -14,8 +14,8 @@ Attribute VB_Exposed = False
 ' Trabaja con identificadores de dominio (nombres/paths),
 ' NO con indices de UI.
 '
-' La logica de infraestructura (FileSystem, patrones regex)
-' esta delegada a IOpportunityProvider.
+' La lógica de infraestructura (FileSystem, patrones regex)
+' está delegada a FileSystemOpportunityProvider.
 '==============================================================
 
 '@Exposed
@@ -31,16 +31,12 @@ Private Const MODULE_NAME As String = "clsOpportunitiesMgr"
 '@Description: Se dispara cuando cambia la oportunidad actual
 Public Event CurrentOpportunityChanged(ByVal opportunityName As String, ByVal opportunityPath As String)
 
-'@Description: Se dispara cuando se actualiza la coleccion de oportunidades
-Public Event OpportunityCollectionUpdated(ByVal reason As String)
-
 ' ==================================================================
 ' ESTADO INTERNO
 ' ==================================================================
-Private mOpportunityProvider As IOpportunityProvider  ' Proveedor de oportunidades (inyectado)
-Private WithEvents mConcreteProvider As FileSystemOpportunityProvider  ' Suscripcion a eventos (VBA: WithEvents solo con clases concretas)
-Attribute mConcreteProvider.VB_VarHelpID = -1
-Private mOpportunityState As clsOpportunityState      ' Estado de oportunidad (composicion)
+Private WithEvents mProvider As FileSystemProvider  ' Proveedor (para llamadas Y WithEvents)
+Attribute mProvider.VB_VarHelpID = -1
+Private mOpportunityState As clsOpportunityState      ' Estado de oportunidad (composición)
 Private mOpportunities As Collection                   ' Collection<clsOpportunity> - construidos por el provider
 
 ' ==================================================================
@@ -57,19 +53,14 @@ Private Sub Class_Terminate()
     LogInfo MODULE_NAME, "[Class_Terminate]"
     Set mOpportunityState = Nothing
     Set mOpportunities = Nothing
-    Set mConcreteProvider = Nothing
-    Set mOpportunityProvider = Nothing
+    Set mProvider = Nothing
 End Sub
 
 '@Description: Inyecta el proveedor de oportunidades y carga datos iniciales.
-'              concreteProvider permite suscribirse a eventos via WithEvents
-'              (limitacion VBA: WithEvents no funciona con interfaces).
-Public Sub Initialize(provider As IOpportunityProvider, _
-                      Optional concreteProvider As FileSystemOpportunityProvider = Nothing)
-    Set mOpportunityProvider = provider
-    If Not concreteProvider Is Nothing Then
-        Set mConcreteProvider = concreteProvider
-    End If
+'              Se usa la clase concreta (no la interfaz) porque WithEvents
+'              no funciona con interfaces en VBA.
+Public Sub Initialize(provider As FileSystemProvider)
+    Set mProvider = provider
     RefreshOpportunities
 End Sub
 
@@ -100,19 +91,16 @@ End Property
 Public Sub RefreshOpportunities()
     On Error GoTo ErrHandler
 
-    If mOpportunityProvider Is Nothing Then
+    If mProvider Is Nothing Then
         LogError MODULE_NAME, "[RefreshOpportunities] Provider no ha sido inyectado"
         Exit Sub
     End If
 
     ' Obtener oportunidades del Provider como Collection<clsOpportunity> (ya ordenadas)
     ' Cada elemento es un clsOpportunity con Label y path ya inicializados por el provider.
-    Set mOpportunities = mOpportunityProvider.GetOpportunities()
+    Set mOpportunities = mProvider.GetOpportunities()
 
     LogInfo MODULE_NAME, "[RefreshOpportunities] " & mOpportunities.Count & " oportunidades cargadas"
-
-    ' Notificar actualizacion
-    RaiseEvent OpportunityCollectionUpdated("refresh")
 
     Exit Sub
 
@@ -164,7 +152,6 @@ Public Sub AddOpportunity(ByVal op As clsOpportunity)
     End If
 
     LogInfo MODULE_NAME, "[" & PROC_NAME & "] Anadida: " & op.Label
-    RaiseEvent OpportunityCollectionUpdated("added:" & op.Label)
     Exit Sub
 ErrHandler:
     LogCurrentError MODULE_NAME, "[" & PROC_NAME & "]"
@@ -194,7 +181,6 @@ Public Sub RemoveOpportunity(ByVal opportunityCode As String)
             End If
             mOpportunities.Remove i
             LogInfo MODULE_NAME, "[" & PROC_NAME & "] Eliminada: " & removedLabel
-            RaiseEvent OpportunityCollectionUpdated("removed:" & removedLabel)
             Exit Sub
         End If
     Next i
@@ -278,22 +264,21 @@ Public Function OpportunityExists(ByVal opportunityName As String) As Boolean
 End Function
 
 '@Description: Crea una nueva oportunidad delegando al provider.
-'              El provider gestiona: codigo, input de usuario, validacion, creacion FS, entidad.
-'              El dominio solo recibe la entidad limpia y la agrega a la coleccion.
-'              Nota: el FSWatcher tambien disparara OpportunityDetected via mConcreteProvider
-'              -> AddOpportunity (idempotente por Number, se ignora el duplicado).
+'              El provider gestiona: código, input de usuario, validación, creación FS, entidad.
+'              El dominio solo recibe la entidad limpia y la agrega a la colección.
+'              El provider suprime el evento duplicado del FSWatcher (mSuppressNextDetection).
 Public Sub CreateNewOpportunity()
     On Error GoTo ErrHandler
 
     LogDebug MODULE_NAME, "[CreateNewOpportunity] Delegando al provider"
 
-    If mOpportunityProvider Is Nothing Then
+    If mProvider Is Nothing Then
         LogError MODULE_NAME, "[CreateNewOpportunity] Provider no ha sido inyectado"
         Exit Sub
     End If
 
     Dim op As clsOpportunity
-    Set op = mOpportunityProvider.CreateNewOpportunity()
+    Set op = mProvider.CreateNewOpportunity()
 
     If op Is Nothing Then
         LogDebug MODULE_NAME, "[CreateNewOpportunity] Provider devolvio Nothing (cancelado o error)"
@@ -388,13 +373,13 @@ End Function
 
 '@Description: Nueva oportunidad detectada en el sistema de archivos.
 '              El provider ya valido el patron y construyo la entidad.
-Private Sub mConcreteProvider_OpportunityDetected(ByVal op As clsOpportunity)
-    LogInfo MODULE_NAME, "[mConcreteProvider_OpportunityDetected] " & op.Label
+Private Sub mProvider_OpportunityDetected(ByVal op As clsOpportunity)
+    LogInfo MODULE_NAME, "[mProvider_OpportunityDetected] " & op.Label
     AddOpportunity op
 End Sub
 
 '@Description: Oportunidad eliminada del sistema de archivos.
-Private Sub mConcreteProvider_OpportunityRemoved(ByVal opportunityCode As String)
-    LogInfo MODULE_NAME, "[mConcreteProvider_OpportunityRemoved] Codigo: " & opportunityCode
+Private Sub mProvider_OpportunityRemoved(ByVal opportunityCode As String)
+    LogInfo MODULE_NAME, "[mProvider_OpportunityRemoved] Codigo: " & opportunityCode
     RemoveOpportunity opportunityCode
 End Sub
