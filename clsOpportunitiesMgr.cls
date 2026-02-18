@@ -14,8 +14,8 @@ Attribute VB_Exposed = False
 ' Trabaja con identificadores de dominio (nombres/paths),
 ' NO con indices de UI.
 '
-' La logica de infraestructura (FileSystem, patrones regex)
-' esta delegada a IOpportunityProvider.
+' La lógica de infraestructura (FileSystem, patrones regex)
+' está delegada a FileSystemOpportunityProvider.
 '==============================================================
 
 '@Exposed
@@ -31,14 +31,12 @@ Private Const MODULE_NAME As String = "clsOpportunitiesMgr"
 '@Description: Se dispara cuando cambia la oportunidad actual
 Public Event CurrentOpportunityChanged(ByVal opportunityName As String, ByVal opportunityPath As String)
 
-'@Description: Se dispara cuando se actualiza la coleccion de oportunidades
-Public Event OpportunityCollectionUpdated(ByVal reason As String)
-
 ' ==================================================================
 ' ESTADO INTERNO
 ' ==================================================================
-Private mOpportunityProvider As IOpportunityProvider  ' Proveedor de oportunidades (inyectado)
-Private mOpportunityState As clsOpportunityState      ' Estado de oportunidad (composicion)
+Private WithEvents mProvider As FileSystemOpportunityProvider  ' Clase concreta (para WithEvents)
+Attribute mProvider.VB_VarHelpID = -1
+Private mOpportunityState As clsOpportunityState      ' Estado de oportunidad (composición)
 Private mOpportunities As Collection                   ' Collection<clsOpportunity> - construidos por el provider
 
 ' ==================================================================
@@ -55,12 +53,14 @@ Private Sub Class_Terminate()
     LogInfo MODULE_NAME, "[Class_Terminate]"
     Set mOpportunityState = Nothing
     Set mOpportunities = Nothing
-    Set mOpportunityProvider = Nothing
+    Set mProvider = Nothing
 End Sub
 
-'@Description: Inyecta el proveedor de oportunidades y carga datos iniciales
-Public Sub Initialize(provider As IOpportunityProvider)
-    Set mOpportunityProvider = provider
+'@Description: Inyecta el proveedor de oportunidades y carga datos iniciales.
+'              Se usa la clase concreta (no la interfaz) porque WithEvents
+'              no funciona con interfaces en VBA.
+Public Sub Initialize(provider As FileSystemOpportunityProvider)
+    Set mProvider = provider
     RefreshOpportunities
 End Sub
 
@@ -91,19 +91,19 @@ End Property
 Public Sub RefreshOpportunities()
     On Error GoTo ErrHandler
 
-    If mOpportunityProvider Is Nothing Then
+    If mProvider Is Nothing Then
         LogError MODULE_NAME, "[RefreshOpportunities] Provider no ha sido inyectado"
         Exit Sub
     End If
 
     ' Obtener oportunidades del Provider como Collection<clsOpportunity> (ya ordenadas)
     ' Cada elemento es un clsOpportunity con Label y path ya inicializados por el provider.
-    Set mOpportunities = mOpportunityProvider.GetOpportunities()
+	Dim mProviderIntf As IOpportunityProvider             ' Misma instancia, vista como interfaz (para llamadas de contrato)
+    Set mProviderIntf = provider   ' Misma instancia, acceso via interfaz
+    Set mOpportunities = mProviderIntf.GetOpportunities()
+    Set mProviderIntf = Nothing
 
     LogInfo MODULE_NAME, "[RefreshOpportunities] " & mOpportunities.Count & " oportunidades cargadas"
-
-    ' Notificar actualizacion
-    RaiseEvent OpportunityCollectionUpdated("refresh")
 
     Exit Sub
 
@@ -115,6 +115,84 @@ End Sub
 Public Function actualizarColeccionOportunidades()
     RefreshOpportunities
 End Function
+
+'@Description: Agrega una oportunidad a la coleccion si no existe ya (idempotente por Number).
+'              Llamado por el provider de infraestructura al detectar carpeta valida.
+'              Mantiene el orden descendente por Number.
+Public Sub AddOpportunity(ByVal op As clsOpportunity)
+    Const PROC_NAME As String = "AddOpportunity"
+    On Error GoTo ErrHandler
+    If op Is Nothing Then Exit Sub
+
+    ' Idempotencia: verificar si ya existe por Number
+    If op.Number <> 0 Then
+        Dim existing As clsOpportunity
+        For Each existing In mOpportunities
+            If existing.Number = op.Number Then
+                LogDebug MODULE_NAME, "[" & PROC_NAME & "] Ya existe Number=" & op.Number & ", ignorada"
+                Exit Sub
+            End If
+        Next existing
+    End If
+
+    ' Insercion ordenada: buscar posicion (coleccion es descendente por Number)
+    Dim insertBefore As Long
+    insertBefore = 0
+    Dim i As Long
+    For i = 1 To mOpportunities.Count
+        Dim candidate As clsOpportunity
+        Set candidate = mOpportunities(i)
+        If candidate.Number < op.Number Then
+            insertBefore = i
+            Exit For
+        End If
+    Next i
+
+    If insertBefore = 0 Then
+        mOpportunities.Add op               ' Agregar al final (numero menor o igual a todos)
+    Else
+        mOpportunities.Add op, , insertBefore   ' Insertar antes de la primera de menor numero
+    End If
+
+    LogInfo MODULE_NAME, "[" & PROC_NAME & "] Anadida: " & op.Label
+    Exit Sub
+ErrHandler:
+    LogCurrentError MODULE_NAME, "[" & PROC_NAME & "]"
+End Sub
+
+'@Description: Elimina una oportunidad de la coleccion por su codigo de 9 digitos.
+'              Si era la oportunidad actual, limpia el estado de seleccion.
+Public Sub RemoveOpportunity(ByVal opportunityCode As String)
+    Const PROC_NAME As String = "RemoveOpportunity"
+    On Error GoTo ErrHandler
+    If Len(opportunityCode) = 0 Then Exit Sub
+
+    Dim i As Long
+    For i = 1 To mOpportunities.Count
+        Dim op As clsOpportunity
+        Set op = mOpportunities(i)
+        If CStr(op.Number) = opportunityCode Then
+            Dim removedLabel As String
+            removedLabel = op.Label
+            ' Si era la oportunidad actual, limpiar estado
+            If Not mOpportunityState.CurrentOpportunity Is Nothing Then
+                If mOpportunityState.CurrentOpportunity.Label = op.Label Then
+                    Set mOpportunityState.CurrentOpportunity = Nothing
+                    mOpportunityState.CurrentIndex = -1
+                    LogInfo MODULE_NAME, "[" & PROC_NAME & "] Estado de oportunidad actual limpiado"
+                End If
+            End If
+            mOpportunities.Remove i
+            LogInfo MODULE_NAME, "[" & PROC_NAME & "] Eliminada: " & removedLabel
+            Exit Sub
+        End If
+    Next i
+
+    LogWarning MODULE_NAME, "[" & PROC_NAME & "] Codigo no encontrado en coleccion: " & opportunityCode
+    Exit Sub
+ErrHandler:
+    LogCurrentError MODULE_NAME, "[" & PROC_NAME & "]"
+End Sub
 
 '@Description: Establece la oportunidad actual por nombre
 Public Sub SetCurrentOpportunity(ByVal opportunityName As String)
@@ -188,79 +266,35 @@ Public Function OpportunityExists(ByVal opportunityName As String) As Boolean
     Next Item
 End Function
 
-'@Description: Procesa cambios detectados por el watcher en carpetas de oportunidad
-Public Sub ProcesarCambiosEnOportunidades(ByVal subfolderName As String)
-    Dim regEx As Object
-    Set regEx = CreateObject("VBScript.RegExp")
-
-    LogInfo MODULE_NAME, "[ProcesarCambiosEnOportunidades] Verificando: " & subfolderName
-
-    ' Verificar si el cambio corresponde a una oportunidad valida
-    regEx.Pattern = FILEORFOLDERNAME_QUOTE_CUSTOMER_OTHER_MODEL_PATTERN
-    If regEx.Test(subfolderName) Then
-        LogInfo MODULE_NAME, "[ProcesarCambiosEnOportunidades] Cambio en oportunidad detectado"
-        RefreshOpportunities
-    End If
-End Sub
-
-'@Description: Procesa cambios en items dentro de una oportunidad
-Public Sub ProcesarCambiosEnItemsOportunidad(ByVal cambios As String)
-    ' TODO: Implementar cuando se necesite
-End Sub
-
-'@Description: Crea una nueva oportunidad
+'@Description: Crea una nueva oportunidad delegando al provider.
+'              El provider gestiona: código, input de usuario, validación, creación FS, entidad.
+'              El dominio solo recibe la entidad limpia y la agrega a la colección.
+'              El provider suprime el evento duplicado del FSWatcher (mSuppressNextDetection).
 Public Sub CreateNewOpportunity()
     On Error GoTo ErrHandler
 
-    LogDebug MODULE_NAME, "[CreateNewOpportunity] Iniciando creacion de nueva oportunidad"
+    LogDebug MODULE_NAME, "[CreateNewOpportunity] Delegando al provider"
 
-    If mOpportunityProvider Is Nothing Then
+    If mProvider Is Nothing Then
         LogError MODULE_NAME, "[CreateNewOpportunity] Provider no ha sido inyectado"
-        ShowTaskDialogError "Error Crítico", "Error interno: Provider no disponible", _
-                            "La aplicación no puede continuar porque un componente esencial (IOpportunityProvider) no se ha iniciado."
         Exit Sub
     End If
 
-    ' Verificar que el almacenamiento esta disponible (usa flag, no re-consulta el FS)
-    If Not mOpportunityProvider.StorageAvailable() Then
-        ShowTaskDialogError "Ruta no encontrada", "No se pudo abrir la ruta de oportunidades.", _
-                            "La carpeta de oportunidades no esta accesible. Verifique la configuracion de rutas."
+    Dim op As clsOpportunity
+    Set op = mProvider.CreateNewOpportunity()
+
+    If op Is Nothing Then
+        LogDebug MODULE_NAME, "[CreateNewOpportunity] Provider devolvio Nothing (cancelado o error)"
         Exit Sub
-    Else
-        LogDebug MODULE_NAME, "[CreateNewOpportunity] Almacen de oportunidades disponible."
     End If
 
-    ' Obtener siguiente codigo
-    Dim strOpCode As String
-    strOpCode = mOpportunityProvider.GetNextOpportunityCode()
-
-    ' Solicitar nombre de cliente
-    Dim strCustomer As String
-    strCustomer = GetCustomerNameFromUser(strOpCode)
-
-    If strCustomer = "" Then Exit Sub ' User cancelled
-
-    ' Construir nombre completo
-    Dim opportunityName As String
-    opportunityName = strOpCode & " - " & strCustomer & " - XXX"
-
-    ' Crear carpeta y refrescar la lista inmediatamente.
-    ' Nota: el FSWatcher tambien disparara ProcesarCambiosEnOportunidades cuando detecte
-    ' la nueva carpeta, lo que causara un segundo RefreshOpportunities (idempotente, aceptable).
-    If mOpportunityProvider.CreateOpportunity(opportunityName) Then
-        LogInfo MODULE_NAME, "[CreateNewOpportunity] Oportunidad creada: " & opportunityName
-        RefreshOpportunities
-    Else
-        ShowTaskDialogError "Error de Creación", "Error al crear la carpeta de la oportunidad.", _
-                            "VBA no pudo crear la carpeta en el sistema de archivos. Revise los permisos o el log para más detalles."
-    End If
+    AddOpportunity op
+    LogInfo MODULE_NAME, "[CreateNewOpportunity] Oportunidad creada: " & op.Label
 
     Exit Sub
 
 ErrHandler:
     LogCurrentError MODULE_NAME, "[CreateNewOpportunity]"
-    ShowTaskDialogError "Error Inesperado", "Ocurrió un error inesperado al crear la oportunidad.", _
-                        "Error: " & Err.Description & " (Nº " & Err.Number & ")"
 End Sub
 
 ' ==================================================================
@@ -335,60 +369,20 @@ Private Function GetIndexByName(ByVal opportunityName As String) As Long
     Next i
 End Function
 
-'@Description: Solicita al usuario el nombre del cliente/proyecto de forma interactiva y robusta.
-Private Function GetCustomerNameFromUser(ByVal opCode As String) As String
-    Dim strCustomer As String
-    Dim IsValid As Boolean
-    Dim userResponse As Long
-    
-    Dim regEx As Object
-    Set regEx = CreateObject("VBScript.RegExp")
-    regEx.Pattern = FILEORFOLDERNAME_QUOTE_CUSTOMER_OTHER_MODEL_PATTERN
-    
-    On Error GoTo ErrHandler
+' ==================================================================
+' MANEJADORES DE EVENTOS DEL PROVIDER (via WithEvents)
+' Recibe objetos de dominio ya validados y construidos por infraestructura.
+' ==================================================================
 
-    Dim TaskDlg As cTaskDialog
-    Set TaskDlg = New cTaskDialog
-    With TaskDlg
-        .Init
-        .Title = "Crear Nueva Oportunidad"
-        .MainInstruction = "Nombre del cliente y proyecto"
-        .Content = "Introduce el nombre del cliente, o cliente - proyecto, separados por un guión. No utilizar caracteres especiales!"
-        .Flags = TDF_INPUT_BOX
-        .CommonButtons = TDCBF_OK_BUTTON Or TDCBF_CANCEL_BUTTON
-        .IconMain = TD_INFORMATION_ICON
-        .ParenthWnd = Application.hwnd
-                
-        Do
-            ' 1. Solicitar input al usuario
-            .ShowDialog
-        
-            strCustomer = .ResultInput
-            If .ResultMain <> TD_OK Then
-                ' 2. Si el usuario cancela (InputBox devuelve ""), salir
-                GetCustomerNameFromUser = ""
-                Exit Function
-            Else
-                ' 3. Validar el nombre introducido
-                IsValid = regEx.Test(opCode & " - " & strCustomer & " - XXX")
-                ' Evitamos caracteres especiales del sistema de archivos
-                IsValid = IsValid And Not (strCustomer Like "*[\/:*?""<>|]*")
-                If Not IsValid Then
-                    .MainInstruction = "Nombre NO VALIDO"
-                    .IconMain = TD_WARNING_ICON
-                Else
-                    Exit Do
-                End If
-            End If
-        Loop While Not IsValid
-    End With
-    GetCustomerNameFromUser = strCustomer
-    
-    LogDebug MODULE_NAME, "[GetCustomerNameFromUser] Cliente (+ proyecto): " & strCustomer
+'@Description: Nueva oportunidad detectada en el sistema de archivos.
+'              El provider ya valido el patron y construyo la entidad.
+Private Sub mProvider_OpportunityDetected(ByVal op As clsOpportunity)
+    LogInfo MODULE_NAME, "[mProvider_OpportunityDetected] " & op.Label
+    AddOpportunity op
+End Sub
 
-    Exit Function
-ErrHandler:
-    LogCurrentError MODULE_NAME, "[GetCustomerNameFromUser]"
-    ShowTaskDialogError "Error Inesperado", "Ocurrió un error inesperado al solicitar el nombre de cliente.", _
-                        "Error: " & Err.Description & " (Nº " & Err.Number & ")"
-End Function
+'@Description: Oportunidad eliminada del sistema de archivos.
+Private Sub mProvider_OpportunityRemoved(ByVal opportunityCode As String)
+    LogInfo MODULE_NAME, "[mProvider_OpportunityRemoved] Codigo: " & opportunityCode
+    RemoveOpportunity opportunityCode
+End Sub

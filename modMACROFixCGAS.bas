@@ -80,6 +80,7 @@ Attribute FixCGASING.VB_ProcData.VB_Invoke_Func = " \n0"
     Call ReplaceInAllCells(ws.Cells, "- Pressure ", "- Exhaust pressure ", bSave)
     Call ReplaceInAllCells(ws.Cells, "CV/KW", "HP/kW", bSave)
     Call ReplaceInAllCells(ws.Cells, " CV", " HP", bSave)
+    Call ReplaceInAllCells(ws.Cells, "-Amount and Diameter :", "- Amount and diameter:", bSave)
     Call ReplaceInAllCells(ws.Cells, Environ("username"), Application.UserName, bSave)
     
     Dim cell As Range

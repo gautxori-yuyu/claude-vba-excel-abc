@@ -60,3 +60,37 @@ ErrHandler:
     MsgBox instruction & vbCrLf & Content, vbCritical, Title
 End Sub
 
+'@Description("Muestra un cuadro de diálogo con campo de texto usando TaskDialog. Devuelve cadena vacía si el usuario cancela.")
+Public Function ShowTaskDialogInputBox(ByVal Title As String, _
+                                       ByVal instruction As String, _
+                                       ByVal Content As String, _
+                                       Optional ByVal icon As Long = TD_INFORMATION_ICON) As String
+Attribute ShowTaskDialogInputBox.VB_ProcData.VB_Invoke_Func = " \n21"
+    On Error GoTo ErrHandler
+
+    Dim TaskDlg As cTaskDialog
+    Set TaskDlg = New cTaskDialog
+    With TaskDlg
+        .Init
+        .Title = Title
+        .MainInstruction = instruction
+        .Content = Content
+        .Flags = TDF_INPUT_BOX
+        .CommonButtons = TDCBF_OK_BUTTON Or TDCBF_CANCEL_BUTTON
+        .IconMain = icon
+        .ParenthWnd = Application.hwnd
+        .ShowDialog
+
+        If .ResultMain = TD_OK Then
+            ShowTaskDialogInputBox = .ResultInput
+        Else
+            ShowTaskDialogInputBox = ""
+        End If
+    End With
+
+    Exit Function
+ErrHandler:
+    LogError MODULE_NAME, "[ShowTaskDialogInputBox] Fallback to InputBox", Err.Number, Err.Description
+    ShowTaskDialogInputBox = InputBox(instruction & vbCrLf & Content, Title)
+End Function
+

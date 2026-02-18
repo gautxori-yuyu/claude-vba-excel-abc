@@ -26,7 +26,7 @@ Option Explicit
 
 Private Const MODULE_NAME As String = "clsFileManager"
 
-Private fso As Scripting.FileSystemObject
+Private fso As Object
 ' ==========================================
 ' EVENTOS
 ' ==========================================

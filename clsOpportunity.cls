@@ -137,3 +137,21 @@ Public Sub SyncWithRepository()
     ' TODO: Implementar sincronización
 End Sub
 
+' ==========================================
+' MÉTODOS DE DOMINIO (delegan en interfaces)
+' ==========================================
+
+'@Description: Obtiene los cálculos técnicos asociados a esta oportunidad
+'@Param provider: Proveedor de cálculos técnicos (interfaz de dominio)
+'@Returns: Collection de ITechnicalCalc
+Public Function GetCalculations(provider As ITechnicalCalcProvider) As Collection
+    Set GetCalculations = provider.GetCalculations(mPath)
+End Function
+
+'@Description: Obtiene las valoraciones económicas asociadas a esta oportunidad
+'@Param provider: Proveedor de valoraciones económicas (interfaz de dominio)
+'@Returns: Collection de IEconomicQuote
+Public Function GetQuotes(provider As IEconomicQuoteProvider) As Collection
+    Set GetQuotes = provider.GetQuotes(mPath)
+End Function
+

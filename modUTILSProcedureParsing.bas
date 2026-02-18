@@ -22,6 +22,9 @@ Attribute ParsearUDFsDeTodosLosProyectos.VB_ProcData.VB_Invoke_Func = " \n21"
     On Error Resume Next
     For Each vbeProj In Application.VBE.VBProjects
         If vbeProj Is Nothing Then
+            MsgBox "No hay acceso al VBA Project." & vbCrLf & _
+                "  -> Habilita 'Confiar en el acceso al modelo de objetos de proyectos de VBA'" & vbCrLf & _
+                "  -> En: Archivo > Opciones > Centro de confianza > Configuración", vbCritical + vbOKOnly
         ElseIf vbeProj.Protection = 0 Then ' 1 = vbext_pp_locked
             ' Acceder al contenido
             LogInfo "modUTILSProcedureParsing", "[ProcesarTodosLosProyectos] Procesando proyecto: " & vbeProj.Name & " [" & vbeProj.fileName & "]"
