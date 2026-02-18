@@ -41,6 +41,11 @@ Public Event TemplateChanged(ByVal folder As String, ByVal fileName As String)
 Public Event GasFileCreated(ByVal folder As String, ByVal fileName As String)
 Public Event GasFileChanged(ByVal folder As String, ByVal fileName As String)
 
+' Eventos de error/reconexión del monitoreo
+Public Event MonitoringError(ByVal folder As String, ByVal errorMessage As String)
+Public Event MonitoringReconnected(ByVal folder As String, ByVal attempts As Long)
+Public Event MonitoringFailed(ByVal folder As String, ByVal reason As String)
+
 ' -------------------------------------------------------------
 ' Properties
 ' -------------------------------------------------------------
@@ -243,16 +248,19 @@ End Sub
 
 Private Sub mFolderWatcher_ErrorOccurred(ByVal folder As String, ByVal errorMessage As String)
     LogError MODULE_NAME, "[ErrorOccurred] ERROR en " & folder & ": " & errorMessage
+    RaiseEvent MonitoringError(folder, errorMessage)
 End Sub
 
 Private Sub mFolderWatcher_WatcherReconnected(ByVal folder As String, ByVal attempts As Long)
     If attempts > 1 Then
         LogWarning MODULE_NAME, "Monitoreo restaurado en " & folder & " tras " & attempts & " intentos"
     End If
+    RaiseEvent MonitoringReconnected(folder, attempts)
 End Sub
 
 Private Sub mFolderWatcher_WatcherReconnectionFailed(ByVal folder As String, ByVal reason As String)
     LogError MODULE_NAME, "[WatcherReconnectionFailed] " & folder & ": " & reason
+    RaiseEvent MonitoringFailed(folder, reason)
 End Sub
 
 ' =====================================================

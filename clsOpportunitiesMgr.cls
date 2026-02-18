@@ -34,8 +34,9 @@ Public Event CurrentOpportunityChanged(ByVal opportunityName As String, ByVal op
 ' ==================================================================
 ' ESTADO INTERNO
 ' ==================================================================
-Private WithEvents mProvider As FileSystemProvider  ' Proveedor (para llamadas Y WithEvents)
+Private WithEvents mProvider As FileSystemOpportunityProvider  ' Clase concreta (para WithEvents)
 Attribute mProvider.VB_VarHelpID = -1
+Private mProviderIntf As IOpportunityProvider             ' Misma instancia, vista como interfaz (para llamadas de contrato)
 Private mOpportunityState As clsOpportunityState      ' Estado de oportunidad (composición)
 Private mOpportunities As Collection                   ' Collection<clsOpportunity> - construidos por el provider
 
@@ -53,14 +54,16 @@ Private Sub Class_Terminate()
     LogInfo MODULE_NAME, "[Class_Terminate]"
     Set mOpportunityState = Nothing
     Set mOpportunities = Nothing
+    Set mProviderIntf = Nothing
     Set mProvider = Nothing
 End Sub
 
 '@Description: Inyecta el proveedor de oportunidades y carga datos iniciales.
 '              Se usa la clase concreta (no la interfaz) porque WithEvents
 '              no funciona con interfaces en VBA.
-Public Sub Initialize(provider As FileSystemProvider)
+Public Sub Initialize(provider As FileSystemOpportunityProvider)
     Set mProvider = provider
+    Set mProviderIntf = provider   ' Misma instancia, acceso via interfaz
     RefreshOpportunities
 End Sub
 
@@ -98,7 +101,7 @@ Public Sub RefreshOpportunities()
 
     ' Obtener oportunidades del Provider como Collection<clsOpportunity> (ya ordenadas)
     ' Cada elemento es un clsOpportunity con Label y path ya inicializados por el provider.
-    Set mOpportunities = mProvider.GetOpportunities()
+    Set mOpportunities = mProviderIntf.GetOpportunities()
 
     LogInfo MODULE_NAME, "[RefreshOpportunities] " & mOpportunities.Count & " oportunidades cargadas"
 
